@@ -594,7 +594,47 @@
       nextSlide();
     }, 5000);
 
-  </script>
+  </script><script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",
+    authDomain: "my-website-73785.firebaseapp.com",
+    projectId: "my-website-73785",
+    storageBucket: "my-website-73785.firebasestorage.app",
+    messagingSenderId: "854088341990",
+    appId: "1:854088341990:web:3211d4ef9fe4b78d025e27",
+    measurementId: "G-5DHPLFN3J4"
+  };
+
+  // Initialize Firebase and Auth
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  // --- Login Function ---
+  window.loginUser = (email, password) => {
+    signInWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        alert("Login Successful! Welcome " + userCredential.user.email);
+      })
+      .catch((error) => {
+        alert("Error: " + error.message);
+      });
+  };
+
+  // --- Signup Function ---
+  window.signUpUser = (email, password) => {
+    createUserWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        alert("Account Created Successfully!");
+      })
+      .catch((error) => {
+        alert("Error: " + error.message);
+      });
+  };
+</script>
+
 
 </body>
 </html>
