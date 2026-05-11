@@ -1,35 +1,678 @@
-<!-- ================= VISITOR COUNTER ================= -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-<section style="background:#eef4ff; padding:40px 20px; text-align:center;">
+  <title>Solanki Brothers | E-Mitra Sewa Kendra</title>
 
-  <h2 style="color:#0b3d91; margin-bottom:20px; font-size:32px;">
-    Website Visitors
-  </h2>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-  <div style="
-    display:inline-block;
-    background:white;
-    padding:25px 40px;
-    border-radius:18px;
-    box-shadow:0 5px 20px rgba(0,0,0,0.08);
-  ">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-    <h3 style="
-      font-size:45px;
+  <style>
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:'Poppins',sans-serif;
+    }
+
+    html{
+      scroll-behavior:smooth;
+    }
+
+    body{
+      background:#f5f7fb;
+      overflow-x:hidden;
+      color:#222;
+    }
+
+    /* ================= NAVBAR ================= */
+
+    nav{
+      width:100%;
+      background:#0b3d91;
+      padding:16px 6%;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      position:sticky;
+      top:0;
+      z-index:1000;
+      box-shadow:0 3px 15px rgba(0,0,0,0.15);
+    }
+
+    .logo{
+      color:#ffd000;
+      font-size:30px;
+      font-weight:700;
+    }
+
+    nav ul{
+      display:flex;
+      list-style:none;
+      gap:28px;
+    }
+
+    nav ul li a{
+      color:white;
+      text-decoration:none;
+      font-size:16px;
+      font-weight:500;
+      transition:0.3s;
+      position:relative;
+    }
+
+    nav ul li a::after{
+      content:'';
+      position:absolute;
+      left:0;
+      bottom:-6px;
+      width:0%;
+      height:2px;
+      background:#ffd000;
+      transition:0.3s;
+    }
+
+    nav ul li a:hover::after{
+      width:100%;
+    }
+
+    nav ul li a:hover{
+      color:#ffd000;
+    }
+
+    /* ================= SLIDER ================= */
+
+    .slider{
+      width:100%;
+      height:90vh;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .slides{
+      display:flex;
+      width:300%;
+      height:100%;
+      transition:1s;
+    }
+
+    .slide{
+      width:100%;
+      height:100%;
+      position:relative;
+    }
+
+    .slide img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+
+    .overlay{
+      position:absolute;
+      inset:0;
+      background:rgba(0,0,0,0.55);
+    }
+
+    .content{
+      position:absolute;
+      top:50%;
+      left:50%;
+      transform:translate(-50%,-50%);
+      text-align:center;
+      color:white;
+      z-index:2;
+      width:90%;
+      max-width:850px;
+    }
+
+    .content h1{
+      font-size:58px;
+      margin-bottom:20px;
+      line-height:1.2;
+      text-shadow:2px 2px 15px rgba(0,0,0,0.5);
+    }
+
+    .content p{
+      font-size:19px;
+      line-height:1.8;
+      margin-bottom:35px;
+    }
+
+    .btn{
+      display:inline-block;
+      padding:15px 38px;
+      background:#ffd000;
+      color:#0b3d91;
+      text-decoration:none;
+      border-radius:50px;
+      font-size:17px;
+      font-weight:700;
+      transition:0.3s;
+      box-shadow:0 8px 20px rgba(255,208,0,0.4);
+    }
+
+    .btn:hover{
+      background:white;
+      transform:translateY(-4px);
+    }
+
+    /* ================= SLIDER BUTTONS ================= */
+
+    .slider-btn{
+      position:absolute;
+      top:50%;
+      transform:translateY(-50%);
+      width:60px;
+      height:60px;
+      border:none;
+      border-radius:50%;
+      background:rgba(255,255,255,0.2);
+      color:white;
+      font-size:30px;
+      cursor:pointer;
+      z-index:10;
+      transition:0.3s;
+      backdrop-filter:blur(5px);
+    }
+
+    .slider-btn:hover{
+      background:#ffd000;
+      color:#0b3d91;
+    }
+
+    .prev{
+      left:20px;
+    }
+
+    .next{
+      right:20px;
+    }
+
+    /* ================= FEATURES ================= */
+
+    .features{
+      padding:80px 6%;
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+      gap:30px;
+      background:white;
+    }
+
+    .feature-box{
+      background:#ffffff;
+      padding:35px 25px;
+      border-radius:18px;
+      text-align:center;
+      box-shadow:0 5px 20px rgba(0,0,0,0.08);
+      transition:0.3s;
+      border-top:5px solid #ffd000;
+    }
+
+    .feature-box:hover{
+      transform:translateY(-10px);
+    }
+
+    .feature-box h3{
+      font-size:24px;
+      margin-bottom:15px;
+      color:#0b3d91;
+    }
+
+    .feature-box p{
+      color:#555;
+      line-height:1.8;
+      font-size:15px;
+    }
+
+    /* ================= ABOUT ================= */
+
+    .about{
+      padding:90px 6%;
+      text-align:center;
+      background:#eef4ff;
+    }
+
+    .about h2{
+      font-size:42px;
+      margin-bottom:25px;
+      color:#0b3d91;
+    }
+
+    .about p{
+      max-width:900px;
+      margin:auto;
+      line-height:1.9;
+      font-size:17px;
+      color:#444;
+    }
+
+    /* ================= VISITOR COUNTER ================= */
+
+    .counter-section{
+      background:white;
+      padding:80px 20px;
+      text-align:center;
+    }
+
+    .counter-section h2{
+      font-size:42px;
+      color:#0b3d91;
+      margin-bottom:30px;
+    }
+
+    .counter-box{
+      display:inline-block;
+      background:#eef4ff;
+      padding:35px 50px;
+      border-radius:20px;
+      box-shadow:0 5px 20px rgba(0,0,0,0.08);
+    }
+
+    .counter-box h3{
+      font-size:55px;
       color:#ffd000;
       margin-bottom:10px;
-    ">
-      <span id="visitor-count">0</span>
-    </h3>
+    }
 
-    <p style="
-      font-size:18px;
+    .counter-box p{
+      font-size:20px;
       color:#444;
-      font-weight:500;
-    ">
-      Total Visitors
+      font-weight:600;
+    }
+
+    /* ================= CONTACT ================= */
+
+    .contact{
+      padding:80px 6%;
+      text-align:center;
+      background:#eef4ff;
+    }
+
+    .contact h2{
+      font-size:42px;
+      margin-bottom:25px;
+      color:#0b3d91;
+    }
+
+    .contact p{
+      font-size:18px;
+      margin-bottom:15px;
+      color:#444;
+    }
+
+    .contact a{
+      text-decoration:none;
+      color:#0b3d91;
+      font-weight:600;
+    }
+
+    /* ================= FOOTER ================= */
+
+    footer{
+      background:#0b3d91;
+      color:white;
+      text-align:center;
+      padding:25px;
+      font-size:15px;
+    }
+
+    /* ================= WHATSAPP ================= */
+
+    .whatsapp-btn{
+      position:fixed;
+      width:60px;
+      height:60px;
+      bottom:40px;
+      right:40px;
+      background:#25d366;
+      color:white;
+      border-radius:50%;
+      text-align:center;
+      font-size:30px;
+      box-shadow:2px 2px 10px rgba(0,0,0,0.3);
+      z-index:1000;
+    }
+
+    .whatsapp-btn i{
+      margin-top:15px;
+    }
+
+    .chat-label{
+      position:absolute;
+      width:100%;
+      left:0;
+      top:-25px;
+      color:#2c3e50;
+      font-size:12px;
+      font-weight:bold;
+      background:white;
+      padding:2px;
+      border-radius:5px;
+      box-shadow:0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    /* ================= MOBILE ================= */
+
+    @media(max-width:768px){
+
+      nav{
+        flex-direction:column;
+        gap:15px;
+      }
+
+      nav ul{
+        flex-wrap:wrap;
+        justify-content:center;
+        gap:18px;
+      }
+
+      .content h1{
+        font-size:35px;
+      }
+
+      .content p{
+        font-size:15px;
+      }
+
+      .slider{
+        height:75vh;
+      }
+
+      .about h2,
+      .contact h2,
+      .counter-section h2{
+        font-size:30px;
+      }
+
+      .slider-btn{
+        width:50px;
+        height:50px;
+        font-size:24px;
+      }
+
+      .counter-box{
+        padding:25px 30px;
+      }
+
+      .counter-box h3{
+        font-size:42px;
+      }
+
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+  <!-- ================= NAVBAR ================= -->
+
+  <nav>
+
+    <div class="logo">
+      Solanki Brothers
+    </div>
+
+    <ul>
+      <li><a href="#">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="OFFLINEFORM.HTML">Offline PDF forms</a></li>
+      <li><a href="#contact">Contact</a></li>
+      <li><a href="job-form.html">Job Forms</a></li>
+    </ul>
+
+  </nav>
+
+  <!-- ================= SLIDER ================= -->
+
+  <section class="slider">
+
+    <button class="slider-btn prev" onclick="prevSlide()">❮</button>
+
+    <button class="slider-btn next" onclick="nextSlide()">❯</button>
+
+    <div class="slides" id="slides">
+
+      <!-- SLIDE 1 -->
+
+      <div class="slide">
+
+        <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=1400&auto=format&fit=crop">
+
+        <div class="overlay"></div>
+
+        <div class="content">
+
+          <h1>Welcome To Solanki Brothers</h1>
+
+          <p>
+            Rajasthan ki trusted E-Mitra service.
+            Sabhi online aur offline forms ek jagah.
+          </p>
+
+          <a href="OFFLINEFORM.HTML" class="btn">
+            View Forms
+          </a>
+
+        </div>
+
+      </div>
+
+      <!-- SLIDE 2 -->
+
+      <div class="slide">
+
+        <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=1400&auto=format&fit=crop">
+
+        <div class="overlay"></div>
+
+        <div class="content">
+
+          <h1>Fast & Reliable Services</h1>
+
+          <p>
+            Jan Aadhar, caste certificate,
+            income certificate aur bahut kuch.
+          </p>
+
+          <a href="about.html" class="btn">
+            Learn More
+          </a>
+
+        </div>
+
+      </div>
+
+      <!-- SLIDE 3 -->
+
+      <div class="slide">
+
+        <img src="https://images.unsplash.com/photo-1556740749-887f6717d7e4?q=80&w=1400&auto=format&fit=crop">
+
+        <div class="overlay"></div>
+
+        <div class="content">
+
+          <h1>Need Any Help?</h1>
+
+          <p>
+            WhatsApp aur Call Support Available.
+          </p>
+
+          <a href="tel:9509403258" class="btn">
+            Call Now
+          </a>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- ================= FEATURES ================= -->
+
+  <section class="features">
+
+    <div class="feature-box">
+
+      <h3>Easy Downloads</h3>
+
+      <p>
+        Sabhi PDF forms ek click mein download karein.
+      </p>
+
+    </div>
+
+    <div class="feature-box">
+
+      <h3>Latest Forms</h3>
+
+      <p>
+        2026 ke updated forms aur services available.
+      </p>
+
+    </div>
+
+    <div class="feature-box">
+
+      <h3>Quick Support</h3>
+
+      <p>
+        Fast response aur best customer support.
+      </p>
+
+    </div>
+
+  </section>
+
+  <!-- ================= ABOUT ================= -->
+
+  <section class="about">
+
+    <h2>About Us</h2>
+
+    <p>
+      Solanki Brothers E-Mitra Sewa Kendra ek trusted digital service center hai.
+      Yahan aapko government forms, online applications, document print,
+      Aadhaar services aur kai anya सुविधाएँ milti hain.
     </p>
 
-  </div>
+  </section>
 
-</section>
+  <!-- ================= VISITOR COUNTER ================= -->
+
+  <section class="counter-section">
+
+    <h2>Website Visitors</h2>
+
+    <div class="counter-box">
+
+      <h3 id="visitor-count">0</h3>
+
+      <p>Total Visitors</p>
+
+    </div>
+
+  </section>
+
+  <!-- ================= CONTACT ================= -->
+
+  <section class="contact" id="contact">
+
+    <h2>Contact Us</h2>
+
+    <p>📞 Mobile: <a href="tel:9509403258">9509403258</a></p>
+
+    <p>📧 Email: jasmelsolanki@gmail.com</p>
+
+    <p>📍 Rajasthan, India</p>
+
+  </section>
+
+  <!-- ================= FOOTER ================= -->
+
+  <footer>
+    © 2026 Solanki Brothers | All Rights Reserved
+  </footer>
+
+  <!-- ================= WHATSAPP BUTTON ================= -->
+
+  <a href="https://wa.me/919509403258?text=Hello!%20Mujhe%20e-Mitra%20services%20ke%20bare%20mein%20puchna%20hai."
+     class="whatsapp-btn"
+     target="_blank">
+
+    <span class="chat-label">Chat Now</span>
+
+    <i class="fa-brands fa-whatsapp"></i>
+
+  </a>
+
+  <!-- ================= JAVASCRIPT ================= -->
+
+  <script>
+
+    let currentSlide = 0;
+
+    const slides = document.getElementById("slides");
+
+    const totalSlides = document.querySelectorAll(".slide").length;
+
+    function showSlide(index){
+
+      if(index >= totalSlides){
+        currentSlide = 0;
+      }
+
+      else if(index < 0){
+        currentSlide = totalSlides - 1;
+      }
+
+      else{
+        currentSlide = index;
+      }
+
+      slides.style.transform = `translateX(-${currentSlide * 100}vw)`;
+
+    }
+
+    function nextSlide(){
+      showSlide(currentSlide + 1);
+    }
+
+    function prevSlide(){
+      showSlide(currentSlide - 1);
+    }
+
+    setInterval(() => {
+      nextSlide();
+    }, 5000);
+
+    /* ================= VISITOR COUNTER ================= */
+
+    let visitorCount = localStorage.getItem("visitorCount");
+
+    if(visitorCount === null){
+      visitorCount = 1;
+    }
+
+    else{
+      visitorCount = parseInt(visitorCount) + 1;
+    }
+
+    localStorage.setItem("visitorCount", visitorCount);
+
+    document.getElementById("visitor-count").innerText = visitorCount;
+
+  </script>
+
+</body>
+</html>
