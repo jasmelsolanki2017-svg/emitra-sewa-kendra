@@ -656,21 +656,28 @@
       nextSlide();
     }, 5000);
 
-    /* ================= VISITOR COUNTER ================= */
+    <!-- ================= VISITOR COUNTER ================= -->
 
-    let visitorCount = localStorage.getItem("visitorCount");
+<section class="counter-section">
 
-    if(visitorCount === null){
-      visitorCount = 1;
-    }
+  <h2>Website Visitors</h2>
 
-    else{
-      visitorCount = parseInt(visitorCount) + 1;
-    }
+  <div class="counter-box">
 
-    localStorage.setItem("visitorCount", visitorCount);
+    <img 
+      src="https://hitwebcounter.com/counter/counter.php?page=21421561&style=0006&nbdigits=6&type=page&initCount=0" 
+      title="Visitor Counter"
+      Alt="visitor counter"
+      border="0"
+    >
 
-    document.getElementById("visitor-count").innerText = visitorCount;
+    <p style="margin-top:15px;">
+      Total Visitors
+    </p>
+
+  </div>
+
+</section>
 
   </script>
 
