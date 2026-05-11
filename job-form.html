@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Govt Job Alert | Solanki Brothers</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:'Poppins',sans-serif;
+    }
+
+    body{
+      background:#f3f5fa;
+    }
+
+    /* ================= NAVBAR ================= */
+
+    nav{
+      width:100%;
+      background:#003b8e;
+      padding:15px 5%;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      position:sticky;
+      top:0;
+      z-index:1000;
+    }
+
+    .logo{
+      color:#ffd000;
+      font-size:28px;
+      font-weight:700;
+    }
+
+    nav ul{
+      display:flex;
+      gap:25px;
+      list-style:none;
+    }
+
+    nav ul li a{
+      color:white;
+      text-decoration:none;
+      font-size:15px;
+      font-weight:500;
+    }
+
+    nav ul li a:hover{
+      color:#ffd000;
+    }
+
+    /* ================= HEADER ================= */
+
+    .hero{
+      width:100%;
+      background:linear-gradient(rgba(0,0,0,0.6),rgba(0,0,0,0.6)),
+      url('https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?q=80&w=1400&auto=format&fit=crop');
+      background-size:cover;
+      background-position:center;
+      padding:100px 20px;
+      text-align:center;
+      color:white;
+    }
+
+    .hero h1{
+      font-size:55px;
+      margin-bottom:20px;
+    }
+
+    .hero p{
+      font-size:18px;
+      max-width:800px;
+      margin:auto;
+      line-height:1.8;
+    }
+
+    /* ================= SEARCH BOX ================= */
+
+    .search-box{
+      width:90%;
+      max-width:900px;
+      margin:-40px auto 40px;
+      background:white;
+      padding:20px;
+      border-radius:18px;
+      box-shadow:0 5px 20px rgba(0,0,0,0.1);
+      display:flex;
+      gap:15px;
+    }
+
+    .search-box input{
+      flex:1;
+      padding:15px;
+      border:1px solid #ccc;
+      border-radius:10px;
+      font-size:15px;
+      outline:none;
+    }
+
+    .search-box button{
+      padding:15px 30px;
+      border:none;
+      background:#ffd000;
+      color:#003b8e;
+      border-radius:10px;
+      font-weight:700;
+      cursor:pointer;
+      transition:0.3s;
+    }
+
+    .search-box button:hover{
+      background:#003b8e;
+      color:white;
+    }
+
+    /* ================= JOB SECTION ================= */
+
+    .job-section{
+      padding:20px 5% 80px;
+    }
+
+    .section-title{
+      font-size:35px;
+      color:#003b8e;
+      margin-bottom:30px;
+      text-align:center;
+    }
+
+    .jobs-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+      gap:25px;
+    }
+
+    /* ================= JOB CARD ================= */
+
+    .job-card{
+      background:white;
+      border-radius:18px;
+      padding:25px;
+      box-shadow:0 5px 20px rgba(0,0,0,0.08);
+      transition:0.3s;
+      border-top:5px solid #ffd000;
+    }
+
+    .job-card:hover{
+      transform:translateY(-8px);
+    }
+
+    .job-card h3{
+      color:#003b8e;
+      margin-bottom:15px;
+      font-size:23px;
+    }
+
+    .job-info{
+      margin-bottom:10px;
+      color:#444;
+      font-size:15px;
+    }
+
+    .job-info span{
+      font-weight:600;
+      color:#111;
+    }
+
+    .job-btn{
+      display:inline-block;
+      margin-top:20px;
+      padding:12px 25px;
+      background:#003b8e;
+      color:white;
+      text-decoration:none;
+      border-radius:50px;
+      transition:0.3s;
+      font-weight:600;
+    }
+
+    .job-btn:hover{
+      background:#ffd000;
+      color:#003b8e;
+    }
+
+    /* ================= CATEGORY ================= */
+
+    .category{
+      padding:70px 5%;
+      background:white;
+    }
+
+    .category-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+      gap:25px;
+    }
+
+    .category-box{
+      background:#003b8e;
+      color:white;
+      padding:30px;
+      text-align:center;
+      border-radius:18px;
+      transition:0.3s;
+    }
+
+    .category-box:hover{
+      background:#ffd000;
+      color:#003b8e;
+      transform:translateY(-6px);
+    }
+
+    .category-box h3{
+      font-size:22px;
+      margin-bottom:10px;
+    }
+
+    /* ================= FOOTER ================= */
+
+    footer{
+      background:#003b8e;
+      color:white;
+      text-align:center;
+      padding:25px;
+    }
+
+    /* ================= MOBILE ================= */
+
+    @media(max-width:768px){
+
+      nav{
+        flex-direction:column;
+        gap:15px;
+      }
+
+      nav ul{
+        flex-wrap:wrap;
+        justify-content:center;
+      }
+
+      .hero h1{
+        font-size:35px;
+      }
+
+      .hero p{
+        font-size:15px;
+      }
+
+      .search-box{
+        flex-direction:column;
+      }
+
+      .section-title{
+        font-size:28px;
+      }
+
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+  <!-- ================= NAVBAR ================= -->
+
+  <nav>
+
+    <div class="logo">
+      Solanki Brothers
+    </div>
+
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="#">Latest Jobs</a></li>
+      <li><a href="#">Admit Card</a></li>
+      <li><a href="#">Result</a></li>
+      <li><a href="#">Answer Key</a></li>
+    </ul>
+
+  </nav>
+
+  <!-- ================= HERO ================= -->
+
+  <section class="hero">
+
+    <h1>Government Job Alert</h1>
+
+    <p>
+      Latest Government Jobs, Admit Card, Result,
+      Online Forms aur Sarkari Updates ek hi jagah.
+    </p>
+
+  </section>
+
+  <!-- ================= SEARCH ================= -->
+
+  <div class="search-box">
+
+    <input type="text" placeholder="Search Govt Jobs Here...">
+
+    <button>Search</button>
+
+  </div>
+
+  <!-- ================= JOB SECTION ================= -->
+
+  <section class="job-section">
+
+    <h2 class="section-title">
+      Latest Government Jobs
+    </h2>
+
+    <div class="jobs-grid">
+
+      <!-- JOB 1 -->
+
+      <div class="job-card">
+
+        <h3>Rajasthan Police Recruitment 2026</h3>
+
+        <div class="job-info">
+          <span>Post :</span> Constable
+        </div>
+
+        <div class="job-info">
+          <span>Last Date :</span> 25 June 2026
+        </div>
+
+        <div class="job-info">
+          <span>Qualification :</span> 12th Pass
+        </div>
+
+        <div class="job-info">
+          <span>Total Post :</span> 6500
+        </div>
+
+        <a href="#" class="job-btn">
+          Apply Online
+        </a>
+
+      </div>
+
+      <!-- JOB 2 -->
+
+      <div class="job-card">
+
+        <h3>Railway Group D Vacancy 2026</h3>
+
+        <div class="job-info">
+          <span>Post :</span> Group D
+        </div>
+
+        <div class="job-info">
+          <span>Last Date :</span> 10 July 2026
+        </div>
+
+        <div class="job-info">
+          <span>Qualification :</span> 10th Pass
+        </div>
+
+        <div class="job-info">
+          <span>Total Post :</span> 12000
+        </div>
+
+        <a href="#" class="job-btn">
+          Apply Online
+        </a>
+
+      </div>
+
+      <!-- JOB 3 -->
+
+      <div class="job-card">
+
+        <h3>SSC CHSL Online Form 2026</h3>
+
+        <div class="job-info">
+          <span>Post :</span> CHSL
+        </div>
+
+        <div class="job-info">
+          <span>Last Date :</span> 15 August 2026
+        </div>
+
+        <div class="job-info">
+          <span>Qualification :</span> 12th Pass
+        </div>
+
+        <div class="job-info">
+          <span>Total Post :</span> 4500
+        </div>
+
+        <a href="#" class="job-btn">
+          Apply Online
+        </a>
+
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- ================= CATEGORY ================= -->
+
+  <section class="category">
+
+    <h2 class="section-title">
+      Quick Categories
+    </h2>
+
+    <div class="category-grid">
+
+      <div class="category-box">
+        <h3>Latest Jobs</h3>
+        <p>All Government Jobs</p>
+      </div>
+
+      <div class="category-box">
+        <h3>Admit Card</h3>
+        <p>Download Admit Card</p>
+      </div>
+
+      <div class="category-box">
+        <h3>Results</h3>
+        <p>Check Latest Results</p>
+      </div>
+
+      <div class="category-box">
+        <h3>Answer Key</h3>
+        <p>Download Answer Key</p>
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- ================= FOOTER ================= -->
+
+  <footer>
+
+    © 2026 Solanki Brothers | All Rights Reserved
+
+  </footer>
+
+</body>
+</html>
