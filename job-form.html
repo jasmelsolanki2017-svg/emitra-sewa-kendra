@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -59,12 +60,13 @@
       color:#ffd000;
     }
 
-    /* ================= HEADER ================= */
+    /* ================= HERO ================= */
 
     .hero{
       width:100%;
       background:linear-gradient(rgba(0,0,0,0.6),rgba(0,0,0,0.6)),
       url('https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?q=80&w=1400&auto=format&fit=crop');
+
       background-size:cover;
       background-position:center;
       padding:100px 20px;
@@ -84,7 +86,7 @@
       line-height:1.8;
     }
 
-    /* ================= SEARCH BOX ================= */
+    /* ================= SEARCH ================= */
 
     .search-box{
       width:90%;
@@ -115,7 +117,6 @@
       border-radius:10px;
       font-weight:700;
       cursor:pointer;
-      transition:0.3s;
     }
 
     .search-box button:hover{
@@ -160,13 +161,14 @@
     .job-card h3{
       color:#003b8e;
       margin-bottom:15px;
-      font-size:23px;
+      font-size:22px;
     }
 
     .job-info{
       margin-bottom:10px;
       color:#444;
       font-size:15px;
+      line-height:1.7;
     }
 
     .job-info span{
@@ -189,39 +191,6 @@
     .job-btn:hover{
       background:#ffd000;
       color:#003b8e;
-    }
-
-    /* ================= CATEGORY ================= */
-
-    .category{
-      padding:70px 5%;
-      background:white;
-    }
-
-    .category-grid{
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-      gap:25px;
-    }
-
-    .category-box{
-      background:#003b8e;
-      color:white;
-      padding:30px;
-      text-align:center;
-      border-radius:18px;
-      transition:0.3s;
-    }
-
-    .category-box:hover{
-      background:#ffd000;
-      color:#003b8e;
-      transform:translateY(-6px);
-    }
-
-    .category-box h3{
-      font-size:22px;
-      margin-bottom:10px;
     }
 
     /* ================= FOOTER ================= */
@@ -296,7 +265,7 @@
     <h1>Government Job Alert</h1>
 
     <p>
-      Latest Government Jobs, Admit Card, Result,
+      Latest Government Jobs, Admit Card, Results,
       Online Forms aur Sarkari Updates ek hi jagah.
     </p>
 
@@ -322,122 +291,256 @@
 
     <div class="jobs-grid">
 
-      <!-- JOB 1 -->
-
       <div class="job-card">
-
-        <h3>Rajasthan Police Recruitment 2026</h3>
+        <h3>CTET September Online Form 2026</h3>
 
         <div class="job-info">
-          <span>Post :</span> Constable
+          <span>Qualification :</span> Graduate / B.Ed
         </div>
 
         <div class="job-info">
-          <span>Last Date :</span> 25 June 2026
+          <span>Status :</span> Start
         </div>
 
-        <div class="job-info">
-          <span>Qualification :</span> 12th Pass
-        </div>
-
-        <div class="job-info">
-          <span>Total Post :</span> 6500
-        </div>
-
-        <a href="#" class="job-btn">
-          Apply Online
-        </a>
-
+        <a href="#" class="job-btn">Apply Online</a>
       </div>
 
-      <!-- JOB 2 -->
-
       <div class="job-card">
-
-        <h3>Railway Group D Vacancy 2026</h3>
-
-        <div class="job-info">
-          <span>Post :</span> Group D
-        </div>
+        <h3>CRPF Constable Tradesman 2026</h3>
 
         <div class="job-info">
-          <span>Last Date :</span> 10 July 2026
+          <span>Total Posts :</span> 9195
         </div>
 
         <div class="job-info">
           <span>Qualification :</span> 10th Pass
         </div>
 
-        <div class="job-info">
-          <span>Total Post :</span> 12000
-        </div>
-
-        <a href="#" class="job-btn">
-          Apply Online
-        </a>
-
+        <a href="#" class="job-btn">Apply Online</a>
       </div>
 
-      <!-- JOB 3 -->
-
       <div class="job-card">
-
-        <h3>SSC CHSL Online Form 2026</h3>
+        <h3>BPSC 72nd Pre Online Form 2026</h3>
 
         <div class="job-info">
-          <span>Post :</span> CHSL
+          <span>Qualification :</span> Graduate
         </div>
 
         <div class="job-info">
-          <span>Last Date :</span> 15 August 2026
+          <span>Status :</span> Start
+        </div>
+
+        <a href="#" class="job-btn">Apply Online</a>
+      </div>
+
+      <div class="job-card">
+        <h3>UP Police New Recruitment</h3>
+
+        <div class="job-info">
+          <span>Total Posts :</span> 1 Lakh+
+        </div>
+
+        <div class="job-info">
+          <span>Status :</span> Coming Soon
+        </div>
+
+        <a href="#" class="job-btn">View Details</a>
+      </div>
+
+      <div class="job-card">
+        <h3>Railway RRB ALP 2026</h3>
+
+        <div class="job-info">
+          <span>Total Posts :</span> 11,127
+        </div>
+
+        <div class="job-info">
+          <span>Qualification :</span> ITI / Diploma
+        </div>
+
+        <a href="#" class="job-btn">Apply Online</a>
+      </div>
+
+      <div class="job-card">
+        <h3>PGCIL Diploma Trainee 2026</h3>
+
+        <div class="job-info">
+          <span>Status :</span> Last Date Today
+        </div>
+
+        <div class="job-info">
+          <span>Qualification :</span> Diploma
+        </div>
+
+        <a href="#" class="job-btn">Apply Online</a>
+      </div>
+
+      <div class="job-card">
+        <h3>MP Guest Teacher Online Form</h3>
+
+        <div class="job-info">
+          <span>Status :</span> Last Date Today
+        </div>
+
+        <div class="job-info">
+          <span>Qualification :</span> Graduate
+        </div>
+
+        <a href="#" class="job-btn">Apply Online</a>
+      </div>
+
+      <div class="job-card">
+        <h3>Bihar CET B.Ed Online Form</h3>
+
+        <div class="job-info">
+          <span>Status :</span> Start
+        </div>
+
+        <div class="job-info">
+          <span>Qualification :</span> Graduate
+        </div>
+
+        <a href="#" class="job-btn">Apply Online</a>
+      </div>
+
+      <div class="job-card">
+        <h3>RBI Officer Grade-B 2026</h3>
+
+        <div class="job-info">
+          <span>Status :</span> Start
+        </div>
+
+        <div class="job-info">
+          <span>Qualification :</span> Graduate
+        </div>
+
+        <a href="#" class="job-btn">Apply Online</a>
+      </div>
+
+      <div class="job-card">
+        <h3>UP Anganwadi Bharti 2026</h3>
+
+        <div class="job-info">
+          <span>Status :</span> Updated
         </div>
 
         <div class="job-info">
           <span>Qualification :</span> 12th Pass
         </div>
 
+        <a href="#" class="job-btn">View Details</a>
+      </div>
+
+      <div class="job-card">
+        <h3>UPPSC APO Mains 2026</h3>
+
         <div class="job-info">
-          <span>Total Post :</span> 4500
+          <span>Status :</span> Start
         </div>
 
-        <a href="#" class="job-btn">
-          Apply Online
-        </a>
+        <div class="job-info">
+          <span>Qualification :</span> Law Graduate
+        </div>
 
+        <a href="#" class="job-btn">Apply Online</a>
       </div>
 
-    </div>
+      <div class="job-card">
+        <h3>Coal India MT Through GATE</h3>
 
-  </section>
+        <div class="job-info">
+          <span>Status :</span> Start
+        </div>
 
-  <!-- ================= CATEGORY ================= -->
+        <div class="job-info">
+          <span>Qualification :</span> B.Tech
+        </div>
 
-  <section class="category">
-
-    <h2 class="section-title">
-      Quick Categories
-    </h2>
-
-    <div class="category-grid">
-
-      <div class="category-box">
-        <h3>Latest Jobs</h3>
-        <p>All Government Jobs</p>
+        <a href="#" class="job-btn">Apply Online</a>
       </div>
 
-      <div class="category-box">
-        <h3>Admit Card</h3>
-        <p>Download Admit Card</p>
+      <div class="job-card">
+        <h3>Indian Navy SSC Executive IT</h3>
+
+        <div class="job-info">
+          <span>Qualification :</span> B.Tech / MCA
+        </div>
+
+        <div class="job-info">
+          <span>Status :</span> Running
+        </div>
+
+        <a href="#" class="job-btn">Apply Online</a>
       </div>
 
-      <div class="category-box">
-        <h3>Results</h3>
-        <p>Check Latest Results</p>
+      <div class="job-card">
+        <h3>Railway SECR Raipur Apprentice</h3>
+
+        <div class="job-info">
+          <span>Status :</span> Start
+        </div>
+
+        <div class="job-info">
+          <span>Qualification :</span> ITI Pass
+        </div>
+
+        <a href="#" class="job-btn">Apply Online</a>
       </div>
 
-      <div class="category-box">
-        <h3>Answer Key</h3>
-        <p>Download Answer Key</p>
+      <div class="job-card">
+        <h3>Rajasthan RSSB Teaching Associate</h3>
+
+        <div class="job-info">
+          <span>Total Posts :</span> 3540
+        </div>
+
+        <div class="job-info">
+          <span>Qualification :</span> Graduate / B.Ed
+        </div>
+
+        <a href="#" class="job-btn">Apply Online</a>
+      </div>
+
+      <div class="job-card">
+        <h3>Indian Air Force Group C Civilian</h3>
+
+        <div class="job-info">
+          <span>Status :</span> Offline Form
+        </div>
+
+        <div class="job-info">
+          <span>Qualification :</span> 10th / 12th Pass
+        </div>
+
+        <a href="#" class="job-btn">Download Form</a>
+      </div>
+
+      <div class="job-card">
+        <h3>Union Bank Apprentice 2026</h3>
+
+        <div class="job-info">
+          <span>Status :</span> Start
+        </div>
+
+        <div class="job-info">
+          <span>Qualification :</span> Graduate
+        </div>
+
+        <a href="#" class="job-btn">Apply Online</a>
+      </div>
+
+      <div class="job-card">
+        <h3>UP Cooperative Bank Various Post</h3>
+
+        <div class="job-info">
+          <span>Status :</span> Start
+        </div>
+
+        <div class="job-info">
+          <span>Qualification :</span> Graduate
+        </div>
+
+        <a href="#" class="job-btn">Apply Online</a>
       </div>
 
     </div>
@@ -453,4 +556,5 @@
   </footer>
 
 </body>
+
 </html>
