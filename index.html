@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <title>Solanki Brothers | E-Mitra Sewa Kendra</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
+
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -20,14 +22,13 @@
       font-family:'Poppins',sans-serif;
     }
 
-    html{
-      scroll-behavior:smooth;
-    }
-
     body{
       background:#f5f7fb;
       overflow-x:hidden;
-      color:#222;
+    }
+
+    html{
+      scroll-behavior:smooth;
     }
 
     /* ================= NAVBAR ================= */
@@ -61,24 +62,8 @@
       color:white;
       text-decoration:none;
       font-size:16px;
+      transition:0.3s;
       font-weight:500;
-      transition:0.3s;
-      position:relative;
-    }
-
-    nav ul li a::after{
-      content:'';
-      position:absolute;
-      left:0;
-      bottom:-6px;
-      width:0%;
-      height:2px;
-      background:#ffd000;
-      transition:0.3s;
-    }
-
-    nav ul li a:hover::after{
-      width:100%;
     }
 
     nav ul li a:hover{
@@ -90,19 +75,19 @@
     .slider{
       width:100%;
       height:90vh;
-      position:relative;
       overflow:hidden;
+      position:relative;
     }
 
     .slides{
       display:flex;
-      width:300%;
+      width:100%;
       height:100%;
       transition:1s;
     }
 
     .slide{
-      width:100%;
+      min-width:100%;
       height:100%;
       position:relative;
     }
@@ -124,8 +109,8 @@
       top:50%;
       left:50%;
       transform:translate(-50%,-50%);
-      text-align:center;
       color:white;
+      text-align:center;
       z-index:2;
       width:90%;
       max-width:850px;
@@ -134,7 +119,6 @@
     .content h1{
       font-size:58px;
       margin-bottom:20px;
-      line-height:1.2;
       text-shadow:2px 2px 15px rgba(0,0,0,0.5);
     }
 
@@ -154,7 +138,6 @@
       font-size:17px;
       font-weight:700;
       transition:0.3s;
-      box-shadow:0 8px 20px rgba(255,208,0,0.4);
     }
 
     .btn:hover{
@@ -177,13 +160,6 @@
       font-size:30px;
       cursor:pointer;
       z-index:10;
-      transition:0.3s;
-      backdrop-filter:blur(5px);
-    }
-
-    .slider-btn:hover{
-      background:#ffd000;
-      color:#0b3d91;
     }
 
     .prev{
@@ -205,29 +181,23 @@
     }
 
     .feature-box{
-      background:#ffffff;
+      background:white;
       padding:35px 25px;
       border-radius:18px;
       text-align:center;
       box-shadow:0 5px 20px rgba(0,0,0,0.08);
-      transition:0.3s;
       border-top:5px solid #ffd000;
     }
 
-    .feature-box:hover{
-      transform:translateY(-10px);
-    }
-
     .feature-box h3{
-      font-size:24px;
-      margin-bottom:15px;
       color:#0b3d91;
+      margin-bottom:15px;
+      font-size:24px;
     }
 
     .feature-box p{
       color:#555;
       line-height:1.8;
-      font-size:15px;
     }
 
     /* ================= ABOUT ================= */
@@ -274,16 +244,11 @@
       box-shadow:0 5px 20px rgba(0,0,0,0.08);
     }
 
-    .counter-box h3{
-      font-size:55px;
-      color:#ffd000;
-      margin-bottom:10px;
-    }
-
     .counter-box p{
+      margin-top:15px;
       font-size:20px;
-      color:#444;
       font-weight:600;
+      color:#444;
     }
 
     /* ================= CONTACT ================= */
@@ -307,8 +272,8 @@
     }
 
     .contact a{
-      text-decoration:none;
       color:#0b3d91;
+      text-decoration:none;
       font-weight:600;
     }
 
@@ -319,7 +284,6 @@
       color:white;
       text-align:center;
       padding:25px;
-      font-size:15px;
     }
 
     /* ================= WHATSAPP ================= */
@@ -335,8 +299,8 @@
       border-radius:50%;
       text-align:center;
       font-size:30px;
-      box-shadow:2px 2px 10px rgba(0,0,0,0.3);
       z-index:1000;
+      box-shadow:2px 2px 10px rgba(0,0,0,0.3);
     }
 
     .whatsapp-btn i{
@@ -345,16 +309,15 @@
 
     .chat-label{
       position:absolute;
-      width:100%;
-      left:0;
       top:-25px;
-      color:#2c3e50;
+      left:0;
+      width:100%;
+      background:white;
+      color:#222;
       font-size:12px;
       font-weight:bold;
-      background:white;
       padding:2px;
       border-radius:5px;
-      box-shadow:0 2px 5px rgba(0,0,0,0.2);
     }
 
     /* ================= MOBILE ================= */
@@ -369,7 +332,6 @@
       nav ul{
         flex-wrap:wrap;
         justify-content:center;
-        gap:18px;
       }
 
       .content h1{
@@ -384,24 +346,10 @@
         height:75vh;
       }
 
+      .counter-section h2,
       .about h2,
-      .contact h2,
-      .counter-section h2{
+      .contact h2{
         font-size:30px;
-      }
-
-      .slider-btn{
-        width:50px;
-        height:50px;
-        font-size:24px;
-      }
-
-      .counter-box{
-        padding:25px 30px;
-      }
-
-      .counter-box h3{
-        font-size:42px;
       }
 
     }
@@ -423,7 +371,7 @@
     <ul>
       <li><a href="#">Home</a></li>
       <li><a href="about.html">About</a></li>
-      <li><a href="OFFLINEFORM.HTML">Offline PDF forms</a></li>
+      <li><a href="OFFLINEFORM.HTML">Offline PDF Forms</a></li>
       <li><a href="#contact">Contact</a></li>
       <li><a href="job-form.html">Job Forms</a></li>
     </ul>
@@ -523,33 +471,18 @@
   <section class="features">
 
     <div class="feature-box">
-
       <h3>Easy Downloads</h3>
-
-      <p>
-        Sabhi PDF forms ek click mein download karein.
-      </p>
-
+      <p>Sabhi PDF forms ek click mein download karein.</p>
     </div>
 
     <div class="feature-box">
-
       <h3>Latest Forms</h3>
-
-      <p>
-        2026 ke updated forms aur services available.
-      </p>
-
+      <p>2026 ke updated forms aur services available.</p>
     </div>
 
     <div class="feature-box">
-
       <h3>Quick Support</h3>
-
-      <p>
-        Fast response aur best customer support.
-      </p>
-
+      <p>Fast response aur best customer support.</p>
     </div>
 
   </section>
@@ -576,7 +509,12 @@
 
     <div class="counter-box">
 
-      <h3 id="visitor-count">0</h3>
+      <img
+        src="https://hitwebcounter.com/counter/counter.php?page=21421561&style=0006&nbdigits=6&type=page&initCount=0"
+        title="Visitor Counter"
+        alt="visitor counter"
+        border="0"
+      >
 
       <p>Total Visitors</p>
 
@@ -640,7 +578,7 @@
         currentSlide = index;
       }
 
-      slides.style.transform = `translateX(-${currentSlide * 100}vw)`;
+      slides.style.transform = `translateX(-${currentSlide * 100}%)`;
 
     }
 
@@ -655,29 +593,6 @@
     setInterval(() => {
       nextSlide();
     }, 5000);
-
-    <!-- ================= VISITOR COUNTER ================= -->
-
-<section class="counter-section">
-
-  <h2>Website Visitors</h2>
-
-  <div class="counter-box">
-
-    <img 
-      src="https://hitwebcounter.com/counter/counter.php?page=21421561&style=0006&nbdigits=6&type=page&initCount=0" 
-      title="Visitor Counter"
-      Alt="visitor counter"
-      border="0"
-    >
-
-    <p style="margin-top:15px;">
-      Total Visitors
-    </p>
-
-  </div>
-
-</section>
 
   </script>
 
