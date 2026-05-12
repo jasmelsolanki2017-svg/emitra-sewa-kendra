@@ -8,9 +8,7 @@
   <title>Admin Dashboard | Solanki Brothers</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
-
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans+Devanagari:wght@400;600;700;800&display=swap" rel="stylesheet">
-
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
   <style>
@@ -32,7 +30,6 @@
       padding: 10px 6%;
       display: flex;
       justify-content: space-between;
-      align-items: center;
       flex-wrap: wrap;
     }
 
@@ -52,24 +49,19 @@
     header h1 {
       color: #ffd000;
       font-size: 42px;
-      margin-bottom: 8px;
-    }
-
-    header p {
-      font-size: 18px;
     }
 
     nav {
       background: white;
       padding: 15px 6%;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
       display: flex;
       justify-content: center;
       gap: 15px;
       flex-wrap: wrap;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
       position: sticky;
       top: 0;
-      z-index: 1000;
+      z-index: 999;
     }
 
     nav a,
@@ -82,14 +74,12 @@
       border-radius: 30px;
       font-weight: 700;
       cursor: pointer;
-      transition: 0.3s;
     }
 
     nav a:hover,
     nav button:hover {
       background: #ffd000;
       color: #0b3d91;
-      transform: translateY(-3px);
     }
 
     .dashboard {
@@ -98,8 +88,8 @@
 
     .dashboard h2 {
       text-align: center;
-      font-size: 36px;
       color: #0b3d91;
+      font-size: 36px;
       margin-bottom: 35px;
     }
 
@@ -110,19 +100,13 @@
       padding: 22px;
       border-radius: 16px;
       border-left: 6px solid #ffd000;
-      box-shadow: 0 5px 18px rgba(0,0,0,0.08);
       text-align: center;
+      box-shadow: 0 5px 18px rgba(0,0,0,0.08);
     }
 
     .admin-info h3 {
       color: #0b3d91;
       margin-bottom: 8px;
-      font-size: 24px;
-    }
-
-    .admin-info p {
-      color: #444;
-      font-weight: 600;
     }
 
     .card-grid {
@@ -138,12 +122,6 @@
       text-align: center;
       box-shadow: 0 6px 20px rgba(0,0,0,0.08);
       border-top: 6px solid #ffd000;
-      transition: 0.3s;
-    }
-
-    .card:hover {
-      transform: translateY(-8px);
-      box-shadow: 0 9px 26px rgba(0,0,0,0.13);
     }
 
     .card i {
@@ -155,38 +133,25 @@
     .card h3 {
       color: #0b3d91;
       margin-bottom: 10px;
-      font-size: 22px;
     }
 
     .card p {
       color: #555;
-      line-height: 1.6;
       margin-bottom: 18px;
-      font-size: 15px;
+      line-height: 1.6;
     }
 
-    .card a,
-    .card button {
-      display: inline-block;
+    .card a {
       background: #0b3d91;
       color: white;
       text-decoration: none;
-      border: none;
       padding: 10px 20px;
       border-radius: 25px;
       font-weight: 700;
-      cursor: pointer;
+      display: inline-block;
     }
 
-    .card a:hover,
-    .card button:hover {
-      background: #ffd000;
-      color: #0b3d91;
-    }
-
-    /* IMPORTANT LINKS MANAGER */
-
-    .link-manager {
+    .manager {
       margin-top: 55px;
       background: white;
       padding: 35px;
@@ -195,33 +160,28 @@
       border-top: 6px solid #ffd000;
     }
 
-    .link-manager h2 {
+    .manager h2 {
       text-align: center;
       color: #0b3d91;
-      margin-bottom: 25px;
       font-size: 32px;
+      margin-bottom: 25px;
     }
 
-    .link-form {
+    .form-box {
       display: grid;
       grid-template-columns: 1fr 1fr auto;
       gap: 15px;
       margin-bottom: 30px;
     }
 
-    .link-form input {
+    .form-box input {
       padding: 13px;
       border: 1px solid #ccc;
       border-radius: 10px;
       font-size: 15px;
-      outline: none;
     }
 
-    .link-form input:focus {
-      border-color: #0b3d91;
-    }
-
-    .link-form button {
+    .form-box button {
       background: #0b3d91;
       color: white;
       border: none;
@@ -231,18 +191,12 @@
       cursor: pointer;
     }
 
-    .link-form button:hover {
+    .form-box button:hover {
       background: #ffd000;
       color: #0b3d91;
     }
 
-    .saved-links h3 {
-      color: #0b3d91;
-      margin-bottom: 15px;
-      font-size: 24px;
-    }
-
-    .link-row {
+    .row {
       background: #eef4ff;
       padding: 14px;
       border-radius: 12px;
@@ -255,16 +209,15 @@
       border-left: 5px solid #0b3d91;
     }
 
-    .link-row a {
+    .row a {
       color: #0b3d91;
       font-weight: 700;
       text-decoration: none;
-      word-break: break-word;
     }
 
-    .link-row small {
-      color: #555;
+    .row small {
       display: block;
+      color: #555;
       margin-top: 5px;
       word-break: break-word;
     }
@@ -275,37 +228,8 @@
       border: none;
       padding: 9px 16px;
       border-radius: 8px;
-      cursor: pointer;
       font-weight: 700;
-    }
-
-    .delete-btn:hover {
-      background: #a00000;
-    }
-
-    .notice-box {
-      margin-top: 50px;
-      background: #fff;
-      border-radius: 18px;
-      padding: 30px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.08);
-      border-left: 6px solid #0b3d91;
-    }
-
-    .notice-box h3 {
-      color: #0b3d91;
-      font-size: 26px;
-      margin-bottom: 15px;
-    }
-
-    .notice-box ul {
-      padding-left: 20px;
-    }
-
-    .notice-box li {
-      margin-bottom: 10px;
-      font-weight: 600;
-      line-height: 1.7;
+      cursor: pointer;
     }
 
     footer {
@@ -321,22 +245,8 @@
         font-size: 30px;
       }
 
-      .dashboard h2 {
-        font-size: 28px;
-      }
-
-      nav a,
-      nav button {
-        padding: 9px 16px;
-        font-size: 14px;
-      }
-
-      .link-form {
+      .form-box {
         grid-template-columns: 1fr;
-      }
-
-      .link-manager {
-        padding: 25px 18px;
       }
     }
   </style>
@@ -344,31 +254,25 @@
 
 <body>
 
-  <!-- TOPBAR -->
-
   <div class="topbar">
     <div>Admin Panel</div>
     <div>⏰ <span id="liveTime"></span></div>
   </div>
 
-  <!-- HEADER -->
-
   <header>
     <h1>Solanki Brothers Admin Dashboard</h1>
-    <p>Website manage करने के लिए आपका control panel</p>
+    <p>Website Manage करने के लिए Control Panel</p>
   </header>
-
-  <!-- NAV -->
 
   <nav>
     <a href="index.html">Home</a>
+    <a href="#linksManager">Important Links</a>
+    <a href="#updatesManager">Latest Updates</a>
     <a href="OFFLINEFORM.HTML">PDF Forms</a>
     <a href="job-form.html">Latest Jobs</a>
     <a href="stationery.html">Stationery</a>
     <button onclick="logoutUser()">Logout</button>
   </nav>
-
-  <!-- DASHBOARD -->
 
   <section class="dashboard">
 
@@ -382,194 +286,88 @@
     <div class="card-grid">
 
       <div class="card">
-        <i class="fa-solid fa-bullhorn"></i>
-        <h3>Latest Updates</h3>
-        <p>Home page पर दिखने वाले latest updates और notice board manage करें।</p>
-        <a href="#linkManager">
-Manage
-</a>
+        <i class="fa-solid fa-link"></i>
+        <h3>Important Links</h3>
+        <p>Index page पर live links add/delete करें।</p>
+        <a href="#linksManager">Manage</a>
       </div>
 
       <div class="card">
-        <i class="fa-solid fa-link"></i>
-        <h3>Important Links</h3>
-        <p>नीचे वाले section से Important Links add/remove करें।</p>
-        <a href="#linkManager">Manage</a>
+        <i class="fa-solid fa-bullhorn"></i>
+        <h3>Latest Updates</h3>
+        <p>Index page के marquee updates add/delete करें।</p>
+        <a href="#updatesManager">Manage</a>
       </div>
 
       <div class="card">
         <i class="fa-solid fa-file-pdf"></i>
         <h3>PDF Forms</h3>
-        <p>Offline PDF forms page खोलें और forms update करें।</p>
+        <p>Offline PDF forms page खोलें।</p>
         <a href="OFFLINEFORM.HTML">Open</a>
       </div>
 
       <div class="card">
         <i class="fa-solid fa-briefcase"></i>
         <h3>Latest Jobs</h3>
-        <p>Job forms और latest government updates page खोलें।</p>
+        <p>Job forms page खोलें।</p>
         <a href="job-form.html">Open</a>
       </div>
 
-      <div class="card">
-        <i class="fa-solid fa-shop"></i>
-        <h3>Stationery Page</h3>
-        <p>Stationery और photostat service page देखें।</p>
-        <a href="stationery.html">Open</a>
-      </div>
-
-      <div class="card">
-        <i class="fa-solid fa-file-pen"></i>
-        <h3>PDF Auto System</h3>
-        <p>User data से automatic government style PDF generate करें।</p>
-        <button onclick="alert('PDF Auto System next step में बनाएंगे')">Create</button>
-      </div>
-
     </div>
 
-    <!-- IMPORTANT LINKS MANAGER -->
-
-    <section class="link-manager" id="linkManager">
+    <section class="manager" id="linksManager">
 
       <h2>Important Links Manager</h2>
 
-      <div class="link-form">
-
+      <div class="form-box">
         <input type="text" id="linkTitle" placeholder="Link Name जैसे जन गणना">
-
-        <input type="url" id="linkUrl" placeholder="Link URL जैसे https://se.census.gov.in/">
-
-        <button onclick="addImportantLink()">
-          Add Link
-        </button>
-
+        <input type="url" id="linkUrl" placeholder="URL जैसे https://se.census.gov.in/">
+        <button onclick="addImportantLink()">Add Link</button>
       </div>
 
-      <div class="saved-links">
-
-        <h3>Saved Links</h3>
-
-        <div id="adminLinksList">
-          Loading...
-        </div>
-
-      </div>
+      <div id="adminLinksList">Loading...</div>
 
     </section>
 
-    <div class="notice-box">
-      <h3>Important Notes</h3>
-      <ul>
-        <li>यहाँ से link add करोगे तो index page पर अपने आप show होगा।</li>
-        <li>Delete करोगे तो index page से भी हट जाएगा।</li>
-        <li>Realtime Database rules में admin write permission होना जरूरी है।</li>
-        <li>Realtime Database URL code में लगा हुआ है।</li>
-      </ul>
-    </div>
+    <section class="manager" id="updatesManager">
+
+      <h2>Latest Updates Manager</h2>
+
+      <div class="form-box">
+        <input type="text" id="updateText" placeholder="Update लिखें जैसे CTET Form 2026 Started">
+        <button onclick="addLatestUpdate()">Add Update</button>
+      </div>
+
+      <div id="adminUpdatesList">Loading...</div>
+
+    </section>
 
   </section>
-
-  <!-- FOOTER -->
 
   <footer>
     © 2026 Solanki Brothers | Admin Dashboard
   </footer>
 
-  <!-- NORMAL JAVASCRIPT -->
-
   <script>
     function updateLiveTime() {
       const now = new Date();
-
-      const options = {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: true
-      };
-
       document.getElementById("liveTime").innerText =
-        now.toLocaleString("hi-IN", options);
+        now.toLocaleString("hi-IN");
     }
 
     updateLiveTime();
     setInterval(updateLiveTime, 1000);
   </script>
 
-  <!-- FIREBASE ADMIN GUARD -->
-
   <script type="module">
 
-    import { initializeApp }
-    from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 
     import {
       getAuth,
       onAuthStateChanged,
       signOut
-    }
-    from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-
-    const firebaseConfig = {
-
-      apiKey: "AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",
-
-      authDomain: "my-website-73785.firebaseapp.com",
-
-      databaseURL: "https://my-website-73785-default-rtdb.firebaseio.com/",
-
-      projectId: "my-website-73785",
-
-      storageBucket: "my-website-73785.firebasestorage.app",
-
-      messagingSenderId: "854088341990",
-
-      appId: "1:854088341990:web:3211d4ef9fe4b78d025e27",
-
-      measurementId: "G-5DHPLFN3J4"
-
-    };
-
-    const app = initializeApp(firebaseConfig);
-
-    const auth = getAuth(app);
-
-    const adminEmail = "jasmelsolanki@gmail.com";
-
-    onAuthStateChanged(auth, (user) => {
-
-      if(user && user.email === adminEmail) {
-        console.log("Admin Verified");
-      }
-
-      else {
-        alert("Access Denied! यह Admin Dashboard सिर्फ owner के लिए है।");
-        window.location.href = "index.html";
-      }
-
-    });
-
-    window.logoutUser = () => {
-
-      signOut(auth).then(() => {
-        alert("Logout Successful");
-        window.location.href = "index.html";
-      });
-
-    };
-
-  </script>
-
-  <!-- FIREBASE IMPORTANT LINKS ADMIN SYSTEM -->
-
-  <script type="module">
-
-    import { initializeApp }
-    from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+    } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 
     import {
       getDatabase,
@@ -578,105 +376,91 @@ Manage
       set,
       remove,
       onValue
-    }
-    from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+    } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
-    const firebaseConfigLinkAdmin = {
-
+    const firebaseConfig = {
       apiKey: "AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",
-
       authDomain: "my-website-73785.firebaseapp.com",
-
       databaseURL: "https://my-website-73785-default-rtdb.firebaseio.com/",
-
       projectId: "my-website-73785",
-
       storageBucket: "my-website-73785.firebasestorage.app",
-
       messagingSenderId: "854088341990",
-
-      appId: "1:854088341990:web:3211d4ef9fe4b78d025e27",
-
-      measurementId: "G-5DHPLFN3J4"
-
+      appId: "1:854088341990:web:3211d4ef9fe4b78d025e27"
     };
 
-    const linkAdminApp = initializeApp(firebaseConfigLinkAdmin, "linkAdminApp");
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
 
-    const db = getDatabase(linkAdminApp);
+    const adminEmail = "jasmelsolanki@gmail.com";
+
+    onAuthStateChanged(auth, (user) => {
+      if (user && user.email === adminEmail) {
+        console.log("Admin Verified");
+      } else {
+        alert("Access Denied! यह Admin Dashboard सिर्फ owner के लिए है।");
+        window.location.href = "index.html";
+      }
+    });
+
+    window.logoutUser = () => {
+      signOut(auth).then(() => {
+        alert("Logout Successful");
+        window.location.href = "index.html";
+      });
+    };
 
     const linksRef = ref(db, "importantLinks");
 
     window.addImportantLink = () => {
-
       const title = document.getElementById("linkTitle").value.trim();
-
       const url = document.getElementById("linkUrl").value.trim();
 
-      if(title === "" || url === "") {
+      if (title === "" || url === "") {
         alert("Link name और URL दोनों भरें");
         return;
       }
 
-      if(!url.startsWith("http://") && !url.startsWith("https://")) {
-        alert("URL https:// या http:// से शुरू होना चाहिए");
+      if (!url.startsWith("http://") && !url.startsWith("https://")) {
+        alert("URL http:// या https:// से शुरू होना चाहिए");
         return;
       }
 
-      const newLinkRef = push(linksRef);
+      const newLink = push(linksRef);
 
-      set(newLinkRef, {
+      set(newLink, {
         title: title,
         url: url
-      })
-      .then(() => {
+      }).then(() => {
         alert("Link Added Successfully!");
-
         document.getElementById("linkTitle").value = "";
         document.getElementById("linkUrl").value = "";
-      })
-      .catch((error) => {
+      }).catch((error) => {
         alert(error.message);
       });
-
     };
 
     window.deleteImportantLink = (id) => {
-
-      if(confirm("क्या आप यह link delete करना चाहते हैं?")) {
-
+      if (confirm("क्या आप यह link delete करना चाहते हैं?")) {
         remove(ref(db, "importantLinks/" + id))
-        .then(() => {
-          alert("Link Deleted Successfully!");
-        })
-        .catch((error) => {
-          alert(error.message);
-        });
-
+          .then(() => alert("Link Deleted Successfully!"))
+          .catch((error) => alert(error.message));
       }
-
     };
 
     onValue(linksRef, (snapshot) => {
-
       const list = document.getElementById("adminLinksList");
-
       list.innerHTML = "";
 
-      if(snapshot.exists()) {
-
-        snapshot.forEach((childSnapshot) => {
-
-          const id = childSnapshot.key;
-
-          const data = childSnapshot.val();
+      if (snapshot.exists()) {
+        snapshot.forEach((child) => {
+          const id = child.key;
+          const data = child.val();
 
           list.innerHTML += `
-            <div class="link-row">
+            <div class="row">
               <div>
-                <a href="${data.url}" target="_blank">
-                  ${data.title}
-                </a>
+                <a href="${data.url}" target="_blank">${data.title}</a>
                 <small>${data.url}</small>
               </div>
 
@@ -685,17 +469,66 @@ Manage
               </button>
             </div>
           `;
-
         });
+      } else {
+        list.innerHTML = "<p>अभी कोई Important Link save नहीं है।</p>";
+      }
+    });
 
+    const updatesRef = ref(db, "latestUpdates");
+
+    window.addLatestUpdate = () => {
+      const text = document.getElementById("updateText").value.trim();
+
+      if (text === "") {
+        alert("Update text लिखें");
+        return;
       }
 
-      else {
+      const newUpdate = push(updatesRef);
 
-        list.innerHTML = "<p>अभी कोई link save नहीं है।</p>";
+      set(newUpdate, {
+        text: text
+      }).then(() => {
+        alert("Update Added Successfully!");
+        document.getElementById("updateText").value = "";
+      }).catch((error) => {
+        alert(error.message);
+      });
+    };
 
+    window.deleteLatestUpdate = (id) => {
+      if (confirm("क्या आप यह update delete करना चाहते हैं?")) {
+        remove(ref(db, "latestUpdates/" + id))
+          .then(() => alert("Update Deleted Successfully!"))
+          .catch((error) => alert(error.message));
       }
+    };
 
+    onValue(updatesRef, (snapshot) => {
+      const list = document.getElementById("adminUpdatesList");
+      list.innerHTML = "";
+
+      if (snapshot.exists()) {
+        snapshot.forEach((child) => {
+          const id = child.key;
+          const data = child.val();
+
+          list.innerHTML += `
+            <div class="row">
+              <div>
+                <strong>${data.text}</strong>
+              </div>
+
+              <button class="delete-btn" onclick="deleteLatestUpdate('${id}')">
+                Delete
+              </button>
+            </div>
+          `;
+        });
+      } else {
+        list.innerHTML = "<p>अभी कोई Latest Update save नहीं है।</p>";
+      }
     });
 
   </script>
