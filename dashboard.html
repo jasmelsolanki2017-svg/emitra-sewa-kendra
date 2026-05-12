@@ -3,772 +3,435 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard | Solanki Brothers</title>
+  <title>Admin Dashboard | E-MITRA WALA</title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans+Devanagari:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
   <style>
-    *{
-      margin:0;
-      padding:0;
-      box-sizing:border-box;
-      font-family:'Poppins','Noto Sans Devanagari',sans-serif;
-    }
+    *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins','Noto Sans Devanagari',sans-serif;}
+    body{background:#f5f7fb;color:#222;}
+    html{scroll-behavior:smooth;}
 
-    body{
-      background:#f5f7fb;
-      color:#222;
-    }
+    .topbar{background:#062b68;color:white;padding:10px 6%;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+    .topbar span{color:#ffd000;font-weight:700;}
 
-    html{
-      scroll-behavior:smooth;
-    }
+    header{background:linear-gradient(135deg,#0b3d91,#061b54);color:white;padding:35px 6%;text-align:center;border-bottom:6px solid #ffd000;}
+    header h1{color:#ffd000;font-size:42px;}
+    header p{margin-top:8px;}
 
-    .topbar{
-      background:#062b68;
-      color:white;
-      padding:10px 6%;
-      display:flex;
-      justify-content:space-between;
-      flex-wrap:wrap;
-      gap:10px;
-    }
+    nav{background:white;padding:15px 6%;display:flex;justify-content:center;gap:15px;flex-wrap:wrap;box-shadow:0 4px 15px rgba(0,0,0,.08);position:sticky;top:0;z-index:999;}
+    nav a,nav button{background:#0b3d91;color:white;text-decoration:none;border:none;padding:11px 22px;border-radius:30px;font-weight:700;cursor:pointer;font-size:14px;}
+    nav a:hover,nav button:hover{background:#ffd000;color:#0b3d91;}
 
-    .topbar span{
-      color:#ffd000;
-      font-weight:700;
-    }
+    .dashboard{padding:55px 6%;}
+    .dashboard h2{text-align:center;color:#0b3d91;font-size:34px;margin-bottom:30px;}
 
-    header{
-      background:linear-gradient(135deg,#0b3d91,#061b54);
-      color:white;
-      padding:35px 6%;
-      text-align:center;
-      border-bottom:6px solid #ffd000;
-    }
+    .admin-info{max-width:900px;margin:0 auto 30px;background:#eef4ff;padding:20px;border-radius:16px;border-left:6px solid #ffd000;text-align:center;box-shadow:0 5px 18px rgba(0,0,0,.08);}
+    .admin-info h3{color:#0b3d91;margin-bottom:8px;}
 
-    header h1{
-      color:#ffd000;
-      font-size:42px;
-    }
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:22px;}
+    .card{background:white;border-radius:18px;padding:28px 20px;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.08);border-top:6px solid #ffd000;}
+    .card i{font-size:40px;color:#0b3d91;margin-bottom:14px;}
+    .card h3{color:#0b3d91;margin-bottom:10px;}
+    .card p{color:#555;margin-bottom:15px;line-height:1.6;}
+    .card a{display:inline-block;background:#0b3d91;color:white;text-decoration:none;padding:10px 20px;border-radius:25px;font-weight:700;}
+    .card a:hover{background:#ffd000;color:#0b3d91;}
 
-    header p{
-      margin-top:8px;
-      font-size:16px;
-    }
+    .manager{margin-top:45px;background:white;padding:32px;border-radius:20px;box-shadow:0 6px 20px rgba(0,0,0,.08);border-top:6px solid #ffd000;}
+    .manager h2{font-size:30px;margin-bottom:22px;}
 
-    nav{
-      background:white;
-      padding:15px 6%;
-      display:flex;
-      justify-content:center;
-      gap:15px;
-      flex-wrap:wrap;
-      box-shadow:0 4px 15px rgba(0,0,0,.08);
-      position:sticky;
-      top:0;
-      z-index:999;
-    }
+    .form-box{display:grid;grid-template-columns:1fr 1fr auto;gap:14px;margin-bottom:25px;}
+    .form-box.single{grid-template-columns:1fr auto;}
+    .job-form-box{grid-template-columns:1fr 1fr;}
+    .job-form-box button{grid-column:1 / -1;font-size:16px;}
 
-    nav a,
-    nav button{
-      background:#0b3d91;
-      color:white;
-      text-decoration:none;
-      border:none;
-      padding:11px 22px;
-      border-radius:30px;
-      font-weight:700;
-      cursor:pointer;
-      font-size:14px;
-    }
+    .form-box input{padding:13px;border:1px solid #ccc;border-radius:10px;font-size:15px;outline:none;}
+    .form-box button{background:#0b3d91;color:white;border:none;padding:13px 22px;border-radius:10px;font-weight:700;cursor:pointer;}
+    .form-box button:hover{background:#ffd000;color:#0b3d91;}
 
-    nav a:hover,
-    nav button:hover{
-      background:#ffd000;
-      color:#0b3d91;
-    }
+    .row{background:#eef4ff;padding:14px;border-radius:12px;margin-bottom:12px;display:flex;justify-content:space-between;gap:15px;align-items:center;flex-wrap:wrap;border-left:5px solid #0b3d91;}
+    .row a{color:#0b3d91;font-weight:700;text-decoration:none;}
+    .row small{display:block;color:#555;margin-top:5px;word-break:break-word;}
+    .row strong{color:#0b3d91;font-size:17px;}
 
-    .dashboard{
-      padding:55px 6%;
-    }
+    .delete-btn{background:#d90000;color:white;border:none;padding:9px 16px;border-radius:8px;font-weight:700;cursor:pointer;}
+    .status{margin-top:10px;margin-bottom:12px;text-align:center;font-weight:700;color:#0b3d91;}
 
-    .dashboard h2{
-      text-align:center;
-      color:#0b3d91;
-      font-size:34px;
-      margin-bottom:30px;
-    }
-
-    .admin-info{
-      max-width:900px;
-      margin:0 auto 30px;
-      background:#eef4ff;
-      padding:20px;
-      border-radius:16px;
-      border-left:6px solid #ffd000;
-      text-align:center;
-      box-shadow:0 5px 18px rgba(0,0,0,.08);
-    }
-
-    .admin-info h3{
-      color:#0b3d91;
-      margin-bottom:8px;
-    }
-
-    .grid{
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
-      gap:22px;
-    }
-
-    .card{
-      background:white;
-      border-radius:18px;
-      padding:28px 20px;
-      text-align:center;
-      box-shadow:0 6px 20px rgba(0,0,0,.08);
-      border-top:6px solid #ffd000;
-    }
-
-    .card i{
-      font-size:40px;
-      color:#0b3d91;
-      margin-bottom:14px;
-    }
-
-    .card h3{
-      color:#0b3d91;
-      margin-bottom:10px;
-    }
-
-    .card p{
-      color:#555;
-      margin-bottom:15px;
-      line-height:1.6;
-    }
-
-    .card a{
-      display:inline-block;
-      background:#0b3d91;
-      color:white;
-      text-decoration:none;
-      padding:10px 20px;
-      border-radius:25px;
-      font-weight:700;
-    }
-
-    .card a:hover{
-      background:#ffd000;
-      color:#0b3d91;
-    }
-
-    .manager{
-      margin-top:45px;
-      background:white;
-      padding:32px;
-      border-radius:20px;
-      box-shadow:0 6px 20px rgba(0,0,0,.08);
-      border-top:6px solid #ffd000;
-    }
-
-    .manager h2{
-      font-size:30px;
-      margin-bottom:22px;
-    }
-
-    .form-box{
-      display:grid;
-      grid-template-columns:1fr 1fr auto;
-      gap:14px;
-      margin-bottom:25px;
-    }
-
-    .form-box.single{
-      grid-template-columns:1fr auto;
-    }
-
-    .form-box input{
-      padding:13px;
-      border:1px solid #ccc;
-      border-radius:10px;
-      font-size:15px;
-      outline:none;
-    }
-
-    .form-box input:focus{
-      border-color:#0b3d91;
-      box-shadow:0 0 0 2px rgba(11,61,145,.12);
-    }
-
-    .form-box button{
-      background:#0b3d91;
-      color:white;
-      border:none;
-      padding:13px 22px;
-      border-radius:10px;
-      font-weight:700;
-      cursor:pointer;
-    }
-
-    .form-box button:hover{
-      background:#ffd000;
-      color:#0b3d91;
-    }
-
-    .job-form-box{
-      grid-template-columns:1fr 1fr;
-    }
-
-    .job-form-box button{
-      grid-column:1 / -1;
-      font-size:16px;
-    }
-
-    .row{
-      background:#eef4ff;
-      padding:14px;
-      border-radius:12px;
-      margin-bottom:12px;
-      display:flex;
-      justify-content:space-between;
-      gap:15px;
-      align-items:center;
-      flex-wrap:wrap;
-      border-left:5px solid #0b3d91;
-    }
-
-    .row a{
-      color:#0b3d91;
-      font-weight:700;
-      text-decoration:none;
-    }
-
-    .row small{
-      display:block;
-      color:#555;
-      margin-top:5px;
-      word-break:break-word;
-    }
-
-    .row strong{
-      color:#0b3d91;
-      font-size:17px;
-    }
-
-    .delete-btn{
-      background:#d90000;
-      color:white;
-      border:none;
-      padding:9px 16px;
-      border-radius:8px;
-      font-weight:700;
-      cursor:pointer;
-    }
-
-    .delete-btn:hover{
-      background:#a50000;
-    }
-
-    .status{
-      margin-top:10px;
-      margin-bottom:12px;
-      text-align:center;
-      font-weight:700;
-      color:#0b3d91;
-    }
-
-    footer{
-      background:#0b3d91;
-      color:white;
-      text-align:center;
-      padding:22px;
-      margin-top:45px;
-    }
+    footer{background:#0b3d91;color:white;text-align:center;padding:22px;margin-top:45px;}
 
     @media(max-width:768px){
-      header h1{
-        font-size:28px;
-      }
-
-      .form-box,
-      .form-box.single,
-      .job-form-box{
-        grid-template-columns:1fr;
-      }
-
-      .job-form-box button{
-        grid-column:auto;
-      }
-
-      .manager{
-        padding:22px 16px;
-      }
-
-      nav a,
-      nav button{
-        padding:10px 16px;
-        font-size:13px;
-      }
+      header h1{font-size:28px;}
+      .form-box,.form-box.single,.job-form-box{grid-template-columns:1fr;}
+      .job-form-box button{grid-column:auto;}
+      .manager{padding:22px 16px;}
+      nav a,nav button{padding:10px 16px;font-size:13px;}
     }
   </style>
 </head>
 
 <body>
 
-  <div class="topbar">
-    <div>Admin Panel</div>
-    <div>⏰ <span id="liveTime"></span></div>
+<div class="topbar">
+  <div>Admin Panel</div>
+  <div>⏰ <span id="liveTime"></span></div>
+</div>
+
+<header>
+  <h1>E-MITRA WALA Admin Dashboard</h1>
+  <p>Website Manage करने के लिए Control Panel</p>
+</header>
+
+<nav>
+  <a href="index.html">Home</a>
+  <a href="#linksManager">Important Links</a>
+  <a href="#updatesManager">Latest Updates</a>
+  <a href="#jobsManager">Latest Jobs Manage</a>
+  <a href="OFFLINEFORM.HTML">PDF Forms</a>
+  <a href="JOB-FORM.HTML">Latest Jobs Page</a>
+  <a href="stationery.html">Stationery</a>
+  <button onclick="logoutUser()">Logout</button>
+</nav>
+
+<section class="dashboard">
+
+  <div class="admin-info">
+    <h3>Admin Access Checking...</h3>
+    <p id="adminEmailText">Please wait...</p>
   </div>
 
-  <header>
-    <h1>Solanki Brothers Admin Dashboard</h1>
-    <p>Website Manage करने के लिए Control Panel</p>
-  </header>
+  <h2>Dashboard Options</h2>
 
-  <nav>
-    <a href="index.html">Home</a>
-    <a href="#linksManager">Important Links</a>
-    <a href="#updatesManager">Latest Updates</a>
-    <a href="#jobsManager">Latest Jobs Manage</a>
-    <a href="OFFLINEFORM.HTML">PDF Forms</a>
-    <a href="job-form.html">Latest Jobs Page</a>
-    <a href="stationery.html">Stationery</a>
-    <button onclick="logoutUser()">Logout</button>
-  </nav>
-
-  <section class="dashboard">
-
-    <div class="admin-info">
-      <h3>Admin Access Checking...</h3>
-      <p id="adminEmailText">Please wait...</p>
+  <div class="grid">
+    <div class="card">
+      <i class="fa-solid fa-link"></i>
+      <h3>Important Links</h3>
+      <p>Index page पर live links add/delete करें।</p>
+      <a href="#linksManager">Manage</a>
     </div>
 
-    <h2>Dashboard Options</h2>
-
-    <div class="grid">
-
-      <div class="card">
-        <i class="fa-solid fa-link"></i>
-        <h3>Important Links</h3>
-        <p>Index page पर live links add/delete करें।</p>
-        <a href="#linksManager">Manage</a>
-      </div>
-
-      <div class="card">
-        <i class="fa-solid fa-bullhorn"></i>
-        <h3>Latest Updates</h3>
-        <p>Index page के marquee updates add/delete करें।</p>
-        <a href="#updatesManager">Manage</a>
-      </div>
-
-      <div class="card">
-        <i class="fa-solid fa-briefcase"></i>
-        <h3>Latest Jobs</h3>
-        <p>Job forms add/delete करें।</p>
-        <a href="#jobsManager">Manage</a>
-      </div>
-
-      <div class="card">
-        <i class="fa-solid fa-file-pdf"></i>
-        <h3>PDF Forms</h3>
-        <p>Offline PDF forms page खोलें।</p>
-        <a href="OFFLINEFORM.HTML">Open</a>
-      </div>
-
+    <div class="card">
+      <i class="fa-solid fa-bullhorn"></i>
+      <h3>Latest Updates</h3>
+      <p>Index page के marquee updates add/delete करें।</p>
+      <a href="#updatesManager">Manage</a>
     </div>
 
-    <!-- IMPORTANT LINKS MANAGER -->
+    <div class="card">
+      <i class="fa-solid fa-briefcase"></i>
+      <h3>Latest Jobs</h3>
+      <p>Job forms add/delete करें।</p>
+      <a href="#jobsManager">Manage</a>
+    </div>
 
-    <section class="manager" id="linksManager">
-      <h2>Important Links Manager</h2>
+    <div class="card">
+      <i class="fa-solid fa-file-pdf"></i>
+      <h3>PDF Forms</h3>
+      <p>Offline PDF forms page खोलें।</p>
+      <a href="OFFLINEFORM.HTML">Open</a>
+    </div>
+  </div>
 
-      <div class="form-box">
-        <input type="text" id="linkTitle" placeholder="Link Name जैसे जन गणना">
-        <input type="url" id="linkUrl" placeholder="URL जैसे https://se.census.gov.in/">
-        <button onclick="addImportantLink()">Add Link</button>
-      </div>
+  <section class="manager" id="linksManager">
+    <h2>Important Links Manager</h2>
 
-      <div id="linkStatus" class="status"></div>
-      <div id="adminLinksList">Loading...</div>
-    </section>
+    <div class="form-box">
+      <input type="text" id="linkTitle" placeholder="Link Name जैसे जन गणना">
+      <input type="url" id="linkUrl" placeholder="URL जैसे https://se.census.gov.in/">
+      <button onclick="addImportantLink()">Add Link</button>
+    </div>
 
-    <!-- LATEST UPDATES MANAGER -->
-
-    <section class="manager" id="updatesManager">
-      <h2>Latest Updates Manager</h2>
-
-      <div class="form-box single">
-        <input type="text" id="updateText" placeholder="Update लिखें जैसे CTET Form 2026 Started">
-        <button onclick="addLatestUpdate()">Add Update</button>
-      </div>
-
-      <div id="updateStatus" class="status"></div>
-      <div id="adminUpdatesList">Loading...</div>
-    </section>
-
-    <!-- LATEST JOBS MANAGER -->
-
-    <section class="manager" id="jobsManager">
-      <h2>Latest Jobs Manager</h2>
-
-      <div class="form-box job-form-box">
-        <input type="text" id="jobTitle" placeholder="Job Title जैसे Rajasthan Police Constable">
-        <input type="text" id="jobType" placeholder="Job Type जैसे Online Form">
-        <input type="text" id="jobStartDate" placeholder="Start Date जैसे 01 May 2026">
-        <input type="text" id="jobLastDate" placeholder="Last Date जैसे 30 May 2026">
-        <input type="text" id="jobQualification" placeholder="Qualification जैसे 12th Pass">
-        <input type="text" id="jobLocation" placeholder="Location जैसे Rajasthan">
-        <input type="url" id="jobApplyLink" placeholder="Apply Link https://...">
-        <input type="url" id="jobDetailLink" placeholder="Detail Link https://...">
-        <button onclick="addLatestJob()">Add Job</button>
-      </div>
-
-      <div id="jobStatus" class="status"></div>
-      <div id="adminJobsList">Loading...</div>
-    </section>
-
+    <div id="linkStatus" class="status"></div>
+    <div id="adminLinksList">Loading...</div>
   </section>
 
-  <footer>
-    © 2026 Solanki Brothers | Admin Dashboard
-  </footer>
+  <section class="manager" id="updatesManager">
+    <h2>Latest Updates Manager</h2>
 
-  <script>
-    function updateLiveTime(){
-      const now = new Date();
-      document.getElementById("liveTime").innerText = now.toLocaleString("hi-IN");
+    <div class="form-box single">
+      <input type="text" id="updateText" placeholder="Update लिखें जैसे CTET Form 2026 Started">
+      <button onclick="addLatestUpdate()">Add Update</button>
+    </div>
+
+    <div id="updateStatus" class="status"></div>
+    <div id="adminUpdatesList">Loading...</div>
+  </section>
+
+  <section class="manager" id="jobsManager">
+    <h2>Latest Jobs Manager</h2>
+
+    <div class="form-box job-form-box">
+      <input type="text" id="jobTitle" placeholder="Job Title जैसे SSC Steno 2026 Apply Online">
+      <input type="text" id="jobType" placeholder="Job Type जैसे Online Form">
+      <input type="text" id="jobStartDate" placeholder="Start Date जैसे 01 May 2026">
+      <input type="text" id="jobLastDate" placeholder="Last Date जैसे 30 May 2026">
+      <input type="text" id="jobQualification" placeholder="Qualification जैसे 12th Pass">
+      <input type="text" id="jobLocation" placeholder="Location जैसे All India">
+      <input type="url" id="jobApplyLink" placeholder="Apply Link https://...">
+      <input type="url" id="jobDetailLink" placeholder="Detail Link https://...">
+      <button onclick="addLatestJob()">Add Job</button>
+    </div>
+
+    <div id="jobStatus" class="status"></div>
+    <div id="adminJobsList">Loading...</div>
+  </section>
+
+</section>
+
+<footer>
+  © 2026 E-MITRA WALA | Admin Dashboard
+</footer>
+
+<script>
+  function updateLiveTime(){
+    const now = new Date();
+    document.getElementById("liveTime").innerText = now.toLocaleString("hi-IN");
+  }
+  updateLiveTime();
+  setInterval(updateLiveTime,1000);
+</script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+  import { getDatabase, ref, push, set, remove, onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",
+    authDomain: "my-website-73785.firebaseapp.com",
+    databaseURL: "https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app/",
+    projectId: "my-website-73785",
+    storageBucket: "my-website-73785.firebasestorage.app",
+    messagingSenderId: "854088341990",
+    appId: "1:854088341990:web:3211d4ef9fe4b78d025e27"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getDatabase(app);
+
+  const adminEmail = "jasmelsolanki@gmail.com";
+  let adminAllowed = false;
+
+  onAuthStateChanged(auth, (user) => {
+    if(user && user.email === adminEmail){
+      adminAllowed = true;
+      document.querySelector(".admin-info h3").innerText = "Admin Access Verified";
+      document.getElementById("adminEmailText").innerText = user.email;
+    } else {
+      adminAllowed = false;
+      alert("Access Denied! यह Admin Dashboard सिर्फ owner के लिए है।");
+      window.location.href = "index.html";
+    }
+  });
+
+  window.logoutUser = () => {
+    signOut(auth).then(() => {
+      alert("Logout Successful");
+      window.location.href = "index.html";
+    });
+  };
+
+  const linksRef = ref(db, "importantLinks");
+  const updatesRef = ref(db, "latestUpdates");
+  const jobsRef = ref(db, "LatestJobs");
+
+  window.addImportantLink = () => {
+    if(!adminAllowed){ alert("Admin verify नहीं हुआ।"); return; }
+
+    const title = document.getElementById("linkTitle").value.trim();
+    const url = document.getElementById("linkUrl").value.trim();
+
+    if(title === "" || url === ""){ alert("Link name और URL दोनों भरें"); return; }
+    if(!url.startsWith("http://") && !url.startsWith("https://")){ alert("URL http:// या https:// से शुरू होना चाहिए"); return; }
+
+    document.getElementById("linkStatus").innerText = "Saving...";
+
+    set(push(linksRef), {
+      title:title,
+      url:url,
+      createdAt:Date.now()
+    }).then(() => {
+      document.getElementById("linkStatus").innerText = "Link Added Successfully!";
+      document.getElementById("linkTitle").value = "";
+      document.getElementById("linkUrl").value = "";
+    }).catch((error) => alert("Error: " + error.message));
+  };
+
+  window.deleteImportantLink = (id) => {
+    if(!adminAllowed){ alert("Admin verify नहीं हुआ।"); return; }
+
+    if(confirm("क्या आप यह link delete करना चाहते हैं?")){
+      remove(ref(db, "importantLinks/" + id))
+      .then(() => alert("Link Deleted Successfully!"))
+      .catch((error) => alert("Error: " + error.message));
+    }
+  };
+
+  onValue(linksRef, (snapshot) => {
+    const list = document.getElementById("adminLinksList");
+    list.innerHTML = "";
+
+    if(snapshot.exists()){
+      snapshot.forEach((child) => {
+        const id = child.key;
+        const data = child.val();
+
+        list.innerHTML += `
+          <div class="row">
+            <div>
+              <a href="${data.url}" target="_blank">${data.title}</a>
+              <small>${data.url}</small>
+            </div>
+            <button class="delete-btn" onclick="deleteImportantLink('${id}')">Delete</button>
+          </div>
+        `;
+      });
+    } else {
+      list.innerHTML = "<p>अभी कोई Important Link save नहीं है।</p>";
+    }
+  });
+
+  window.addLatestUpdate = () => {
+    if(!adminAllowed){ alert("Admin verify नहीं हुआ।"); return; }
+
+    const text = document.getElementById("updateText").value.trim();
+
+    if(text === ""){ alert("Update text लिखें"); return; }
+
+    document.getElementById("updateStatus").innerText = "Saving...";
+
+    set(push(updatesRef), {
+      text:text,
+      createdAt:Date.now()
+    }).then(() => {
+      document.getElementById("updateStatus").innerText = "Update Added Successfully!";
+      document.getElementById("updateText").value = "";
+    }).catch((error) => alert("Error: " + error.message));
+  };
+
+  window.deleteLatestUpdate = (id) => {
+    if(!adminAllowed){ alert("Admin verify नहीं हुआ।"); return; }
+
+    if(confirm("क्या आप यह update delete करना चाहते हैं?")){
+      remove(ref(db, "latestUpdates/" + id))
+      .then(() => alert("Update Deleted Successfully!"))
+      .catch((error) => alert("Error: " + error.message));
+    }
+  };
+
+  onValue(updatesRef, (snapshot) => {
+    const list = document.getElementById("adminUpdatesList");
+    list.innerHTML = "";
+
+    if(snapshot.exists()){
+      snapshot.forEach((child) => {
+        const id = child.key;
+        const data = child.val();
+
+        list.innerHTML += `
+          <div class="row">
+            <div><strong>${data.text}</strong></div>
+            <button class="delete-btn" onclick="deleteLatestUpdate('${id}')">Delete</button>
+          </div>
+        `;
+      });
+    } else {
+      list.innerHTML = "<p>अभी कोई Latest Update save नहीं है।</p>";
+    }
+  });
+
+  window.addLatestJob = () => {
+    if(!adminAllowed){ alert("Admin verify नहीं हुआ।"); return; }
+
+    const title = document.getElementById("jobTitle").value.trim();
+    const type = document.getElementById("jobType").value.trim();
+    const startDate = document.getElementById("jobStartDate").value.trim();
+    const lastDate = document.getElementById("jobLastDate").value.trim();
+    const qualification = document.getElementById("jobQualification").value.trim();
+    const location = document.getElementById("jobLocation").value.trim();
+    const applyLink = document.getElementById("jobApplyLink").value.trim();
+    const detailLink = document.getElementById("jobDetailLink").value.trim();
+
+    if(title === ""){ alert("Job Title जरूर भरें"); return; }
+
+    if(applyLink !== "" && !applyLink.startsWith("http://") && !applyLink.startsWith("https://")){
+      alert("Apply Link http:// या https:// से शुरू होना चाहिए");
+      return;
     }
 
-    updateLiveTime();
-    setInterval(updateLiveTime,1000);
-  </script>
+    if(detailLink !== "" && !detailLink.startsWith("http://") && !detailLink.startsWith("https://")){
+      alert("Detail Link http:// या https:// से शुरू होना चाहिए");
+      return;
+    }
 
-  <script type="module">
+    document.getElementById("jobStatus").innerText = "Saving...";
 
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+    set(push(jobsRef), {
+      title:title,
+      type:type || "Online Form",
+      startDate:startDate || "Update Soon",
+      lastDate:lastDate || "Update Soon",
+      qualification:qualification || "Update Soon",
+      location:location || "All India",
+      applyLink:applyLink || "#",
+      detailLink:detailLink || "#",
+      createdAt:Date.now()
+    }).then(() => {
+      document.getElementById("jobStatus").innerText = "Job Added Successfully!";
 
-    import {
-      getAuth,
-      onAuthStateChanged,
-      signOut
-    } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+      document.getElementById("jobTitle").value = "";
+      document.getElementById("jobType").value = "";
+      document.getElementById("jobStartDate").value = "";
+      document.getElementById("jobLastDate").value = "";
+      document.getElementById("jobQualification").value = "";
+      document.getElementById("jobLocation").value = "";
+      document.getElementById("jobApplyLink").value = "";
+      document.getElementById("jobDetailLink").value = "";
 
-    import {
-      getDatabase,
-      ref,
-      push,
-      set,
-      remove,
-      onValue
-    } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+    }).catch((error) => alert("Error: " + error.message));
+  };
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",
-      authDomain: "my-website-73785.firebaseapp.com",
-      databaseURL: "https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app/",
-      projectId: "my-website-73785",
-      storageBucket: "my-website-73785.firebasestorage.app",
-      messagingSenderId: "854088341990",
-      appId: "1:854088341990:web:3211d4ef9fe4b78d025e27"
-    };
+  window.deleteLatestJob = (id) => {
+    if(!adminAllowed){ alert("Admin verify नहीं हुआ।"); return; }
 
-    const app = initializeApp(firebaseConfig);
+    if(confirm("क्या आप यह job delete करना चाहते हैं?")){
+      remove(ref(db, "LatestJobs/" + id))
+      .then(() => alert("Job Deleted Successfully!"))
+      .catch((error) => alert("Error: " + error.message));
+    }
+  };
 
-    const auth = getAuth(app);
+  onValue(jobsRef, (snapshot) => {
+    const list = document.getElementById("adminJobsList");
+    list.innerHTML = "";
 
-    const db = getDatabase(app);
+    if(snapshot.exists()){
+      snapshot.forEach((child) => {
+        const id = child.key;
+        const data = child.val();
 
-    const adminEmail = "jasmelsolanki@gmail.com";
-
-    let adminAllowed = false;
-
-    onAuthStateChanged(auth, (user) => {
-      if(user && user.email === adminEmail){
-        adminAllowed = true;
-        document.querySelector(".admin-info h3").innerText = "Admin Access Verified";
-        document.getElementById("adminEmailText").innerText = user.email;
-      } else {
-        adminAllowed = false;
-        alert("Access Denied! यह Admin Dashboard सिर्फ owner के लिए है।");
-        window.location.href = "index.html";
-      }
-    });
-
-    window.logoutUser = () => {
-      signOut(auth).then(() => {
-        alert("Logout Successful");
-        window.location.href = "index.html";
-      });
-    };
-
-    const linksRef = ref(db, "importantLinks");
-    const updatesRef = ref(db, "latestUpdates");
-    const jobsRef = ref(db, "latestJobs");
-
-    /* IMPORTANT LINKS ADD */
-
-    window.addImportantLink = () => {
-      if(!adminAllowed){
-        alert("Admin verify नहीं हुआ। दुबारा login करें।");
-        return;
-      }
-
-      const title = document.getElementById("linkTitle").value.trim();
-      const url = document.getElementById("linkUrl").value.trim();
-
-      if(title === "" || url === ""){
-        alert("Link name और URL दोनों भरें");
-        return;
-      }
-
-      if(!url.startsWith("http://") && !url.startsWith("https://")){
-        alert("URL http:// या https:// से शुरू होना चाहिए");
-        return;
-      }
-
-      document.getElementById("linkStatus").innerText = "Saving...";
-
-      const newLink = push(linksRef);
-
-      set(newLink, {
-        title: title,
-        url: url,
-        createdAt: Date.now()
-      }).then(() => {
-        document.getElementById("linkStatus").innerText = "Link Added Successfully!";
-        document.getElementById("linkTitle").value = "";
-        document.getElementById("linkUrl").value = "";
-      }).catch((error) => {
-        document.getElementById("linkStatus").innerText = "";
-        alert("Error: " + error.message);
-      });
-    };
-
-    /* IMPORTANT LINKS DELETE */
-
-    window.deleteImportantLink = (id) => {
-      if(!adminAllowed){
-        alert("Admin verify नहीं हुआ।");
-        return;
-      }
-
-      if(confirm("क्या आप यह link delete करना चाहते हैं?")){
-        remove(ref(db, "importantLinks/" + id))
-        .then(() => alert("Link Deleted Successfully!"))
-        .catch((error) => alert("Error: " + error.message));
-      }
-    };
-
-    /* IMPORTANT LINKS SHOW */
-
-    onValue(linksRef, (snapshot) => {
-      const list = document.getElementById("adminLinksList");
-      list.innerHTML = "";
-
-      if(snapshot.exists()){
-        snapshot.forEach((child) => {
-          const id = child.key;
-          const data = child.val();
-
-          list.innerHTML += `
-            <div class="row">
-              <div>
-                <a href="${data.url}" target="_blank">${data.title}</a>
-                <small>${data.url}</small>
-              </div>
-              <button class="delete-btn" onclick="deleteImportantLink('${id}')">Delete</button>
+        list.innerHTML += `
+          <div class="row">
+            <div>
+              <strong>${data.title}</strong>
+              <small>Type: ${data.type || "Online Form"}</small>
+              <small>Start Date: ${data.startDate || "Update Soon"}</small>
+              <small>Last Date: ${data.lastDate || "Update Soon"}</small>
+              <small>Qualification: ${data.qualification || "Update Soon"}</small>
+              <small>Location: ${data.location || "All India"}</small>
+              <small>Apply Link: <a href="${data.applyLink || "#"}" target="_blank">${data.applyLink || "#"}</a></small>
+              <small>Detail Link: <a href="${data.detailLink || "#"}" target="_blank">${data.detailLink || "#"}</a></small>
             </div>
-          `;
-        });
-      } else {
-        list.innerHTML = "<p>अभी कोई Important Link save नहीं है।</p>";
-      }
-    });
-
-    /* LATEST UPDATES ADD */
-
-    window.addLatestUpdate = () => {
-      if(!adminAllowed){
-        alert("Admin verify नहीं हुआ। दुबारा login करें।");
-        return;
-      }
-
-      const text = document.getElementById("updateText").value.trim();
-
-      if(text === ""){
-        alert("Update text लिखें");
-        return;
-      }
-
-      document.getElementById("updateStatus").innerText = "Saving...";
-
-      const newUpdate = push(updatesRef);
-
-      set(newUpdate, {
-        text: text,
-        createdAt: Date.now()
-      }).then(() => {
-        document.getElementById("updateStatus").innerText = "Update Added Successfully!";
-        document.getElementById("updateText").value = "";
-      }).catch((error) => {
-        document.getElementById("updateStatus").innerText = "";
-        alert("Error: " + error.message);
+            <button class="delete-btn" onclick="deleteLatestJob('${id}')">Delete</button>
+          </div>
+        `;
       });
-    };
-
-    /* LATEST UPDATES DELETE */
-
-    window.deleteLatestUpdate = (id) => {
-      if(!adminAllowed){
-        alert("Admin verify नहीं हुआ।");
-        return;
-      }
-
-      if(confirm("क्या आप यह update delete करना चाहते हैं?")){
-        remove(ref(db, "latestUpdates/" + id))
-        .then(() => alert("Update Deleted Successfully!"))
-        .catch((error) => alert("Error: " + error.message));
-      }
-    };
-
-    /* LATEST UPDATES SHOW */
-
-    onValue(updatesRef, (snapshot) => {
-      const list = document.getElementById("adminUpdatesList");
-      list.innerHTML = "";
-
-      if(snapshot.exists()){
-        snapshot.forEach((child) => {
-          const id = child.key;
-          const data = child.val();
-
-          list.innerHTML += `
-            <div class="row">
-              <div><strong>${data.text}</strong></div>
-              <button class="delete-btn" onclick="deleteLatestUpdate('${id}')">Delete</button>
-            </div>
-          `;
-        });
-      } else {
-        list.innerHTML = "<p>अभी कोई Latest Update save नहीं है।</p>";
-      }
-    });
-
-    /* LATEST JOBS ADD */
-
-    window.addLatestJob = () => {
-      if(!adminAllowed){
-        alert("Admin verify नहीं हुआ। दुबारा login करें।");
-        return;
-      }
-
-      const title = document.getElementById("jobTitle").value.trim();
-      const type = document.getElementById("jobType").value.trim();
-      const startDate = document.getElementById("jobStartDate").value.trim();
-      const lastDate = document.getElementById("jobLastDate").value.trim();
-      const qualification = document.getElementById("jobQualification").value.trim();
-      const location = document.getElementById("jobLocation").value.trim();
-      const applyLink = document.getElementById("jobApplyLink").value.trim();
-      const detailLink = document.getElementById("jobDetailLink").value.trim();
-
-      if(title === ""){
-        alert("Job Title जरूर भरें");
-        return;
-      }
-
-      if(applyLink !== "" && !applyLink.startsWith("http://") && !applyLink.startsWith("https://")){
-        alert("Apply Link http:// या https:// से शुरू होना चाहिए");
-        return;
-      }
-
-      if(detailLink !== "" && !detailLink.startsWith("http://") && !detailLink.startsWith("https://")){
-        alert("Detail Link http:// या https:// से शुरू होना चाहिए");
-        return;
-      }
-
-      document.getElementById("jobStatus").innerText = "Saving...";
-
-      const newJob = push(jobsRef);
-
-      set(newJob, {
-        title: title,
-        type: type || "Online Form",
-        startDate: startDate || "Update Soon",
-        lastDate: lastDate || "Update Soon",
-        qualification: qualification || "Update Soon",
-        location: location || "All India",
-        applyLink: applyLink || "#",
-        detailLink: detailLink || "#",
-        createdAt: Date.now()
-      }).then(() => {
-        document.getElementById("jobStatus").innerText = "Job Added Successfully!";
-
-        document.getElementById("jobTitle").value = "";
-        document.getElementById("jobType").value = "";
-        document.getElementById("jobStartDate").value = "";
-        document.getElementById("jobLastDate").value = "";
-        document.getElementById("jobQualification").value = "";
-        document.getElementById("jobLocation").value = "";
-        document.getElementById("jobApplyLink").value = "";
-        document.getElementById("jobDetailLink").value = "";
-
-      }).catch((error) => {
-        document.getElementById("jobStatus").innerText = "";
-        alert("Error: " + error.message);
-      });
-    };
-
-    /* LATEST JOBS DELETE */
-
-    window.deleteLatestJob = (id) => {
-      if(!adminAllowed){
-        alert("Admin verify नहीं हुआ।");
-        return;
-      }
-
-      if(confirm("क्या आप यह job delete करना चाहते हैं?")){
-        remove(ref(db, "latestJobs/" + id))
-        .then(() => alert("Job Deleted Successfully!"))
-        .catch((error) => alert("Error: " + error.message));
-      }
-    };
-
-    /* LATEST JOBS SHOW */
-
-    onValue(jobsRef, (snapshot) => {
-      const list = document.getElementById("adminJobsList");
-      list.innerHTML = "";
-
-      if(snapshot.exists()){
-        snapshot.forEach((child) => {
-          const id = child.key;
-          const data = child.val();
-
-          list.innerHTML += `
-            <div class="row">
-              <div>
-                <strong>${data.title}</strong>
-                <small>Type: ${data.type || "Online Form"}</small>
-                <small>Start Date: ${data.startDate || "Update Soon"}</small>
-                <small>Last Date: ${data.lastDate || "Update Soon"}</small>
-                <small>Qualification: ${data.qualification || "Update Soon"}</small>
-                <small>Location: ${data.location || "All India"}</small>
-                <small>Apply Link: <a href="${data.applyLink || "#"}" target="_blank">${data.applyLink || "#"}</a></small>
-                <small>Detail Link: <a href="${data.detailLink || "#"}" target="_blank">${data.detailLink || "#"}</a></small>
-              </div>
-              <button class="delete-btn" onclick="deleteLatestJob('${id}')">Delete</button>
-            </div>
-          `;
-        });
-      } else {
-        list.innerHTML = "<p>अभी कोई Latest Job save नहीं है।</p>";
-      }
-    });
-
-  </script>
+    } else {
+      list.innerHTML = "<p>अभी कोई Latest Job save नहीं है।</p>";
+    }
+  });
+</script>
 
 </body>
 </html>
