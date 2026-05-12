@@ -130,6 +130,73 @@ color:#ffd000;
 transform:translateY(-3px);
 }
 
+/* LOGIN POPUP */
+
+.login-modal{
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.65);
+z-index:3000;
+align-items:center;
+justify-content:center;
+}
+
+.login-box{
+width:350px;
+background:white;
+padding:30px;
+border-radius:18px;
+box-shadow:0 5px 20px rgba(0,0,0,0.25);
+text-align:center;
+position:relative;
+}
+
+.login-box h2{
+margin-bottom:20px;
+color:#0b3d91;
+}
+
+.login-box input{
+width:100%;
+padding:12px;
+margin-bottom:15px;
+border:1px solid #ccc;
+border-radius:8px;
+}
+
+.login-box button{
+width:100%;
+padding:12px;
+border:none;
+border-radius:8px;
+font-weight:bold;
+cursor:pointer;
+margin-bottom:10px;
+}
+
+.signup-btn{
+background:#ffd000;
+color:#0b3d91;
+}
+
+.login-btn{
+background:#0b3d91;
+color:white;
+}
+
+.close-login{
+position:absolute;
+top:8px;
+right:14px;
+font-size:28px;
+cursor:pointer;
+color:#0b3d91;
+}
+
 /* SLIDER */
 
 .slider{
@@ -403,74 +470,7 @@ font-size:17px;
 color:#444;
 }
 
-/* LOGIN POPUP */
-
-.login-modal{
-display:none;
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background:rgba(0,0,0,0.65);
-z-index:3000;
-align-items:center;
-justify-content:center;
-}
-
-.login-box{
-width:350px;
-background:white;
-padding:30px;
-border-radius:18px;
-box-shadow:0 5px 20px rgba(0,0,0,0.25);
-text-align:center;
-position:relative;
-}
-
-.login-box h2{
-margin-bottom:20px;
-color:#0b3d91;
-}
-
-.login-box input{
-width:100%;
-padding:12px;
-margin-bottom:15px;
-border:1px solid #ccc;
-border-radius:8px;
-}
-
-.login-box button{
-width:100%;
-padding:12px;
-border:none;
-border-radius:8px;
-font-weight:bold;
-cursor:pointer;
-margin-bottom:10px;
-}
-
-.signup-btn{
-background:#ffd000;
-color:#0b3d91;
-}
-
-.login-btn{
-background:#0b3d91;
-color:white;
-}
-
-.close-login{
-position:absolute;
-top:8px;
-right:14px;
-font-size:28px;
-cursor:pointer;
-color:#0b3d91;
-}
-
-/* VISITOR */
+/* COUNTER */
 
 .counter-section{
 background:white;
@@ -552,11 +552,7 @@ z-index:1000;
 margin-top:15px;
 }
 
-/* SEARCH HIDE */
-
-.hide{
-display:none !important;
-}
+/* MOBILE */
 
 @media(max-width:768px){
 
@@ -586,14 +582,6 @@ font-size:15px;
 
 .slider{
 height:75vh;
-}
-
-.search-section h2,
-.services h2,
-.about h2,
-.contact h2,
-.counter-section h2{
-font-size:30px;
 }
 
 }
@@ -649,11 +637,9 @@ Important Links
 </div>
 
 <div id="importantLinksList">
-
 <a href="https://se.census.gov.in/" target="_blank">
 जन गणना / Census Portal
 </a>
-
 </div>
 
 </section>
@@ -681,10 +667,6 @@ Create Account
 onclick="loginUser(email.value,password.value)">
 Login
 </button>
-
-<p style="font-size:13px; color:#555; margin-top:8px;">
-Admin dashboard सिर्फ authorized email से खुलेगा।
-</p>
 
 </section>
 
@@ -740,46 +722,6 @@ View Services
 
 </div>
 
-<div class="slide">
-
-<img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1400&auto=format&fit=crop">
-
-<div class="overlay"></div>
-
-<div class="content">
-
-<h1>Stationery & Photo State</h1>
-
-<p>School, College, Books, Xerox, Print, Scan aur E-Mitra services ek hi jagah.</p>
-
-<a href="stationery.html" class="btn">
-Open Stationery Page
-</a>
-
-</div>
-
-</div>
-
-<div class="slide">
-
-<img src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=1400&auto=format&fit=crop">
-
-<div class="overlay"></div>
-
-<div class="content">
-
-<h1>Latest Job Forms</h1>
-
-<p>Government job forms aur latest updates yahan dekhein.</p>
-
-<a href="job-form.html" class="btn">
-View Latest Job
-</a>
-
-</div>
-
-</div>
-
 </div>
 
 </section>
@@ -792,8 +734,8 @@ View Latest Job
 
 <h2>Latest Updates</h2>
 
-<marquee behavior="scroll" direction="left" scrollamount="6">
-CTET Online Form 2026 | Railway RRB ALP Online Form 2026 | Jan Aadhar Update | Income Certificate Form | Caste Certificate Form | Latest Job Forms Available
+<marquee behavior="scroll" direction="left" scrollamount="6" id="latestUpdatesMarquee">
+Loading latest updates...
 </marquee>
 
 </div>
@@ -806,7 +748,7 @@ CTET Online Form 2026 | Railway RRB ALP Online Form 2026 | Jan Aadhar Update | I
 
 <h2>Search Services / Forms</h2>
 
-<input type="text" id="searchInput" onkeyup="searchItems()" placeholder="Search here... जैसे Jan Aadhar, PAN Card, Job Form">
+<input type="text" id="searchInput" placeholder="Search here...">
 
 <p id="noResult">
 कोई result नहीं मिला
@@ -819,94 +761,22 @@ CTET Online Form 2026 | Railway RRB ALP Online Form 2026 | Jan Aadhar Update | I
 <section class="features">
 
 <a href="OFFLINEFORM.HTML">
-<div class="feature-box search-item" data-keywords="easy downloads pdf forms download offline form">
+<div class="feature-box">
 <h3>Easy Downloads</h3>
 <p>Sabhi PDF forms ek click mein.</p>
 </div>
 </a>
 
 <a href="OFFLINEFORM.HTML">
-<div class="feature-box search-item" data-keywords="latest forms government forms updated form">
+<div class="feature-box">
 <h3>Latest Forms</h3>
 <p>Updated government forms available.</p>
 </div>
 </a>
 
-<div class="feature-box search-item" data-keywords="quick support whatsapp help contact">
+<div class="feature-box">
 <h3>Quick Support</h3>
 <p>Fast WhatsApp support available.</p>
-</div>
-
-</section>
-
-<!-- SERVICES -->
-
-<section class="services" id="services">
-
-<h2>Our Services</h2>
-
-<div class="service-grid">
-
-<div class="service-card search-item" data-keywords="jan aadhar janaadhar जन आधार आधार update correction">
-<i class="fa-solid fa-id-card"></i>
-<h3>Jan Aadhar</h3>
-<p>Jan Aadhar update aur correction service.</p>
-</div>
-
-<div class="service-card search-item" data-keywords="income certificate aay praman patra आय प्रमाण पत्र">
-<i class="fa-solid fa-file-signature"></i>
-<h3>Income Certificate</h3>
-<p>Aay praman patra form aur application.</p>
-</div>
-
-<div class="service-card search-item" data-keywords="caste certificate jati praman patra जाति प्रमाण पत्र">
-<i class="fa-solid fa-certificate"></i>
-<h3>Caste Certificate</h3>
-<p>Jati praman patra online form support.</p>
-</div>
-
-<div class="service-card search-item" data-keywords="pan card pancard new pan correction">
-<i class="fa-solid fa-address-card"></i>
-<h3>PAN Card</h3>
-<p>New PAN card aur correction service.</p>
-</div>
-
-<div class="service-card search-item" data-keywords="voter id voter card election id मतदाता पहचान पत्र">
-<i class="fa-solid fa-person-booth"></i>
-<h3>Voter ID</h3>
-<p>Voter ID new, correction aur download.</p>
-</div>
-
-<a href="OFFLINEFORM.HTML">
-<div class="service-card search-item" data-keywords="pdf forms offline form download print">
-<i class="fa-solid fa-file-pdf"></i>
-<h3>PDF Forms</h3>
-<p>Offline PDF forms download aur print.</p>
-</div>
-</a>
-
-<a href="job-form.html">
-<div class="service-card search-item" data-keywords="latest job government job job form vacancy bharti भर्ती">
-<i class="fa-solid fa-briefcase"></i>
-<h3>Latest Job</h3>
-<p>Government job forms aur updates.</p>
-</div>
-</a>
-
-<div class="service-card search-item" data-keywords="print scan photocopy document photo copy">
-<i class="fa-solid fa-print"></i>
-<h3>Print & Scan</h3>
-<p>Document print, scan aur photo copy.</p>
-</div>
-
-<a href="stationery.html">
-<div class="service-card search-item" data-keywords="stationery photostat photo state books copy register school college print scan">
-<i class="fa-solid fa-book"></i>
-<h3>Stationery & Photostat</h3>
-<p>School items, books, print, scan aur photo copy.</p>
-</div>
-</a>
-
 </div>
 
 </section>
@@ -919,8 +789,6 @@ CTET Online Form 2026 | Railway RRB ALP Online Form 2026 | Jan Aadhar Update | I
 
 <p>
 Solanki Brothers E-Mitra Sewa Kendra ek trusted digital service center hai.
-Yahan aapko government forms, online applications, document print,
-Jan Aadhar, certificate services aur job form support milta hai.
 </p>
 
 </section>
@@ -949,7 +817,7 @@ Jan Aadhar, certificate services aur job form support milta hai.
 
 <p>📞 Mobile: <a href="tel:9509403258">9509403258</a></p>
 
-<p>📧 Email: <a href="mailto:jasmelsolanki@gmail.com">jasmelsolanki@gmail.com</a></p>
+<p>📧 Email: jasmelsolanki@gmail.com</p>
 
 <p>📍 Rajasthan, India</p>
 
@@ -971,9 +839,20 @@ target="_blank">
 
 </a>
 
-<!-- JAVASCRIPT -->
-
 <script>
+
+function updateLiveTime(){
+
+const now = new Date();
+
+document.getElementById("liveTime").innerText =
+now.toLocaleString("hi-IN");
+
+}
+
+updateLiveTime();
+
+setInterval(updateLiveTime,1000);
 
 let currentSlide = 0;
 
@@ -1012,8 +891,6 @@ setInterval(()=>{
 nextSlide();
 },5000);
 
-/* LOGIN POPUP OPEN/CLOSE */
-
 function openLogin(){
 document.getElementById("loginModal").style.display = "flex";
 }
@@ -1022,89 +899,9 @@ function closeLogin(){
 document.getElementById("loginModal").style.display = "none";
 }
 
-window.onclick = function(event){
-let modal = document.getElementById("loginModal");
-if(event.target == modal){
-closeLogin();
-}
-}
-
-/* SEARCH SYSTEM */
-
-function searchItems(){
-
-let input = document.getElementById("searchInput").value.toLowerCase().trim();
-
-let items = document.querySelectorAll(".search-item");
-
-let found = 0;
-
-items.forEach(function(item){
-
-let text = item.innerText.toLowerCase();
-let keywords = item.getAttribute("data-keywords");
-
-if(keywords){
-keywords = keywords.toLowerCase();
-}
-else{
-keywords = "";
-}
-
-if(input === ""){
-item.classList.remove("hide");
-found++;
-}
-
-else if(text.includes(input) || keywords.includes(input)){
-item.classList.remove("hide");
-found++;
-}
-
-else{
-item.classList.add("hide");
-}
-
-});
-
-if(found === 0){
-document.getElementById("noResult").style.display = "block";
-}
-else{
-document.getElementById("noResult").style.display = "none";
-}
-
-}
-
-/* LIVE TIME */
-
-function updateLiveTime(){
-
-const now = new Date();
-
-const options = {
-weekday: "long",
-year: "numeric",
-month: "long",
-day: "numeric",
-hour: "2-digit",
-minute: "2-digit",
-second: "2-digit",
-hour12: true
-};
-
-document.getElementById("liveTime").innerText =
-now.toLocaleString("hi-IN", options);
-
-}
-
-updateLiveTime();
-
-setInterval(updateLiveTime, 1000);
-
 </script>
 
-<!-- FIREBASE AUTH WITH ADMIN / USER REDIRECT -->
+<!-- FIREBASE -->
 
 <script type="module">
 
@@ -1118,11 +915,20 @@ signInWithEmailAndPassword
 }
 from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 
+import {
+getDatabase,
+ref,
+onValue
+}
+from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+
 const firebaseConfig = {
 
 apiKey: "AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",
 
 authDomain: "my-website-73785.firebaseapp.com",
+
+databaseURL: "https://my-website-73785-default-rtdb.firebaseio.com/",
 
 projectId: "my-website-73785",
 
@@ -1130,9 +936,7 @@ storageBucket: "my-website-73785.firebasestorage.app",
 
 messagingSenderId: "854088341990",
 
-appId: "1:854088341990:web:3211d4ef9fe4b78d025e27",
-
-measurementId: "G-5DHPLFN3J4"
+appId: "1:854088341990:web:3211d4ef9fe4b78d025e27"
 
 };
 
@@ -1140,20 +944,20 @@ const app = initializeApp(firebaseConfig);
 
 const auth = getAuth(app);
 
+const db = getDatabase(app);
+
 const adminEmail = "jasmelsolanki@gmail.com";
 
-window.signUpUser = (email,password)=>{
+/* LOGIN */
 
-if(email === "" || password === ""){
-alert("Please email और password भरें");
-return;
-}
+window.signUpUser = (email,password)=>{
 
 createUserWithEmailAndPassword(auth,email,password)
 
 .then(()=>{
 
-alert("Account Created Successfully! अब Login करें।");
+alert("Account Created Successfully!");
+
 closeLogin();
 
 })
@@ -1168,11 +972,6 @@ alert(error.message);
 
 window.loginUser = (email,password)=>{
 
-if(email === "" || password === ""){
-alert("Please email और password भरें");
-return;
-}
-
 signInWithEmailAndPassword(auth,email,password)
 
 .then((userCredential)=>{
@@ -1181,14 +980,12 @@ const userEmail = userCredential.user.email;
 
 if(userEmail === adminEmail){
 
-alert("Admin Login Successful!");
 window.location.href = "dashboard.html";
 
 }
 
 else{
 
-alert("User Login Successful!");
 window.location.href = "user-dashboard.html";
 
 }
@@ -1203,64 +1000,28 @@ alert(error.message);
 
 };
 
-</script>
+/* IMPORTANT LINKS */
 
-<!-- FIREBASE IMPORTANT LINKS LOAD -->
+const linksRef = ref(db,"importantLinks");
 
-<script type="module">
-
-import { initializeApp }
-from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-
-import {
-getDatabase,
-ref,
-onValue
-}
-from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
-
-const firebaseConfigLinks = {
-
-apiKey: "AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",
-
-authDomain: "my-website-73785.firebaseapp.com",
-
-databaseURL: "https://my-website-73785-default-rtdb.firebaseio.com/",
-
-projectId: "my-website-73785",
-
-storageBucket: "my-website-73785.firebasestorage.app",
-
-messagingSenderId: "854088341990",
-
-appId: "1:854088341990:web:3211d4ef9fe4b78d025e27",
-
-measurementId: "G-5DHPLFN3J4"
-
-};
-
-const appLinks = initializeApp(firebaseConfigLinks, "linksApp");
-
-const db = getDatabase(appLinks);
-
-const linksRef = ref(db, "importantLinks");
-
-onValue(linksRef, (snapshot) => {
+onValue(linksRef,(snapshot)=>{
 
 const box = document.getElementById("importantLinksList");
 
 box.innerHTML = "";
 
-if(snapshot.exists()) {
+if(snapshot.exists()){
 
-snapshot.forEach((childSnapshot) => {
+snapshot.forEach((childSnapshot)=>{
 
 const data = childSnapshot.val();
 
 const a = document.createElement("a");
 
 a.href = data.url;
+
 a.target = "_blank";
+
 a.innerText = data.title;
 
 box.appendChild(a);
@@ -1269,13 +1030,27 @@ box.appendChild(a);
 
 }
 
-else {
+});
 
-box.innerHTML = `
-<a href="https://se.census.gov.in/" target="_blank">
-जन गणना / Census Portal
-</a>
-`;
+/* LATEST UPDATES */
+
+const updatesRef = ref(db,"latestUpdates");
+
+onValue(updatesRef,(snapshot)=>{
+
+const marquee = document.getElementById("latestUpdatesMarquee");
+
+let updates = [];
+
+if(snapshot.exists()){
+
+snapshot.forEach((child)=>{
+
+updates.push(child.val().text);
+
+});
+
+marquee.innerText = updates.join(" | ");
 
 }
 
@@ -1284,4 +1059,5 @@ box.innerHTML = `
 </script>
 
 </body>
+
 </html>
