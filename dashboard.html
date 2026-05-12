@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="hi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Dashboard | Solanki Brothers</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: #f5f7fb;
+    }
+
+    header {
+      background: #0b3d91;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    header h1 {
+      color: #ffd000;
+    }
+
+    .dashboard {
+      padding: 50px 6%;
+      text-align: center;
+    }
+
+    .dashboard h2 {
+      color: #0b3d91;
+      margin-bottom: 20px;
+    }
+
+    .card-box {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 25px;
+      margin-top: 40px;
+    }
+
+    .card {
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+      border-top: 5px solid #ffd000;
+    }
+
+    .card h3 {
+      color: #0b3d91;
+      margin-bottom: 10px;
+    }
+
+    .logout-btn {
+      margin-top: 40px;
+      padding: 12px 30px;
+      border: none;
+      background: #0b3d91;
+      color: white;
+      border-radius: 30px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .logout-btn:hover {
+      background: #ffd000;
+      color: #0b3d91;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h1>Solanki Brothers</h1>
+    <p>User Dashboard</p>
+  </header>
+
+  <section class="dashboard">
+
+    <h2>Welcome to Dashboard</h2>
+
+    <p>Login successful. Is page ko hum baad mein design karenge.</p>
+
+    <div class="card-box">
+
+      <div class="card">
+        <h3>PDF Forms</h3>
+        <p>Yahan PDF form system add hoga.</p>
+      </div>
+
+      <div class="card">
+        <h3>Applications</h3>
+        <p>Yahan user applications show hongi.</p>
+      </div>
+
+      <div class="card">
+        <h3>Profile</h3>
+        <p>Yahan user profile details hongi.</p>
+      </div>
+
+    </div>
+
+    <button class="logout-btn" onclick="logoutUser()">Logout</button>
+
+  </section>
+
+  <script>
+    function logoutUser() {
+      alert("Logout Successful");
+      window.location.href = "index.html";
+    }
+  </script>
+
+</body>
+</html>
