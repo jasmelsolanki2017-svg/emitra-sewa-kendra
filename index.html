@@ -222,16 +222,29 @@ font-size:17px;
 color:#444;
 }
 
-/* LOGIN */
+/* LOGIN POPUP */
+
+.login-modal{
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.65);
+z-index:3000;
+align-items:center;
+justify-content:center;
+}
 
 .login-box{
-max-width:350px;
-margin:60px auto;
+width:350px;
 background:white;
 padding:30px;
 border-radius:18px;
-box-shadow:0 5px 20px rgba(0,0,0,0.1);
+box-shadow:0 5px 20px rgba(0,0,0,0.25);
 text-align:center;
+position:relative;
 }
 
 .login-box h2{
@@ -259,11 +272,21 @@ margin-bottom:10px;
 
 .signup-btn{
 background:#ffd000;
+color:#0b3d91;
 }
 
 .login-btn{
 background:#0b3d91;
 color:white;
+}
+
+.close-login{
+position:absolute;
+top:8px;
+right:14px;
+font-size:28px;
+cursor:pointer;
+color:#0b3d91;
 }
 
 /* VISITOR */
@@ -392,10 +415,39 @@ Solanki Brothers
 <li><a href="#">Home</a></li>
 <li><a href="about.html">About</a></li>
 <li><a href="OFFLINEFORM.HTML">Offline Forms</a></li>
+<li><a href="#" onclick="openLogin()">Login</a></li>
 <li><a href="#contact">Contact</a></li>
 </ul>
 
 </nav>
+
+<!-- LOGIN POPUP -->
+
+<div class="login-modal" id="loginModal">
+
+<section class="login-box">
+
+<span class="close-login" onclick="closeLogin()">&times;</span>
+
+<h2>Login / Signup</h2>
+
+<input type="email" id="email" placeholder="Enter Email">
+
+<input type="password" id="password" placeholder="Enter Password">
+
+<button class="signup-btn"
+onclick="signUpUser(email.value,password.value)">
+Create Account
+</button>
+
+<button class="login-btn"
+onclick="loginUser(email.value,password.value)">
+Login
+</button>
+
+</section>
+
+</div>
 
 <!-- SLIDER -->
 
@@ -481,28 +533,6 @@ Learn More
 <p>
 Solanki Brothers E-Mitra Sewa Kendra ek trusted digital service center hai.
 </p>
-
-</section>
-
-<!-- LOGIN -->
-
-<section class="login-box">
-
-<h2>Login / Signup</h2>
-
-<input type="email" id="email" placeholder="Enter Email">
-
-<input type="password" id="password" placeholder="Enter Password">
-
-<button class="signup-btn"
-onclick="signUpUser(email.value,password.value)">
-Create Account
-</button>
-
-<button class="login-btn"
-onclick="loginUser(email.value,password.value)">
-Login
-</button>
 
 </section>
 
@@ -593,6 +623,23 @@ setInterval(()=>{
 nextSlide();
 },5000);
 
+/* LOGIN POPUP OPEN/CLOSE */
+
+function openLogin(){
+document.getElementById("loginModal").style.display = "flex";
+}
+
+function closeLogin(){
+document.getElementById("loginModal").style.display = "none";
+}
+
+window.onclick = function(event){
+let modal = document.getElementById("loginModal");
+if(event.target == modal){
+closeLogin();
+}
+}
+
 </script>
 
 <!-- FIREBASE -->
@@ -638,6 +685,7 @@ createUserWithEmailAndPassword(auth,email,password)
 .then((userCredential)=>{
 
 alert("Account Created Successfully!");
+closeLogin();
 
 })
 
