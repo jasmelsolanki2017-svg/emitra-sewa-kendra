@@ -96,6 +96,33 @@ nav ul li a:hover{
 color:#ffd000;
 }
 
+/* IMPORTANT LINKS */
+
+.important-links{
+background:#ffd000;
+padding:14px 6%;
+text-align:center;
+box-shadow:0 3px 12px rgba(0,0,0,0.12);
+}
+
+.important-links a{
+display:inline-block;
+background:#0b3d91;
+color:white;
+text-decoration:none;
+padding:10px 22px;
+border-radius:30px;
+font-weight:700;
+margin:6px;
+transition:0.3s;
+}
+
+.important-links a:hover{
+background:#062b68;
+color:#ffd000;
+transform:translateY(-3px);
+}
+
 /* SLIDER */
 
 .slider{
@@ -606,6 +633,23 @@ Solanki Brothers
 
 </nav>
 
+<!-- IMPORTANT LINKS -->
+
+<section class="important-links">
+
+<a href="https://se.census.gov.in/" target="_blank">
+जन गणना / Census Portal
+</a>
+
+<!-- बाद में और link ऐसे add करना -->
+<!--
+<a href="YOUR-LINK-HERE" target="_blank">
+New Link Name
+</a>
+-->
+
+</section>
+
 <!-- LOGIN POPUP -->
 
 <div class="login-modal" id="loginModal">
@@ -629,6 +673,10 @@ Create Account
 onclick="loginUser(email.value,password.value)">
 Login
 </button>
+
+<p style="font-size:13px; color:#555; margin-top:8px;">
+Admin dashboard सिर्फ authorized email से खुलेगा।
+</p>
 
 </section>
 
@@ -1048,7 +1096,7 @@ setInterval(updateLiveTime, 1000);
 
 </script>
 
-<!-- FIREBASE -->
+<!-- FIREBASE AUTH WITH ADMIN LOCK -->
 
 <script type="module">
 
@@ -1084,13 +1132,24 @@ const app = initializeApp(firebaseConfig);
 
 const auth = getAuth(app);
 
+/* ADMIN EMAIL ONLY */
+
+const adminEmail = "jasmelsolanki@gmail.com";
+
+/* SIGN UP */
+
 window.signUpUser = (email,password)=>{
+
+if(email === "" || password === ""){
+alert("Please email और password भरें");
+return;
+}
 
 createUserWithEmailAndPassword(auth,email,password)
 
-.then((userCredential)=>{
+.then(()=>{
 
-alert("Account Created Successfully!");
+alert("Account Created Successfully! अब Login करें।");
 closeLogin();
 
 })
@@ -1103,15 +1162,34 @@ alert(error.message);
 
 };
 
+/* LOGIN WITH ADMIN CHECK */
+
 window.loginUser = (email,password)=>{
+
+if(email === "" || password === ""){
+alert("Please email और password भरें");
+return;
+}
 
 signInWithEmailAndPassword(auth,email,password)
 
 .then((userCredential)=>{
 
-alert("Login Successful!");
+const userEmail = userCredential.user.email;
 
+if(userEmail === adminEmail){
+
+alert("Admin Login Successful!");
 window.location.href = "dashboard.html";
+
+}
+
+else{
+
+alert("User Login Successful!");
+window.location.href = "user-dashboard.html";
+
+}
 
 })
 
