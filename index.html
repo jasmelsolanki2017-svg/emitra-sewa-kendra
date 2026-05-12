@@ -32,6 +32,26 @@ html{
 scroll-behavior:smooth;
 }
 
+/* TOP BAR */
+
+.topbar{
+background:#062b68;
+color:white;
+padding:8px 6%;
+font-size:14px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+flex-wrap:wrap;
+gap:10px;
+}
+
+.topbar a{
+color:#ffd000;
+text-decoration:none;
+font-weight:600;
+}
+
 /* NAVBAR */
 
 nav{
@@ -56,7 +76,7 @@ font-weight:700;
 nav ul{
 display:flex;
 list-style:none;
-gap:28px;
+gap:24px;
 }
 
 nav ul li a{
@@ -170,6 +190,58 @@ left:20px;
 right:20px;
 }
 
+/* LATEST UPDATES */
+
+.latest-section{
+background:white;
+padding:40px 6%;
+}
+
+.latest-box{
+background:#eef4ff;
+border-left:6px solid #ffd000;
+padding:25px;
+border-radius:16px;
+box-shadow:0 5px 20px rgba(0,0,0,0.08);
+}
+
+.latest-box h2{
+color:#0b3d91;
+margin-bottom:15px;
+font-size:32px;
+}
+
+.latest-box marquee{
+font-size:18px;
+font-weight:600;
+color:#222;
+}
+
+/* SEARCH */
+
+.search-section{
+background:#0b3d91;
+padding:45px 6%;
+text-align:center;
+}
+
+.search-section h2{
+color:#ffd000;
+font-size:36px;
+margin-bottom:20px;
+}
+
+.search-section input{
+width:90%;
+max-width:650px;
+padding:16px 20px;
+border-radius:50px;
+border:none;
+outline:none;
+font-size:17px;
+box-shadow:0 5px 20px rgba(0,0,0,0.2);
+}
+
 /* FEATURES */
 
 .features{
@@ -187,6 +259,11 @@ border-radius:18px;
 text-align:center;
 box-shadow:0 5px 20px rgba(0,0,0,0.08);
 border-top:5px solid #ffd000;
+transition:0.3s;
+}
+
+.feature-box:hover{
+transform:translateY(-8px);
 }
 
 .feature-box h3{
@@ -200,12 +277,60 @@ color:#555;
 line-height:1.8;
 }
 
+/* SERVICES */
+
+.services{
+padding:80px 6%;
+background:#eef4ff;
+text-align:center;
+}
+
+.services h2{
+font-size:42px;
+color:#0b3d91;
+margin-bottom:40px;
+}
+
+.service-grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+gap:25px;
+}
+
+.service-card{
+background:white;
+padding:28px 20px;
+border-radius:18px;
+box-shadow:0 5px 20px rgba(0,0,0,0.08);
+transition:0.3s;
+}
+
+.service-card:hover{
+transform:translateY(-8px);
+}
+
+.service-card i{
+font-size:38px;
+color:#0b3d91;
+margin-bottom:15px;
+}
+
+.service-card h3{
+color:#0b3d91;
+margin-bottom:10px;
+}
+
+.service-card p{
+color:#555;
+font-size:15px;
+}
+
 /* ABOUT */
 
 .about{
 padding:90px 6%;
 text-align:center;
-background:#eef4ff;
+background:white;
 }
 
 .about h2{
@@ -371,7 +496,18 @@ z-index:1000;
 margin-top:15px;
 }
 
+/* HIDE SEARCH ITEMS */
+
+.hide{
+display:none;
+}
+
 @media(max-width:768px){
+
+.topbar{
+justify-content:center;
+text-align:center;
+}
 
 nav{
 flex-direction:column;
@@ -381,6 +517,7 @@ gap:15px;
 nav ul{
 flex-wrap:wrap;
 justify-content:center;
+gap:16px;
 }
 
 .content h1{
@@ -395,6 +532,14 @@ font-size:15px;
 height:75vh;
 }
 
+.search-section h2,
+.services h2,
+.about h2,
+.contact h2,
+.counter-section h2{
+font-size:30px;
+}
+
 }
 
 </style>
@@ -402,6 +547,13 @@ height:75vh;
 </head>
 
 <body>
+
+<!-- TOP BAR -->
+
+<div class="topbar">
+<div>📞 <a href="tel:9509403258">9509403258</a> | 📧 <a href="mailto:jasmelsolanki@gmail.com">jasmelsolanki@gmail.com</a></div>
+<div>⏰ Open: 9:00 AM - 8:00 PM | Rajasthan, India</div>
+</div>
 
 <!-- NAVBAR -->
 
@@ -415,10 +567,10 @@ Solanki Brothers
 <li><a href="#">Home</a></li>
 <li><a href="about.html">About</a></li>
 <li><a href="OFFLINEFORM.HTML">Offline Forms</a></li>
-<li><a href="job-form.html">Job Forms</a></li>
-
-<li><a href="#contact">Contact</a></li>
 <li><a href="#" onclick="openLogin()">Login</a></li>
+<li><a href="job-form.html">Latest Job</a></li>
+<li><a href="#services">Services</a></li>
+<li><a href="#contact">Contact</a></li>
 </ul>
 
 </nav>
@@ -493,8 +645,8 @@ View Forms
 
 <p>Jan Aadhar, Income Certificate aur bahut kuch.</p>
 
-<a href="#" class="btn">
-Learn More
+<a href="#services" class="btn">
+View Services
 </a>
 
 </div>
@@ -505,23 +657,109 @@ Learn More
 
 </section>
 
+<!-- LATEST UPDATES -->
+
+<section class="latest-section">
+
+<div class="latest-box">
+
+<h2>Latest Updates</h2>
+
+<marquee behavior="scroll" direction="left" scrollamount="6">
+CTET Online Form 2026 | Railway RRB ALP Online Form 2026 | Jan Aadhar Update | Income Certificate Form | Caste Certificate Form | Latest Job Forms Available
+</marquee>
+
+</div>
+
+</section>
+
+<!-- SEARCH -->
+
+<section class="search-section">
+
+<h2>Search Services / Forms</h2>
+
+<input type="text" id="searchInput" onkeyup="searchItems()" placeholder="Search here... जैसे Jan Aadhar, PAN Card, Job Form">
+
+</section>
+
 <!-- FEATURES -->
 
 <section class="features">
 
-<div class="feature-box">
+<div class="feature-box search-item">
 <h3>Easy Downloads</h3>
 <p>Sabhi PDF forms ek click mein.</p>
 </div>
 
-<div class="feature-box">
+<div class="feature-box search-item">
 <h3>Latest Forms</h3>
 <p>Updated government forms available.</p>
 </div>
 
-<div class="feature-box">
+<div class="feature-box search-item">
 <h3>Quick Support</h3>
 <p>Fast WhatsApp support available.</p>
+</div>
+
+</section>
+
+<!-- SERVICES -->
+
+<section class="services" id="services">
+
+<h2>Our Services</h2>
+
+<div class="service-grid">
+
+<div class="service-card search-item">
+<i class="fa-solid fa-id-card"></i>
+<h3>Jan Aadhar</h3>
+<p>Jan Aadhar update aur correction service.</p>
+</div>
+
+<div class="service-card search-item">
+<i class="fa-solid fa-file-signature"></i>
+<h3>Income Certificate</h3>
+<p>Aay praman patra form aur application.</p>
+</div>
+
+<div class="service-card search-item">
+<i class="fa-solid fa-certificate"></i>
+<h3>Caste Certificate</h3>
+<p>Jati praman patra online form support.</p>
+</div>
+
+<div class="service-card search-item">
+<i class="fa-solid fa-address-card"></i>
+<h3>PAN Card</h3>
+<p>New PAN card aur correction service.</p>
+</div>
+
+<div class="service-card search-item">
+<i class="fa-solid fa-person-booth"></i>
+<h3>Voter ID</h3>
+<p>Voter ID new, correction aur download.</p>
+</div>
+
+<div class="service-card search-item">
+<i class="fa-solid fa-file-pdf"></i>
+<h3>PDF Forms</h3>
+<p>Offline PDF forms download aur print.</p>
+</div>
+
+<div class="service-card search-item">
+<i class="fa-solid fa-briefcase"></i>
+<h3>Latest Job</h3>
+<p>Government job forms aur updates.</p>
+</div>
+
+<div class="service-card search-item">
+<i class="fa-solid fa-print"></i>
+<h3>Print & Scan</h3>
+<p>Document print, scan aur photo copy.</p>
+</div>
+
 </div>
 
 </section>
@@ -534,6 +772,8 @@ Learn More
 
 <p>
 Solanki Brothers E-Mitra Sewa Kendra ek trusted digital service center hai.
+Yahan aapko government forms, online applications, document print,
+Jan Aadhar, certificate services aur job form support milta hai.
 </p>
 
 </section>
@@ -562,7 +802,7 @@ Solanki Brothers E-Mitra Sewa Kendra ek trusted digital service center hai.
 
 <p>📞 Mobile: <a href="tel:9509403258">9509403258</a></p>
 
-<p>📧 Email: jasmelsolanki@gmail.com</p>
+<p>📧 Email: <a href="mailto:jasmelsolanki@gmail.com">jasmelsolanki@gmail.com</a></p>
 
 <p>📍 Rajasthan, India</p>
 
@@ -640,6 +880,29 @@ let modal = document.getElementById("loginModal");
 if(event.target == modal){
 closeLogin();
 }
+}
+
+/* SEARCH SYSTEM */
+
+function searchItems(){
+
+let input = document.getElementById("searchInput").value.toLowerCase();
+
+let items = document.querySelectorAll(".search-item");
+
+items.forEach(function(item){
+
+let text = item.innerText.toLowerCase();
+
+if(text.includes(input)){
+item.classList.remove("hide");
+}
+else{
+item.classList.add("hide");
+}
+
+});
+
 }
 
 </script>
