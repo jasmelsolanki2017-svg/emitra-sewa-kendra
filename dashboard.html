@@ -8,6 +8,7 @@
   <title>Admin Dashboard | Solanki Brothers</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
+
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans+Devanagari:wght@400;600;700;800&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -183,6 +184,105 @@
       color: #0b3d91;
     }
 
+    /* IMPORTANT LINKS MANAGER */
+
+    .link-manager {
+      margin-top: 55px;
+      background: white;
+      padding: 35px;
+      border-radius: 20px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+      border-top: 6px solid #ffd000;
+    }
+
+    .link-manager h2 {
+      text-align: center;
+      color: #0b3d91;
+      margin-bottom: 25px;
+      font-size: 32px;
+    }
+
+    .link-form {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    .link-form input {
+      padding: 13px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      font-size: 15px;
+      outline: none;
+    }
+
+    .link-form input:focus {
+      border-color: #0b3d91;
+    }
+
+    .link-form button {
+      background: #0b3d91;
+      color: white;
+      border: none;
+      padding: 13px 22px;
+      border-radius: 10px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .link-form button:hover {
+      background: #ffd000;
+      color: #0b3d91;
+    }
+
+    .saved-links h3 {
+      color: #0b3d91;
+      margin-bottom: 15px;
+      font-size: 24px;
+    }
+
+    .link-row {
+      background: #eef4ff;
+      padding: 14px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+      align-items: center;
+      flex-wrap: wrap;
+      border-left: 5px solid #0b3d91;
+    }
+
+    .link-row a {
+      color: #0b3d91;
+      font-weight: 700;
+      text-decoration: none;
+      word-break: break-word;
+    }
+
+    .link-row small {
+      color: #555;
+      display: block;
+      margin-top: 5px;
+      word-break: break-word;
+    }
+
+    .delete-btn {
+      background: #d90000;
+      color: white;
+      border: none;
+      padding: 9px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .delete-btn:hover {
+      background: #a00000;
+    }
+
     .notice-box {
       margin-top: 50px;
       background: #fff;
@@ -230,21 +330,35 @@
         padding: 9px 16px;
         font-size: 14px;
       }
+
+      .link-form {
+        grid-template-columns: 1fr;
+      }
+
+      .link-manager {
+        padding: 25px 18px;
+      }
     }
   </style>
 </head>
 
 <body>
 
+  <!-- TOPBAR -->
+
   <div class="topbar">
     <div>Admin Panel</div>
     <div>⏰ <span id="liveTime"></span></div>
   </div>
 
+  <!-- HEADER -->
+
   <header>
     <h1>Solanki Brothers Admin Dashboard</h1>
     <p>Website manage करने के लिए आपका control panel</p>
   </header>
+
+  <!-- NAV -->
 
   <nav>
     <a href="index.html">Home</a>
@@ -253,6 +367,8 @@
     <a href="stationery.html">Stationery</a>
     <button onclick="logoutUser()">Logout</button>
   </nav>
+
+  <!-- DASHBOARD -->
 
   <section class="dashboard">
 
@@ -269,14 +385,14 @@
         <i class="fa-solid fa-bullhorn"></i>
         <h3>Latest Updates</h3>
         <p>Home page पर दिखने वाले latest updates और notice board manage करें।</p>
-        <button onclick="alert('यह feature next step में Firebase से connect करेंगे')">Manage</button>
+        <button onclick="alert('यह feature next step में बनाएंगे')">Manage</button>
       </div>
 
       <div class="card">
         <i class="fa-solid fa-link"></i>
         <h3>Important Links</h3>
-        <p>जन गणना, SSO, Emitra, PAN, Aadhaar जैसे links add/remove करें।</p>
-        <button onclick="alert('यह feature next step में Firebase से connect करेंगे')">Manage</button>
+        <p>नीचे वाले section से Important Links add/remove करें।</p>
+        <a href="#linkManager">Manage</a>
       </div>
 
       <div class="card">
@@ -309,17 +425,49 @@
 
     </div>
 
+    <!-- IMPORTANT LINKS MANAGER -->
+
+    <section class="link-manager" id="linkManager">
+
+      <h2>Important Links Manager</h2>
+
+      <div class="link-form">
+
+        <input type="text" id="linkTitle" placeholder="Link Name जैसे जन गणना">
+
+        <input type="url" id="linkUrl" placeholder="Link URL जैसे https://se.census.gov.in/">
+
+        <button onclick="addImportantLink()">
+          Add Link
+        </button>
+
+      </div>
+
+      <div class="saved-links">
+
+        <h3>Saved Links</h3>
+
+        <div id="adminLinksList">
+          Loading...
+        </div>
+
+      </div>
+
+    </section>
+
     <div class="notice-box">
-      <h3>Next Setup</h3>
+      <h3>Important Notes</h3>
       <ul>
-        <li>Important Links को Firebase database से live update करेंगे।</li>
-        <li>Latest Updates को admin panel से edit करने वाला system बनाएंगे।</li>
-        <li>PDF Auto Fill system add करेंगे।</li>
-        <li>Login security और logout system improve करेंगे।</li>
+        <li>यहाँ से link add करोगे तो index page पर अपने आप show होगा।</li>
+        <li>Delete करोगे तो index page से भी हट जाएगा।</li>
+        <li>Realtime Database rules में admin write permission होना जरूरी है।</li>
+        <li>Realtime Database URL code में लगा हुआ है।</li>
       </ul>
     </div>
 
   </section>
+
+  <!-- FOOTER -->
 
   <footer>
     © 2026 Solanki Brothers | Admin Dashboard
@@ -370,6 +518,8 @@
 
       authDomain: "my-website-73785.firebaseapp.com",
 
+      databaseURL: "https://my-website-73785-default-rtdb.firebaseio.com/",
+
       projectId: "my-website-73785",
 
       storageBucket: "my-website-73785.firebasestorage.app",
@@ -409,6 +559,142 @@
       });
 
     };
+
+  </script>
+
+  <!-- FIREBASE IMPORTANT LINKS ADMIN SYSTEM -->
+
+  <script type="module">
+
+    import { initializeApp }
+    from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+
+    import {
+      getDatabase,
+      ref,
+      push,
+      set,
+      remove,
+      onValue
+    }
+    from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+
+    const firebaseConfigLinkAdmin = {
+
+      apiKey: "AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",
+
+      authDomain: "my-website-73785.firebaseapp.com",
+
+      databaseURL: "https://my-website-73785-default-rtdb.firebaseio.com/",
+
+      projectId: "my-website-73785",
+
+      storageBucket: "my-website-73785.firebasestorage.app",
+
+      messagingSenderId: "854088341990",
+
+      appId: "1:854088341990:web:3211d4ef9fe4b78d025e27",
+
+      measurementId: "G-5DHPLFN3J4"
+
+    };
+
+    const linkAdminApp = initializeApp(firebaseConfigLinkAdmin, "linkAdminApp");
+
+    const db = getDatabase(linkAdminApp);
+
+    const linksRef = ref(db, "importantLinks");
+
+    window.addImportantLink = () => {
+
+      const title = document.getElementById("linkTitle").value.trim();
+
+      const url = document.getElementById("linkUrl").value.trim();
+
+      if(title === "" || url === "") {
+        alert("Link name और URL दोनों भरें");
+        return;
+      }
+
+      if(!url.startsWith("http://") && !url.startsWith("https://")) {
+        alert("URL https:// या http:// से शुरू होना चाहिए");
+        return;
+      }
+
+      const newLinkRef = push(linksRef);
+
+      set(newLinkRef, {
+        title: title,
+        url: url
+      })
+      .then(() => {
+        alert("Link Added Successfully!");
+
+        document.getElementById("linkTitle").value = "";
+        document.getElementById("linkUrl").value = "";
+      })
+      .catch((error) => {
+        alert(error.message);
+      });
+
+    };
+
+    window.deleteImportantLink = (id) => {
+
+      if(confirm("क्या आप यह link delete करना चाहते हैं?")) {
+
+        remove(ref(db, "importantLinks/" + id))
+        .then(() => {
+          alert("Link Deleted Successfully!");
+        })
+        .catch((error) => {
+          alert(error.message);
+        });
+
+      }
+
+    };
+
+    onValue(linksRef, (snapshot) => {
+
+      const list = document.getElementById("adminLinksList");
+
+      list.innerHTML = "";
+
+      if(snapshot.exists()) {
+
+        snapshot.forEach((childSnapshot) => {
+
+          const id = childSnapshot.key;
+
+          const data = childSnapshot.val();
+
+          list.innerHTML += `
+            <div class="link-row">
+              <div>
+                <a href="${data.url}" target="_blank">
+                  ${data.title}
+                </a>
+                <small>${data.url}</small>
+              </div>
+
+              <button class="delete-btn" onclick="deleteImportantLink('${id}')">
+                Delete
+              </button>
+            </div>
+          `;
+
+        });
+
+      }
+
+      else {
+
+        list.innerHTML = "<p>अभी कोई link save नहीं है।</p>";
+
+      }
+
+    });
 
   </script>
 

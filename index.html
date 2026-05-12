@@ -105,7 +105,14 @@ text-align:center;
 box-shadow:0 3px 12px rgba(0,0,0,0.12);
 }
 
-.important-links a{
+.important-links-title{
+font-size:20px;
+font-weight:800;
+color:#0b3d91;
+margin-bottom:8px;
+}
+
+#importantLinksList a{
 display:inline-block;
 background:#0b3d91;
 color:white;
@@ -117,7 +124,7 @@ margin:6px;
 transition:0.3s;
 }
 
-.important-links a:hover{
+#importantLinksList a:hover{
 background:#062b68;
 color:#ffd000;
 transform:translateY(-3px);
@@ -637,16 +644,17 @@ Solanki Brothers
 
 <section class="important-links">
 
+<div class="important-links-title">
+Important Links
+</div>
+
+<div id="importantLinksList">
+
 <a href="https://se.census.gov.in/" target="_blank">
 जन गणना / Census Portal
 </a>
 
-<!-- बाद में और link ऐसे add करना -->
-<!--
-<a href="YOUR-LINK-HERE" target="_blank">
-New Link Name
-</a>
--->
+</div>
 
 </section>
 
@@ -1096,7 +1104,7 @@ setInterval(updateLiveTime, 1000);
 
 </script>
 
-<!-- FIREBASE AUTH WITH ADMIN LOCK -->
+<!-- FIREBASE AUTH WITH ADMIN / USER REDIRECT -->
 
 <script type="module">
 
@@ -1132,11 +1140,7 @@ const app = initializeApp(firebaseConfig);
 
 const auth = getAuth(app);
 
-/* ADMIN EMAIL ONLY */
-
 const adminEmail = "jasmelsolanki@gmail.com";
-
-/* SIGN UP */
 
 window.signUpUser = (email,password)=>{
 
@@ -1161,8 +1165,6 @@ alert(error.message);
 });
 
 };
-
-/* LOGIN WITH ADMIN CHECK */
 
 window.loginUser = (email,password)=>{
 
@@ -1200,6 +1202,84 @@ alert(error.message);
 });
 
 };
+
+</script>
+
+<!-- FIREBASE IMPORTANT LINKS LOAD -->
+
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+
+import {
+getDatabase,
+ref,
+onValue
+}
+from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+
+const firebaseConfigLinks = {
+
+apiKey: "AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",
+
+authDomain: "my-website-73785.firebaseapp.com",
+
+databaseURL: "https://my-website-73785-default-rtdb.firebaseio.com/",
+
+projectId: "my-website-73785",
+
+storageBucket: "my-website-73785.firebasestorage.app",
+
+messagingSenderId: "854088341990",
+
+appId: "1:854088341990:web:3211d4ef9fe4b78d025e27",
+
+measurementId: "G-5DHPLFN3J4"
+
+};
+
+const appLinks = initializeApp(firebaseConfigLinks, "linksApp");
+
+const db = getDatabase(appLinks);
+
+const linksRef = ref(db, "importantLinks");
+
+onValue(linksRef, (snapshot) => {
+
+const box = document.getElementById("importantLinksList");
+
+box.innerHTML = "";
+
+if(snapshot.exists()) {
+
+snapshot.forEach((childSnapshot) => {
+
+const data = childSnapshot.val();
+
+const a = document.createElement("a");
+
+a.href = data.url;
+a.target = "_blank";
+a.innerText = data.title;
+
+box.appendChild(a);
+
+});
+
+}
+
+else {
+
+box.innerHTML = `
+<a href="https://se.census.gov.in/" target="_blank">
+जन गणना / Census Portal
+</a>
+`;
+
+}
+
+});
 
 </script>
 
