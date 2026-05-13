@@ -16,6 +16,15 @@
     .topbar{background:#062b68;color:white;padding:10px 6%;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;}
     .topbar span{color:#ffd000;font-weight:700;}
 
+    .session-timer{
+      background:#ffd000;
+      color:#0b3d91;
+      padding:10px;
+      text-align:center;
+      font-weight:700;
+      font-size:15px;
+    }
+
     header{background:linear-gradient(135deg,#0b3d91,#061b54);color:white;padding:35px 6%;text-align:center;border-bottom:6px solid #ffd000;}
     header h1{color:#ffd000;font-size:42px;}
     header p{margin-top:8px;}
@@ -77,6 +86,10 @@
   <div>⏰ <span id="liveTime"></span></div>
 </div>
 
+<div id="sessionTimer" class="session-timer">
+  Logout in: 60:00
+</div>
+
 <header>
   <h1>E-MITRA WALA Admin Dashboard</h1>
   <p>Website Manage करने के लिए Control Panel</p>
@@ -92,16 +105,6 @@
   <a href="stationery.html">Stationery</a>
   <button onclick="logoutUser()">Logout</button>
 </nav>
-<div id="sessionTimer" style="
-background:#ffd000;
-color:#0b3d91;
-padding:10px;
-text-align:center;
-font-weight:700;
-font-size:15px;
-">
-Logout in: 60:00
-</div>
 
 <section class="dashboard">
 
@@ -223,21 +226,64 @@ Logout in: 60:00
   const adminEmail = "jasmelsolanki@gmail.com";
   let adminAllowed = false;
 
+  function startSessionTimer(){
+    const timerBox = document.getElementById("sessionTimer");
+    let loginTime = localStorage.getItem("loginTime");
+
+    if(!loginTime){
+      loginTime = Date.now();
+      localStorage.setItem("loginTime", loginTime);
+    }
+
+    const totalMinutes = 60;
+
+    setInterval(()=>{
+      const diff = Date.now() - parseInt(loginTime);
+      const remainingMs = (totalMinutes * 60 * 1000) - diff;
+
+      if(remainingMs <= 0){
+        timerBox.innerText = "Session Expired";
+
+        localStorage.removeItem("loginTime");
+
+        signOut(auth).then(()=>{
+          window.location.href = "index.html";
+        });
+
+        return;
+      }
+
+      const totalSeconds = Math.floor(remainingMs / 1000);
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+
+      timerBox.innerText = `Logout in: ${minutes}:${seconds.toString().padStart(2,'0')}`;
+    },1000);
+  }
+
   onAuthStateChanged(auth, (user) => {
     if(user && user.email === adminEmail){
+
+      if(!localStorage.getItem("loginTime")){
+        localStorage.setItem("loginTime", Date.now());
+      }
+
+      startSessionTimer();
+
       adminAllowed = true;
       document.querySelector(".admin-info h3").innerText = "Admin Access Verified";
       document.getElementById("adminEmailText").innerText = user.email;
+
     } else {
       adminAllowed = false;
-      alert("Access Denied! यह Admin Dashboard सिर्फ owner के लिए है।");
       window.location.href = "index.html";
     }
   });
 
   window.logoutUser = () => {
+    localStorage.removeItem("loginTime");
+
     signOut(auth).then(() => {
-      alert("Logout Successful");
       window.location.href = "index.html";
     });
   };
@@ -440,46 +486,7 @@ Logout in: 60:00
     } else {
       list.innerHTML = "<p>अभी कोई Latest Job save नहीं है।</p>";
     }
-  });/* SESSION TIMER */
-
-function startSessionTimer(){
-
-const timerBox = document.getElementById("sessionTimer");
-
-const loginTime = localStorage.getItem("loginTime");
-
-if(!loginTime) return;
-
-const totalMinutes = 60;
-
-setInterval(()=>{
-
-const diff = Date.now() - parseInt(loginTime);
-
-const remainingMs = (totalMinutes * 60 * 1000) - diff;
-
-if(remainingMs <= 0){
-
-timerBox.innerText = "Session Expired";
-
-return;
-
-}
-
-const totalSeconds = Math.floor(remainingMs / 1000);
-
-const minutes = Math.floor(totalSeconds / 60);
-
-const seconds = totalSeconds % 60;
-
-timerBox.innerText =
-`Logout in: ${minutes}:${seconds.toString().padStart(2,'0')}`;
-
-},1000);
-
-}
-
-startSessionTimer();
+  });
 </script>
 
 </body>
