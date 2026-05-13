@@ -457,6 +457,8 @@
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getDatabase(app);
+  const sessionKey = "loginTime";
+  const sessionLimitMs = 60 * 60 * 1000;
   let sessionIntervalId = null;
 
   const escapeHTML = (value = "") => String(value)
@@ -473,7 +475,7 @@
 
   function startSessionTimer(){
     const timerBox = document.getElementById("sessionTimer");
-    let loginTime = localStorage.getItem("loginTime");
+    let loginTime = Number(localStorage.getItem(sessionKey));
 
     if(sessionIntervalId){
       clearInterval(sessionIntervalId);
@@ -481,19 +483,18 @@
 
     if(!loginTime){
       loginTime = Date.now();
-      localStorage.setItem("loginTime", loginTime);
+      localStorage.setItem(sessionKey, String(loginTime));
     }
 
-    const totalMinutes = 60;
-
-    sessionIntervalId = setInterval(()=>{
-      const diff = Date.now() - parseInt(loginTime);
-      const remainingMs = (totalMinutes * 60 * 1000) - diff;
+    const updateTimer = () => {
+      const diff = Date.now() - loginTime;
+      const remainingMs = sessionLimitMs - diff;
 
       if(remainingMs <= 0){
         timerBox.innerText = "Session Expired";
 
-        localStorage.removeItem("loginTime");
+        localStorage.removeItem(sessionKey);
+        clearInterval(sessionIntervalId);
 
         signOut(auth).then(()=>{
           window.location.href = "index.html";
@@ -507,14 +508,17 @@
       const seconds = totalSeconds % 60;
 
       timerBox.innerText = `Logout in: ${minutes}:${seconds.toString().padStart(2,'0')}`;
-    },1000);
+    };
+
+    updateTimer();
+    sessionIntervalId = setInterval(updateTimer,1000);
   }
 
   onAuthStateChanged(auth, (user) => {
     if(user){
 
-      if(!localStorage.getItem("loginTime")){
-        localStorage.setItem("loginTime", Date.now());
+      if(!localStorage.getItem(sessionKey)){
+        localStorage.setItem(sessionKey, String(Date.now()));
       }
 
       startSessionTimer();
@@ -527,7 +531,7 @@
   });
 
   window.logoutUser = () => {
-    localStorage.removeItem("loginTime");
+    localStorage.removeItem(sessionKey);
 
     signOut(auth).then(() => {
       window.location.href = "index.html";

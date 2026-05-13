@@ -1133,6 +1133,8 @@ from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 
 import {
 getAuth,
+setPersistence,
+browserLocalPersistence,
 createUserWithEmailAndPassword,
 signInWithEmailAndPassword
 }
@@ -1175,6 +1177,39 @@ return /^https?:\/\//i.test(url) ? url : "#";
 };
 
 const adminEmail = "jasmelsolanki@gmail.com";
+const sessionKey = "loginTime";
+const sessionLimitMs = 60 * 60 * 1000;
+
+const startFreshUserSession = () => {
+localStorage.setItem(sessionKey, String(Date.now()));
+};
+
+const hasActiveUserSession = () => {
+const loginTime = Number(localStorage.getItem(sessionKey));
+return Boolean(loginTime && Date.now() - loginTime < sessionLimitMs);
+};
+
+const redirectByRole = (email) => {
+if(email === adminEmail){
+window.location.href = "dashboard.html";
+}
+else{
+window.location.href = "user-dashboard.html";
+}
+};
+
+setPersistence(auth,browserLocalPersistence).catch(() => {});
+
+window.openLogin = ()=>{
+const currentUser = auth.currentUser;
+
+if(currentUser && (currentUser.email === adminEmail || hasActiveUserSession())){
+redirectByRole(currentUser.email);
+return;
+}
+
+document.getElementById("loginModal").style.display = "flex";
+};
 
 /* PAYMENT BEFORE SIGNUP */
 
@@ -1224,6 +1259,7 @@ createUserWithEmailAndPassword(auth,pendingSignupEmail,pendingSignupPassword)
 .then(()=>{
 
 alert("Account Created Successfully!");
+startFreshUserSession();
 
 pendingSignupEmail = "";
 pendingSignupPassword = "";
@@ -1251,6 +1287,7 @@ createUserWithEmailAndPassword(auth,email,password)
 .then(()=>{
 
 alert("Account Created Successfully!");
+startFreshUserSession();
 
 closeLogin();
 
@@ -1271,18 +1308,9 @@ signInWithEmailAndPassword(auth,email,password)
 .then((userCredential)=>{
 
 const userEmail = userCredential.user.email;
+startFreshUserSession();
 
-if(userEmail === adminEmail){
-
-window.location.href = "dashboard.html";
-
-}
-
-else{
-
-window.location.href = "user-dashboard.html";
-
-}
+redirectByRole(userEmail);
 
 })
 
