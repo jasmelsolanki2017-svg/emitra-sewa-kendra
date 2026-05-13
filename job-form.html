@@ -369,7 +369,7 @@
       <li><a href="index.html">Home</a></li>
       <li><a href="about.html">About</a></li>
       <li><a href="OFFLINEFORM.HTML">Offline Forms</a></li>
-      <li><a href="JOB-FORM.HTML">Latest Job</a></li>
+      <li><a href="job-form.html">Latest Job</a></li>
       <li><a href="stationery.html">Stationery</a></li>
       <li><a href="index.html#contact">Contact</a></li>
     </ul>
@@ -406,6 +406,7 @@
     <a 
       class="help-btn" 
       target="_blank"
+      rel="noopener noreferrer"
       href="https://wa.me/919509403258?text=Hello%20E-MITRA%20WALA,%20mujhe%20job%20form%20bharwana%20hai.">
       <i class="fa-brands fa-whatsapp"></i> WhatsApp Now
     </a>
@@ -417,7 +418,8 @@
 
   <a href="https://wa.me/919509403258"
      class="whatsapp-float"
-     target="_blank">
+     target="_blank"
+     rel="noopener noreferrer">
     <i class="fa-brands fa-whatsapp"></i>
   </a>
 
@@ -476,6 +478,18 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
+    const escapeHTML = (value = "") => String(value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+
+    const safeUrl = (value = "#") => {
+      const url = String(value || "#").trim();
+      return /^https?:\/\//i.test(url) ? url : "#";
+    };
+
     /* Firebase path वही रखा है जो आपके database में दिख रहा है */
     const jobsRef = ref(db, "LatestJobs");
 
@@ -495,33 +509,33 @@
           card.className = "job-card";
 
           card.innerHTML = `
-            <span class="badge">${job.type || "Online Form"}</span>
+            <span class="badge">${escapeHTML(job.type || "Online Form")}</span>
 
-            <h3>${job.title || "Job Title"}</h3>
+            <h3>${escapeHTML(job.title || "Job Title")}</h3>
 
             <p class="job-info">
               <i class="fa-solid fa-calendar-days"></i>
-              Start Date: ${job.startDate || "Update Soon"}
+              Start Date: ${escapeHTML(job.startDate || "Update Soon")}
             </p>
 
             <p class="job-info">
               <i class="fa-solid fa-calendar-xmark"></i>
-              Last Date: <span class="last-date">${job.lastDate || "Update Soon"}</span>
+              Last Date: <span class="last-date">${escapeHTML(job.lastDate || "Update Soon")}</span>
             </p>
 
             <p class="job-info">
               <i class="fa-solid fa-graduation-cap"></i>
-              Qualification: ${job.qualification || "Update Soon"}
+              Qualification: ${escapeHTML(job.qualification || "Update Soon")}
             </p>
 
             <p class="job-info">
               <i class="fa-solid fa-location-dot"></i>
-              Location: ${job.location || "All India"}
+              Location: ${escapeHTML(job.location || "All India")}
             </p>
 
             <div class="job-buttons">
-              <a href="${job.applyLink || "#"}" target="_blank" class="apply-btn">Apply Now</a>
-              <a href="${job.detailLink || "#"}" target="_blank" class="detail-btn">View Details</a>
+              <a href="${safeUrl(job.applyLink)}" target="_blank" rel="noopener noreferrer" class="apply-btn">Apply Now</a>
+              <a href="${safeUrl(job.detailLink)}" target="_blank" rel="noopener noreferrer" class="detail-btn">View Details</a>
             </div>
           `;
 

@@ -798,6 +798,7 @@ Payment Done - Create Account
 <a 
 class="payment-whatsapp-btn"
 target="_blank"
+rel="noopener noreferrer"
 href="https://wa.me/919509403258?text=Hello%20Solanki%20Brothers,%20maine%20account%20create%20payment%20kar%20diya%20hai.%20Please%20confirm.">
 Send Payment Screenshot on WhatsApp
 </a>
@@ -981,7 +982,8 @@ E-MITRA WALA E-Mitra Sewa Kendra ek trusted digital service center hai.
 
 <a href="https://wa.me/919509403258"
 class="whatsapp-btn"
-target="_blank">
+target="_blank"
+rel="noopener noreferrer">
 
 <i class="fa-brands fa-whatsapp"></i>
 
@@ -1093,6 +1095,11 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
 const db = getDatabase(app);
+
+const safeUrl = (value = "#") => {
+const url = String(value || "#").trim();
+return /^https?:\/\//i.test(url) ? url : "#";
+};
 
 const adminEmail = "jasmelsolanki@gmail.com";
 
@@ -1232,9 +1239,11 @@ const data = childSnapshot.val();
 
 const a = document.createElement("a");
 
-a.href = data.url;
+a.href = safeUrl(data.url);
 
 a.target = "_blank";
+
+a.rel = "noopener noreferrer";
 
 a.innerText = data.title;
 

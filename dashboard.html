@@ -101,7 +101,7 @@
   <a href="#updatesManager">Latest Updates</a>
   <a href="#jobsManager">Latest Jobs Manage</a>
   <a href="OFFLINEFORM.HTML">PDF Forms</a>
-  <a href="JOB-FORM.HTML">Latest Jobs Page</a>
+  <a href="job-form.html">Latest Jobs Page</a>
   <a href="stationery.html">Stationery</a>
   <button onclick="logoutUser()">Logout</button>
 </nav>
@@ -226,6 +226,18 @@
   const adminEmail = "jasmelsolanki@gmail.com";
   let adminAllowed = false;
 
+  const escapeHTML = (value = "") => String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+  const safeUrl = (value = "#") => {
+    const url = String(value || "#").trim();
+    return /^https?:\/\//i.test(url) ? url : "#";
+  };
+
   function startSessionTimer(){
     const timerBox = document.getElementById("sessionTimer");
     let loginTime = localStorage.getItem("loginTime");
@@ -336,8 +348,8 @@
         list.innerHTML += `
           <div class="row">
             <div>
-              <a href="${data.url}" target="_blank">${data.title}</a>
-              <small>${data.url}</small>
+              <a href="${safeUrl(data.url)}" target="_blank" rel="noopener noreferrer">${escapeHTML(data.title)}</a>
+              <small>${escapeHTML(data.url)}</small>
             </div>
             <button class="delete-btn" onclick="deleteImportantLink('${id}')">Delete</button>
           </div>
@@ -387,7 +399,7 @@
 
         list.innerHTML += `
           <div class="row">
-            <div><strong>${data.text}</strong></div>
+            <div><strong>${escapeHTML(data.text)}</strong></div>
             <button class="delete-btn" onclick="deleteLatestUpdate('${id}')">Delete</button>
           </div>
         `;
@@ -470,14 +482,14 @@
         list.innerHTML += `
           <div class="row">
             <div>
-              <strong>${data.title}</strong>
-              <small>Type: ${data.type || "Online Form"}</small>
-              <small>Start Date: ${data.startDate || "Update Soon"}</small>
-              <small>Last Date: ${data.lastDate || "Update Soon"}</small>
-              <small>Qualification: ${data.qualification || "Update Soon"}</small>
-              <small>Location: ${data.location || "All India"}</small>
-              <small>Apply Link: <a href="${data.applyLink || "#"}" target="_blank">${data.applyLink || "#"}</a></small>
-              <small>Detail Link: <a href="${data.detailLink || "#"}" target="_blank">${data.detailLink || "#"}</a></small>
+              <strong>${escapeHTML(data.title)}</strong>
+              <small>Type: ${escapeHTML(data.type || "Online Form")}</small>
+              <small>Start Date: ${escapeHTML(data.startDate || "Update Soon")}</small>
+              <small>Last Date: ${escapeHTML(data.lastDate || "Update Soon")}</small>
+              <small>Qualification: ${escapeHTML(data.qualification || "Update Soon")}</small>
+              <small>Location: ${escapeHTML(data.location || "All India")}</small>
+              <small>Apply Link: <a href="${safeUrl(data.applyLink)}" target="_blank" rel="noopener noreferrer">${escapeHTML(data.applyLink || "#")}</a></small>
+              <small>Detail Link: <a href="${safeUrl(data.detailLink)}" target="_blank" rel="noopener noreferrer">${escapeHTML(data.detailLink || "#")}</a></small>
             </div>
             <button class="delete-btn" onclick="deleteLatestJob('${id}')">Delete</button>
           </div>
