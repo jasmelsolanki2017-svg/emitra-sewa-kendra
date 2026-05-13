@@ -59,6 +59,10 @@
     .row strong{color:#0b3d91;font-size:17px;}
 
     .delete-btn{background:#d90000;color:white;border:none;padding:9px 16px;border-radius:8px;font-weight:700;cursor:pointer;}
+    .action-btn{display:inline-block;background:#0b3d91;color:white;border:none;text-decoration:none;padding:9px 14px;border-radius:8px;font-weight:700;cursor:pointer;margin:3px;}
+    .done-btn{background:#138a36;}
+    .status-badge{display:inline-block;background:#ffd000;color:#0b3d91;padding:5px 10px;border-radius:20px;font-size:12px;font-weight:800;margin-top:6px;}
+    .status-badge.done{background:#138a36;color:white;}
     .status{margin-top:10px;margin-bottom:12px;text-align:center;font-weight:700;color:#0b3d91;}
 
     footer{background:#0b3d91;color:white;text-align:center;padding:22px;margin-top:45px;}
@@ -89,6 +93,7 @@
   <a href="index.html">Home</a>
   <a href="#linksManager">Important Links</a>
   <a href="#updatesManager">Latest Updates</a>
+  <a href="#requestsManager">Requests</a>
   <a href="#adsManager">Advertisements</a>
   <a href="#jobsManager">Latest Jobs Manage</a>
   <a href="OFFLINEFORM.HTML">PDF Forms</a>
@@ -119,6 +124,13 @@
       <h3>Latest Updates</h3>
       <p>Index page के marquee updates add/delete करें।</p>
       <a href="#updatesManager">Manage</a>
+    </div>
+
+    <div class="card">
+      <i class="fa-solid fa-inbox"></i>
+      <h3>Service Requests</h3>
+      <p>Website enquiry form se aayi requests manage करें।</p>
+      <a href="#requestsManager">Manage</a>
     </div>
 
     <div class="card">
@@ -166,6 +178,11 @@
 
     <div id="updateStatus" class="status"></div>
     <div id="adminUpdatesList">Loading...</div>
+  </section>
+
+  <section class="manager" id="requestsManager">
+    <h2>Service Request Manager</h2>
+    <div id="adminRequestsList">Loading...</div>
   </section>
 
   <section class="manager" id="adsManager">
@@ -220,7 +237,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
   import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-  import { getDatabase, ref, push, set, remove, onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+  import { getDatabase, ref, push, set, update, remove, onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",
@@ -251,6 +268,8 @@
     return /^https?:\/\//i.test(url) ? url : "#";
   };
 
+  const safePhone = (value = "") => String(value).replace(/[^\d]/g, "").slice(-10);
+
   onAuthStateChanged(auth, (user) => {
     if(user && user.email === adminEmail){
 
@@ -274,6 +293,7 @@
 
   const linksRef = ref(db, "importantLinks");
   const updatesRef = ref(db, "latestUpdates");
+  const requestsRef = ref(db, "serviceRequests");
   const adsRef = ref(db, "advertisements");
   const jobsRef = ref(db, "LatestJobs");
 
@@ -379,6 +399,66 @@
       });
     } else {
       list.innerHTML = "<p>अभी कोई Latest Update save नहीं है।</p>";
+    }
+  });
+
+  window.markRequestDone = (id) => {
+    if(!adminAllowed){ alert("Admin verify नहीं हुआ।"); return; }
+
+    update(ref(db, "serviceRequests/" + id), {
+      status:"Done",
+      updatedAt:Date.now()
+    }).catch((error) => alert("Error: " + error.message));
+  };
+
+  window.deleteServiceRequest = (id) => {
+    if(!adminAllowed){ alert("Admin verify नहीं हुआ।"); return; }
+
+    if(confirm("क्या आप यह request delete करना चाहते हैं?")){
+      remove(ref(db, "serviceRequests/" + id))
+      .then(() => alert("Request Deleted Successfully!"))
+      .catch((error) => alert("Error: " + error.message));
+    }
+  };
+
+  onValue(requestsRef, (snapshot) => {
+    const list = document.getElementById("adminRequestsList");
+    list.innerHTML = "";
+
+    if(snapshot.exists()){
+      const requests = [];
+
+      snapshot.forEach((child) => {
+        requests.push({ id:child.key, ...child.val() });
+      });
+
+      requests.sort((a,b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
+
+      requests.forEach((data) => {
+        const phone = safePhone(data.mobile);
+        const whatsappText = encodeURIComponent(`Hello ${data.name || ""}, E-MITRA WALA se bol rahe hain. Aapki ${data.service || "service"} request ke baare me contact kar rahe hain.`);
+        const statusClass = data.status === "Done" ? "status-badge done" : "status-badge";
+
+        list.innerHTML += `
+          <div class="row">
+            <div>
+              <strong>${escapeHTML(data.name || "Customer")}</strong>
+              <span class="${statusClass}">${escapeHTML(data.status || "New")}</span>
+              <small>Mobile: ${escapeHTML(data.mobile || "")}</small>
+              <small>Service: ${escapeHTML(data.service || "")}</small>
+              <small>Message: ${escapeHTML(data.message || "")}</small>
+            </div>
+            <div>
+              ${phone ? `<a class="action-btn" href="tel:${phone}">Call</a>` : ""}
+              ${phone ? `<a class="action-btn" target="_blank" rel="noopener noreferrer" href="https://wa.me/91${phone}?text=${whatsappText}">WhatsApp</a>` : ""}
+              <button class="action-btn done-btn" onclick="markRequestDone('${data.id}')">Done</button>
+              <button class="delete-btn" onclick="deleteServiceRequest('${data.id}')">Delete</button>
+            </div>
+          </div>
+        `;
+      });
+    } else {
+      list.innerHTML = "<p>अभी कोई Service Request नहीं है।</p>";
     }
   });
 
