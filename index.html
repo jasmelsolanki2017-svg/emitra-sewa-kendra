@@ -660,6 +660,109 @@ color:#555;
 font-size:15px;
 }
 
+/* DOCUMENT HELP */
+
+.document-help{
+padding:70px 6%;
+background:white;
+}
+
+.document-wrap{
+max-width:1120px;
+margin:auto;
+display:grid;
+grid-template-columns:0.95fr 1.05fr;
+gap:26px;
+align-items:start;
+}
+
+.doc-panel,
+.enquiry-panel{
+background:#eef4ff;
+border-radius:8px;
+box-shadow:0 5px 18px rgba(0,0,0,0.08);
+border-top:6px solid #ffd000;
+padding:26px;
+}
+
+.doc-panel h2,
+.enquiry-panel h2{
+color:#0b3d91;
+font-size:30px;
+margin-bottom:10px;
+}
+
+.doc-panel p,
+.enquiry-panel p{
+color:#555;
+line-height:1.65;
+margin-bottom:16px;
+}
+
+.doc-panel select,
+.enquiry-panel input,
+.enquiry-panel select,
+.enquiry-panel textarea{
+width:100%;
+padding:13px 14px;
+border:1px solid #c7d2e7;
+border-radius:8px;
+font-size:15px;
+outline:none;
+margin-bottom:12px;
+background:white;
+}
+
+.enquiry-panel textarea{
+min-height:105px;
+resize:vertical;
+}
+
+.doc-list{
+background:white;
+border-radius:8px;
+padding:16px;
+border-left:5px solid #0b3d91;
+min-height:170px;
+}
+
+.doc-list h3{
+color:#0b3d91;
+margin-bottom:10px;
+font-size:20px;
+}
+
+.doc-list ul{
+padding-left:20px;
+color:#333;
+line-height:1.8;
+font-weight:600;
+}
+
+.enquiry-panel button{
+width:100%;
+background:#0b3d91;
+color:white;
+border:none;
+padding:13px;
+border-radius:8px;
+font-weight:800;
+font-size:15px;
+cursor:pointer;
+}
+
+.enquiry-panel button:hover{
+background:#ffd000;
+color:#0b3d91;
+}
+
+.form-status{
+margin-top:12px;
+font-weight:800;
+text-align:center;
+color:#0b3d91;
+}
+
 /* ABOUT */
 
 .about{
@@ -836,6 +939,24 @@ height:34px;
 
 .news-track{
 font-size:14px;
+}
+
+.document-help{
+padding:45px 4%;
+}
+
+.document-wrap{
+grid-template-columns:1fr;
+}
+
+.doc-panel,
+.enquiry-panel{
+padding:20px;
+}
+
+.doc-panel h2,
+.enquiry-panel h2{
+font-size:26px;
 }
 
 .payment-box{
@@ -1113,6 +1234,53 @@ Important Links
 
 </section>
 
+<!-- DOCUMENT CHECKLIST & ENQUIRY -->
+
+<section class="document-help" id="documentHelp">
+  <div class="document-wrap">
+    <div class="doc-panel">
+      <h2>Document Checklist</h2>
+      <p>Service select karein aur turant dekhein ki kaunse documents chahiye.</p>
+
+      <select id="documentService">
+        <option value="income">Income Certificate</option>
+        <option value="caste">Caste Certificate</option>
+        <option value="domicile">Domicile / Bonafide</option>
+        <option value="ration">Ration Card</option>
+        <option value="pension">Pension Form</option>
+        <option value="job">Job Form</option>
+      </select>
+
+      <div class="doc-list" id="documentChecklist"></div>
+    </div>
+
+    <div class="enquiry-panel">
+      <h2>Service Enquiry</h2>
+      <p>Apna request bhejein. Admin dashboard me request live show hogi.</p>
+
+      <form id="serviceRequestForm">
+        <input type="text" id="requestName" placeholder="Aapka naam" required>
+        <input type="tel" id="requestMobile" placeholder="Mobile number" required>
+        <select id="requestService" required>
+          <option value="">Service select karein</option>
+          <option>Income Certificate</option>
+          <option>Caste Certificate</option>
+          <option>Domicile / Bonafide</option>
+          <option>Ration Card</option>
+          <option>Pension Form</option>
+          <option>Job Form</option>
+          <option>Printing / Stationery</option>
+          <option>Other Work</option>
+        </select>
+        <textarea id="requestMessage" placeholder="Kaam ke baare me short detail likhein"></textarea>
+        <button type="submit">Send Request</button>
+      </form>
+
+      <div class="form-status" id="requestStatus"></div>
+    </div>
+  </div>
+</section>
+
 <!-- ABOUT -->
 
 <section class="about">
@@ -1264,6 +1432,49 @@ found = true;
 noResultText.style.display = query !== "" && !found ? "block" : "none";
 });
 
+const documentData = {
+income:{
+title:"Income Certificate",
+docs:["Aadhaar Card","Jan Aadhaar / Bhamashah","Ration Card","Applicant Photo","Mobile Number","Income proof / self declaration"]
+},
+caste:{
+title:"Caste Certificate",
+docs:["Aadhaar Card","Jan Aadhaar","Father caste certificate","Ration Card","Applicant Photo","Mobile Number"]
+},
+domicile:{
+title:"Domicile / Bonafide",
+docs:["Aadhaar Card","Jan Aadhaar","Ration Card","Birth proof / school document","Applicant Photo","Mobile Number"]
+},
+ration:{
+title:"Ration Card",
+docs:["Aadhaar cards of family members","Jan Aadhaar","Old ration card if available","Passport size photo","Mobile Number","Address proof"]
+},
+pension:{
+title:"Pension Form",
+docs:["Aadhaar Card","Jan Aadhaar","Bank passbook","Age proof","Photo","Mobile Number"]
+},
+job:{
+title:"Job Form",
+docs:["Aadhaar Card","Photo and signature","Qualification marksheets","Category certificate if applicable","Mobile Number","Email ID"]
+}
+};
+
+function renderDocumentChecklist(){
+const selected = document.getElementById("documentService").value;
+const item = documentData[selected] || documentData.income;
+const checklist = document.getElementById("documentChecklist");
+
+checklist.innerHTML = `
+  <h3>${item.title}</h3>
+  <ul>
+    ${item.docs.map((doc)=>`<li>${doc}</li>`).join("")}
+  </ul>
+`;
+}
+
+document.getElementById("documentService").addEventListener("change", renderDocumentChecklist);
+renderDocumentChecklist();
+
 </script>
 
 <!-- FIREBASE -->
@@ -1285,6 +1496,8 @@ from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 import {
 getDatabase,
 ref,
+push,
+set,
 onValue
 }
 from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
@@ -1349,6 +1562,8 @@ window.location.href = "user-dashboard.html";
 
 setPersistence(auth,browserLocalPersistence).catch(() => {});
 
+const requestsRef = ref(db,"serviceRequests");
+
 window.openLogin = ()=>{
 const currentUser = auth.currentUser;
 
@@ -1359,6 +1574,42 @@ return;
 
 document.getElementById("loginModal").style.display = "flex";
 };
+
+document.getElementById("serviceRequestForm").addEventListener("submit",(event)=>{
+event.preventDefault();
+
+const name = document.getElementById("requestName").value.trim();
+const mobile = document.getElementById("requestMobile").value.trim();
+const service = document.getElementById("requestService").value.trim();
+const message = document.getElementById("requestMessage").value.trim();
+const status = document.getElementById("requestStatus");
+
+if(name === "" || mobile === "" || service === ""){
+status.innerText = "Naam, mobile aur service जरूर भरें।";
+return;
+}
+
+if(!/^[0-9+\-\s]{10,15}$/.test(mobile)){
+status.innerText = "Valid mobile number भरें।";
+return;
+}
+
+status.innerText = "Request sending...";
+
+set(push(requestsRef),{
+name:name,
+mobile:mobile,
+service:service,
+message:message || "No extra detail",
+status:"New",
+createdAt:Date.now()
+}).then(()=>{
+status.innerText = "Request sent successfully! Hum jaldi contact karenge.";
+document.getElementById("serviceRequestForm").reset();
+}).catch((error)=>{
+status.innerText = "Request send nahi hui: " + error.message;
+});
+});
 
 /* PAYMENT BEFORE SIGNUP */
 
