@@ -1,0 +1,1369 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>E-MITRA WALA | E-Mitra Sewa Kendra</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Poppins',sans-serif;
+}
+
+body{
+background:#f5f7fb;
+overflow-x:hidden;
+}
+
+html{
+scroll-behavior:smooth;
+}
+
+/* TOP BAR */
+
+.topbar{
+background:#062b68;
+color:white;
+padding:8px 6%;
+font-size:14px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+flex-wrap:wrap;
+gap:10px;
+}
+
+.topbar a{
+color:#ffd000;
+text-decoration:none;
+font-weight:600;
+}
+
+#liveTime{
+color:#ffd000;
+font-weight:700;
+}
+
+/* NAVBAR */
+
+nav{
+width:100%;
+background:#0b3d91;
+padding:16px 6%;
+display:flex;
+justify-content:space-between;
+align-items:center;
+position:sticky;
+top:0;
+z-index:1000;
+box-shadow:0 3px 15px rgba(0,0,0,0.15);
+}
+
+.logo{
+color:#ffd000;
+font-size:30px;
+font-weight:700;
+}
+
+nav ul{
+display:flex;
+list-style:none;
+gap:24px;
+}
+
+nav ul li a{
+color:white;
+text-decoration:none;
+font-size:16px;
+font-weight:500;
+transition:0.3s;
+}
+
+nav ul li a:hover{
+color:#ffd000;
+}
+
+/* IMPORTANT LINKS */
+
+.important-links{
+background:#ffd000;
+padding:14px 6%;
+text-align:center;
+box-shadow:0 3px 12px rgba(0,0,0,0.12);
+}
+
+.important-links-title{
+font-size:20px;
+font-weight:800;
+color:#0b3d91;
+margin-bottom:8px;
+}
+
+#importantLinksList a{
+display:inline-block;
+background:#0b3d91;
+color:white;
+text-decoration:none;
+padding:10px 22px;
+border-radius:30px;
+font-weight:700;
+margin:6px;
+transition:0.3s;
+}
+
+#importantLinksList a:hover{
+background:#062b68;
+color:#ffd000;
+transform:translateY(-3px);
+}
+
+/* LOGIN POPUP */
+
+.login-modal{
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.65);
+z-index:3000;
+align-items:center;
+justify-content:center;
+padding:15px;
+}
+
+.login-box{
+width:350px;
+max-width:95%;
+background:white;
+padding:30px;
+border-radius:18px;
+box-shadow:0 5px 20px rgba(0,0,0,0.25);
+text-align:center;
+position:relative;
+}
+
+.login-box h2{
+margin-bottom:20px;
+color:#0b3d91;
+}
+
+.login-box input{
+width:100%;
+padding:12px;
+margin-bottom:15px;
+border:1px solid #ccc;
+border-radius:8px;
+}
+
+.login-box button{
+width:100%;
+padding:12px;
+border:none;
+border-radius:8px;
+font-weight:bold;
+cursor:pointer;
+margin-bottom:10px;
+}
+
+.signup-btn{
+background:#ffd000;
+color:#0b3d91;
+}
+
+.login-btn{
+background:#0b3d91;
+color:white;
+}
+
+.close-login{
+position:absolute;
+top:8px;
+right:14px;
+font-size:28px;
+cursor:pointer;
+color:#0b3d91;
+}
+
+/* PAYMENT POPUP */
+
+.payment-modal{
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.70);
+z-index:4000;
+align-items:center;
+justify-content:center;
+padding:15px;
+}
+
+.payment-box{
+width:380px;
+max-width:95%;
+background:white;
+padding:28px;
+border-radius:18px;
+box-shadow:0 5px 20px rgba(0,0,0,0.25);
+text-align:center;
+position:relative;
+}
+
+.payment-box h2{
+color:#0b3d91;
+margin-bottom:10px;
+}
+
+.payment-box h3{
+color:#0b3d91;
+margin:15px 0;
+}
+
+.pay-note{
+font-size:15px;
+color:#555;
+margin-bottom:10px;
+line-height:1.6;
+}
+
+.payment-qr{
+width:220px;
+height:220px;
+padding:8px;
+border:4px solid #0b3d91;
+border-radius:14px;
+margin:15px auto;
+display:block;
+background:white;
+}
+
+.upi-pay-btn,
+.payment-done-btn,
+.payment-whatsapp-btn{
+display:block;
+width:100%;
+padding:13px;
+border-radius:9px;
+text-decoration:none;
+font-weight:700;
+font-size:15px;
+margin-top:12px;
+border:none;
+cursor:pointer;
+}
+
+.upi-pay-btn{
+background:#0b3d91;
+color:white;
+}
+
+.payment-done-btn{
+background:#ffd000;
+color:#0b3d91;
+}
+
+.payment-whatsapp-btn{
+background:#25d366;
+color:white;
+}
+
+.warning-text{
+font-size:12px;
+color:#777;
+margin-top:12px;
+line-height:1.6;
+}
+
+/* SLIDER */
+
+.slider{
+width:100%;
+height:90vh;
+overflow:hidden;
+position:relative;
+}
+
+.slides{
+display:flex;
+width:100%;
+height:100%;
+transition:1s;
+}
+
+.slide{
+min-width:100%;
+height:100%;
+position:relative;
+}
+
+.slide img{
+width:100%;
+height:100%;
+object-fit:cover;
+}
+
+.overlay{
+position:absolute;
+inset:0;
+background:rgba(0,0,0,0.55);
+}
+
+.content{
+position:absolute;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+text-align:center;
+color:white;
+z-index:2;
+width:90%;
+max-width:850px;
+}
+
+.content h1{
+font-size:58px;
+margin-bottom:20px;
+}
+
+.content p{
+font-size:19px;
+line-height:1.8;
+margin-bottom:35px;
+}
+
+.btn{
+display:inline-block;
+padding:15px 38px;
+background:#ffd000;
+color:#0b3d91;
+text-decoration:none;
+border-radius:50px;
+font-size:17px;
+font-weight:700;
+transition:0.3s;
+}
+
+.btn:hover{
+background:white;
+transform:translateY(-4px);
+}
+
+/* SLIDER BUTTONS */
+
+.slider-btn{
+position:absolute;
+top:50%;
+transform:translateY(-50%);
+width:60px;
+height:60px;
+border:none;
+border-radius:50%;
+background:rgba(255,255,255,0.2);
+color:white;
+font-size:30px;
+cursor:pointer;
+z-index:10;
+}
+
+.prev{
+left:20px;
+}
+
+.next{
+right:20px;
+}
+
+/* LATEST UPDATES */
+
+.latest-section{
+background:white;
+padding:40px 6%;
+}
+
+.latest-box{
+background:#eef4ff;
+border-left:6px solid #ffd000;
+padding:25px;
+border-radius:16px;
+box-shadow:0 5px 20px rgba(0,0,0,0.08);
+}
+
+.latest-box h2{
+color:#0b3d91;
+margin-bottom:15px;
+font-size:32px;
+}
+
+.latest-box marquee{
+font-size:18px;
+font-weight:600;
+color:#222;
+}
+
+/* SEARCH */
+
+.search-section{
+background:#0b3d91;
+padding:45px 6%;
+text-align:center;
+}
+
+.search-section h2{
+color:#ffd000;
+font-size:36px;
+margin-bottom:20px;
+}
+
+.search-section input{
+width:90%;
+max-width:650px;
+padding:16px 20px;
+border-radius:50px;
+border:none;
+outline:none;
+font-size:17px;
+box-shadow:0 5px 20px rgba(0,0,0,0.2);
+}
+
+#noResult{
+display:none;
+color:white;
+margin-top:15px;
+font-weight:600;
+}
+
+/* FEATURES */
+
+.features{
+padding:80px 6%;
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+gap:30px;
+background:white;
+}
+
+.features a{
+text-decoration:none;
+color:inherit;
+}
+
+.feature-box{
+background:white;
+padding:35px 25px;
+border-radius:18px;
+text-align:center;
+box-shadow:0 5px 20px rgba(0,0,0,0.08);
+border-top:5px solid #ffd000;
+transition:0.3s;
+}
+
+.feature-box:hover{
+transform:translateY(-8px);
+}
+
+.feature-box h3{
+font-size:24px;
+margin-bottom:15px;
+color:#0b3d91;
+}
+
+.feature-box p{
+color:#555;
+line-height:1.8;
+}
+
+/* SERVICES */
+
+.services{
+padding:80px 6%;
+background:#eef4ff;
+text-align:center;
+}
+
+.services h2{
+font-size:42px;
+color:#0b3d91;
+margin-bottom:40px;
+}
+
+.service-grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+gap:25px;
+}
+
+.service-grid a{
+text-decoration:none;
+color:inherit;
+}
+
+.service-card{
+background:white;
+padding:28px 20px;
+border-radius:18px;
+box-shadow:0 5px 20px rgba(0,0,0,0.08);
+transition:0.3s;
+}
+
+.service-card:hover{
+transform:translateY(-8px);
+}
+
+.service-card i{
+font-size:38px;
+color:#0b3d91;
+margin-bottom:15px;
+}
+
+.service-card h3{
+color:#0b3d91;
+margin-bottom:10px;
+}
+
+.service-card p{
+color:#555;
+font-size:15px;
+}
+
+/* ABOUT */
+
+.about{
+padding:90px 6%;
+text-align:center;
+background:white;
+}
+
+.about h2{
+font-size:42px;
+margin-bottom:25px;
+color:#0b3d91;
+}
+
+.about p{
+max-width:900px;
+margin:auto;
+line-height:1.9;
+font-size:17px;
+color:#444;
+}
+
+/* COUNTER */
+
+.counter-section{
+background:white;
+padding:80px 20px;
+text-align:center;
+}
+
+.counter-section h2{
+font-size:42px;
+margin-bottom:30px;
+color:#0b3d91;
+}
+
+.counter-box{
+display:inline-block;
+background:#eef4ff;
+padding:35px 50px;
+border-radius:20px;
+box-shadow:0 5px 20px rgba(0,0,0,0.08);
+}
+
+.counter-box p{
+margin-top:15px;
+font-size:20px;
+font-weight:600;
+}
+
+/* CONTACT */
+
+.contact{
+padding:80px 6%;
+text-align:center;
+background:#eef4ff;
+}
+
+.contact h2{
+font-size:42px;
+margin-bottom:25px;
+color:#0b3d91;
+}
+
+.contact p{
+font-size:18px;
+margin-bottom:15px;
+}
+
+.contact a{
+text-decoration:none;
+color:#0b3d91;
+font-weight:600;
+}
+
+/* FOOTER */
+
+footer{
+background:#0b3d91;
+color:white;
+text-align:center;
+padding:25px;
+}
+
+/* WHATSAPP */
+
+.whatsapp-btn{
+position:fixed;
+width:60px;
+height:60px;
+bottom:40px;
+right:40px;
+background:#25d366;
+color:white;
+border-radius:50%;
+text-align:center;
+font-size:30px;
+z-index:1000;
+}
+
+.whatsapp-btn i{
+margin-top:15px;
+}
+
+/* MOBILE */
+
+@media(max-width:768px){
+
+.topbar{
+justify-content:center;
+text-align:center;
+}
+
+nav{
+flex-direction:column;
+gap:15px;
+}
+
+nav ul{
+flex-wrap:wrap;
+justify-content:center;
+gap:16px;
+}
+
+.content h1{
+font-size:35px;
+}
+
+.content p{
+font-size:15px;
+}
+
+.slider{
+height:75vh;
+}
+
+.payment-box{
+padding:22px;
+}
+
+.payment-qr{
+width:200px;
+height:200px;
+}
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- TOP BAR -->
+
+<div class="topbar">
+
+<div>
+📞 <a href="tel:9509403258">9509403258</a> |
+📧 <a href="mailto:jasmelsolanki@gmail.com">jasmelsolanki@gmail.com</a>
+</div>
+
+<div>
+⏰ <span id="liveTime"></span> | Rajasthan, India
+</div>
+
+</div>
+
+<!-- NAVBAR -->
+
+<nav>
+
+<div class="logo">
+E-MITRA WALA</div>
+
+<ul>
+<li><a href="#">Home</a></li>
+<li><a href="about.html">About</a></li>
+<li><a href="OFFLINEFORM.HTML">PDF FORM</a></li>
+<li><a href="#" onclick="openLogin()">Login</a></li>
+<li><a href="job-form.html">Latest Job</a></li>
+<li><a href="stationery.html">Stationery</a></li>
+<li><a href="#contact">Contact</a></li>
+</ul>
+
+</nav>
+
+<!-- IMPORTANT LINKS -->
+
+
+
+<!-- LOGIN POPUP -->
+
+<div class="login-modal" id="loginModal">
+
+<section class="login-box">
+
+<span class="close-login" onclick="closeLogin()">&times;</span>
+
+<h2>Login / Signup</h2>
+
+<input type="email" id="email" placeholder="Enter Email">
+
+<input type="password" id="password" placeholder="Enter Password">
+<button class="login-btn" onclick="loginUser(email.value,password.value)">
+Login
+</button>
+
+<button class="signup-btn" onclick="openPaymentBeforeSignup()">
+Create Account
+</button>
+
+
+
+</section>
+
+</div>
+
+<!-- PAYMENT POPUP -->
+
+<div class="payment-modal" id="paymentModal">
+
+<section class="payment-box">
+
+<span class="close-login" onclick="closePayment()">&times;</span>
+
+<h2>Account Create Payment</h2>
+
+<p class="pay-note">
+Account create karne ke liye pehle payment karein.
+</p>
+
+<h3>Amount: ₹99</h3>
+
+<p><b>UPI ID:</b> 9509403258@ybl</p>
+
+<img 
+class="payment-qr"
+src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=upi://pay?pa=9509403258@ybl&pn=Solanki%20Brothers&am=99&cu=INR"
+alt="Payment QR Code"
+>
+
+<a 
+class="upi-pay-btn"
+href="upi://pay?pa=9509403258@ybl&pn=Solanki%20Brothers&am=99&cu=INR">
+Pay Now
+</a>
+
+<button class="payment-done-btn" onclick="paymentDoneCreateAccount()">
+Payment Done - Create Account
+</button>
+
+<a 
+class="payment-whatsapp-btn"
+target="_blank"
+rel="noopener noreferrer"
+href="https://wa.me/919509403258?text=Hello%20Solanki%20Brothers,%20maine%20account%20create%20payment%20kar%20diya%20hai.%20Please%20confirm.">
+Send Payment Screenshot on WhatsApp
+</a>
+
+<p class="warning-text">
+Note: Payment karne ke baad hi Payment Done button dabayein.
+</p>
+
+</section>
+
+</div>
+
+<!-- SLIDER -->
+
+<section class="slider">
+
+<button class="slider-btn prev" onclick="prevSlide()">❮</button>
+
+<button class="slider-btn next" onclick="nextSlide()">❯</button>
+
+<div class="slides" id="slides">
+
+<div class="slide">
+
+<img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=1400&auto=format&fit=crop">
+
+<div class="overlay"></div>
+
+<div class="content">
+
+<h1>Welcome To E-MITRA WALA</h1>
+
+<p>Rajasthan ki trusted E-Mitra service.</p>
+
+<a href="OFFLINEFORM.HTML" class="btn">
+View Forms
+</a>
+
+</div>
+
+</div>
+
+<div class="slide">
+
+<img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=1400&auto=format&fit=crop">
+
+<div class="overlay"></div>
+
+<div class="content">
+
+<h1>Fast & Reliable Services</h1>
+
+<p>Jan Aadhar, Income Certificate aur bahut kuch.</p>
+
+<a href="#services" class="btn">
+View Services
+</a>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+<!-- LATEST UPDATES -->
+
+<section class="latest-section">
+
+<div class="latest-box">
+
+<h2>Latest Updates</h2>
+
+<marquee behavior="scroll" direction="left" scrollamount="6" id="latestUpdatesMarquee">
+Loading latest updates...
+</marquee>
+
+</div>
+
+</section>
+
+<section class="important-links">
+
+<div class="important-links-title">
+Important Links
+</div>
+
+<div id="importantLinksList">
+  <span style="color:#0b3d91;font-weight:700;">Loading Links...</span>
+</div>
+
+</section>
+
+<!-- SEARCH -->
+
+<section class="search-section">
+
+<h2>Search Services / Forms</h2>
+
+<input type="text" id="searchInput" placeholder="Search here...">
+
+<p id="noResult">
+कोई result नहीं मिला
+</p>
+
+</section>
+
+<!-- FEATURES -->
+
+<section class="features">
+
+<a href="OFFLINEFORM.HTML">
+<div class="feature-box">
+<h3>Easy Downloads</h3>
+<p>Sabhi PDF forms ek click mein.</p>
+</div>
+</a>
+
+<a href="OFFLINEFORM.HTML">
+<div class="feature-box">
+<h3>Latest Forms</h3>
+<p>Updated government forms available.</p>
+</div>
+</a>
+
+<div class="feature-box">
+<h3>Quick Support</h3>
+<p>Fast WhatsApp support available.</p>
+</div>
+
+</section>
+
+<!-- SERVICES -->
+
+<section class="services" id="services">
+
+<h2>Our Services</h2>
+
+<div class="service-grid">
+
+<a href="OFFLINEFORM.HTML">
+<div class="service-card">
+<i class="fa-solid fa-file-lines"></i>
+<h3>PDF Forms</h3>
+<p>Rajasthan certificates, schemes aur common offline forms.</p>
+</div>
+</a>
+
+<a href="job-form.html">
+<div class="service-card">
+<i class="fa-solid fa-briefcase"></i>
+<h3>Latest Job Forms</h3>
+<p>Government job updates, dates, qualification aur apply links.</p>
+</div>
+</a>
+
+<a href="stationery.html">
+<div class="service-card">
+<i class="fa-solid fa-print"></i>
+<h3>Stationery & Printing</h3>
+<p>Books, guides, xerox, print, scan aur lamination support.</p>
+</div>
+</a>
+
+<a href="#contact">
+<div class="service-card">
+<i class="fa-solid fa-headset"></i>
+<h3>Customer Support</h3>
+<p>Form bharwane aur documents ke liye direct help.</p>
+</div>
+</a>
+
+</div>
+
+</section>
+
+<!-- ABOUT -->
+
+<section class="about">
+
+<h2>About Us</h2>
+
+<p>
+E-MITRA WALA E-Mitra Sewa Kendra ek trusted digital service center hai.
+</p>
+
+</section>
+
+<!-- VISITOR COUNTER -->
+
+<section class="counter-section">
+
+<h2>Website Visitors</h2>
+
+<div class="counter-box">
+
+<img src="https://hitwebcounter.com/counter/counter.php?page=21421561&style=0006&nbdigits=6&type=page&initCount=0">
+
+<p>Total Visitors</p>
+
+</div>
+
+</section>
+
+<!-- CONTACT -->
+
+<section class="contact" id="contact">
+
+<h2>Contact Us</h2>
+
+<p>📞 Mobile: <a href="tel:9509403258">9509403258</a></p>
+
+<p>📧 Email: jasmelsolanki@gmail.com</p>
+
+<p>📍 Rajasthan, India</p>
+
+</section>
+
+<!-- FOOTER -->
+
+<footer>
+© 2026 E-MITRA WALA | All Rights Reserved
+</footer>
+
+<!-- WHATSAPP -->
+
+<a href="https://wa.me/919509403258"
+class="whatsapp-btn"
+target="_blank"
+rel="noopener noreferrer">
+
+<i class="fa-brands fa-whatsapp"></i>
+
+</a>
+
+<script>
+
+function updateLiveTime(){
+
+const now = new Date();
+
+document.getElementById("liveTime").innerText =
+now.toLocaleString("hi-IN");
+
+}
+
+updateLiveTime();
+
+setInterval(updateLiveTime,1000);
+
+let currentSlide = 0;
+
+const slides = document.getElementById("slides");
+
+const totalSlides = document.querySelectorAll(".slide").length;
+
+function showSlide(index){
+
+if(index >= totalSlides){
+currentSlide = 0;
+}
+
+else if(index < 0){
+currentSlide = totalSlides - 1;
+}
+
+else{
+currentSlide = index;
+}
+
+slides.style.transform =
+`translateX(-${currentSlide * 100}%)`;
+
+}
+
+function nextSlide(){
+showSlide(currentSlide + 1);
+}
+
+function prevSlide(){
+showSlide(currentSlide - 1);
+}
+
+setInterval(()=>{
+nextSlide();
+},5000);
+
+function openLogin(){
+document.getElementById("loginModal").style.display = "flex";
+}
+
+function closeLogin(){
+document.getElementById("loginModal").style.display = "none";
+}
+
+const searchInput = document.getElementById("searchInput");
+const searchableCards = document.querySelectorAll(".feature-box, .service-card");
+const noResultText = document.getElementById("noResult");
+
+searchInput.addEventListener("input",()=>{
+const query = searchInput.value.trim().toLowerCase();
+let found = false;
+
+searchableCards.forEach((card)=>{
+const parentLink = card.closest("a");
+const isMatch = card.innerText.toLowerCase().includes(query);
+const displayValue = query === "" || isMatch ? "" : "none";
+
+if(parentLink){
+parentLink.style.display = displayValue;
+}
+else{
+card.style.display = displayValue;
+}
+
+if(query !== "" && isMatch){
+found = true;
+}
+});
+
+noResultText.style.display = query !== "" && !found ? "block" : "none";
+});
+
+</script>
+
+<!-- FIREBASE -->
+
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+
+import {
+getAuth,
+createUserWithEmailAndPassword,
+signInWithEmailAndPassword
+}
+from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+
+import {
+getDatabase,
+ref,
+onValue
+}
+from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+
+const firebaseConfig = {
+
+apiKey: "AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",
+
+authDomain: "my-website-73785.firebaseapp.com",
+
+databaseURL: "https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app/",
+
+projectId: "my-website-73785",
+
+storageBucket: "my-website-73785.firebasestorage.app",
+
+messagingSenderId: "854088341990",
+
+appId: "1:854088341990:web:3211d4ef9fe4b78d025e27"
+
+};
+
+const app = initializeApp(firebaseConfig);
+
+const auth = getAuth(app);
+
+const db = getDatabase(app);
+
+const safeUrl = (value = "#") => {
+const url = String(value || "#").trim();
+return /^https?:\/\//i.test(url) ? url : "#";
+};
+
+const adminEmail = "jasmelsolanki@gmail.com";
+
+/* PAYMENT BEFORE SIGNUP */
+
+let pendingSignupEmail = "";
+let pendingSignupPassword = "";
+
+window.openPaymentBeforeSignup = ()=>{
+
+const emailValue = document.getElementById("email").value.trim();
+const passwordValue = document.getElementById("password").value.trim();
+
+if(emailValue === "" || passwordValue === ""){
+alert("Please email aur password enter karein.");
+return;
+}
+
+if(passwordValue.length < 6){
+alert("Password kam se kam 6 character ka hona chahiye.");
+return;
+}
+
+pendingSignupEmail = emailValue;
+pendingSignupPassword = passwordValue;
+
+document.getElementById("loginModal").style.display = "none";
+document.getElementById("paymentModal").style.display = "flex";
+
+};
+
+window.closePayment = ()=>{
+
+document.getElementById("paymentModal").style.display = "none";
+document.getElementById("loginModal").style.display = "flex";
+
+};
+
+window.paymentDoneCreateAccount = ()=>{
+
+if(pendingSignupEmail === "" || pendingSignupPassword === ""){
+alert("Email/password missing hai. Dobara try karein.");
+closePayment();
+return;
+}
+
+createUserWithEmailAndPassword(auth,pendingSignupEmail,pendingSignupPassword)
+
+.then(()=>{
+
+alert("Account Created Successfully!");
+
+pendingSignupEmail = "";
+pendingSignupPassword = "";
+
+document.getElementById("paymentModal").style.display = "none";
+
+window.location.href = "user-dashboard.html";
+
+})
+
+.catch((error)=>{
+
+alert(error.message);
+
+});
+
+};
+
+/* LOGIN */
+
+window.signUpUser = (email,password)=>{
+
+createUserWithEmailAndPassword(auth,email,password)
+
+.then(()=>{
+
+alert("Account Created Successfully!");
+
+closeLogin();
+
+})
+
+.catch((error)=>{
+
+alert(error.message);
+
+});
+
+};
+
+window.loginUser = (email,password)=>{
+
+signInWithEmailAndPassword(auth,email,password)
+
+.then((userCredential)=>{
+
+const userEmail = userCredential.user.email;
+
+if(userEmail === adminEmail){
+
+window.location.href = "dashboard.html";
+
+}
+
+else{
+
+window.location.href = "user-dashboard.html";
+
+}
+
+})
+
+.catch((error)=>{
+
+alert(error.message);
+
+});
+
+};
+
+/* IMPORTANT LINKS */
+
+const linksRef = ref(db,"importantLinks");
+
+onValue(linksRef,(snapshot)=>{
+
+const box = document.getElementById("importantLinksList");
+
+box.innerHTML = "";
+
+if(snapshot.exists()){
+
+snapshot.forEach((childSnapshot)=>{
+
+const data = childSnapshot.val();
+
+const a = document.createElement("a");
+
+a.href = safeUrl(data.url);
+
+a.target = "_blank";
+
+a.rel = "noopener noreferrer";
+
+a.innerText = data.title;
+
+box.appendChild(a);
+
+});
+
+}
+else{
+
+box.innerHTML = '<span style="color:#0b3d91;font-weight:700;">अभी कोई important link नहीं है।</span>';
+
+}
+
+});
+
+/* LATEST UPDATES */
+
+const updatesRef = ref(db,"latestUpdates");
+
+onValue(updatesRef,(snapshot)=>{
+
+const marquee = document.getElementById("latestUpdatesMarquee");
+
+let updates = [];
+
+if(snapshot.exists()){
+
+snapshot.forEach((child)=>{
+
+updates.push(child.val().text);
+
+});
+
+marquee.innerText = updates.join(" | ");
+
+}
+else{
+
+marquee.innerText = "अभी कोई latest update नहीं है।";
+
+}
+
+});
+
+</script>
+
+</body>
+
+</html>

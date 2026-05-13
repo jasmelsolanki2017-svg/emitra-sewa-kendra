@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Dashboard | E-MITRA WALA</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans+Devanagari:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins','Noto Sans Devanagari',sans-serif;}
+    body{background:#f5f7fb;color:#222;}
+
+    .topbar{
+      background:#062b68;
+      color:white;
+      padding:10px 6%;
+      display:flex;
+      justify-content:space-between;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+
+    .topbar span{
+      color:#ffd000;
+      font-weight:700;
+    }
+
+    .session-timer{
+      background:#ffd000;
+      color:#0b3d91;
+      padding:10px;
+      text-align:center;
+      font-weight:700;
+      font-size:15px;
+    }
+
+    header{
+      background:linear-gradient(135deg,#0b3d91,#061b54);
+      color:white;
+      text-align:center;
+      padding:35px 6%;
+      border-bottom:6px solid #ffd000;
+    }
+
+    header h1{
+      color:#ffd000;
+      font-size:38px;
+    }
+
+    nav{
+      background:white;
+      padding:14px 6%;
+      display:flex;
+      justify-content:center;
+      gap:12px;
+      flex-wrap:wrap;
+      box-shadow:0 4px 15px rgba(0,0,0,.08);
+    }
+
+    nav a,nav button{
+      background:#0b3d91;
+      color:white;
+      text-decoration:none;
+      border:none;
+      padding:11px 20px;
+      border-radius:30px;
+      font-weight:700;
+      cursor:pointer;
+    }
+
+    nav a:hover,nav button:hover{
+      background:#ffd000;
+      color:#0b3d91;
+    }
+
+    .container{
+      padding:45px 6%;
+    }
+
+    .user-box{
+      background:#eef4ff;
+      border-left:6px solid #ffd000;
+      border-radius:18px;
+      padding:22px;
+      text-align:center;
+      margin-bottom:30px;
+      box-shadow:0 5px 18px rgba(0,0,0,.08);
+    }
+
+    .user-box h2{
+      color:#0b3d91;
+      margin-bottom:8px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+      gap:22px;
+    }
+
+    .card{
+      background:white;
+      border-radius:18px;
+      padding:25px;
+      text-align:center;
+      box-shadow:0 6px 20px rgba(0,0,0,.08);
+      border-top:6px solid #ffd000;
+    }
+
+    .card i{
+      font-size:38px;
+      color:#0b3d91;
+      margin-bottom:12px;
+    }
+
+    .card h3{
+      color:#0b3d91;
+      margin-bottom:10px;
+    }
+
+    .card p{
+      color:#555;
+      line-height:1.6;
+    }
+
+    .section{
+      background:white;
+      margin-top:35px;
+      padding:28px;
+      border-radius:20px;
+      box-shadow:0 6px 20px rgba(0,0,0,.08);
+      border-top:6px solid #ffd000;
+    }
+
+    .section h2{
+      color:#0b3d91;
+      margin-bottom:18px;
+      text-align:center;
+    }
+
+    .row{
+      background:#eef4ff;
+      padding:14px;
+      border-radius:12px;
+      margin-bottom:12px;
+      border-left:5px solid #0b3d91;
+    }
+
+    .row strong{
+      color:#0b3d91;
+    }
+
+    .row a{
+      color:#0b3d91;
+      font-weight:700;
+      text-decoration:none;
+    }
+
+    .job-card{
+      background:#eef4ff;
+      padding:16px;
+      border-radius:14px;
+      margin-bottom:14px;
+      border-left:5px solid #0b3d91;
+    }
+
+    .job-card h3{
+      color:#0b3d91;
+      margin-bottom:8px;
+    }
+
+    .job-card p{
+      margin:6px 0;
+      color:#444;
+    }
+
+    .job-card a{
+      display:inline-block;
+      background:#0b3d91;
+      color:white;
+      text-decoration:none;
+      padding:10px 16px;
+      border-radius:8px;
+      margin-top:10px;
+      font-weight:700;
+    }
+
+    .whatsapp{
+      position:fixed;
+      right:28px;
+      bottom:28px;
+      width:60px;
+      height:60px;
+      background:#25d366;
+      color:white;
+      border-radius:50%;
+      font-size:30px;
+      text-align:center;
+      z-index:999;
+    }
+
+    .whatsapp i{
+      margin-top:15px;
+    }
+
+    footer{
+      background:#0b3d91;
+      color:white;
+      text-align:center;
+      padding:22px;
+      margin-top:45px;
+    }
+
+    @media(max-width:768px){
+      header h1{font-size:28px;}
+      .container{padding:30px 4%;}
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="topbar">
+  <div>User Panel</div>
+  <div>⏰ <span id="liveTime"></span></div>
+</div>
+
+<div id="sessionTimer" class="session-timer">
+  Logout in: 60:00
+</div>
+
+<header>
+  <h1>E-MITRA WALA User Panel</h1>
+  <p>Welcome to your dashboard</p>
+</header>
+
+<nav>
+  <a href="index.html">Home</a>
+  <a href="job-form.html">Latest Jobs</a>
+  <a href="OFFLINEFORM.HTML">Offline Forms</a>
+  <a href="stationery.html">Stationery</a>
+  <button onclick="logoutUser()">Logout</button>
+</nav>
+
+<div class="container">
+
+  <div class="user-box">
+    <h2>User Account</h2>
+    <p><b>Email:</b> <span id="userEmail">Checking...</span></p>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <i class="fa-solid fa-user"></i>
+      <h3>My Profile</h3>
+      <p>Apni profile aur account details yahan dekhein.</p>
+    </div>
+
+    <div class="card">
+      <i class="fa-solid fa-briefcase"></i>
+      <h3>Latest Jobs</h3>
+      <p>Admin portal se add jobs yahan automatic show hongi.</p>
+    </div>
+
+    <div class="card">
+      <i class="fa-solid fa-download"></i>
+      <h3>Download Center</h3>
+      <p>Forms, PDFs aur documents download karein.</p>
+    </div>
+
+    <div class="card">
+      <i class="fa-solid fa-clock-rotate-left"></i>
+      <h3>Payment History</h3>
+      <p>Payment records future update me show honge.</p>
+    </div>
+  </div>
+
+  <section class="section">
+    <h2>Latest Updates</h2>
+    <div id="updatesList">Loading...</div>
+  </section>
+
+  <section class="section">
+    <h2>Latest Jobs</h2>
+    <div id="jobsList">Loading...</div>
+  </section>
+
+  <section class="section">
+    <h2>Download Center</h2>
+
+    <div class="row">
+      <strong>Offline Forms</strong><br>
+      <a href="OFFLINEFORM.HTML">Open Forms Page</a>
+    </div>
+
+    <div class="row">
+      <strong>Latest Jobs</strong><br>
+      <a href="job-form.html">Open Job Page</a>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Payment History</h2>
+
+    <div class="row">
+      <strong>Status:</strong> Payment history system future में add होगा।
+    </div>
+  </section>
+
+</div>
+
+<a class="whatsapp" target="_blank" rel="noopener noreferrer" href="https://wa.me/919509403258?text=Hello%20E-MITRA%20WALA,%20mujhe%20help%20chahiye.">
+  <i class="fa-brands fa-whatsapp"></i>
+</a>
+
+<footer>
+  © 2026 E-MITRA WALA | User Dashboard
+</footer>
+
+<script>
+  function updateLiveTime(){
+    const now = new Date();
+    document.getElementById("liveTime").innerText = now.toLocaleString("hi-IN");
+  }
+
+  updateLiveTime();
+  setInterval(updateLiveTime,1000);
+</script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+
+  import {
+    getAuth,
+    onAuthStateChanged,
+    signOut
+  } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+
+  import {
+    getDatabase,
+    ref,
+    onValue
+  } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",
+    authDomain: "my-website-73785.firebaseapp.com",
+    databaseURL: "https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app/",
+    projectId: "my-website-73785",
+    storageBucket: "my-website-73785.firebasestorage.app",
+    messagingSenderId: "854088341990",
+    appId: "1:854088341990:web:3211d4ef9fe4b78d025e27"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getDatabase(app);
+
+  const escapeHTML = (value = "") => String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+  const safeUrl = (value = "#") => {
+    const url = String(value || "#").trim();
+    return /^https?:\/\//i.test(url) ? url : "#";
+  };
+
+  function startSessionTimer(){
+    const timerBox = document.getElementById("sessionTimer");
+    let loginTime = localStorage.getItem("loginTime");
+
+    if(!loginTime){
+      loginTime = Date.now();
+      localStorage.setItem("loginTime", loginTime);
+    }
+
+    const totalMinutes = 60;
+
+    setInterval(()=>{
+      const diff = Date.now() - parseInt(loginTime);
+      const remainingMs = (totalMinutes * 60 * 1000) - diff;
+
+      if(remainingMs <= 0){
+        timerBox.innerText = "Session Expired";
+
+        localStorage.removeItem("loginTime");
+
+        signOut(auth).then(()=>{
+          window.location.href = "index.html";
+        });
+
+        return;
+      }
+
+      const totalSeconds = Math.floor(remainingMs / 1000);
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+
+      timerBox.innerText = `Logout in: ${minutes}:${seconds.toString().padStart(2,'0')}`;
+    },1000);
+  }
+
+  onAuthStateChanged(auth, (user) => {
+    if(user){
+
+      if(!localStorage.getItem("loginTime")){
+        localStorage.setItem("loginTime", Date.now());
+      }
+
+      startSessionTimer();
+
+      document.getElementById("userEmail").innerText = user.email;
+
+    } else {
+      window.location.href = "index.html";
+    }
+  });
+
+  window.logoutUser = () => {
+    localStorage.removeItem("loginTime");
+
+    signOut(auth).then(() => {
+      window.location.href = "index.html";
+    });
+  };
+
+  const updatesRef = ref(db, "latestUpdates");
+
+  onValue(updatesRef, (snapshot) => {
+    const box = document.getElementById("updatesList");
+    box.innerHTML = "";
+
+    if(snapshot.exists()){
+      snapshot.forEach((child) => {
+        const data = child.val();
+
+        box.innerHTML += `
+          <div class="row">
+            <strong>${escapeHTML(data.text)}</strong>
+          </div>
+        `;
+      });
+    } else {
+      box.innerHTML = "<p>अभी कोई update नहीं है।</p>";
+    }
+  });
+
+  const jobsRef = ref(db, "LatestJobs");
+
+  onValue(jobsRef, (snapshot) => {
+    const box = document.getElementById("jobsList");
+    box.innerHTML = "";
+
+    if(snapshot.exists()){
+      snapshot.forEach((child) => {
+        const job = child.val();
+
+        box.innerHTML += `
+          <div class="job-card">
+            <h3>${escapeHTML(job.title || "Job Update")}</h3>
+            <p><b>Type:</b> ${escapeHTML(job.type || "Online Form")}</p>
+            <p><b>Last Date:</b> ${escapeHTML(job.lastDate || "Update Soon")}</p>
+            <p><b>Qualification:</b> ${escapeHTML(job.qualification || "Update Soon")}</p>
+            <p><b>Location:</b> ${escapeHTML(job.location || "All India")}</p>
+            <a href="${safeUrl(job.applyLink)}" target="_blank" rel="noopener noreferrer">Apply Now</a>
+          </div>
+        `;
+      });
+    } else {
+      box.innerHTML = "<p>अभी कोई job available नहीं है।</p>";
+    }
+  });
+</script>
+
+</body>
+</html>

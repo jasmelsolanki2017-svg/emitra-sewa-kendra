@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solanki Brothers Premium</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+body{background:#f5f7fb;color:#222;transition:0.4s}
+.dark{background:#111;color:#fff}
+nav{background:#0b3d91;color:white;padding:15px 5%;display:flex;justify-content:space-between;align-items:center}
+.logo{font-size:28px;font-weight:bold;color:#ffd000}
+nav ul{display:flex;list-style:none;gap:20px}
+nav ul li a{text-decoration:none;color:white}
+.topbar{background:#ffd000;padding:10px;text-align:center;font-weight:bold}
+.news{background:red;color:white;padding:10px;white-space:nowrap;overflow:hidden}
+.news span{display:inline-block;animation:scroll 15s linear infinite}
+@keyframes scroll{from{transform:translateX(100%)}to{transform:translateX(-100%)}}
+.hero{padding:100px 20px;text-align:center;background:#0b3d91;color:white}
+.hero h1{font-size:50px;margin-bottom:20px}
+.search{padding:20px;text-align:center;background:white}
+.search input{width:80%;padding:14px;border-radius:30px;border:1px solid #ccc;font-size:16px}
+.cards{padding:60px 5%;display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:25px}
+.card{background:white;padding:25px;border-radius:18px;box-shadow:0 5px 15px rgba(0,0,0,0.1);text-align:center}
+.dark .card{background:#1e1e1e}
+.counter{text-align:center;padding:50px;background:#eef4ff}
+.counter h2{font-size:40px;color:#0b3d91;margin-bottom:20px}
+.admin{padding:50px 5%;background:white}
+.admin input,.admin button{padding:12px;margin:10px 0;width:100%}
+.login{padding:50px 5%;background:#eef4ff}
+.login input,.login button{padding:12px;margin:10px 0;width:100%}
+footer{background:#0b3d91;color:white;text-align:center;padding:20px}
+.dark-btn{position:fixed;right:20px;bottom:20px;background:#ffd000;border:none;padding:15px;border-radius:50%;cursor:pointer}
+@media(max-width:768px){
+.hero h1{font-size:32px}
+nav{flex-direction:column;gap:10px}
+nav ul{flex-wrap:wrap;justify-content:center}
+}
+</style>
+</head>
+<body>
+
+<nav>
+<div class="logo">Solanki Brothers</div>
+<ul>
+<li><a href="#">Home</a></li>
+<li><a href="#">About</a></li>
+<li><a href="#">Forms</a></li>
+<li><a href="#">Contact</a></li>
+</ul>
+</nav>
+
+<div class="topbar" id="time"></div>
+
+<div class="news">
+<span>
+CTET September Online Form 2026 | Rajasthan New Vacancy | Railway ALP Form 2026 | Latest E-Mitra Services Available
+</span>
+</div>
+
+<section class="hero">
+<h1 id="typing"></h1>
+<p>Trusted Rajasthan E-Mitra Service Center</p>
+</section>
+
+<section class="search">
+<input type="text" placeholder="Search Forms & Services...">
+</section>
+
+<section class="cards">
+<div class="card">
+<h2>Online Forms</h2>
+<p>All government forms available.</p>
+</div>
+<div class="card">
+<h2>PDF Download</h2>
+<p>Download forms instantly.</p>
+</div>
+<div class="card">
+<h2>Fast Support</h2>
+<p>WhatsApp & Call support available.</p>
+</div>
+</section>
+
+<section class="counter">
+<h2>Website Visitors</h2>
+<img src="https://hitwebcounter.com/counter/counter.php?page=21421561&style=0006&nbdigits=6&type=page&initCount=0" border="0">
+</section>
+
+<section class="admin">
+<h2>Admin Panel</h2>
+<input type="text" placeholder="Add New Form Name">
+<button>Add Form</button>
+</section>
+
+<section class="login">
+<h2>Login / Register</h2>
+<input type="text" placeholder="Username">
+<input type="password" placeholder="Password">
+<button>Login</button>
+<button>Register</button>
+</section>
+
+<footer>
+© 2026 Solanki Brothers | All Rights Reserved
+</footer>
+
+<button class="dark-btn" onclick="document.body.classList.toggle('dark')">
+<i class="fa-solid fa-moon"></i>
+</button>
+
+<script>
+setInterval(()=>{
+document.getElementById('time').innerHTML = new Date().toLocaleString();
+},1000);
+
+const text = 'Welcome To Solanki Brothers';
+let i = 0;
+function typing(){
+if(i < text.length){
+document.getElementById('typing').innerHTML += text.charAt(i);
+i++;
+setTimeout(typing,100);
+}
+}
+typing();
+</script>
+
+</body>
+</html>

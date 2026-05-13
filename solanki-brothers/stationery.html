@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="hi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>पीलीबंगा स्टेशनरी & फोटो स्टेट</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Noto Sans Devanagari', sans-serif;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: #f6f8ff;
+      color: #222;
+      overflow-x: hidden;
+    }
+
+    /* TOP BAR */
+
+    .topbar {
+      background: #061b54;
+      color: white;
+      padding: 8px 6%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .topbar a {
+      color: #ffd000;
+      text-decoration: none;
+    }
+
+    #liveTime {
+      color: #ffd000;
+      font-weight: 800;
+    }
+
+    /* HEADER */
+
+    header {
+      background: linear-gradient(135deg, #071d5c, #0b3d91);
+      color: white;
+      padding: 28px 6%;
+      text-align: center;
+      border-bottom: 7px solid #ffd000;
+    }
+
+    header h1 {
+      font-size: 52px;
+      color: #ffd000;
+      text-shadow: 3px 3px 5px #000;
+      margin-bottom: 8px;
+      font-weight: 900;
+    }
+
+    header h2 {
+      font-size: 36px;
+      color: white;
+      margin-bottom: 8px;
+      font-weight: 800;
+    }
+
+    header p {
+      font-size: 20px;
+      color: #fff2a8;
+      font-weight: 700;
+    }
+
+    /* NAV */
+
+    nav {
+      background: #d90000;
+      padding: 13px 6%;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      font-weight: 800;
+      margin: 0 14px;
+      font-size: 17px;
+      transition: 0.3s;
+    }
+
+    nav a:hover {
+      color: #ffd000;
+    }
+
+    /* SLIDER */
+
+    .stationery-slider {
+      width: 100%;
+      height: 86vh;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .st-slides {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      transition: 1s ease;
+    }
+
+    .st-slide {
+      min-width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    .st-slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .st-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+    }
+
+    .st-content {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 90%;
+      max-width: 920px;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      color: white;
+      z-index: 2;
+    }
+
+    .st-content h1 {
+      font-size: 62px;
+      color: #ffd000;
+      text-shadow: 4px 4px 8px #000;
+      margin-bottom: 12px;
+      font-weight: 900;
+    }
+
+    .st-content h2 {
+      font-size: 42px;
+      margin-bottom: 15px;
+      font-weight: 800;
+    }
+
+    .st-content p {
+      font-size: 22px;
+      line-height: 1.7;
+      margin-bottom: 30px;
+      font-weight: 700;
+    }
+
+    .st-btn {
+      display: inline-block;
+      padding: 14px 36px;
+      background: #ffd000;
+      color: #0b3d91;
+      text-decoration: none;
+      border-radius: 50px;
+      font-weight: 900;
+      font-size: 18px;
+      transition: 0.3s;
+      box-shadow: 0 8px 20px rgba(255,208,0,0.35);
+    }
+
+    .st-btn:hover {
+      background: white;
+      transform: translateY(-5px);
+    }
+
+    .st-slider-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 58px;
+      height: 58px;
+      border: none;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.25);
+      color: white;
+      font-size: 30px;
+      cursor: pointer;
+      z-index: 10;
+      transition: 0.3s;
+    }
+
+    .st-slider-btn:hover {
+      background: #ffd000;
+      color: #0b3d91;
+    }
+
+    .st-prev {
+      left: 20px;
+    }
+
+    .st-next {
+      right: 20px;
+    }
+
+    /* POSTER PHOTO */
+
+    .poster-section {
+      padding: 80px 6%;
+      background: white;
+    }
+
+    .section-title {
+      text-align: center;
+      margin-bottom: 42px;
+    }
+
+    .section-title h2 {
+      font-size: 42px;
+      color: #0b3d91;
+      display: inline-block;
+      border-bottom: 6px solid #ffd000;
+      padding-bottom: 8px;
+      font-weight: 900;
+    }
+
+    .poster-box {
+      max-width: 1050px;
+      margin: auto;
+      background: #eef4ff;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 12px 35px rgba(0,0,0,0.18);
+      border: 5px solid #ffd000;
+    }
+
+    .poster-box img {
+      width: 100%;
+      display: block;
+    }
+
+    .poster-caption {
+      padding: 28px;
+      text-align: center;
+      background: linear-gradient(135deg, #061b54, #0b3d91);
+      color: white;
+    }
+
+    .poster-caption h3 {
+      font-size: 32px;
+      color: #ffd000;
+      margin-bottom: 10px;
+    }
+
+    .poster-caption p {
+      font-size: 18px;
+      line-height: 1.8;
+    }
+
+    /* QUICK CONTACT */
+
+    .quick-contact {
+      padding: 40px 6%;
+      background: #ffd000;
+      text-align: center;
+    }
+
+    .quick-contact h2 {
+      font-size: 34px;
+      color: #0b3d91;
+      margin-bottom: 20px;
+    }
+
+    .quick-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+
+    .quick-buttons a {
+      text-decoration: none;
+      padding: 14px 30px;
+      border-radius: 40px;
+      font-size: 18px;
+      font-weight: 900;
+      transition: 0.3s;
+    }
+
+    .call-btn {
+      background: #0b3d91;
+      color: white;
+    }
+
+    .whatsapp-btn2 {
+      background: #25d366;
+      color: white;
+    }
+
+    .quick-buttons a:hover {
+      transform: translateY(-5px);
+    }
+
+    /* SERVICES */
+
+    .section {
+      padding: 75px 6%;
+    }
+
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 28px;
+    }
+
+    .service-card {
+      background: white;
+      border-radius: 22px;
+      padding: 30px;
+      box-shadow: 0 7px 24px rgba(0,0,0,0.1);
+      border-top: 8px solid #0b3d91;
+      transition: 0.3s;
+    }
+
+    .service-card:hover {
+      transform: translateY(-9px);
+      box-shadow: 0 10px 28px rgba(0,0,0,0.16);
+    }
+
+    .service-card.red {
+      border-top-color: #d90000;
+    }
+
+    .service-card.green {
+      border-top-color: #138a36;
+    }
+
+    .service-card.orange {
+      border-top-color: #ff8c00;
+    }
+
+    .service-card.purple {
+      border-top-color: #7b1fa2;
+    }
+
+    .service-card.pink {
+      border-top-color: #d81b60;
+    }
+
+    .service-card h3 {
+      font-size: 25px;
+      margin-bottom: 18px;
+      color: #0b3d91;
+      font-weight: 900;
+    }
+
+    .service-card h3 i {
+      margin-right: 8px;
+      color: #d90000;
+    }
+
+    .service-card ul {
+      list-style: none;
+    }
+
+    .service-card ul li {
+      font-size: 17px;
+      margin-bottom: 10px;
+      padding-left: 25px;
+      position: relative;
+      line-height: 1.5;
+      font-weight: 600;
+    }
+
+    .service-card ul li::before {
+      content: "●";
+      position: absolute;
+      left: 0;
+      color: #d90000;
+      font-weight: bold;
+    }
+
+    /* SPECIAL */
+
+    .special {
+      background: linear-gradient(135deg, #061b54, #0b3d91);
+      color: white;
+    }
+
+    .special .section-title h2 {
+      color: #ffd000;
+      border-bottom-color: white;
+    }
+
+    .special-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 25px;
+    }
+
+    .special-card {
+      background: white;
+      color: #222;
+      padding: 28px;
+      border-radius: 20px;
+      text-align: center;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.22);
+      transition: 0.3s;
+    }
+
+    .special-card:hover {
+      transform: translateY(-8px);
+    }
+
+    .special-card i {
+      font-size: 45px;
+      color: #0b3d91;
+      margin-bottom: 13px;
+    }
+
+    .special-card h3 {
+      color: #d90000;
+      font-size: 21px;
+      font-weight: 900;
+    }
+
+    /* CONTACT */
+
+    .contact {
+      background: white;
+      text-align: center;
+    }
+
+    .contact-box {
+      max-width: 900px;
+      margin: auto;
+      background: #eef4ff;
+      border-radius: 24px;
+      padding: 38px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+      border: 5px solid #ffd000;
+    }
+
+    .contact-box h2 {
+      font-size: 38px;
+      color: #0b3d91;
+      margin-bottom: 22px;
+      font-weight: 900;
+    }
+
+    .contact-box p {
+      font-size: 22px;
+      margin: 14px 0;
+      font-weight: 800;
+    }
+
+    .contact-box a {
+      color: #0b3d91;
+      text-decoration: none;
+    }
+
+    footer {
+      background: #061b54;
+      color: white;
+      text-align: center;
+      padding: 24px;
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .whatsapp-float {
+      position: fixed;
+      right: 25px;
+      bottom: 25px;
+      width: 64px;
+      height: 64px;
+      background: #25d366;
+      color: white;
+      border-radius: 50%;
+      text-align: center;
+      font-size: 36px;
+      line-height: 64px;
+      z-index: 999;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+    }
+
+    @media(max-width: 768px) {
+      .topbar {
+        justify-content: center;
+        text-align: center;
+      }
+
+      header h1 {
+        font-size: 34px;
+      }
+
+      header h2 {
+        font-size: 24px;
+      }
+
+      header p {
+        font-size: 16px;
+      }
+
+      nav a {
+        display: inline-block;
+        margin: 6px;
+        font-size: 15px;
+      }
+
+      .stationery-slider {
+        height: 72vh;
+      }
+
+      .st-content h1 {
+        font-size: 34px;
+      }
+
+      .st-content h2 {
+        font-size: 25px;
+      }
+
+      .st-content p {
+        font-size: 16px;
+      }
+
+      .st-slider-btn {
+        width: 45px;
+        height: 45px;
+        font-size: 22px;
+      }
+
+      .section-title h2 {
+        font-size: 30px;
+      }
+
+      .poster-caption h3 {
+        font-size: 24px;
+      }
+
+      .poster-caption p {
+        font-size: 16px;
+      }
+
+      .contact-box p {
+        font-size: 18px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- TOP BAR -->
+
+  <div class="topbar">
+    <div>
+      📞 <a href="tel:8505090384">8505090384</a> |
+      📞 <a href="tel:8560824776">8560824776</a>
+    </div>
+
+    <div>
+      ⏰ <span id="liveTime"></span>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+
+  <header>
+    <h1>पीलीबंगा स्टेशनरी</h1>
+    <h2>एण्ड फोटो स्टेट</h2>
+    <p>एक ही दुकान, सभी समाधान!</p>
+  </header>
+
+  <!-- NAV -->
+
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="#poster">Poster</a>
+    <a href="#services">Services</a>
+    <a href="#special">Speciality</a>
+    <a href="#contact">Contact</a>
+  </nav>
+
+  <!-- SLIDER -->
+
+  <section class="stationery-slider">
+
+    <button class="st-slider-btn st-prev" onclick="prevStSlide()">❮</button>
+    <button class="st-slider-btn st-next" onclick="nextStSlide()">❯</button>
+
+    <div class="st-slides" id="stSlides">
+
+      <!-- SLIDE 1 - POSTER PHOTO -->
+      <div class="st-slide">
+        <img src="stationery-photo.jpeg" alt="पीलीबंगा स्टेशनरी पोस्टर">
+        <div class="st-overlay"></div>
+
+        <div class="st-content">
+          <h1>पीलीबंगा स्टेशनरी</h1>
+          <h2>एण्ड फोटो स्टेट</h2>
+          <p>स्कूल, कॉलेज, स्टेशनरी, फोटो कॉपी, प्रिंटिंग और ई-मित्र सेवा</p>
+
+          <a href="#poster" class="st-btn">पूरी जानकारी देखें</a>
+        </div>
+      </div>
+
+      <!-- SLIDE 2 -->
+      <div class="st-slide">
+        <img src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?q=80&w=1400&auto=format&fit=crop" alt="School College Material">
+        <div class="st-overlay"></div>
+
+        <div class="st-content">
+          <h1>School & College Material</h1>
+          <p>Books, Copies, Bags, Practical Files, Project Material</p>
+
+          <a href="#services" class="st-btn">सामान देखें</a>
+        </div>
+      </div>
+
+      <!-- SLIDE 3 -->
+      <div class="st-slide">
+        <img src="https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?q=80&w=1400&auto=format&fit=crop" alt="Photostat Printing">
+        <div class="st-overlay"></div>
+
+        <div class="st-content">
+          <h1>Photostat & Printing</h1>
+          <p>Xerox, Color Print, Scan, Lamination, Spiral Binding</p>
+
+          <a href="#contact" class="st-btn">Contact Now</a>
+        </div>
+      </div>
+
+      <!-- SLIDE 4 -->
+      <div class="st-slide">
+        <img src="https://images.unsplash.com/photo-1456735190827-d1262f71b8a3?q=80&w=1400&auto=format&fit=crop" alt="Online Form Services">
+        <div class="st-overlay"></div>
+
+        <div class="st-content">
+          <h1>Online Form & E-Mitra Services</h1>
+          <p>Online Form, Ticket Booking, Passport Photo, Digital Print</p>
+
+          <a href="https://wa.me/918505090384" target="_blank" rel="noopener noreferrer" class="st-btn">
+            WhatsApp करें
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- POSTER SECTION -->
+
+  <section class="poster-section" id="poster">
+
+    <div class="section-title">
+      <h2>हमारी दुकान की पूरी जानकारी</h2>
+    </div>
+
+    <div class="poster-box">
+      <img src="stationery-photo.jpeg" alt="पीलीबंगा स्टेशनरी एण्ड फोटो स्टेट">
+
+      <div class="poster-caption">
+        <h3>पीलीबंगा स्टेशनरी एण्ड फोटो स्टेट</h3>
+        <p>
+          स्कूल एवं कॉलेज की सभी सामग्री, किताबें, गाइड, फोटो कॉपी, कलर प्रिंट,
+          स्कैनिंग, लेमिनेशन, ऑनलाइन फॉर्म, टिकट बुकिंग, पासपोर्ट साइज फोटो
+          और ई-मित्र सेवा एक ही स्थान पर उपलब्ध।
+        </p>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- QUICK CONTACT -->
+
+  <section class="quick-contact">
+
+    <h2>अभी संपर्क करें</h2>
+
+    <div class="quick-buttons">
+
+      <a href="tel:8505090384" class="call-btn">
+        <i class="fa-solid fa-phone"></i> Call 8505090384
+      </a>
+
+      <a href="https://wa.me/918505090384" target="_blank" rel="noopener noreferrer" class="whatsapp-btn2">
+        <i class="fa-brands fa-whatsapp"></i> WhatsApp
+      </a>
+
+      <a href="tel:8560824776" class="call-btn">
+        <i class="fa-solid fa-phone"></i> Call 8560824776
+      </a>
+
+    </div>
+
+  </section>
+
+  <!-- SERVICES -->
+
+  <section class="section" id="services">
+
+    <div class="section-title">
+      <h2>हमारी सेवाएँ</h2>
+    </div>
+
+    <div class="services-grid">
+
+      <div class="service-card red">
+        <h3><i class="fa-solid fa-pen"></i> स्टेशनरी सामान</h3>
+        <ul>
+          <li>कॉपी, रजिस्टर सभी प्रकार</li>
+          <li>पेन, पेंसिल, इरेजर, शार्पनर</li>
+          <li>मार्कर, हाईलाइटर</li>
+          <li>ज्योमेट्री बॉक्स, स्केल</li>
+          <li>फाइल, फोल्डर, क्लिप, स्टेपलर</li>
+          <li>स्टिकी नोट्स, चार्ट पेपर आदि</li>
+        </ul>
+      </div>
+
+      <div class="service-card green">
+        <h3><i class="fa-solid fa-school"></i> स्कूल एवं कॉलेज सामग्री</h3>
+        <ul>
+          <li>स्कूल बैग, पेंसिल बॉक्स</li>
+          <li>ड्राइंग कॉपी, चार्ट पेपर</li>
+          <li>प्रैक्टिकल फाइल्स</li>
+          <li>प्रोजेक्ट सामग्री</li>
+          <li>लैब रिकॉर्ड बुक</li>
+          <li>आईडी कार्ड होल्डर, कवर आदि</li>
+        </ul>
+      </div>
+
+      <div class="service-card orange">
+        <h3><i class="fa-solid fa-book-open"></i> किताबें एवं गाइड</h3>
+        <ul>
+          <li>सभी कक्षाओं की स्कूल किताबें</li>
+          <li>कॉलेज की गाइड एवं नोट्स</li>
+          <li>प्रतियोगी परीक्षाओं की किताबें</li>
+          <li>NCERT, RBSE एवं अन्य पुस्तकें</li>
+          <li>गाइड और स्टडी मटेरियल</li>
+        </ul>
+      </div>
+
+      <div class="service-card purple">
+        <h3><i class="fa-solid fa-copy"></i> फोटोस्टेट एवं प्रिंटिंग</h3>
+        <ul>
+          <li>फोटो कॉपी Xerox</li>
+          <li>ब्लैक & कलर प्रिंट आउट</li>
+          <li>स्कैनिंग सुविधा</li>
+          <li>ऑनलाइन फॉर्म भरना</li>
+          <li>डॉक्यूमेंट लेमिनेशन</li>
+          <li>स्पाइरल बाइंडिंग, कटिंग</li>
+        </ul>
+      </div>
+
+      <div class="service-card">
+        <h3><i class="fa-solid fa-palette"></i> आर्ट एवं क्राफ्ट सामग्री</h3>
+        <ul>
+          <li>कलर पेंसिल, स्केच पेन</li>
+          <li>वॉटर कलर, ऑयल पेस्टल</li>
+          <li>ब्रश, कैनवास</li>
+          <li>क्राफ्ट पेपर, ग्लू</li>
+          <li>ग्लिटर, चार्ट, थर्माकोल आदि</li>
+        </ul>
+      </div>
+
+      <div class="service-card pink">
+        <h3><i class="fa-solid fa-gift"></i> अन्य सुविधाएँ</h3>
+        <ul>
+          <li>ऑनलाइन फॉर्म भरना</li>
+          <li>रेलवे, बस, हवाई टिकट बुकिंग</li>
+          <li>पासपोर्ट साइज फोटो</li>
+          <li>डिजिटल फोटो प्रिंटिंग</li>
+          <li>लेमिनेशन A4, कार्ड, फोटो</li>
+          <li>ई-मित्र सेवा</li>
+        </ul>
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- SPECIAL -->
+
+  <section class="section special" id="special">
+
+    <div class="section-title">
+      <h2>हमारी विशेषताएँ</h2>
+    </div>
+
+    <div class="special-grid">
+
+      <div class="special-card">
+        <i class="fa-solid fa-indian-rupee-sign"></i>
+        <h3>उचित मूल्य</h3>
+      </div>
+
+      <div class="special-card">
+        <i class="fa-solid fa-medal"></i>
+        <h3>उच्च गुणवत्ता</h3>
+      </div>
+
+      <div class="special-card">
+        <i class="fa-solid fa-basket-shopping"></i>
+        <h3>सभी सामग्री एक ही स्थान पर</h3>
+      </div>
+
+      <div class="special-card">
+        <i class="fa-solid fa-user-graduate"></i>
+        <h3>छात्रों के लिए विशेष सुविधा</h3>
+      </div>
+
+      <div class="special-card">
+        <i class="fa-solid fa-thumbs-up"></i>
+        <h3>ग्राहक संतुष्टि प्राथमिकता</h3>
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- CONTACT -->
+
+  <section class="section contact" id="contact">
+
+    <div class="contact-box">
+
+      <h2>संपर्क सूत्र</h2>
+
+      <p>
+        <i class="fa-solid fa-location-dot"></i>
+        पता: पीलीबंगा, हनुमानगढ़, राजस्थान
+      </p>
+
+      <p>
+        <i class="fa-brands fa-whatsapp"></i>
+        WhatsApp:
+        <a href="https://wa.me/918505090384" target="_blank" rel="noopener noreferrer">8505090384</a>
+      </p>
+
+      <p>
+        <i class="fa-solid fa-phone"></i>
+        Call:
+        <a href="tel:8505090384">8505090384</a>,
+        <a href="tel:8560824776">8560824776</a>
+      </p>
+
+    </div>
+
+  </section>
+
+  <!-- FOOTER -->
+
+  <footer>
+    पढ़ाई की हर जरूरत, पूरी करेंगे हम जरूर!
+  </footer>
+
+  <!-- FLOAT WHATSAPP -->
+
+  <a href="https://wa.me/918505090384" target="_blank" rel="noopener noreferrer" class="whatsapp-float">
+    <i class="fa-brands fa-whatsapp"></i>
+  </a>
+
+  <!-- JAVASCRIPT -->
+
+  <script>
+    let stCurrentSlide = 0;
+
+    const stSlides = document.getElementById("stSlides");
+    const stTotalSlides = document.querySelectorAll(".st-slide").length;
+
+    function showStSlide(index) {
+
+      if (index >= stTotalSlides) {
+        stCurrentSlide = 0;
+      }
+
+      else if (index < 0) {
+        stCurrentSlide = stTotalSlides - 1;
+      }
+
+      else {
+        stCurrentSlide = index;
+      }
+
+      stSlides.style.transform = `translateX(-${stCurrentSlide * 100}%)`;
+    }
+
+    function nextStSlide() {
+      showStSlide(stCurrentSlide + 1);
+    }
+
+    function prevStSlide() {
+      showStSlide(stCurrentSlide - 1);
+    }
+
+    setInterval(() => {
+      nextStSlide();
+    }, 4500);
+
+    /* LIVE TIME */
+
+    function updateLiveTime() {
+
+      const now = new Date();
+
+      const options = {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true
+      };
+
+      document.getElementById("liveTime").innerText =
+        now.toLocaleString("hi-IN", options);
+
+    }
+
+    updateLiveTime();
+
+    setInterval(updateLiveTime, 1000);
+  </script>
+
+</body>
+</html>
