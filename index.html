@@ -291,103 +291,99 @@ margin-top:12px;
 line-height:1.6;
 }
 
-/* SLIDER */
+/* ADVERTISEMENT */
 
-.slider{
-width:100%;
-height:90vh;
+.ad-section{
+background:#eef4ff;
+padding:55px 6%;
+}
+
+.ad-box{
+max-width:1100px;
+margin:auto;
+background:white;
+border-radius:10px;
 overflow:hidden;
-position:relative;
+box-shadow:0 8px 28px rgba(0,0,0,0.13);
+border-top:6px solid #ffd000;
+display:grid;
+grid-template-columns:minmax(280px,0.9fr) 1.1fr;
+min-height:330px;
 }
 
-.slides{
+.ad-media{
+background:#0b3d91;
+min-height:300px;
 display:flex;
-width:100%;
-height:100%;
-transition:1s;
+align-items:center;
+justify-content:center;
+overflow:hidden;
 }
 
-.slide{
-min-width:100%;
-height:100%;
-position:relative;
-}
-
-.slide img{
+.ad-media img{
 width:100%;
 height:100%;
 object-fit:cover;
+display:block;
 }
 
-.overlay{
-position:absolute;
-inset:0;
-background:rgba(0,0,0,0.55);
+.ad-placeholder{
+color:#ffd000;
+font-size:80px;
 }
 
-.content{
-position:absolute;
-top:50%;
-left:50%;
-transform:translate(-50%,-50%);
-text-align:center;
-color:white;
-z-index:2;
-width:90%;
-max-width:850px;
+.ad-content{
+padding:34px;
+display:flex;
+flex-direction:column;
+justify-content:center;
+gap:14px;
 }
 
-.content h1{
-font-size:58px;
-margin-bottom:20px;
-}
-
-.content p{
-font-size:19px;
-line-height:1.8;
-margin-bottom:35px;
-}
-
-.btn{
+.ad-label{
 display:inline-block;
-padding:15px 38px;
+width:max-content;
 background:#ffd000;
 color:#0b3d91;
-text-decoration:none;
-border-radius:50px;
+padding:7px 14px;
+border-radius:30px;
+font-weight:800;
+font-size:13px;
+}
+
+.ad-content h1{
+color:#0b3d91;
+font-size:40px;
+line-height:1.25;
+}
+
+.ad-content p{
+color:#444;
 font-size:17px;
-font-weight:700;
-transition:0.3s;
+line-height:1.75;
 }
 
-.btn:hover{
-background:white;
-transform:translateY(-4px);
-}
-
-/* SLIDER BUTTONS */
-
-.slider-btn{
-position:absolute;
-top:50%;
-transform:translateY(-50%);
-width:60px;
-height:60px;
-border:none;
-border-radius:50%;
-background:rgba(255,255,255,0.2);
+.ad-content a{
+display:inline-block;
+width:max-content;
+background:#0b3d91;
 color:white;
-font-size:30px;
-cursor:pointer;
-z-index:10;
+text-decoration:none;
+padding:13px 24px;
+border-radius:8px;
+font-weight:800;
 }
 
-.prev{
-left:20px;
+.ad-content a:hover{
+background:#ffd000;
+color:#0b3d91;
 }
 
-.next{
-right:20px;
+.ad-empty{
+text-align:center;
+padding:60px 20px;
+color:#0b3d91;
+font-weight:800;
 }
 
 /* LATEST UPDATES */
@@ -666,16 +662,24 @@ justify-content:center;
 gap:16px;
 }
 
-.content h1{
-font-size:35px;
+.ad-section{
+padding:32px 4%;
 }
 
-.content p{
-font-size:15px;
+.ad-box{
+grid-template-columns:1fr;
 }
 
-.slider{
-height:75vh;
+.ad-media{
+min-height:210px;
+}
+
+.ad-content{
+padding:24px;
+}
+
+.ad-content h1{
+font-size:30px;
 }
 
 .payment-box{
@@ -705,7 +709,7 @@ height:200px;
 </div>
 
 <div>
-⏰ <span id="liveTime"></span> | Rajasthan, India
+⏰ <span id="liveTime"></span> | <span id="weatherInfo">Weather loading...</span> | Rajasthan, India
 </div>
 
 </div>
@@ -724,7 +728,6 @@ E-MITRA WALA</div>
 <li><a href="#" onclick="openLogin()">Login</a></li>
 <li><a href="job-form.html">Latest Job</a></li>
 <li><a href="stationery.html">Stationery</a></li>
-
 <li><a href="#contact">Contact</a></li>
 </ul>
 
@@ -811,56 +814,20 @@ Note: Payment karne ke baad hi Payment Done button dabayein.
 
 </div>
 
-<!-- SLIDER -->
+<!-- ADVERTISEMENT -->
 
-<section class="slider">
+<section class="ad-section">
 
-<button class="slider-btn prev" onclick="prevSlide()">❮</button>
+<div id="advertisementBox" class="ad-box">
+  <div class="ad-media">
+    <i class="fa-solid fa-rectangle-ad ad-placeholder"></i>
+  </div>
 
-<button class="slider-btn next" onclick="nextSlide()">❯</button>
-
-<div class="slides" id="slides">
-
-<div class="slide">
-
-<img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=1400&auto=format&fit=crop">
-
-<div class="overlay"></div>
-
-<div class="content">
-
-<h1>Welcome To E-MITRA WALA</h1>
-
-<p>Rajasthan ki trusted E-Mitra service.</p>
-
-<a href="OFFLINEFORM.HTML" class="btn">
-View Forms
-</a>
-
-</div>
-
-</div>
-
-<div class="slide">
-
-<img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=1400&auto=format&fit=crop">
-
-<div class="overlay"></div>
-
-<div class="content">
-
-<h1>Fast & Reliable Services</h1>
-
-<p>Jan Aadhar, Income Certificate aur bahut kuch.</p>
-
-<a href="#services" class="btn">
-View Services
-</a>
-
-</div>
-
-</div>
-
+  <div class="ad-content">
+    <span class="ad-label">विज्ञापन</span>
+    <h1>यहाँ आपका विज्ञापन दिखेगा</h1>
+    <p>Admin Portal से विज्ञापन add करने के बाद वह यहाँ live show होगा।</p>
+  </div>
 </div>
 
 </section>
@@ -877,7 +844,11 @@ View Services
 Loading latest updates...
 </marquee>
 
-</div><section class="important-links">
+</div>
+
+</section>
+
+<section class="important-links">
 
 <div class="important-links-title">
 Important Links
@@ -886,8 +857,6 @@ Important Links
 <div id="importantLinksList">
   <span style="color:#0b3d91;font-weight:700;">Loading Links...</span>
 </div>
-
-</section>
 
 </section>
 
@@ -926,6 +895,50 @@ Important Links
 <div class="feature-box">
 <h3>Quick Support</h3>
 <p>Fast WhatsApp support available.</p>
+</div>
+
+</section>
+
+<!-- SERVICES -->
+
+<section class="services" id="services">
+
+<h2>Our Services</h2>
+
+<div class="service-grid">
+
+<a href="OFFLINEFORM.HTML">
+<div class="service-card">
+<i class="fa-solid fa-file-lines"></i>
+<h3>PDF Forms</h3>
+<p>Rajasthan certificates, schemes aur common offline forms.</p>
+</div>
+</a>
+
+<a href="job-form.html">
+<div class="service-card">
+<i class="fa-solid fa-briefcase"></i>
+<h3>Latest Job Forms</h3>
+<p>Government job updates, dates, qualification aur apply links.</p>
+</div>
+</a>
+
+<a href="stationery.html">
+<div class="service-card">
+<i class="fa-solid fa-print"></i>
+<h3>Stationery & Printing</h3>
+<p>Books, guides, xerox, print, scan aur lamination support.</p>
+</div>
+</a>
+
+<a href="#contact">
+<div class="service-card">
+<i class="fa-solid fa-headset"></i>
+<h3>Customer Support</h3>
+<p>Form bharwane aur documents ke liye direct help.</p>
+</div>
+</a>
+
 </div>
 
 </section>
@@ -1004,42 +1017,46 @@ updateLiveTime();
 
 setInterval(updateLiveTime,1000);
 
-let currentSlide = 0;
+const weatherInfo = document.getElementById("weatherInfo");
+const weatherText = {
+0:"Clear",
+1:"Mainly clear",
+2:"Partly cloudy",
+3:"Cloudy",
+45:"Fog",
+48:"Fog",
+51:"Drizzle",
+53:"Drizzle",
+55:"Drizzle",
+61:"Rain",
+63:"Rain",
+65:"Heavy rain",
+71:"Snow",
+80:"Showers",
+81:"Showers",
+82:"Heavy showers",
+95:"Thunderstorm"
+};
 
-const slides = document.getElementById("slides");
+function updateWeather(){
+fetch("https://api.open-meteo.com/v1/forecast?latitude=29.45&longitude=74.08&current=temperature_2m,weather_code,wind_speed_10m&timezone=auto")
+.then((response)=>response.json())
+.then((data)=>{
+const current = data.current || {};
+const temp = Math.round(Number(current.temperature_2m));
+const code = Number(current.weather_code);
+const wind = Math.round(Number(current.wind_speed_10m));
+const label = weatherText[code] || "Weather";
 
-const totalSlides = document.querySelectorAll(".slide").length;
-
-function showSlide(index){
-
-if(index >= totalSlides){
-currentSlide = 0;
+weatherInfo.innerText = `${label} ${temp}°C, Wind ${wind} km/h`;
+})
+.catch(()=>{
+weatherInfo.innerText = "Weather unavailable";
+});
 }
 
-else if(index < 0){
-currentSlide = totalSlides - 1;
-}
-
-else{
-currentSlide = index;
-}
-
-slides.style.transform =
-`translateX(-${currentSlide * 100}%)`;
-
-}
-
-function nextSlide(){
-showSlide(currentSlide + 1);
-}
-
-function prevSlide(){
-showSlide(currentSlide - 1);
-}
-
-setInterval(()=>{
-nextSlide();
-},5000);
+updateWeather();
+setInterval(updateWeather,10 * 60 * 1000);
 
 function openLogin(){
 document.getElementById("loginModal").style.display = "flex";
@@ -1048,6 +1065,34 @@ document.getElementById("loginModal").style.display = "flex";
 function closeLogin(){
 document.getElementById("loginModal").style.display = "none";
 }
+
+const searchInput = document.getElementById("searchInput");
+const searchableCards = document.querySelectorAll(".feature-box, .service-card");
+const noResultText = document.getElementById("noResult");
+
+searchInput.addEventListener("input",()=>{
+const query = searchInput.value.trim().toLowerCase();
+let found = false;
+
+searchableCards.forEach((card)=>{
+const parentLink = card.closest("a");
+const isMatch = card.innerText.toLowerCase().includes(query);
+const displayValue = query === "" || isMatch ? "" : "none";
+
+if(parentLink){
+parentLink.style.display = displayValue;
+}
+else{
+card.style.display = displayValue;
+}
+
+if(query !== "" && isMatch){
+found = true;
+}
+});
+
+noResultText.style.display = query !== "" && !found ? "block" : "none";
+});
 
 </script>
 
@@ -1060,6 +1105,8 @@ from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 
 import {
 getAuth,
+setPersistence,
+browserLocalPersistence,
 createUserWithEmailAndPassword,
 signInWithEmailAndPassword
 }
@@ -1101,7 +1148,47 @@ const url = String(value || "#").trim();
 return /^https?:\/\//i.test(url) ? url : "#";
 };
 
+const escapeHTML = (value = "") => String(value)
+.replace(/&/g, "&amp;")
+.replace(/</g, "&lt;")
+.replace(/>/g, "&gt;")
+.replace(/"/g, "&quot;")
+.replace(/'/g, "&#039;");
+
 const adminEmail = "jasmelsolanki@gmail.com";
+const sessionKey = "loginTime";
+const sessionLimitMs = 60 * 60 * 1000;
+
+const startFreshUserSession = () => {
+localStorage.setItem(sessionKey, String(Date.now()));
+};
+
+const hasActiveUserSession = () => {
+const loginTime = Number(localStorage.getItem(sessionKey));
+return Boolean(loginTime && Date.now() - loginTime < sessionLimitMs);
+};
+
+const redirectByRole = (email) => {
+if(email === adminEmail){
+window.location.href = "dashboard.html";
+}
+else{
+window.location.href = "user-dashboard.html";
+}
+};
+
+setPersistence(auth,browserLocalPersistence).catch(() => {});
+
+window.openLogin = ()=>{
+const currentUser = auth.currentUser;
+
+if(currentUser && (currentUser.email === adminEmail || hasActiveUserSession())){
+redirectByRole(currentUser.email);
+return;
+}
+
+document.getElementById("loginModal").style.display = "flex";
+};
 
 /* PAYMENT BEFORE SIGNUP */
 
@@ -1151,6 +1238,7 @@ createUserWithEmailAndPassword(auth,pendingSignupEmail,pendingSignupPassword)
 .then(()=>{
 
 alert("Account Created Successfully!");
+startFreshUserSession();
 
 pendingSignupEmail = "";
 pendingSignupPassword = "";
@@ -1178,6 +1266,7 @@ createUserWithEmailAndPassword(auth,email,password)
 .then(()=>{
 
 alert("Account Created Successfully!");
+startFreshUserSession();
 
 closeLogin();
 
@@ -1198,18 +1287,9 @@ signInWithEmailAndPassword(auth,email,password)
 .then((userCredential)=>{
 
 const userEmail = userCredential.user.email;
+startFreshUserSession();
 
-if(userEmail === adminEmail){
-
-window.location.href = "dashboard.html";
-
-}
-
-else{
-
-window.location.href = "user-dashboard.html";
-
-}
+redirectByRole(userEmail);
 
 })
 
@@ -1252,7 +1332,66 @@ box.appendChild(a);
 });
 
 }
+else{
 
+box.innerHTML = '<span style="color:#0b3d91;font-weight:700;">अभी कोई important link नहीं है।</span>';
+
+}
+
+});
+
+/* ADVERTISEMENT */
+
+const adsRef = ref(db,"advertisements");
+
+onValue(adsRef,(snapshot)=>{
+const box = document.getElementById("advertisementBox");
+const ads = [];
+
+if(snapshot.exists()){
+snapshot.forEach((child)=>{
+ads.push({ id:child.key, ...child.val() });
+});
+}
+
+ads.sort((a,b)=>Number(b.createdAt || 0) - Number(a.createdAt || 0));
+const ad = ads[0];
+
+if(!ad){
+box.innerHTML = `
+  <div class="ad-media">
+    <i class="fa-solid fa-rectangle-ad ad-placeholder"></i>
+  </div>
+
+  <div class="ad-content">
+    <span class="ad-label">विज्ञापन</span>
+    <h1>यहाँ आपका विज्ञापन दिखेगा</h1>
+    <p>Admin Portal से विज्ञापन add करने के बाद वह यहाँ live show होगा।</p>
+  </div>
+`;
+return;
+}
+
+const imageHtml = safeUrl(ad.imageUrl) !== "#"
+? `<img src="${safeUrl(ad.imageUrl)}" alt="${escapeHTML(ad.title || "Advertisement")}">`
+: `<i class="fa-solid fa-rectangle-ad ad-placeholder"></i>`;
+
+const linkHtml = safeUrl(ad.linkUrl) !== "#"
+? `<a href="${safeUrl(ad.linkUrl)}" target="_blank" rel="noopener noreferrer">Open Advertisement</a>`
+: "";
+
+box.innerHTML = `
+  <div class="ad-media">
+    ${imageHtml}
+  </div>
+
+  <div class="ad-content">
+    <span class="ad-label">विज्ञापन</span>
+    <h1>${escapeHTML(ad.title || "Advertisement")}</h1>
+    <p>${escapeHTML(ad.description || "More details coming soon.")}</p>
+    ${linkHtml}
+  </div>
+`;
 });
 
 /* LATEST UPDATES */
@@ -1274,6 +1413,11 @@ updates.push(child.val().text);
 });
 
 marquee.innerText = updates.join(" | ");
+
+}
+else{
+
+marquee.innerText = "अभी कोई latest update नहीं है।";
 
 }
 
