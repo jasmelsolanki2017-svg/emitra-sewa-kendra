@@ -972,7 +972,7 @@ Note: Payment karne ke baad hi Payment Done button dabayein.
 
 <!-- ADVERTISEMENT -->
 
-<section class="ad-section">
+<section class="ad-section" id="advertisementSection" style="display:none;">
 
 <div id="advertisementBox" class="ad-box">
   <div class="ad-media">
@@ -1515,6 +1515,7 @@ box.innerHTML = '<span style="color:#0b3d91;font-weight:700;">अभी को�
 const adsRef = ref(db,"advertisements");
 
 onValue(adsRef,(snapshot)=>{
+const section = document.getElementById("advertisementSection");
 const box = document.getElementById("advertisementBox");
 const ads = [];
 
@@ -1528,19 +1529,12 @@ ads.sort((a,b)=>Number(b.createdAt || 0) - Number(a.createdAt || 0));
 const ad = ads[0];
 
 if(!ad){
-box.innerHTML = `
-  <div class="ad-media">
-    <i class="fa-solid fa-rectangle-ad ad-placeholder"></i>
-  </div>
-
-  <div class="ad-content">
-    <span class="ad-label">विज्ञापन</span>
-    <h1>यहाँ आपका विज्ञापन दिखेगा</h1>
-    <p>Admin Portal से विज्ञापन add करने के बाद वह यहाँ live show होगा।</p>
-  </div>
-`;
+section.style.display = "none";
+box.innerHTML = "";
 return;
 }
+
+section.style.display = "block";
 
 const imageHtml = safeUrl(ad.imageUrl) !== "#"
 ? `<img src="${safeUrl(ad.imageUrl)}" alt="${escapeHTML(ad.title || "Advertisement")}">`
