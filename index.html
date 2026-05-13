@@ -1855,6 +1855,27 @@ box.innerHTML = '<span style="color:#0b3d91;font-weight:700;">अभी को�
 /* ADVERTISEMENT */
 
 const adsRef = ref(db,"advertisements");
+const adPhotoExtensions = ["jpeg","jpg","png","webp"];
+
+const cleanAdPhotoName = (value = "") => String(value).trim().replace(/\.[a-zA-Z0-9]+$/,"").replace(/[^a-zA-Z0-9_-]/g,"");
+
+const adPhotoSrc = (photoName = "", index = 0) => {
+const cleanName = cleanAdPhotoName(photoName);
+return cleanName ? `${cleanName}.${adPhotoExtensions[index] || "jpeg"}` : "#";
+};
+
+window.loadNextAdPhoto = (img) => {
+const currentIndex = Number(img.dataset.extIndex || 0) + 1;
+const photoName = img.dataset.photoName || "";
+
+if(currentIndex >= adPhotoExtensions.length){
+img.replaceWith(document.createRange().createContextualFragment('<i class="fa-solid fa-rectangle-ad ad-placeholder"></i>'));
+return;
+}
+
+img.dataset.extIndex = String(currentIndex);
+img.src = adPhotoSrc(photoName,currentIndex);
+};
 
 onValue(adsRef,(snapshot)=>{
 const section = document.getElementById("advertisementSection");
@@ -1878,7 +1899,10 @@ return;
 
 section.style.display = "block";
 
-const imageHtml = safeUrl(ad.imageUrl) !== "#"
+const cleanPhotoName = cleanAdPhotoName(ad.photoName || "");
+const imageHtml = cleanPhotoName
+? `<img src="${adPhotoSrc(cleanPhotoName)}" data-photo-name="${escapeHTML(cleanPhotoName)}" data-ext-index="0" onerror="loadNextAdPhoto(this)" alt="${escapeHTML(ad.title || "Advertisement")}">`
+: safeUrl(ad.imageUrl) !== "#"
 ? `<img src="${safeUrl(ad.imageUrl)}" alt="${escapeHTML(ad.title || "Advertisement")}">`
 : `<i class="fa-solid fa-rectangle-ad ad-placeholder"></i>`;
 
