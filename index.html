@@ -2010,6 +2010,23 @@ window.signUpUser = (email,password)=>{
 
 createUserWithEmailAndPassword(auth,email,password)
 
+.then((userCredential)=>{
+
+const user = userCredential.user;
+
+return set(ref(db, "members/" + user.uid), {
+uid:user.uid,
+email:user.email || email,
+name:(user.email || email).split("@")[0],
+mobile:"",
+role:"member",
+status:"Active",
+createdAt:Date.now(),
+lastLoginAt:Date.now()
+});
+
+})
+
 .then(()=>{
 
 alert("Account Created Successfully!");
