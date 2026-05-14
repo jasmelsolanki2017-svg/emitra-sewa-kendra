@@ -9,11 +9,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8516573589974708" crossorigin="anonymous"></script>
+<link rel="icon" type="image/svg+xml" href="assets/e-mitra-wala-logo.svg">
 <style>
-:root{--blue:#0b3d91;--deep:#062b68;--yellow:#ffd000;--red:#b20d0d;--line:#c9d2e4;--bg:#f3f6fb;--text:#1f2633;--muted:#5c6678;--green:#25d366;}
+:root{--blue:#0057a8;--deep:#043a76;--yellow:#ff7a00;--red:#e65f00;--line:#c9d2e4;--bg:#f7fbff;--text:#1f2633;--muted:#5c6678;--green:#25d366;}
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins','Noto Sans Devanagari',sans-serif;}
 html{scroll-behavior:smooth;}body{background:var(--bg);color:var(--text);line-height:1.55;}a{color:inherit;}
-.topbar{background:#061f4d;color:#fff;padding:8px 6%;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:14px}.topbar a{color:var(--yellow);text-decoration:none;font-weight:800}
+.topbar{background:#03224d;color:#fff;padding:8px 6%;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:14px}.topbar a{color:var(--yellow);text-decoration:none;font-weight:800}
 nav{background:var(--blue);padding:12px 6%;display:flex;justify-content:space-between;align-items:center;gap:18px;position:sticky;top:0;z-index:20;box-shadow:0 4px 16px rgba(0,0,0,.16)}.logo{color:var(--yellow);font-size:25px;font-weight:800;text-decoration:none;white-space:nowrap}nav ul{display:flex;list-style:none;gap:15px;flex-wrap:wrap;justify-content:flex-end}nav a{color:#fff;text-decoration:none;font-weight:700;font-size:15px}nav a:hover{color:var(--yellow)}
 .masthead{background:#fff;border-bottom:1px solid var(--line);text-align:center;padding:24px 6% 18px}.masthead h1{color:var(--red);font-size:clamp(28px,5vw,45px);font-weight:800;line-height:1.15}.masthead p{color:var(--deep);font-size:17px;font-weight:700;margin-top:8px}.masthead .sub-links{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:12px}.masthead .sub-links a{color:var(--blue);font-weight:800;font-size:14px;text-decoration:underline}
 main{max-width:1180px;margin:auto;padding:18px 6% 34px}.ticker{background:#fff;border:1px solid var(--line);padding:10px 12px;color:var(--red);font-weight:800;text-align:center;margin-bottom:14px}.ticker span{color:var(--blue)}
@@ -23,11 +24,38 @@ main{max-width:1180px;margin:auto;padding:18px 6% 34px}.ticker{background:#fff;b
 .wide-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:14px}.notice{background:#fff;border:1px solid var(--line);border-top:5px solid var(--blue);padding:16px;margin-top:14px}.notice h2{color:var(--blue);font-size:22px;margin-bottom:8px}.notice p,.notice li{color:#384356;font-weight:600}.notice ul{padding-left:20px}.cta-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.cta{display:inline-flex;align-items:center;justify-content:center;background:var(--blue);color:#fff;text-decoration:none;padding:10px 14px;font-weight:800}.cta.alt{background:var(--yellow);color:var(--deep)}.message{padding:12px;color:var(--red);font-weight:800}.whatsapp{position:fixed;right:22px;bottom:22px;width:56px;height:56px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:28px;box-shadow:0 8px 22px rgba(37,211,102,.35);z-index:30}footer{background:var(--blue);color:#fff;text-align:center;padding:22px 6%;margin-top:26px}footer a{color:var(--yellow);text-decoration:none;font-weight:800;margin:0 7px;display:inline-block}
 @media(max-width:920px){.portal-grid,.wide-grid{grid-template-columns:1fr}.quick-grid{grid-template-columns:repeat(2,1fr)}nav{flex-direction:column;align-items:flex-start}nav ul{justify-content:flex-start}.masthead{text-align:left}.masthead .sub-links{justify-content:flex-start}}
 @media(max-width:520px){main{padding:14px 3% 26px}.topbar{justify-content:center;text-align:center}.quick-grid{grid-template-columns:1fr}.box-title{font-size:20px}.whatsapp{right:15px;bottom:15px;width:52px;height:52px;font-size:25px}}
-</style>
+
+    .logo,
+    .nav-logo {
+      display: inline-flex;
+      align-items: center;
+      flex-shrink: 0;
+      line-height: 0;
+      text-decoration: none;
+    }
+
+    .logo img,
+    .nav-logo img {
+      width: min(246px, 54vw);
+      max-height: 62px;
+      height: auto;
+      display: block;
+      border-radius: 8px;
+    }
+
+    @media (max-width: 820px) {
+      .logo img,
+      .nav-logo img {
+        width: min(218px, 78vw);
+        max-height: 56px;
+      }
+    }
+  </style>
+<link rel="stylesheet" href="assets/theme.css">
 </head>
 <body>
 <div class="topbar"><div>Phone: <a href="tel:9509403258">9509403258</a></div><div>Email: <a href="mailto:jasmelsolanki@gmail.com">jasmelsolanki@gmail.com</a></div></div>
-<nav><a class="logo" href="index.html">E-MITRA WALA</a><ul><li><a href="index.html">Home</a></li><li><a href="OFFLINEFORM.HTML">PDF Forms</a></li><li><a href="job-form.html">Latest Jobs</a></li><li><a href="useful-pages.html">Useful Pages</a></li><li><a href="contact.html">Contact</a></li></ul></nav>
+<nav><a class="logo" href="index.html"><img src="assets/e-mitra-wala-logo.svg" alt="E-MITRA WALA"></a><ul><li><a href="index.html">Home</a></li><li><a href="OFFLINEFORM.HTML">PDF Forms</a></li><li><a href="job-form.html">Latest Jobs</a></li><li><a href="useful-pages.html">Useful Pages</a></li><li><a href="contact.html">Contact</a></li></ul></nav>
 <header class="masthead">
   <h1>Sarkari Job, Result & Admit Card</h1>
   <p>Latest Government Jobs, Online Form, Result, Admit Card, Answer Key aur Exam Updates</p>
@@ -192,5 +220,7 @@ onValue(jobsRef, (snapshot) => {
   document.getElementById("jobList").innerHTML = `<li class="message">Jobs load nahi ho payi: ${escapeHTML(error.message)}</li>`;
 });
 </script>
+<button class="theme-toggle" type="button" aria-label="Toggle dark mode" title="Dark mode" onclick="toggleDarkMode()"><i class="fa-solid fa-moon"></i></button>
+<script src="assets/theme.js"></script>
 </body>
 </html>

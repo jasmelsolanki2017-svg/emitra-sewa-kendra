@@ -8,38 +8,39 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans+Devanagari:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-  <style>
+  <link rel="icon" type="image/svg+xml" href="assets/e-mitra-wala-logo.svg">
+<style>
     *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins','Noto Sans Devanagari',sans-serif;}
-    body{background:#f5f7fb;color:#222;overflow-x:hidden;}
+    body{background:#f7fbff;color:#222;overflow-x:hidden;}
     html{scroll-behavior:smooth;}
 
-    .topbar{background:#062b68;color:white;padding:5px 3%;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;font-size:12px;}
-    .topbar span{color:#ffd000;font-weight:700;}
+    .topbar{background:#043a76;color:white;padding:5px 3%;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;font-size:12px;}
+    .topbar span{color:#ff7a00;font-weight:700;}
 
-    header{background:linear-gradient(135deg,#0b3d91,#061b54);color:white;padding:13px 3%;text-align:center;border-bottom:3px solid #ffd000;}
-    header h1{color:#ffd000;font-size:clamp(20px,3.4vw,28px);line-height:1.15;}
+    header{background:linear-gradient(135deg,#0057a8,#03224d);color:white;padding:13px 3%;text-align:center;border-bottom:3px solid #ff7a00;}
+    header h1{color:#ff7a00;font-size:clamp(20px,3.4vw,28px);line-height:1.15;}
     header p{margin-top:3px;font-size:12px;}
 
     nav{background:white;padding:7px 3%;display:flex;justify-content:center;gap:6px;flex-wrap:wrap;box-shadow:0 3px 12px rgba(0,0,0,.08);position:sticky;top:0;z-index:999;}
-    nav a,nav button{background:#0b3d91;color:white;text-decoration:none;border:none;padding:6px 10px;border-radius:6px;font-weight:700;cursor:pointer;font-size:11px;line-height:1.15;}
-    nav a:hover,nav button:hover{background:#ffd000;color:#0b3d91;}
+    nav a,nav button{background:#0057a8;color:white;text-decoration:none;border:none;padding:6px 10px;border-radius:6px;font-weight:700;cursor:pointer;font-size:11px;line-height:1.15;}
+    nav a:hover,nav button:hover{background:#ff7a00;color:#0057a8;}
 
     .dashboard{padding:15px 3%;max-width:1120px;margin:auto;}
-    .dashboard h2{text-align:center;color:#0b3d91;font-size:clamp(18px,2.5vw,23px);margin-bottom:10px;}
+    .dashboard h2{text-align:center;color:#0057a8;font-size:clamp(18px,2.5vw,23px);margin-bottom:10px;}
 
-    .admin-info{max-width:680px;margin:0 auto 12px;background:#eef4ff;padding:9px 12px;border-radius:6px;border-left:4px solid #ffd000;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.07);}
-    .admin-info h3{color:#0b3d91;margin-bottom:2px;font-size:15px;}
+    .admin-info{max-width:680px;margin:0 auto 12px;background:#eaf4ff;padding:9px 12px;border-radius:6px;border-left:4px solid #ff7a00;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.07);}
+    .admin-info h3{color:#0057a8;margin-bottom:2px;font-size:15px;}
     .admin-info p{font-size:12px;word-break:break-word;}
 
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;}
-    .card{background:white;border-radius:6px;padding:10px 8px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.06);border-top:3px solid #ffd000;}
-    .card i{font-size:22px;color:#0b3d91;margin-bottom:5px;}
-    .card h3{color:#0b3d91;margin-bottom:3px;font-size:14px;}
+    .card{background:white;border-radius:6px;padding:10px 8px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.06);border-top:3px solid #ff7a00;}
+    .card i{font-size:22px;color:#0057a8;margin-bottom:5px;}
+    .card h3{color:#0057a8;margin-bottom:3px;font-size:14px;}
     .card p{color:#555;margin-bottom:7px;line-height:1.25;font-size:11px;}
-    .card a{display:inline-block;background:#0b3d91;color:white;text-decoration:none;padding:5px 9px;border-radius:6px;font-weight:700;font-size:11px;}
-    .card a:hover{background:#ffd000;color:#0b3d91;}
+    .card a{display:inline-block;background:#0057a8;color:white;text-decoration:none;padding:5px 9px;border-radius:6px;font-weight:700;font-size:11px;}
+    .card a:hover{background:#ff7a00;color:#0057a8;}
 
-    .manager{margin-top:14px;background:white;padding:12px;border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.07);border-top:3px solid #ffd000;max-width:100%;overflow:hidden;}
+    .manager{margin-top:14px;background:white;padding:12px;border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.07);border-top:3px solid #ff7a00;max-width:100%;overflow:hidden;}
     .manager h2{font-size:18px;margin-bottom:9px;}
 
     .form-box{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:6px;margin-bottom:9px;}
@@ -51,23 +52,23 @@
 
     .form-box input,.form-box textarea{width:100%;min-width:0;padding:6px 8px;border:1px solid #ccc;border-radius:5px;font-size:12px;line-height:1.15;outline:none;}
     .form-box textarea{min-height:42px;resize:vertical;grid-column:1 / -1;}
-    .form-box button{background:#0b3d91;color:white;border:none;padding:6px 10px;border-radius:5px;font-weight:700;cursor:pointer;font-size:12px;line-height:1.15;}
-    .form-box button:hover{background:#ffd000;color:#0b3d91;}
+    .form-box button{background:#0057a8;color:white;border:none;padding:6px 10px;border-radius:5px;font-weight:700;cursor:pointer;font-size:12px;line-height:1.15;}
+    .form-box button:hover{background:#ff7a00;color:#0057a8;}
 
-    .row{background:#eef4ff;padding:6px 8px;border-radius:6px;margin-bottom:6px;display:flex;justify-content:space-between;gap:8px;align-items:flex-start;flex-wrap:wrap;border-left:3px solid #0b3d91;max-width:100%;}
+    .row{background:#eaf4ff;padding:6px 8px;border-radius:6px;margin-bottom:6px;display:flex;justify-content:space-between;gap:8px;align-items:flex-start;flex-wrap:wrap;border-left:3px solid #0057a8;max-width:100%;}
     .row > div{min-width:0;max-width:100%;}
-    .row a{color:#0b3d91;font-weight:700;text-decoration:none;}
+    .row a{color:#0057a8;font-weight:700;text-decoration:none;}
     .row small{display:block;color:#555;margin-top:2px;word-break:break-word;overflow-wrap:anywhere;font-size:11px;line-height:1.2;}
-    .row strong{color:#0b3d91;font-size:12px;line-height:1.2;overflow-wrap:anywhere;}
+    .row strong{color:#0057a8;font-size:12px;line-height:1.2;overflow-wrap:anywhere;}
 
     .delete-btn{background:#d90000;color:white;border:none;padding:5px 8px;border-radius:5px;font-weight:700;cursor:pointer;font-size:11px;}
-    .action-btn{display:inline-block;background:#0b3d91;color:white;border:none;text-decoration:none;padding:5px 8px;border-radius:5px;font-weight:700;cursor:pointer;margin:1px;font-size:11px;}
+    .action-btn{display:inline-block;background:#0057a8;color:white;border:none;text-decoration:none;padding:5px 8px;border-radius:5px;font-weight:700;cursor:pointer;margin:1px;font-size:11px;}
     .done-btn{background:#138a36;}
-    .status-badge{display:inline-block;background:#ffd000;color:#0b3d91;padding:2px 6px;border-radius:6px;font-size:10px;font-weight:800;margin-top:3px;}
+    .status-badge{display:inline-block;background:#ff7a00;color:#0057a8;padding:2px 6px;border-radius:6px;font-size:10px;font-weight:800;margin-top:3px;}
     .status-badge.done{background:#138a36;color:white;}
-    .status{margin-top:4px;margin-bottom:6px;text-align:center;font-weight:700;color:#0b3d91;font-size:12px;}
+    .status{margin-top:4px;margin-bottom:6px;text-align:center;font-weight:700;color:#0057a8;font-size:12px;}
 
-    footer{background:#0b3d91;color:white;text-align:center;padding:11px;margin-top:16px;font-size:12px;}
+    footer{background:#0057a8;color:white;text-align:center;padding:11px;margin-top:16px;font-size:12px;}
 
     @media(max-width:768px){
       header{padding:11px 3%;}
@@ -83,6 +84,7 @@
       .row .delete-btn,.row .action-btn{margin-top:7px;}
     }
   </style>
+<link rel="stylesheet" href="assets/theme.css">
 </head>
 
 <body>
@@ -641,5 +643,7 @@
   });
 </script>
 
+<button class="theme-toggle" type="button" aria-label="Toggle dark mode" title="Dark mode" onclick="toggleDarkMode()"><i class="fa-solid fa-moon"></i></button>
+<script src="assets/theme.js"></script>
 </body>
 </html>
