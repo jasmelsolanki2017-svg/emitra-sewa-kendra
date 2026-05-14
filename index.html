@@ -1355,11 +1355,11 @@ body.dark-mode .nav-logo img {
 <input type="email" id="email" placeholder="Enter Email">
 
 <input type="password" id="password" placeholder="Enter Password">
-<button class="login-btn" onclick="loginUser(email.value,password.value)">
+<button class="login-btn" onclick="loginUser(document.getElementById('email').value,document.getElementById('password').value)">
 Login
 </button>
 
-<button class="signup-btn" onclick="signUpUser(email.value,password.value)">
+<button class="signup-btn" onclick="signUpUser(document.getElementById('email').value,document.getElementById('password').value)">
 Create Account
 </button>
 
@@ -1957,57 +1957,6 @@ alert("Password kam se kam 6 character ka hona chahiye.");
 return;
 }
 
-pendingSignupEmail = emailValue;
-pendingSignupPassword = passwordValue;
-
-document.getElementById("loginModal").style.display = "none";
-document.getElementById("paymentModal").style.display = "flex";
-
-};
-
-window.closePayment = ()=>{
-
-document.getElementById("paymentModal").style.display = "none";
-document.getElementById("loginModal").style.display = "flex";
-
-};
-
-window.paymentDoneCreateAccount = ()=>{
-
-if(pendingSignupEmail === "" || pendingSignupPassword === ""){
-alert("Email/password missing hai. Dobara try karein.");
-closePayment();
-return;
-}
-
-createUserWithEmailAndPassword(auth,pendingSignupEmail,pendingSignupPassword)
-
-.then(()=>{
-
-alert("Account Created Successfully!");
-startFreshUserSession();
-
-pendingSignupEmail = "";
-pendingSignupPassword = "";
-
-document.getElementById("paymentModal").style.display = "none";
-
-window.location.href = "user-dashboard.html";
-
-})
-
-.catch((error)=>{
-
-alert(error.message);
-
-});
-
-};
-
-/* LOGIN */
-
-window.signUpUser = (email,password)=>{
-
 createUserWithEmailAndPassword(auth,email,password)
 
 .then((userCredential)=>{
@@ -2023,7 +1972,7 @@ role:"member",
 status:"Active",
 createdAt:Date.now(),
 lastLoginAt:Date.now()
-});
+}).catch(() => {});
 
 })
 
@@ -2032,7 +1981,7 @@ lastLoginAt:Date.now()
 alert("Account Created Successfully!");
 startFreshUserSession();
 
-closeLogin();
+window.closeLogin();
 
 })
 
@@ -2045,6 +1994,14 @@ alert(error.message);
 };
 
 window.loginUser = (email,password)=>{
+
+email = String(email || "").trim();
+password = String(password || "").trim();
+
+if(email === "" || password === ""){
+alert("Please email aur password enter karein.");
+return;
+}
 
 signInWithEmailAndPassword(auth,email,password)
 
