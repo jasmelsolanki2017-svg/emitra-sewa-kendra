@@ -181,6 +181,14 @@ const safeUrl = (value = "#") => {
   return /^https?:\/\//i.test(url) ? url : "#";
 };
 
+const normalizeJob = (value) => {
+  if(typeof value === "string"){
+    return { title:value, type:"Online Form" };
+  }
+
+  return value && typeof value === "object" ? value : {};
+};
+
 const id = new URLSearchParams(window.location.search).get("id");
 const message = document.getElementById("jobMessage");
 const wrap = document.getElementById("jobDetailWrap");
@@ -195,7 +203,7 @@ if(!id){
       return;
     }
 
-    const job = snapshot.val();
+    const job = normalizeJob(snapshot.val());
     const title = job.title || "Job Update";
     const type = job.type || "Online Form";
     const content = String(job.pageContent || "").trim();

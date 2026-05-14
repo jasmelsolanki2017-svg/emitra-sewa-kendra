@@ -661,6 +661,97 @@ color:#555;
 font-size:15px;
 }
 
+.latest-jobs-home{
+padding:60px 6%;
+background:white;
+}
+
+.latest-jobs-head{
+max-width:1120px;
+margin:0 auto 18px;
+display:flex;
+justify-content:space-between;
+gap:14px;
+align-items:end;
+}
+
+.latest-jobs-head h2{
+font-size:36px;
+color:#0057a8;
+}
+
+.latest-jobs-head p{
+color:#555;
+line-height:1.6;
+margin-top:6px;
+}
+
+.latest-jobs-head a{
+background:#ff7a00;
+color:white;
+text-decoration:none;
+padding:11px 16px;
+border-radius:6px;
+font-weight:800;
+white-space:nowrap;
+}
+
+.home-job-list{
+max-width:1120px;
+margin:auto;
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+gap:14px;
+}
+
+.home-job-card{
+border:1px solid #d8e2f0;
+border-left:5px solid #0057a8;
+border-radius:8px;
+padding:16px;
+background:#f8fbff;
+box-shadow:0 4px 14px rgba(0,0,0,0.06);
+}
+
+.home-job-card span{
+display:inline-block;
+background:#fff1d6;
+color:#8a4300;
+font-size:12px;
+font-weight:800;
+padding:4px 8px;
+border-radius:4px;
+margin-bottom:8px;
+}
+
+.home-job-card h3{
+font-size:18px;
+line-height:1.35;
+color:#102f68;
+margin-bottom:8px;
+}
+
+.home-job-card p{
+font-size:14px;
+color:#4b5565;
+line-height:1.5;
+}
+
+.home-job-card a{
+display:inline-flex;
+margin-top:10px;
+color:#0057a8;
+font-weight:800;
+text-decoration:none;
+}
+
+.home-job-message{
+max-width:1120px;
+margin:auto;
+color:#0057a8;
+font-weight:800;
+}
+
 /* DOCUMENT HELP */
 
 .document-help{
@@ -1049,6 +1140,23 @@ height:34px;
 font-size:14px;
 }
 
+.latest-jobs-home{
+padding:42px 4%;
+}
+
+.latest-jobs-head{
+display:block;
+}
+
+.latest-jobs-head h2{
+font-size:28px;
+}
+
+.latest-jobs-head a{
+display:inline-flex;
+margin-top:12px;
+}
+
 .document-help{
 padding:45px 4%;
 }
@@ -1171,6 +1279,7 @@ body.dark-mode .section.white,
 body.dark-mode main,
 body.dark-mode .features,
 body.dark-mode .services,
+body.dark-mode .latest-jobs-home,
 body.dark-mode .about,
 body.dark-mode .counter-section,
 body.dark-mode .contact,
@@ -1188,6 +1297,7 @@ body.dark-mode .panel,
 body.dark-mode .card,
 body.dark-mode .feature-box,
 body.dark-mode .service-card,
+body.dark-mode .home-job-card,
 body.dark-mode .doc-panel,
 body.dark-mode .enquiry-panel,
 body.dark-mode .doc-list,
@@ -1551,6 +1661,24 @@ Important Links
 </div>
 </a>
 
+</div>
+
+</section>
+
+<!-- LATEST JOBS -->
+
+<section class="latest-jobs-home" id="latestJobs">
+
+<div class="latest-jobs-head">
+<div>
+<h2>Latest Jobs</h2>
+<p>Government job updates, last date, location aur details ek jagah.</p>
+</div>
+<a href="job-form.html">View All Jobs</a>
+</div>
+
+<div class="home-job-list" id="homeJobList">
+<p class="home-job-message">Latest jobs load ho rahi hain...</p>
 </div>
 
 </section>
@@ -2112,6 +2240,48 @@ box.innerHTML = '<span style="color:#0057a8;font-weight:700;">अभी को�
 
 }
 
+});
+
+/* LATEST JOBS */
+
+const normalizeJob = (value) => {
+if(typeof value === "string"){
+return { title:value, type:"Online Form", createdAt:0 };
+}
+
+return value && typeof value === "object" ? value : {};
+};
+
+const jobsRef = ref(db,"LatestJobs");
+
+onValue(jobsRef,(snapshot)=>{
+const box = document.getElementById("homeJobList");
+const jobs = [];
+
+if(snapshot.exists()){
+snapshot.forEach((child)=>{
+jobs.push({ id:child.key, job:normalizeJob(child.val()) });
+});
+}
+
+jobs.sort((a,b)=>Number(b.job.createdAt || 0) - Number(a.job.createdAt || 0));
+
+if(jobs.length === 0){
+box.innerHTML = '<p class="home-job-message">अभी कोई latest job available नहीं है।</p>';
+return;
+}
+
+box.innerHTML = jobs.slice(0,6).map(({ id, job })=>`
+  <article class="home-job-card">
+    <span>${escapeHTML(job.type || "Online Form")}</span>
+    <h3>${escapeHTML(job.title || "Job Update")}</h3>
+    <p>Last Date: ${escapeHTML(job.lastDate || "Update Soon")}</p>
+    <p>Location: ${escapeHTML(job.location || "All India")}</p>
+    <a href="job-detail.html?id=${encodeURIComponent(id)}">View Details</a>
+  </article>
+`).join("");
+},(error)=>{
+document.getElementById("homeJobList").innerHTML = `<p class="home-job-message">Latest jobs load nahi ho payi: ${escapeHTML(error.message)}</p>`;
 });
 
 /* ADVERTISEMENT */
