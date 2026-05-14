@@ -1957,24 +1957,58 @@ alert("Password kam se kam 6 character ka hona chahiye.");
 return;
 }
 
-createUserWithEmailAndPassword(auth,email,password)
+pendingSignupEmail = emailValue;
+pendingSignupPassword = passwordValue;
 
-.then((userCredential)=>{
+document.getElementById("loginModal").style.display = "none";
+document.getElementById("paymentModal").style.display = "flex";
 
-const user = userCredential.user;
+};
 
-return set(ref(db, "members/" + user.uid), {
-uid:user.uid,
-email:user.email || email,
-name:(user.email || email).split("@")[0],
-mobile:"",
-role:"member",
-status:"Active",
-createdAt:Date.now(),
-lastLoginAt:Date.now()
-});
+window.closePayment = ()=>{
+
+document.getElementById("paymentModal").style.display = "none";
+document.getElementById("loginModal").style.display = "flex";
+
+};
+
+window.paymentDoneCreateAccount = ()=>{
+
+if(pendingSignupEmail === "" || pendingSignupPassword === ""){
+alert("Email/password missing hai. Dobara try karein.");
+closePayment();
+return;
+}
+
+createUserWithEmailAndPassword(auth,pendingSignupEmail,pendingSignupPassword)
+
+.then(()=>{
+
+alert("Account Created Successfully!");
+startFreshUserSession();
+
+pendingSignupEmail = "";
+pendingSignupPassword = "";
+
+document.getElementById("paymentModal").style.display = "none";
+
+window.location.href = "user-dashboard.html";
 
 })
+
+.catch((error)=>{
+
+alert(error.message);
+
+});
+
+};
+
+/* LOGIN */
+
+window.signUpUser = (email,password)=>{
+
+createUserWithEmailAndPassword(auth,email,password)
 
 .then(()=>{
 
