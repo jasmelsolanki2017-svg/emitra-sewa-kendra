@@ -17,6 +17,7 @@ const BOT_TOKEN = process.env.BOT_TOKEN;
 const DEFAULT_FIREBASE_URL = "https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app";
 const FIREBASE_URL = (process.env.FIREBASE_URL || DEFAULT_FIREBASE_URL).replace(/\/+$/, "");
 const JOBS_PATH = process.env.JOBS_PATH || "LatestJobs";
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "jasmelsolanki@gmail.com";
 let adminDb = null;
 
 app.use(express.json({ limit: "1mb" }));
@@ -131,6 +132,33 @@ function isAdminSdkConfigured() {
   );
 }
 
+async function requireAdmin(req) {
+  const db = getAdminDb();
+  if (!admin || !db) {
+    const error = new Error("Firebase Admin SDK is not configured");
+    error.statusCode = 503;
+    throw error;
+  }
+
+  const authHeader = String(req.headers.authorization || "");
+  const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
+
+  if (!token) {
+    const error = new Error("Admin token missing");
+    error.statusCode = 401;
+    throw error;
+  }
+
+  const decoded = await admin.auth().verifyIdToken(token);
+  if (decoded.email !== ADMIN_EMAIL) {
+    const error = new Error("Only admin can perform this action");
+    error.statusCode = 403;
+    throw error;
+  }
+
+  return { decoded, db };
+}
+
 app.get("/", (req, res) => {
   res.json({
     ok: true,
@@ -165,6 +193,47 @@ app.post("/", async (req, res) => {
   } catch (err) {
     console.error("Webhook error:", err.message);
     return res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+app.post("/admin/update-member-password", async (req, res) => {
+  try {
+    const { db } = await requireAdmin(req);
+    const uid = String(req.body?.uid || "").trim();
+    const password = String(req.body?.password || "").trim();
+
+    if (!uid || password.length < 6) {
+      return res.status(400).json({ ok: false, error: "UID and 6+ character password required" });
+    }
+
+    await admin.auth().updateUser(uid, { password });
+    await db.ref(`members/${uid}`).update({ updatedAt: Date.now(), passwordChangedAt: Date.now() });
+
+    return res.json({ ok: true, message: "Password updated" });
+  } catch (err) {
+    return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
+  }
+});
+
+app.post("/admin/delete-member", async (req, res) => {
+  try {
+    const { db } = await requireAdmin(req);
+    const uid = String(req.body?.uid || "").trim();
+
+    if (!uid) {
+      return res.status(400).json({ ok: false, error: "UID required" });
+    }
+
+    await admin.auth().deleteUser(uid);
+    await db.ref(`members/${uid}`).update({
+      status: "Deleted",
+      deletedAt: Date.now(),
+      updatedAt: Date.now()
+    });
+
+    return res.json({ ok: true, message: "Member auth account deleted" });
+  } catch (err) {
+    return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
   }
 });
 

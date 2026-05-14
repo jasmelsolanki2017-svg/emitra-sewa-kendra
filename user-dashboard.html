@@ -535,7 +535,6 @@ body.dark-mode .news-line,
 body.dark-mode .news-modal-box,
 body.dark-mode .news-item,
 body.dark-mode .login-box,
-body.dark-mode .payment-box,
 body.dark-mode .story-text,
 body.dark-mode .contact-panel,
 body.dark-mode .contact-info,
@@ -615,7 +614,6 @@ body.dark-mode nav button {
 
 body.dark-mode .cta.alt,
 body.dark-mode .primary-btn,
-body.dark-mode .payment-done-btn,
 body.dark-mode .signup-btn {
   background: #ff7a00 !important;
   color: #03224d !important;
@@ -895,6 +893,19 @@ body.dark-mode .nav-logo img {
       startSessionTimer();
 
       document.getElementById("userEmail").innerText = user.email;
+
+      onValue(ref(db, "members/" + user.uid), (snapshot) => {
+        if(snapshot.exists()){
+          const member = snapshot.val() || {};
+          if(member.status === "Deleted" || member.status === "Blocked"){
+            alert("Your account access is blocked. Please contact admin.");
+            localStorage.removeItem(sessionKey);
+            signOut(auth).then(() => {
+              window.location.href = "index.html";
+            });
+          }
+        }
+      });
 
     } else {
       window.location.href = "index.html";

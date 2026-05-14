@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>All Members | Admin Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans+Devanagari:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins','Noto Sans Devanagari',sans-serif;}
+    body{background:#f7fbff;color:#172033;}
+    .topbar{background:#043a76;color:white;padding:6px 3%;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:12px;}
+    header{background:linear-gradient(135deg,#0057a8,#03224d);color:white;text-align:center;padding:16px 3%;border-bottom:3px solid #ff7a00;}
+    header h1{color:#ff7a00;font-size:clamp(22px,4vw,32px);}
+    header p{font-size:13px;margin-top:4px;}
+    nav{background:white;padding:8px 3%;display:flex;gap:7px;flex-wrap:wrap;justify-content:center;box-shadow:0 3px 12px rgba(0,0,0,.08);position:sticky;top:0;z-index:10;}
+    nav a,nav button{background:#0057a8;color:white;border:0;text-decoration:none;padding:7px 11px;border-radius:6px;font-weight:700;font-size:12px;cursor:pointer;}
+    nav a:hover,nav button:hover{background:#ff7a00;color:#03224d;}
+    main{max-width:1180px;margin:auto;padding:16px 3% 34px;}
+    .admin-info{background:#eaf4ff;border-left:4px solid #ff7a00;border-radius:7px;padding:10px 12px;margin-bottom:14px;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.07);}
+    .admin-info h2{color:#0057a8;font-size:17px;margin-bottom:3px;}
+    .toolbar{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;}
+    .toolbar input{min-width:240px;flex:1;max-width:420px;padding:8px 10px;border:1px solid #bdd0e5;border-radius:6px;font-size:13px;}
+    .count{font-weight:800;color:#0057a8;}
+    .members{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:10px;}
+    .member-card{background:white;border:1px solid #d8e6f5;border-top:3px solid #ff7a00;border-radius:7px;padding:11px;box-shadow:0 4px 14px rgba(0,0,0,.07);overflow:hidden;}
+    .member-card.deleted{opacity:.7;border-top-color:#d90000;}
+    .member-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;margin-bottom:8px;}
+    .member-head h3{color:#0057a8;font-size:15px;line-height:1.25;overflow-wrap:anywhere;}
+    .badge{display:inline-block;padding:3px 7px;border-radius:999px;background:#138a36;color:white;font-size:10px;font-weight:800;}
+    .badge.deleted{background:#d90000;}
+    .detail{font-size:12px;color:#47566b;margin:4px 0;overflow-wrap:anywhere;}
+    .detail strong{color:#03224d;}
+    .edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px;}
+    .edit-grid input,.edit-grid select,.edit-grid textarea{width:100%;min-width:0;padding:7px 8px;border:1px solid #c9d9ea;border-radius:6px;font-size:12px;}
+    .edit-grid textarea{grid-column:1 / -1;min-height:54px;resize:vertical;}
+    .actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px;}
+    .actions button{border:0;border-radius:6px;padding:7px 9px;font-size:11px;font-weight:800;cursor:pointer;background:#0057a8;color:white;}
+    .actions button:hover{background:#ff7a00;color:#03224d;}
+    .actions .danger{background:#d90000;}
+    .actions .reset{background:#138a36;}
+    .empty{background:white;border:1px dashed #bdd0e5;border-radius:7px;padding:18px;text-align:center;color:#55657a;font-weight:700;}
+    footer{background:#0057a8;color:white;text-align:center;padding:12px;font-size:12px;}
+    @media(max-width:640px){
+      nav{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap;}
+      nav a,nav button{white-space:nowrap;}
+      .toolbar input{min-width:0;max-width:none;}
+      .edit-grid{grid-template-columns:1fr;}
+      .edit-grid textarea{grid-column:auto;}
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div>Admin Members Panel</div>
+    <div id="liveTime">Loading...</div>
+  </div>
+
+  <header>
+    <h1>All Members</h1>
+    <p>New account details aur member access yahan manage karein.</p>
+  </header>
+
+  <nav>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="index.html">Home</a>
+    <a href="job-form.html">Latest Jobs</a>
+    <button onclick="logoutUser()">Logout</button>
+  </nav>
+
+  <main>
+    <section class="admin-info">
+      <h2 id="accessTitle">Admin Access Checking...</h2>
+      <p id="adminEmailText">Please wait...</p>
+    </section>
+
+    <div class="toolbar">
+      <input type="search" id="memberSearch" placeholder="Search by name, email, mobile, status...">
+      <div class="count" id="memberCount">Members: 0</div>
+    </div>
+
+    <section class="members" id="membersList">
+      <div class="empty">Loading members...</div>
+    </section>
+  </main>
+
+  <footer>© 2026 E-MITRA WALA | Members Management</footer>
+
+  <script>
+    function updateLiveTime(){
+      document.getElementById("liveTime").innerText = new Date().toLocaleString("hi-IN");
+    }
+    updateLiveTime();
+    setInterval(updateLiveTime,1000);
+  </script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+    import {
+      getAuth,
+      onAuthStateChanged,
+      signOut,
+      sendPasswordResetEmail
+    } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+    import {
+      getDatabase,
+      ref,
+      onValue,
+      update
+    } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",
+      authDomain: "my-website-73785.firebaseapp.com",
+      databaseURL: "https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app/",
+      projectId: "my-website-73785",
+      storageBucket: "my-website-73785.firebasestorage.app",
+      messagingSenderId: "854088341990",
+      appId: "1:854088341990:web:3211d4ef9fe4b78d025e27"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+    const adminEmail = "jasmelsolanki@gmail.com";
+    const membersRef = ref(db, "members");
+    let adminAllowed = false;
+    let allMembers = [];
+
+    const escapeHTML = (value = "") => String(value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+
+    const formatDate = (value) => {
+      const time = Number(value || 0);
+      return time ? new Date(time).toLocaleString("hi-IN") : "Not available";
+    };
+
+    const getFieldValue = (uid, field) => {
+      const input = document.querySelector(`[data-uid="${CSS.escape(uid)}"][data-field="${field}"]`);
+      return input ? input.value.trim() : "";
+    };
+
+    function renderMembers(){
+      const list = document.getElementById("membersList");
+      const query = document.getElementById("memberSearch").value.trim().toLowerCase();
+      const filtered = allMembers.filter(({ member }) => {
+        const text = [
+          member.name,
+          member.email,
+          member.mobile,
+          member.status,
+          member.notes
+        ].join(" ").toLowerCase();
+        return text.includes(query);
+      });
+
+      document.getElementById("memberCount").innerText = `Members: ${filtered.length}`;
+
+      if(!filtered.length){
+        list.innerHTML = '<div class="empty">Abhi koi member record nahi mila.</div>';
+        return;
+      }
+
+      list.innerHTML = filtered.map(({ uid, member }) => {
+        const status = member.status || "Active";
+        const deleted = status === "Deleted" || status === "Blocked";
+        return `
+          <article class="member-card ${deleted ? "deleted" : ""}">
+            <div class="member-head">
+              <h3>${escapeHTML(member.name || "Member")}</h3>
+              <span class="badge ${deleted ? "deleted" : ""}">${escapeHTML(status)}</span>
+            </div>
+            <p class="detail"><strong>Email:</strong> ${escapeHTML(member.email || "")}</p>
+            <p class="detail"><strong>Mobile:</strong> ${escapeHTML(member.mobile || "Not added")}</p>
+            <p class="detail"><strong>UID:</strong> ${escapeHTML(uid)}</p>
+            <p class="detail"><strong>Created:</strong> ${formatDate(member.createdAt)}</p>
+            <p class="detail"><strong>Last Login:</strong> ${formatDate(member.lastLoginAt)}</p>
+
+            <div class="edit-grid">
+              <input data-uid="${escapeHTML(uid)}" data-field="name" value="${escapeHTML(member.name || "")}" placeholder="Name">
+              <input data-uid="${escapeHTML(uid)}" data-field="mobile" value="${escapeHTML(member.mobile || "")}" placeholder="Mobile">
+              <select data-uid="${escapeHTML(uid)}" data-field="status">
+                <option value="Active" ${status === "Active" ? "selected" : ""}>Active</option>
+                <option value="Blocked" ${status === "Blocked" ? "selected" : ""}>Blocked</option>
+                <option value="Deleted" ${status === "Deleted" ? "selected" : ""}>Deleted</option>
+              </select>
+              <input data-uid="${escapeHTML(uid)}" data-field="newPassword" type="password" placeholder="New password">
+              <textarea data-uid="${escapeHTML(uid)}" data-field="notes" placeholder="Admin notes">${escapeHTML(member.notes || "")}</textarea>
+            </div>
+
+            <div class="actions">
+              <button onclick="saveMember('${escapeHTML(uid)}')">Save</button>
+              <button onclick="changeMemberPassword('${escapeHTML(uid)}')">Change Password</button>
+              <button class="reset" onclick="resetMemberPassword('${escapeHTML(uid)}')">Reset Password</button>
+              <button class="danger" onclick="deleteMember('${escapeHTML(uid)}')">Delete/Block</button>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    onAuthStateChanged(auth, (user) => {
+      if(user && user.email === adminEmail){
+        adminAllowed = true;
+        document.getElementById("accessTitle").innerText = "Admin Access Verified";
+        document.getElementById("adminEmailText").innerText = user.email;
+        return;
+      }
+
+      adminAllowed = false;
+      window.location.href = "index.html";
+    });
+
+    onValue(membersRef, (snapshot) => {
+      allMembers = [];
+      if(snapshot.exists()){
+        snapshot.forEach((child) => {
+          allMembers.push({ uid: child.key, member: child.val() || {} });
+        });
+      }
+      allMembers.sort((a, b) => Number(b.member.createdAt || 0) - Number(a.member.createdAt || 0));
+      renderMembers();
+    });
+
+    document.getElementById("memberSearch").addEventListener("input", renderMembers);
+
+    async function callAdminApi(path, body){
+      const user = auth.currentUser;
+      if(!user){
+        throw new Error("Admin login missing");
+      }
+
+      const token = await user.getIdToken();
+      const response = await fetch(path, {
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json",
+          "Authorization":"Bearer " + token
+        },
+        body:JSON.stringify(body)
+      });
+      const data = await response.json().catch(() => ({}));
+
+      if(!response.ok || data.ok === false){
+        throw new Error(data.error || "Server action failed");
+      }
+
+      return data;
+    }
+
+    window.saveMember = (uid) => {
+      if(!adminAllowed){ alert("Admin verify nahi hua."); return; }
+
+      update(ref(db, "members/" + uid), {
+        name:getFieldValue(uid, "name"),
+        mobile:getFieldValue(uid, "mobile"),
+        status:getFieldValue(uid, "status") || "Active",
+        notes:getFieldValue(uid, "notes"),
+        updatedAt:Date.now()
+      }).then(() => {
+        alert("Member saved.");
+      }).catch((error) => {
+        alert("Save nahi hua: " + error.message);
+      });
+    };
+
+    window.resetMemberPassword = (uid) => {
+      if(!adminAllowed){ alert("Admin verify nahi hua."); return; }
+      const item = allMembers.find((entry) => entry.uid === uid);
+      const email = item?.member?.email;
+
+      if(!email){
+        alert("Member email missing hai.");
+        return;
+      }
+
+      sendPasswordResetEmail(auth, email).then(() => {
+        alert("Password reset email bhej diya gaya: " + email);
+      }).catch((error) => {
+        alert("Reset email nahi gaya: " + error.message);
+      });
+    };
+
+    window.changeMemberPassword = (uid) => {
+      if(!adminAllowed){ alert("Admin verify nahi hua."); return; }
+
+      const password = getFieldValue(uid, "newPassword");
+      if(password.length < 6){
+        alert("New password kam se kam 6 character ka hona chahiye.");
+        return;
+      }
+
+      callAdminApi("/admin/update-member-password", { uid, password }).then(() => {
+        alert("Password change ho gaya.");
+        const input = document.querySelector(`[data-uid="${CSS.escape(uid)}"][data-field="newPassword"]`);
+        if(input){ input.value = ""; }
+      }).catch((error) => {
+        alert("Password direct change nahi hua: " + error.message + "\nServer par Firebase Admin SDK deploy hona zaroori hai.");
+      });
+    };
+
+    window.deleteMember = (uid) => {
+      if(!adminAllowed){ alert("Admin verify nahi hua."); return; }
+
+      if(!confirm("Is member ka Auth account delete karna hai? Server unavailable hua to site access block hoga.")){
+        return;
+      }
+
+      callAdminApi("/admin/delete-member", { uid }).then(() => {
+        alert("Member Auth account delete ho gaya.");
+      }).catch((error) => {
+        update(ref(db, "members/" + uid), {
+          status:"Deleted",
+          deletedAt:Date.now(),
+          updatedAt:Date.now()
+        }).then(() => {
+          alert("Server delete nahi hua, lekin member site access block ho gaya: " + error.message);
+        }).catch((dbError) => {
+          alert("Delete/block nahi hua: " + dbError.message);
+        });
+      });
+    };
+
+    window.blockMember = (uid) => {
+      if(!adminAllowed){ alert("Admin verify nahi hua."); return; }
+
+      update(ref(db, "members/" + uid), {
+        status:"Deleted",
+        deletedAt:Date.now(),
+        updatedAt:Date.now()
+      }).then(() => {
+        alert("Member deleted/blocked.");
+      }).catch((error) => {
+        alert("Delete/block nahi hua: " + error.message);
+      });
+    };
+
+    window.logoutUser = () => {
+      signOut(auth).then(() => {
+        window.location.href = "index.html";
+      });
+    };
+  </script>
+</body>
+</html>
