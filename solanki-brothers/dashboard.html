@@ -10,69 +10,77 @@
 
   <style>
     *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins','Noto Sans Devanagari',sans-serif;}
-    body{background:#f5f7fb;color:#222;}
+    body{background:#f5f7fb;color:#222;overflow-x:hidden;}
     html{scroll-behavior:smooth;}
 
-    .topbar{background:#062b68;color:white;padding:10px 6%;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+    .topbar{background:#062b68;color:white;padding:5px 3%;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;font-size:12px;}
     .topbar span{color:#ffd000;font-weight:700;}
 
-    header{background:linear-gradient(135deg,#0b3d91,#061b54);color:white;padding:35px 6%;text-align:center;border-bottom:6px solid #ffd000;}
-    header h1{color:#ffd000;font-size:42px;}
-    header p{margin-top:8px;}
+    header{background:linear-gradient(135deg,#0b3d91,#061b54);color:white;padding:13px 3%;text-align:center;border-bottom:3px solid #ffd000;}
+    header h1{color:#ffd000;font-size:clamp(20px,3.4vw,28px);line-height:1.15;}
+    header p{margin-top:3px;font-size:12px;}
 
-    nav{background:white;padding:15px 6%;display:flex;justify-content:center;gap:15px;flex-wrap:wrap;box-shadow:0 4px 15px rgba(0,0,0,.08);position:sticky;top:0;z-index:999;}
-    nav a,nav button{background:#0b3d91;color:white;text-decoration:none;border:none;padding:11px 22px;border-radius:30px;font-weight:700;cursor:pointer;font-size:14px;}
+    nav{background:white;padding:7px 3%;display:flex;justify-content:center;gap:6px;flex-wrap:wrap;box-shadow:0 3px 12px rgba(0,0,0,.08);position:sticky;top:0;z-index:999;}
+    nav a,nav button{background:#0b3d91;color:white;text-decoration:none;border:none;padding:6px 10px;border-radius:6px;font-weight:700;cursor:pointer;font-size:11px;line-height:1.15;}
     nav a:hover,nav button:hover{background:#ffd000;color:#0b3d91;}
 
-    .dashboard{padding:55px 6%;}
-    .dashboard h2{text-align:center;color:#0b3d91;font-size:34px;margin-bottom:30px;}
+    .dashboard{padding:15px 3%;max-width:1120px;margin:auto;}
+    .dashboard h2{text-align:center;color:#0b3d91;font-size:clamp(18px,2.5vw,23px);margin-bottom:10px;}
 
-    .admin-info{max-width:900px;margin:0 auto 30px;background:#eef4ff;padding:20px;border-radius:16px;border-left:6px solid #ffd000;text-align:center;box-shadow:0 5px 18px rgba(0,0,0,.08);}
-    .admin-info h3{color:#0b3d91;margin-bottom:8px;}
+    .admin-info{max-width:680px;margin:0 auto 12px;background:#eef4ff;padding:9px 12px;border-radius:6px;border-left:4px solid #ffd000;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.07);}
+    .admin-info h3{color:#0b3d91;margin-bottom:2px;font-size:15px;}
+    .admin-info p{font-size:12px;word-break:break-word;}
 
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:22px;}
-    .card{background:white;border-radius:18px;padding:28px 20px;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.08);border-top:6px solid #ffd000;}
-    .card i{font-size:40px;color:#0b3d91;margin-bottom:14px;}
-    .card h3{color:#0b3d91;margin-bottom:10px;}
-    .card p{color:#555;margin-bottom:15px;line-height:1.6;}
-    .card a{display:inline-block;background:#0b3d91;color:white;text-decoration:none;padding:10px 20px;border-radius:25px;font-weight:700;}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;}
+    .card{background:white;border-radius:6px;padding:10px 8px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.06);border-top:3px solid #ffd000;}
+    .card i{font-size:22px;color:#0b3d91;margin-bottom:5px;}
+    .card h3{color:#0b3d91;margin-bottom:3px;font-size:14px;}
+    .card p{color:#555;margin-bottom:7px;line-height:1.25;font-size:11px;}
+    .card a{display:inline-block;background:#0b3d91;color:white;text-decoration:none;padding:5px 9px;border-radius:6px;font-weight:700;font-size:11px;}
     .card a:hover{background:#ffd000;color:#0b3d91;}
 
-    .manager{margin-top:45px;background:white;padding:32px;border-radius:20px;box-shadow:0 6px 20px rgba(0,0,0,.08);border-top:6px solid #ffd000;}
-    .manager h2{font-size:30px;margin-bottom:22px;}
+    .manager{margin-top:14px;background:white;padding:12px;border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.07);border-top:3px solid #ffd000;max-width:100%;overflow:hidden;}
+    .manager h2{font-size:18px;margin-bottom:9px;}
 
-    .form-box{display:grid;grid-template-columns:1fr 1fr auto;gap:14px;margin-bottom:25px;}
+    .form-box{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:6px;margin-bottom:9px;}
     .form-box.single{grid-template-columns:1fr auto;}
     .job-form-box{grid-template-columns:1fr 1fr;}
     .ad-form-box{grid-template-columns:1fr 1fr;}
-    .job-form-box button{grid-column:1 / -1;font-size:16px;}
-    .ad-form-box button{grid-column:1 / -1;font-size:16px;}
+    .job-form-box button{grid-column:1 / -1;font-size:12px;}
+    .ad-form-box button{grid-column:1 / -1;font-size:12px;}
 
-    .form-box input,.form-box textarea{padding:13px;border:1px solid #ccc;border-radius:10px;font-size:15px;outline:none;}
-    .form-box textarea{min-height:95px;resize:vertical;grid-column:1 / -1;}
-    .form-box button{background:#0b3d91;color:white;border:none;padding:13px 22px;border-radius:10px;font-weight:700;cursor:pointer;}
+    .form-box input,.form-box textarea{width:100%;min-width:0;padding:6px 8px;border:1px solid #ccc;border-radius:5px;font-size:12px;line-height:1.15;outline:none;}
+    .form-box textarea{min-height:42px;resize:vertical;grid-column:1 / -1;}
+    .form-box button{background:#0b3d91;color:white;border:none;padding:6px 10px;border-radius:5px;font-weight:700;cursor:pointer;font-size:12px;line-height:1.15;}
     .form-box button:hover{background:#ffd000;color:#0b3d91;}
 
-    .row{background:#eef4ff;padding:14px;border-radius:12px;margin-bottom:12px;display:flex;justify-content:space-between;gap:15px;align-items:center;flex-wrap:wrap;border-left:5px solid #0b3d91;}
+    .row{background:#eef4ff;padding:6px 8px;border-radius:6px;margin-bottom:6px;display:flex;justify-content:space-between;gap:8px;align-items:flex-start;flex-wrap:wrap;border-left:3px solid #0b3d91;max-width:100%;}
+    .row > div{min-width:0;max-width:100%;}
     .row a{color:#0b3d91;font-weight:700;text-decoration:none;}
-    .row small{display:block;color:#555;margin-top:5px;word-break:break-word;}
-    .row strong{color:#0b3d91;font-size:17px;}
+    .row small{display:block;color:#555;margin-top:2px;word-break:break-word;overflow-wrap:anywhere;font-size:11px;line-height:1.2;}
+    .row strong{color:#0b3d91;font-size:12px;line-height:1.2;overflow-wrap:anywhere;}
 
-    .delete-btn{background:#d90000;color:white;border:none;padding:9px 16px;border-radius:8px;font-weight:700;cursor:pointer;}
-    .action-btn{display:inline-block;background:#0b3d91;color:white;border:none;text-decoration:none;padding:9px 14px;border-radius:8px;font-weight:700;cursor:pointer;margin:3px;}
+    .delete-btn{background:#d90000;color:white;border:none;padding:5px 8px;border-radius:5px;font-weight:700;cursor:pointer;font-size:11px;}
+    .action-btn{display:inline-block;background:#0b3d91;color:white;border:none;text-decoration:none;padding:5px 8px;border-radius:5px;font-weight:700;cursor:pointer;margin:1px;font-size:11px;}
     .done-btn{background:#138a36;}
-    .status-badge{display:inline-block;background:#ffd000;color:#0b3d91;padding:5px 10px;border-radius:20px;font-size:12px;font-weight:800;margin-top:6px;}
+    .status-badge{display:inline-block;background:#ffd000;color:#0b3d91;padding:2px 6px;border-radius:6px;font-size:10px;font-weight:800;margin-top:3px;}
     .status-badge.done{background:#138a36;color:white;}
-    .status{margin-top:10px;margin-bottom:12px;text-align:center;font-weight:700;color:#0b3d91;}
+    .status{margin-top:4px;margin-bottom:6px;text-align:center;font-weight:700;color:#0b3d91;font-size:12px;}
 
-    footer{background:#0b3d91;color:white;text-align:center;padding:22px;margin-top:45px;}
+    footer{background:#0b3d91;color:white;text-align:center;padding:11px;margin-top:16px;font-size:12px;}
 
     @media(max-width:768px){
-      header h1{font-size:28px;}
+      header{padding:11px 3%;}
+      header h1{font-size:20px;}
+      .dashboard{padding:10px 2.5%;}
       .form-box,.form-box.single,.job-form-box,.ad-form-box{grid-template-columns:1fr;}
       .job-form-box button,.ad-form-box button,.form-box textarea{grid-column:auto;}
-      .manager{padding:22px 16px;}
-      nav a,nav button{padding:10px 16px;font-size:13px;}
+      .manager{padding:10px 8px;}
+      nav{justify-content:flex-start;gap:6px;overflow-x:auto;flex-wrap:nowrap;}
+      nav a,nav button{padding:6px 8px;font-size:11px;white-space:nowrap;}
+      .grid{grid-template-columns:repeat(auto-fit,minmax(125px,1fr));}
+      .row{display:block;}
+      .row .delete-btn,.row .action-btn{margin-top:7px;}
     }
   </style>
 </head>
@@ -190,7 +198,7 @@
 
     <div class="form-box ad-form-box">
       <input type="text" id="adTitle" placeholder="विज्ञापन Title जैसे New Admission Open">
-      <input type="url" id="adImageUrl" placeholder="Image URL https://...">
+      <input type="text" id="adPhotoName" placeholder="Photo Name/No. जैसे 1 या 2">
       <input type="url" id="adLinkUrl" placeholder="Button Link https://... (optional)">
       <textarea id="adDescription" placeholder="विज्ञापन details लिखें..."></textarea>
       <button onclick="addAdvertisement()">Add Advertisement</button>
@@ -466,14 +474,14 @@
     if(!adminAllowed){ alert("Admin verify नहीं हुआ।"); return; }
 
     const title = document.getElementById("adTitle").value.trim();
-    const imageUrl = document.getElementById("adImageUrl").value.trim();
+    const photoName = document.getElementById("adPhotoName").value.trim();
     const linkUrl = document.getElementById("adLinkUrl").value.trim();
     const description = document.getElementById("adDescription").value.trim();
 
     if(title === ""){ alert("Advertisement title जरूर भरें"); return; }
 
-    if(imageUrl !== "" && !imageUrl.startsWith("http://") && !imageUrl.startsWith("https://")){
-      alert("Image URL http:// या https:// से शुरू होना चाहिए");
+    if(photoName !== "" && !/^[a-zA-Z0-9_-]+$/.test(photoName)){
+      alert("Photo Name में सिर्फ number/letter, - या _ रखें। जैसे 1 या admission-1");
       return;
     }
 
@@ -487,13 +495,14 @@
     set(push(adsRef), {
       title:title,
       description:description || "More details coming soon.",
-      imageUrl:imageUrl || "#",
+      photoName:photoName || "",
+      imageUrl:photoName ? `${photoName}.jpeg` : "#",
       linkUrl:linkUrl || "#",
       createdAt:Date.now()
     }).then(() => {
       document.getElementById("adStatus").innerText = "Advertisement Added Successfully!";
       document.getElementById("adTitle").value = "";
-      document.getElementById("adImageUrl").value = "";
+      document.getElementById("adPhotoName").value = "";
       document.getElementById("adLinkUrl").value = "";
       document.getElementById("adDescription").value = "";
     }).catch((error) => alert("Error: " + error.message));
@@ -528,7 +537,7 @@
             <div>
               <strong>${escapeHTML(data.title || "Advertisement")}</strong>
               <small>${escapeHTML(data.description || "")}</small>
-              <small>Image: <a href="${safeUrl(data.imageUrl)}" target="_blank" rel="noopener noreferrer">${escapeHTML(data.imageUrl || "#")}</a></small>
+              <small>Photo: ${escapeHTML(data.photoName || data.imageUrl || "No Photo")}</small>
               <small>Link: <a href="${safeUrl(data.linkUrl)}" target="_blank" rel="noopener noreferrer">${escapeHTML(data.linkUrl || "#")}</a></small>
             </div>
             <button class="delete-btn" onclick="deleteAdvertisement('${data.id}')">Delete</button>
