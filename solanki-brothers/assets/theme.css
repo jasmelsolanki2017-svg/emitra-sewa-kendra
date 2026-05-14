@@ -24,6 +24,13 @@
   color: #0057a8;
 }
 
+.theme-symbol {
+  display: block;
+  font-size: 24px;
+  line-height: 1;
+  font-weight: 800;
+}
+
 body.dark-mode {
   background: #07111f !important;
   color: #e8f1ff !important;

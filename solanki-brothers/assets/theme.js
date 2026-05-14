@@ -3,9 +3,9 @@
   const applyTheme = (theme) => {
     const isDark = theme === "dark";
     document.body.classList.toggle("dark-mode", isDark);
-    const icon = document.querySelector(".theme-toggle i");
+    const icon = document.querySelector(".theme-symbol");
     if(icon){
-      icon.className = isDark ? "fa-solid fa-sun" : "fa-solid fa-moon";
+      icon.textContent = isDark ? "☀" : "☾";
     }
   };
 
