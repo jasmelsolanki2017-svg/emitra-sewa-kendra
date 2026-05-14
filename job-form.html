@@ -374,6 +374,14 @@ const safeUrl = (value = "#") => {
   return /^https?:\/\//i.test(url) ? url : "#";
 };
 
+const normalizeJob = (value) => {
+  if(typeof value === "string"){
+    return { title:value, type:"Online Form", createdAt:0 };
+  }
+
+  return value && typeof value === "object" ? value : {};
+};
+
 const jobsRef = ref(db, "LatestJobs");
 
 onValue(jobsRef, (snapshot) => {
@@ -381,9 +389,18 @@ onValue(jobsRef, (snapshot) => {
   jobList.innerHTML = "";
 
   if(snapshot.exists()){
+    const jobs = [];
+
     snapshot.forEach((child) => {
-      const id = child.key;
-      const job = child.val();
+      jobs.push({
+        id: child.key,
+        job: normalizeJob(child.val())
+      });
+    });
+
+    jobs.sort((a, b) => Number(b.job.createdAt || 0) - Number(a.job.createdAt || 0));
+
+    jobs.forEach(({ id, job }) => {
       const item = document.createElement("li");
       item.className = "job-card";
       item.innerHTML = `
