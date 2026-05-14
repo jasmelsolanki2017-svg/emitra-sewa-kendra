@@ -8,16 +8,17 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans+Devanagari:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-  <style>
+  <link rel="icon" type="image/svg+xml" href="assets/e-mitra-wala-logo.svg">
+<style>
     :root{
-      --blue:#0b3d91;
-      --blue-dark:#061b54;
-      --blue-deep:#062b68;
-      --yellow:#ffd000;
+      --blue:#0057a8;
+      --blue-dark:#03224d;
+      --blue-deep:#043a76;
+      --yellow:#ff7a00;
       --green:#25d366;
-      --bg:#f5f7fb;
+      --bg:#f7fbff;
       --panel:#ffffff;
-      --soft:#eef4ff;
+      --soft:#eaf4ff;
       --line:#d8e0f0;
       --text:#202738;
       --muted:#586174;
@@ -28,8 +29,8 @@
     html{scroll-behavior:smooth;}
     body{
       background:
-        radial-gradient(circle at top left, rgba(255,208,0,.16), transparent 30%),
-        linear-gradient(180deg,#f8fbff 0%,var(--bg) 42%,#eef3fb 100%);
+        radial-gradient(circle at top left, rgba(255,122,0,.16), transparent 30%),
+        linear-gradient(180deg,#fbfdff 0%,var(--bg) 42%,#eaf4ff 100%);
       color:var(--text);
       overflow-x:hidden;
     }
@@ -74,7 +75,7 @@
       top:-90px;
       width:260px;
       height:260px;
-      border:32px solid rgba(255,208,0,.18);
+      border:32px solid rgba(255,122,0,.18);
       border-radius:50%;
     }
 
@@ -96,7 +97,7 @@
       margin-bottom:10px;
     }
 
-    .hero-copy p{color:#fff7c6;font-size:17px;font-weight:600;}
+    .hero-copy p{color:#fff1df;font-size:17px;font-weight:600;}
 
     .hero-badge{
       background:rgba(255,255,255,.12);
@@ -116,7 +117,7 @@
     }
 
     .hero-badge strong{display:block;font-size:18px;}
-    .hero-badge small{color:#fff7c6;font-weight:700;}
+    .hero-badge small{color:#fff1df;font-weight:700;}
 
     nav{
       width:min(1120px,88%);
@@ -445,6 +446,7 @@
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8516573589974708"
      crossorigin="anonymous"></script>
 
+<link rel="stylesheet" href="assets/theme.css">
 </head>
 
 <body>
@@ -592,11 +594,11 @@
 <footer>
   <p>© 2026 E-MITRA WALA | User Dashboard</p>
   <p>
-    <a style="color:#ffd000;text-decoration:none;font-weight:700;margin:0 8px;" href="privacy-policy.html">Privacy Policy</a>
-    <a style="color:#ffd000;text-decoration:none;font-weight:700;margin:0 8px;" href="about.html">About</a>
-    <a style="color:#ffd000;text-decoration:none;font-weight:700;margin:0 8px;" href="contact.html">Contact</a>
-    <a style="color:#ffd000;text-decoration:none;font-weight:700;margin:0 8px;" href="disclaimer.html">Disclaimer</a>
-    <a style="color:#ffd000;text-decoration:none;font-weight:700;margin:0 8px;" href="terms-and-conditions.html">Terms & Conditions</a>
+    <a style="color:#ff7a00;text-decoration:none;font-weight:700;margin:0 8px;" href="privacy-policy.html">Privacy Policy</a>
+    <a style="color:#ff7a00;text-decoration:none;font-weight:700;margin:0 8px;" href="about.html">About</a>
+    <a style="color:#ff7a00;text-decoration:none;font-weight:700;margin:0 8px;" href="contact.html">Contact</a>
+    <a style="color:#ff7a00;text-decoration:none;font-weight:700;margin:0 8px;" href="disclaimer.html">Disclaimer</a>
+    <a style="color:#ff7a00;text-decoration:none;font-weight:700;margin:0 8px;" href="terms-and-conditions.html">Terms & Conditions</a>
   </p>
 </footer>
 
@@ -832,5 +834,7 @@
   document.getElementById("jobSearch").addEventListener("input", filterJobs);
 </script>
 
+<button class="theme-toggle" type="button" aria-label="Toggle dark mode" title="Dark mode" onclick="toggleDarkMode()"><i class="fa-solid fa-moon"></i></button>
+<script src="assets/theme.js"></script>
 </body>
 </html>

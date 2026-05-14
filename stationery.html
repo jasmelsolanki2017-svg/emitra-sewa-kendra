@@ -12,7 +12,8 @@
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-  <style>
+  <link rel="icon" type="image/svg+xml" href="assets/e-mitra-wala-logo.svg">
+<style>
     * {
       margin: 0;
       padding: 0;
@@ -33,7 +34,7 @@
     /* TOP BAR */
 
     .topbar {
-      background: #061b54;
+      background: #03224d;
       color: white;
       padding: 8px 6%;
       display: flex;
@@ -46,28 +47,28 @@
     }
 
     .topbar a {
-      color: #ffd000;
+      color: #ff7a00;
       text-decoration: none;
     }
 
     #liveTime {
-      color: #ffd000;
+      color: #ff7a00;
       font-weight: 800;
     }
 
     /* HEADER */
 
     header {
-      background: linear-gradient(135deg, #071d5c, #0b3d91);
+      background: linear-gradient(135deg, #05306a, #0057a8);
       color: white;
       padding: 28px 6%;
       text-align: center;
-      border-bottom: 7px solid #ffd000;
+      border-bottom: 7px solid #ff7a00;
     }
 
     header h1 {
       font-size: 52px;
-      color: #ffd000;
+      color: #ff7a00;
       text-shadow: 3px 3px 5px #000;
       margin-bottom: 8px;
       font-weight: 900;
@@ -82,16 +83,20 @@
 
     header p {
       font-size: 20px;
-      color: #fff2a8;
+      color: #fff1df;
       font-weight: 700;
     }
 
     /* NAV */
 
     nav {
-      background: #d90000;
+      background: #0057a8;
       padding: 13px 6%;
-      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 12px;
       position: sticky;
       top: 0;
       z-index: 1000;
@@ -102,13 +107,28 @@
       color: white;
       text-decoration: none;
       font-weight: 800;
-      margin: 0 14px;
+      margin: 0 8px;
       font-size: 17px;
       transition: 0.3s;
     }
 
+    nav .logo {
+      display: inline-flex;
+      align-items: center;
+      line-height: 0;
+      margin-right: auto;
+    }
+
+    nav .logo img {
+      width: min(246px, 54vw);
+      max-height: 62px;
+      height: auto;
+      display: block;
+      border-radius: 8px;
+    }
+
     nav a:hover {
-      color: #ffd000;
+      color: #ff7a00;
     }
 
     /* SLIDER */
@@ -159,7 +179,7 @@
 
     .st-content h1 {
       font-size: 62px;
-      color: #ffd000;
+      color: #ff7a00;
       text-shadow: 4px 4px 8px #000;
       margin-bottom: 12px;
       font-weight: 900;
@@ -181,14 +201,14 @@
     .st-btn {
       display: inline-block;
       padding: 14px 36px;
-      background: #ffd000;
-      color: #0b3d91;
+      background: #ff7a00;
+      color: #0057a8;
       text-decoration: none;
       border-radius: 50px;
       font-weight: 900;
       font-size: 18px;
       transition: 0.3s;
-      box-shadow: 0 8px 20px rgba(255,208,0,0.35);
+      box-shadow: 0 8px 20px rgba(255,122,0,0.35);
     }
 
     .st-btn:hover {
@@ -213,8 +233,8 @@
     }
 
     .st-slider-btn:hover {
-      background: #ffd000;
-      color: #0b3d91;
+      background: #ff7a00;
+      color: #0057a8;
     }
 
     .st-prev {
@@ -239,9 +259,9 @@
 
     .section-title h2 {
       font-size: 42px;
-      color: #0b3d91;
+      color: #0057a8;
       display: inline-block;
-      border-bottom: 6px solid #ffd000;
+      border-bottom: 6px solid #ff7a00;
       padding-bottom: 8px;
       font-weight: 900;
     }
@@ -249,11 +269,11 @@
     .poster-box {
       max-width: 1050px;
       margin: auto;
-      background: #eef4ff;
+      background: #eaf4ff;
       border-radius: 24px;
       overflow: hidden;
       box-shadow: 0 12px 35px rgba(0,0,0,0.18);
-      border: 5px solid #ffd000;
+      border: 5px solid #ff7a00;
     }
 
     .poster-box img {
@@ -264,13 +284,13 @@
     .poster-caption {
       padding: 28px;
       text-align: center;
-      background: linear-gradient(135deg, #061b54, #0b3d91);
+      background: linear-gradient(135deg, #03224d, #0057a8);
       color: white;
     }
 
     .poster-caption h3 {
       font-size: 32px;
-      color: #ffd000;
+      color: #ff7a00;
       margin-bottom: 10px;
     }
 
@@ -283,13 +303,13 @@
 
     .quick-contact {
       padding: 40px 6%;
-      background: #ffd000;
+      background: #ff7a00;
       text-align: center;
     }
 
     .quick-contact h2 {
       font-size: 34px;
-      color: #0b3d91;
+      color: #0057a8;
       margin-bottom: 20px;
     }
 
@@ -310,7 +330,7 @@
     }
 
     .call-btn {
-      background: #0b3d91;
+      background: #0057a8;
       color: white;
     }
 
@@ -340,7 +360,7 @@
       border-radius: 22px;
       padding: 30px;
       box-shadow: 0 7px 24px rgba(0,0,0,0.1);
-      border-top: 8px solid #0b3d91;
+      border-top: 8px solid #0057a8;
       transition: 0.3s;
     }
 
@@ -350,7 +370,7 @@
     }
 
     .service-card.red {
-      border-top-color: #d90000;
+      border-top-color: #ff7a00;
     }
 
     .service-card.green {
@@ -372,13 +392,13 @@
     .service-card h3 {
       font-size: 25px;
       margin-bottom: 18px;
-      color: #0b3d91;
+      color: #0057a8;
       font-weight: 900;
     }
 
     .service-card h3 i {
       margin-right: 8px;
-      color: #d90000;
+      color: #ff7a00;
     }
 
     .service-card ul {
@@ -398,19 +418,19 @@
       content: "●";
       position: absolute;
       left: 0;
-      color: #d90000;
+      color: #ff7a00;
       font-weight: bold;
     }
 
     /* SPECIAL */
 
     .special {
-      background: linear-gradient(135deg, #061b54, #0b3d91);
+      background: linear-gradient(135deg, #03224d, #0057a8);
       color: white;
     }
 
     .special .section-title h2 {
-      color: #ffd000;
+      color: #ff7a00;
       border-bottom-color: white;
     }
 
@@ -436,12 +456,12 @@
 
     .special-card i {
       font-size: 45px;
-      color: #0b3d91;
+      color: #0057a8;
       margin-bottom: 13px;
     }
 
     .special-card h3 {
-      color: #d90000;
+      color: #ff7a00;
       font-size: 21px;
       font-weight: 900;
     }
@@ -456,16 +476,16 @@
     .contact-box {
       max-width: 900px;
       margin: auto;
-      background: #eef4ff;
+      background: #eaf4ff;
       border-radius: 24px;
       padding: 38px;
       box-shadow: 0 8px 25px rgba(0,0,0,0.12);
-      border: 5px solid #ffd000;
+      border: 5px solid #ff7a00;
     }
 
     .contact-box h2 {
       font-size: 38px;
-      color: #0b3d91;
+      color: #0057a8;
       margin-bottom: 22px;
       font-weight: 900;
     }
@@ -477,12 +497,12 @@
     }
 
     .contact-box a {
-      color: #0b3d91;
+      color: #0057a8;
       text-decoration: none;
     }
 
     footer {
-      background: #061b54;
+      background: #03224d;
       color: white;
       text-align: center;
       padding: 24px;
@@ -530,6 +550,17 @@
         font-size: 15px;
       }
 
+      nav .logo {
+        margin: 0;
+        width: 100%;
+        justify-content: center;
+      }
+
+      nav .logo img {
+        width: min(218px, 78vw);
+        max-height: 56px;
+      }
+
       .stationery-slider {
         height: 72vh;
       }
@@ -572,6 +603,7 @@
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8516573589974708"
      crossorigin="anonymous"></script>
 
+<link rel="stylesheet" href="assets/theme.css">
 </head>
 
 <body>
@@ -600,6 +632,7 @@
   <!-- NAV -->
 
   <nav>
+    <a class="logo" href="index.html"><img src="assets/e-mitra-wala-logo.svg" alt="E-MITRA WALA"></a>
     <a href="index.html">Home</a>
     <a href="#poster">Poster</a>
     <a href="#services">Services</a>
@@ -881,11 +914,11 @@
   <footer>
     <p>पढ़ाई की हर जरूरत, पूरी करेंगे हम जरूर!</p>
     <p>
-      <a style="color:#ffd000;text-decoration:none;font-weight:700;margin:0 8px;" href="privacy-policy.html">Privacy Policy</a>
-      <a style="color:#ffd000;text-decoration:none;font-weight:700;margin:0 8px;" href="about.html">About</a>
-      <a style="color:#ffd000;text-decoration:none;font-weight:700;margin:0 8px;" href="contact.html">Contact</a>
-      <a style="color:#ffd000;text-decoration:none;font-weight:700;margin:0 8px;" href="disclaimer.html">Disclaimer</a>
-      <a style="color:#ffd000;text-decoration:none;font-weight:700;margin:0 8px;" href="terms-and-conditions.html">Terms & Conditions</a>
+      <a style="color:#ff7a00;text-decoration:none;font-weight:700;margin:0 8px;" href="privacy-policy.html">Privacy Policy</a>
+      <a style="color:#ff7a00;text-decoration:none;font-weight:700;margin:0 8px;" href="about.html">About</a>
+      <a style="color:#ff7a00;text-decoration:none;font-weight:700;margin:0 8px;" href="contact.html">Contact</a>
+      <a style="color:#ff7a00;text-decoration:none;font-weight:700;margin:0 8px;" href="disclaimer.html">Disclaimer</a>
+      <a style="color:#ff7a00;text-decoration:none;font-weight:700;margin:0 8px;" href="terms-and-conditions.html">Terms & Conditions</a>
     </p>
   </footer>
 
@@ -959,5 +992,7 @@
     setInterval(updateLiveTime, 1000);
   </script>
 
+<button class="theme-toggle" type="button" aria-label="Toggle dark mode" title="Dark mode" onclick="toggleDarkMode()"><i class="fa-solid fa-moon"></i></button>
+<script src="assets/theme.js"></script>
 </body>
 </html>
