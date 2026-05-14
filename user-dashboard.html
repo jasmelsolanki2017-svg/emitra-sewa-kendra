@@ -894,6 +894,19 @@ body.dark-mode .nav-logo img {
 
       document.getElementById("userEmail").innerText = user.email;
 
+      onValue(ref(db, "members/" + user.uid), (snapshot) => {
+        if(snapshot.exists()){
+          const member = snapshot.val() || {};
+          if(member.status === "Deleted" || member.status === "Blocked"){
+            alert("Your account access is blocked. Please contact admin.");
+            localStorage.removeItem(sessionKey);
+            signOut(auth).then(() => {
+              window.location.href = "index.html";
+            });
+          }
+        }
+      });
+
     } else {
       window.location.href = "index.html";
     }

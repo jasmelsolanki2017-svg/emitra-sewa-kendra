@@ -1826,6 +1826,7 @@ getDatabase,
 ref,
 push,
 set,
+update,
 onValue
 }
 from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
@@ -1957,11 +1958,36 @@ return;
 }
 
 createUserWithEmailAndPassword(auth,email,password)
+<<<<<<< HEAD
+
+.then((userCredential)=>{
+
+const user = userCredential.user;
+
+return set(ref(db, "members/" + user.uid), {
+uid:user.uid,
+email:user.email || email,
+name:(user.email || email).split("@")[0],
+mobile:"",
+role:"member",
+status:"Active",
+createdAt:Date.now(),
+lastLoginAt:Date.now()
+});
+
+})
 
 .then(()=>{
 
 alert("Account Created Successfully!");
 startFreshUserSession();
+=======
+
+.then(()=>{
+
+alert("Account Created Successfully!");
+startFreshUserSession();
+>>>>>>> ad0faacc19478058c725ff6f94a8506181974661
 
 closeLogin();
 
@@ -1983,6 +2009,14 @@ signInWithEmailAndPassword(auth,email,password)
 
 const userEmail = userCredential.user.email;
 startFreshUserSession();
+
+if(userCredential.user.uid && userEmail !== adminEmail){
+update(ref(db, "members/" + userCredential.user.uid), {
+lastLoginAt:Date.now(),
+email:userEmail,
+status:"Active"
+}).catch(() => {});
+}
 
 redirectByRole(userEmail);
 
