@@ -2,15 +2,61 @@ require("dotenv").config();
 
 const express = require("express");
 const axios = require("axios");
+let admin = null;
+
+try {
+  admin = require("firebase-admin");
+} catch (err) {
+  admin = null;
+}
 
 const app = express();
 
 const PORT = process.env.PORT || 3000;
 const BOT_TOKEN = process.env.BOT_TOKEN;
-const FIREBASE_URL = (process.env.FIREBASE_URL || "").replace(/\/+$/, "");
+const DEFAULT_FIREBASE_URL = "https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app";
+const FIREBASE_URL = (process.env.FIREBASE_URL || DEFAULT_FIREBASE_URL).replace(/\/+$/, "");
 const JOBS_PATH = process.env.JOBS_PATH || "LatestJobs";
+let adminDb = null;
 
 app.use(express.json({ limit: "1mb" }));
+
+function getServiceAccount() {
+  if (process.env.FIREBASE_SERVICE_ACCOUNT_BASE64) {
+    const json = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64, "base64").toString("utf8");
+    return JSON.parse(json);
+  }
+
+  if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+    return JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+  }
+
+  return null;
+}
+
+function getAdminDb() {
+  if (adminDb) {
+    return adminDb;
+  }
+
+  const serviceAccount = getServiceAccount();
+
+  if (!admin || (!serviceAccount && !process.env.GOOGLE_APPLICATION_CREDENTIALS)) {
+    return null;
+  }
+
+  if (!admin.apps.length) {
+    admin.initializeApp({
+      credential: serviceAccount
+        ? admin.credential.cert(serviceAccount)
+        : admin.credential.applicationDefault(),
+      databaseURL: FIREBASE_URL
+    });
+  }
+
+  adminDb = admin.database();
+  return adminDb;
+}
 
 function getTelegramPost(update) {
   return update.message || update.channel_post || update.edited_message || update.edited_channel_post || null;
@@ -62,8 +108,27 @@ async function saveJob(jobData) {
     throw new Error("FIREBASE_URL env variable missing");
   }
 
-  const response = await axios.post(`${FIREBASE_URL}/${JOBS_PATH}.json`, jobData);
-  return response.data;
+  const db = getAdminDb();
+  if (db) {
+    const savedRef = await db.ref(JOBS_PATH).push(jobData);
+    return { name: savedRef.key, method: "firebase-admin" };
+  }
+
+  try {
+    const response = await axios.post(`${FIREBASE_URL}/${JOBS_PATH}.json`, jobData);
+    return { ...response.data, method: "rest" };
+  } catch (err) {
+    const firebaseError = err.response?.data?.error || err.response?.data || err.message;
+    throw new Error(`Firebase REST write failed: ${firebaseError}`);
+  }
+}
+
+function isAdminSdkConfigured() {
+  return Boolean(
+    process.env.FIREBASE_SERVICE_ACCOUNT_BASE64 ||
+    process.env.FIREBASE_SERVICE_ACCOUNT ||
+    process.env.GOOGLE_APPLICATION_CREDENTIALS
+  );
 }
 
 app.get("/", (req, res) => {
@@ -72,7 +137,8 @@ app.get("/", (req, res) => {
     message: "Telegram job bot is running",
     firebasePath: JOBS_PATH,
     botConfigured: Boolean(BOT_TOKEN),
-    firebaseConfigured: Boolean(FIREBASE_URL)
+    firebaseConfigured: Boolean(FIREBASE_URL),
+    adminSdkConfigured: isAdminSdkConfigured()
   });
 });
 
@@ -92,6 +158,7 @@ app.post("/", async (req, res) => {
       ok: true,
       message: "Job Added",
       id: saved.name,
+      method: saved.method,
       path: JOBS_PATH,
       title: jobData.title
     });
