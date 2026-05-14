@@ -405,7 +405,7 @@ onValue(jobsRef, (snapshot) => {
       item.className = "job-card";
       item.innerHTML = `
         <span class="badge">${escapeHTML(job.type || "Online Form")}</span>
-        <h3>${escapeHTML(job.title || "Job Update")}</h3>
+        <h3>${escapeHTML(job.title || job.text || "Job Update")}</h3>
         <p>Start: ${escapeHTML(job.startDate || "Update Soon")} | Last: <span class="last-date">${escapeHTML(job.lastDate || "Update Soon")}</span></p>
         <p>Qualification: ${escapeHTML(job.qualification || "Update Soon")}</p>
         <p>Location: ${escapeHTML(job.location || "All India")}</p>
