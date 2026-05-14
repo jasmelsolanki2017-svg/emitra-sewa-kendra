@@ -409,7 +409,8 @@ body.dark-mode .nav-logo img {
       <input type="text" id="jobQualification" placeholder="Qualification जैसे 12th Pass">
       <input type="text" id="jobLocation" placeholder="Location जैसे All India">
       <input type="url" id="jobApplyLink" placeholder="Apply Link https://...">
-      <input type="url" id="jobDetailLink" placeholder="Detail Link https://...">
+      <input type="url" id="jobDetailLink" placeholder="Official Detail / Notification Link https://...">
+      <textarea id="jobPageContent" placeholder="Job detail page ke liye details likhein. Example: Total Posts, Age Limit, Fees, Selection Process, Important Dates..."></textarea>
       <button onclick="addLatestJob()">Add Job</button>
     </div>
 
@@ -750,6 +751,7 @@ body.dark-mode .nav-logo img {
     const location = document.getElementById("jobLocation").value.trim();
     const applyLink = document.getElementById("jobApplyLink").value.trim();
     const detailLink = document.getElementById("jobDetailLink").value.trim();
+    const pageContent = document.getElementById("jobPageContent").value.trim();
 
     if(title === ""){ alert("Job Title जरूर भरें"); return; }
 
@@ -774,6 +776,7 @@ body.dark-mode .nav-logo img {
       location:location || "All India",
       applyLink:applyLink || "#",
       detailLink:detailLink || "#",
+      pageContent:pageContent || "",
       createdAt:Date.now()
     }).then(() => {
       document.getElementById("jobStatus").innerText = "Job Added Successfully!";
@@ -786,6 +789,7 @@ body.dark-mode .nav-logo img {
       document.getElementById("jobLocation").value = "";
       document.getElementById("jobApplyLink").value = "";
       document.getElementById("jobDetailLink").value = "";
+      document.getElementById("jobPageContent").value = "";
 
     }).catch((error) => alert("Error: " + error.message));
   };
@@ -818,8 +822,10 @@ body.dark-mode .nav-logo img {
               <small>Last Date: ${escapeHTML(data.lastDate || "Update Soon")}</small>
               <small>Qualification: ${escapeHTML(data.qualification || "Update Soon")}</small>
               <small>Location: ${escapeHTML(data.location || "All India")}</small>
+              <small>Job Page: <a href="job-detail.html?id=${id}" target="_blank" rel="noopener noreferrer">Open Design Page</a></small>
               <small>Apply Link: <a href="${safeUrl(data.applyLink)}" target="_blank" rel="noopener noreferrer">${escapeHTML(data.applyLink || "#")}</a></small>
-              <small>Detail Link: <a href="${safeUrl(data.detailLink)}" target="_blank" rel="noopener noreferrer">${escapeHTML(data.detailLink || "#")}</a></small>
+              <small>Official Detail Link: <a href="${safeUrl(data.detailLink)}" target="_blank" rel="noopener noreferrer">${escapeHTML(data.detailLink || "#")}</a></small>
+              <small>Page Content: ${escapeHTML(data.pageContent || "No content added")}</small>
             </div>
             <button class="delete-btn" onclick="deleteLatestJob('${id}')">Delete</button>
           </div>

@@ -716,7 +716,7 @@ body.dark-mode .nav-logo img {
     <div class="card">
       <i class="fa-solid fa-briefcase"></i>
       <h3>Latest Jobs</h3>
-      <p>Admin portal se add jobs yahan automatic show hongi.</p>
+      <p>Latest job updates yahan ek jagah milengi.</p>
       <a href="#jobsSection">View Jobs</a>
     </div>
 
@@ -977,6 +977,7 @@ body.dark-mode .nav-logo img {
 
     if(snapshot.exists()){
       snapshot.forEach((child) => {
+        const id = child.key;
         const job = child.val();
         count += 1;
 
@@ -989,7 +990,7 @@ body.dark-mode .nav-logo img {
             <p><b>Qualification:</b> ${escapeHTML(job.qualification || "Update Soon")}</p>
             <p><b>Location:</b> ${escapeHTML(job.location || "All India")}</p>
             <a href="${safeUrl(job.applyLink)}" target="_blank" rel="noopener noreferrer">Apply Now</a>
-            <a class="detail-link" href="${safeUrl(job.detailLink)}" target="_blank" rel="noopener noreferrer">View Details</a>
+            <a class="detail-link" href="job-detail.html?id=${encodeURIComponent(id)}">View Details</a>
           </div>
         `;
       });
