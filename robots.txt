@@ -1,6 +1,10 @@
 User-agent: *
 Allow: /
 Disallow: /dashboard.html
+Disallow: /admin-links.html
+Disallow: /admin-updates.html
+Disallow: /admin-ads.html
+Disallow: /admin-jobs.html
 Disallow: /all-members.html
 Disallow: /portal-items.html
 Disallow: /user-dashboard.html
