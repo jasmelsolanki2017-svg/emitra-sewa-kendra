@@ -1,6 +1,8 @@
 User-agent: *
 Allow: /
 Disallow: /dashboard.html
+Disallow: /all-members.html
+Disallow: /portal-items.html
 Disallow: /user-dashboard.html
 
 Sitemap: https://example.com/sitemap.xml
