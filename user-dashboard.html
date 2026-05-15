@@ -927,13 +927,7 @@ body.dark-mode .nav-logo img {
     remove
   } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
-  import {
-    getStorage,
-    ref as storageRef,
-    uploadBytesResumable,
-    getDownloadURL,
-    deleteObject
-  } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-storage.js";
+  import { createClient as createSupabaseClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",
@@ -948,7 +942,11 @@ body.dark-mode .nav-logo img {
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getDatabase(app);
-  const storage = getStorage(app);
+  const supabase = createSupabaseClient(
+    "https://wjzutgwmdrtlhmgebmua.supabase.co",
+    "sb_publishable_MbH1WNIeOHFkVqI13peLpg_TFgzfFjW"
+  );
+  const supabaseBucket = "user-files";
   const sessionKey = "loginTime";
   const sessionLimitMs = 60 * 60 * 1000;
   let sessionIntervalId = null;
@@ -990,6 +988,12 @@ body.dark-mode .nav-logo img {
     .replace(/[^a-zA-Z0-9._-]+/g, "-")
     .replace(/-+/g, "-")
     .slice(0, 90) || "file";
+
+  const getSupabasePublicUrl = (path) => {
+    if(!path){ return ""; }
+    const { data } = supabase.storage.from(supabaseBucket).getPublicUrl(path);
+    return data?.publicUrl || "";
+  };
 
   const renderStorageInfo = () => {
     const used = Number(currentMember.storageUsedBytes || 0);
@@ -1154,57 +1158,58 @@ body.dark-mode .nav-logo img {
 
     const fileRecordRef = push(ref(db, "memberFiles/" + currentUser.uid));
     const safeName = cleanFileName(file.name);
-    const path = `user-files/${currentUser.uid}/${fileRecordRef.key}-${safeName}`;
-    const uploadTask = uploadBytesResumable(storageRef(storage, path), file, {
+    const path = `${currentUser.uid}/${fileRecordRef.key}-${safeName}`;
+
+    status.innerText = "Supabase par upload ho raha hai...";
+
+    supabase.storage.from(supabaseBucket).upload(path, file, {
+      cacheControl:"3600",
       contentType:file.type || "application/octet-stream",
-      customMetadata:{
-        ownerUid:currentUser.uid,
-        ownerEmail:currentUser.email || ""
+      upsert:false
+    }).then(async ({ error }) => {
+      if(error){
+        throw error;
       }
-    });
 
-    status.innerText = "Upload starting...";
+      const downloadUrl = getSupabasePublicUrl(path);
+      const nextUsed = used + file.size;
 
-    uploadTask.on("state_changed", (snapshot) => {
-      const percent = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-      status.innerText = `Uploading... ${percent}%`;
-    }, (error) => {
+      await set(fileRecordRef, {
+        name:file.name,
+        size:file.size,
+        type:file.type || "",
+        path:path,
+        storageProvider:"supabase",
+        bucket:supabaseBucket,
+        downloadUrl:downloadUrl,
+        uploadedAt:Date.now()
+      });
+
+      await update(ref(db, "members/" + currentUser.uid), {
+        storageUsedBytes:nextUsed,
+        storageLimitBytes:limit,
+        updatedAt:Date.now()
+      });
+
+      input.value = "";
+      status.innerText = "File Supabase par upload ho gayi.";
+    }).catch((error) => {
       status.innerText = "Upload nahi hua: " + error.message;
-    }, async () => {
-      try{
-        const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
-        const nextUsed = used + file.size;
-
-        await set(fileRecordRef, {
-          name:file.name,
-          size:file.size,
-          type:file.type || "",
-          path:path,
-          downloadUrl:downloadUrl,
-          uploadedAt:Date.now()
-        });
-
-        await update(ref(db, "members/" + currentUser.uid), {
-          storageUsedBytes:nextUsed,
-          storageLimitBytes:limit,
-          updatedAt:Date.now()
-        });
-
-        input.value = "";
-        status.innerText = "File upload ho gayi.";
-      } catch(error){
-        status.innerText = "Upload save nahi hua: " + error.message;
-      }
     });
   };
 
   window.downloadUserFile = (id) => {
     const item = currentFiles.find((entry) => entry.id === id);
-    if(!item || !item.file.downloadUrl){
+    if(!item){
       alert("Download link nahi mila.");
       return;
     }
-    window.open(item.file.downloadUrl, "_blank", "noopener,noreferrer");
+    const url = item.file.downloadUrl || getSupabasePublicUrl(item.file.path);
+    if(!url){
+      alert("Download link nahi mila.");
+      return;
+    }
+    window.open(url, "_blank", "noopener,noreferrer");
   };
 
   window.deleteUserFile = async (id) => {
@@ -1225,7 +1230,8 @@ body.dark-mode .nav-logo img {
 
     try{
       if(item.file.path){
-        await deleteObject(storageRef(storage, item.file.path));
+        const { error } = await supabase.storage.from(item.file.bucket || supabaseBucket).remove([item.file.path]);
+        if(error){ throw error; }
       }
       await remove(ref(db, "memberFiles/" + currentUser.uid + "/" + id));
       const used = Math.max(0, Number(currentMember.storageUsedBytes || 0) - Number(item.file.size || 0));

@@ -118,11 +118,7 @@
       remove
     } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
-    import {
-      getStorage,
-      ref as storageRef,
-      deleteObject
-    } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-storage.js";
+    import { createClient as createSupabaseClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",
@@ -137,7 +133,11 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getDatabase(app);
-    const storage = getStorage(app);
+    const supabase = createSupabaseClient(
+      "https://wjzutgwmdrtlhmgebmua.supabase.co",
+      "sb_publishable_MbH1WNIeOHFkVqI13peLpg_TFgzfFjW"
+    );
+    const supabaseBucket = "user-files";
     const adminEmail = "jasmelsolanki@gmail.com";
     const membersRef = ref(db, "members");
     let adminAllowed = false;
@@ -168,6 +168,12 @@
       if(direct > 0){ return direct; }
       const mb = Number(member.freeStorageLimitMb || 0);
       return (mb > 0 ? mb : 50) * 1024 * 1024;
+    };
+
+    const getSupabasePublicUrl = (path, bucket = supabaseBucket) => {
+      if(!path){ return ""; }
+      const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+      return data?.publicUrl || "";
     };
 
     const getFieldValue = (uid, field) => {
@@ -348,11 +354,16 @@
     window.downloadMemberFile = (uid, fileId) => {
       if(!adminAllowed){ alert("Admin verify nahi hua."); return; }
       const entry = (memberFiles[uid] || []).find((item) => item.id === fileId);
-      if(!entry || !entry.file.downloadUrl){
+      if(!entry){
         alert("Download link nahi mila.");
         return;
       }
-      window.open(entry.file.downloadUrl, "_blank", "noopener,noreferrer");
+      const url = entry.file.downloadUrl || getSupabasePublicUrl(entry.file.path, entry.file.bucket || supabaseBucket);
+      if(!url){
+        alert("Download link nahi mila.");
+        return;
+      }
+      window.open(url, "_blank", "noopener,noreferrer");
     };
 
     window.deleteMemberFile = async (uid, fileId) => {
@@ -368,7 +379,8 @@
 
       try{
         if(entry.file.path){
-          await deleteObject(storageRef(storage, entry.file.path));
+          const { error } = await supabase.storage.from(entry.file.bucket || supabaseBucket).remove([entry.file.path]);
+          if(error){ throw error; }
         }
         await remove(ref(db, "memberFiles/" + uid + "/" + fileId));
         const member = (allMembers.find((item) => item.uid === uid) || {}).member || {};
