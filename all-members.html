@@ -46,6 +46,15 @@
     .file-row small{display:block;color:#55657a;font-size:10px;}
     .file-row button{border:0;border-radius:5px;padding:6px 8px;font-size:10px;font-weight:800;background:#0057a8;color:white;cursor:pointer;margin-left:4px;}
     .file-row .danger{background:#d90000;}
+    .link-grid{display:grid;grid-template-columns:1fr 1fr auto;gap:6px;margin-top:8px;}
+    .link-grid input{width:100%;min-width:0;padding:7px 8px;border:1px solid #c9d9ea;border-radius:6px;font-size:12px;}
+    .link-grid button{border:0;border-radius:6px;padding:7px 9px;font-size:11px;font-weight:800;background:#0057a8;color:white;cursor:pointer;}
+    .cloud-links{margin-top:8px;display:grid;gap:6px;}
+    .cloud-link-row{background:#fff;border:1px solid #d8e6f5;border-left:3px solid #ff7a00;border-radius:6px;padding:7px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px;align-items:center;}
+    .cloud-link-row strong{display:block;color:#0057a8;font-size:12px;overflow-wrap:anywhere;}
+    .cloud-link-row small{display:block;color:#55657a;font-size:10px;overflow-wrap:anywhere;}
+    .cloud-link-row a,.cloud-link-row button{display:inline-block;border:0;border-radius:5px;padding:6px 8px;font-size:10px;font-weight:800;background:#0057a8;color:white;text-decoration:none;cursor:pointer;margin-left:4px;}
+    .cloud-link-row .danger{background:#d90000;}
     .empty{background:white;border:1px dashed #bdd0e5;border-radius:7px;padding:18px;text-align:center;color:#55657a;font-weight:700;}
     footer{background:#0057a8;color:white;text-align:center;padding:12px;font-size:12px;}
     @media(max-width:640px){
@@ -54,7 +63,7 @@
       .toolbar input{min-width:0;max-width:none;}
       .edit-grid{grid-template-columns:1fr;}
       .edit-grid textarea{grid-column:auto;}
-      .file-row{grid-template-columns:1fr;}
+      .file-row,.cloud-link-row,.link-grid{grid-template-columns:1fr;}
     }
   </style>
 </head>
@@ -114,6 +123,8 @@
       getDatabase,
       ref,
       onValue,
+      push,
+      set,
       update,
       remove
     } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
@@ -143,6 +154,7 @@
     let adminAllowed = false;
     let allMembers = [];
     let memberFiles = {};
+    let memberCloudLinks = {};
 
     const escapeHTML = (value = "") => String(value)
       .replace(/&/g, "&amp;")
@@ -154,6 +166,11 @@
     const formatDate = (value) => {
       const time = Number(value || 0);
       return time ? new Date(time).toLocaleString("hi-IN") : "Not available";
+    };
+
+    const safeUrl = (value = "#") => {
+      const url = String(value || "#").trim();
+      return /^https?:\/\//i.test(url) ? url : "#";
     };
 
     const formatBytes = (bytes = 0) => {
@@ -189,6 +206,7 @@
           member.name,
           member.email,
           member.mobile,
+          member.profileEmail,
           member.status,
           member.notes
         ].join(" ").toLowerCase();
@@ -216,6 +234,7 @@
               <span class="badge ${deleted ? "deleted" : ""}">${escapeHTML(status)}</span>
             </div>
             <p class="detail"><strong>Email:</strong> ${escapeHTML(member.email || "")}</p>
+            <p class="detail"><strong>Profile Email:</strong> ${escapeHTML(member.profileEmail || member.email || "")}</p>
             <p class="detail"><strong>Mobile:</strong> ${escapeHTML(member.mobile || "Not added")}</p>
             <p class="detail"><strong>UID:</strong> ${escapeHTML(uid)}</p>
             <p class="detail"><strong>Created:</strong> ${formatDate(member.createdAt)}</p>
@@ -227,6 +246,7 @@
             <div class="edit-grid">
               <input data-uid="${escapeHTML(uid)}" data-field="name" value="${escapeHTML(member.name || "")}" placeholder="Name">
               <input data-uid="${escapeHTML(uid)}" data-field="mobile" value="${escapeHTML(member.mobile || "")}" placeholder="Mobile">
+              <input data-uid="${escapeHTML(uid)}" data-field="profileEmail" type="email" value="${escapeHTML(member.profileEmail || member.email || "")}" placeholder="Profile email">
               <select data-uid="${escapeHTML(uid)}" data-field="status">
                 <option value="Active" ${status === "Active" ? "selected" : ""}>Active</option>
                 <option value="Blocked" ${status === "Blocked" ? "selected" : ""}>Blocked</option>
@@ -254,6 +274,27 @@
                   </div>
                 </div>
               `).join("") : '<div class="storage-line">No uploaded files</div>'}
+            </div>
+
+            <div class="storage-line">My Data Folder Links</div>
+            <div class="link-grid">
+              <input data-uid="${escapeHTML(uid)}" data-field="cloudTitle" placeholder="Link title">
+              <input data-uid="${escapeHTML(uid)}" data-field="cloudUrl" placeholder="Cloud data URL">
+              <button onclick="addMemberCloudLink('${escapeHTML(uid)}')">Add Link</button>
+            </div>
+            <div class="cloud-links">
+              ${(memberCloudLinks[uid] || []).length ? (memberCloudLinks[uid] || []).map((entry) => `
+                <div class="cloud-link-row">
+                  <div>
+                    <strong>${escapeHTML(entry.link.title || "My Data")}</strong>
+                    <small>${escapeHTML(entry.link.url || "")}</small>
+                  </div>
+                  <div>
+                    <a href="${safeUrl(entry.link.url)}" target="_blank" rel="noopener noreferrer">Open</a>
+                    <button class="danger" onclick="deleteMemberCloudLink('${escapeHTML(uid)}','${escapeHTML(entry.id)}')">Delete</button>
+                  </div>
+                </div>
+              `).join("") : '<div class="storage-line">No data links added</div>'}
             </div>
 
             <div class="actions">
@@ -305,6 +346,21 @@
       renderMembers();
     });
 
+    onValue(ref(db, "memberCloudLinks"), (snapshot) => {
+      memberCloudLinks = {};
+      if(snapshot.exists()){
+        snapshot.forEach((memberNode) => {
+          const uid = memberNode.key;
+          memberCloudLinks[uid] = [];
+          memberNode.forEach((linkNode) => {
+            memberCloudLinks[uid].push({ id:linkNode.key, link:linkNode.val() || {} });
+          });
+          memberCloudLinks[uid].sort((a, b) => Number(b.link.createdAt || 0) - Number(a.link.createdAt || 0));
+        });
+      }
+      renderMembers();
+    });
+
     document.getElementById("memberSearch").addEventListener("input", renderMembers);
 
     async function callAdminApi(path, body){
@@ -338,6 +394,7 @@
       update(ref(db, "members/" + uid), {
         name:getFieldValue(uid, "name"),
         mobile:getFieldValue(uid, "mobile"),
+        profileEmail:getFieldValue(uid, "profileEmail"),
         status:getFieldValue(uid, "status") || "Active",
         notes:getFieldValue(uid, "notes"),
         uploadApproved:getFieldValue(uid, "uploadApproved") === "true",
@@ -348,6 +405,45 @@
         alert("Member saved.");
       }).catch((error) => {
         alert("Save nahi hua: " + error.message);
+      });
+    };
+
+    window.addMemberCloudLink = (uid) => {
+      if(!adminAllowed){ alert("Admin verify nahi hua."); return; }
+      const title = getFieldValue(uid, "cloudTitle") || "My Data";
+      const url = getFieldValue(uid, "cloudUrl");
+
+      if(!/^https?:\/\//i.test(url)){
+        alert("Cloud data URL http:// ya https:// se start hona chahiye.");
+        return;
+      }
+
+      const linkRef = push(ref(db, "memberCloudLinks/" + uid));
+      set(linkRef, {
+        title:title,
+        url:url,
+        createdAt:Date.now(),
+        addedBy:auth.currentUser?.email || adminEmail
+      }).then(() => {
+        const titleInput = document.querySelector(`[data-uid="${CSS.escape(uid)}"][data-field="cloudTitle"]`);
+        const urlInput = document.querySelector(`[data-uid="${CSS.escape(uid)}"][data-field="cloudUrl"]`);
+        if(titleInput){ titleInput.value = ""; }
+        if(urlInput){ urlInput.value = ""; }
+        alert("Data link added.");
+      }).catch((error) => {
+        alert("Data link add nahi hua: " + error.message);
+      });
+    };
+
+    window.deleteMemberCloudLink = (uid, linkId) => {
+      if(!adminAllowed){ alert("Admin verify nahi hua."); return; }
+      if(!confirm("Ye data link delete karna hai?")){
+        return;
+      }
+      remove(ref(db, "memberCloudLinks/" + uid + "/" + linkId)).then(() => {
+        alert("Data link delete ho gaya.");
+      }).catch((error) => {
+        alert("Data link delete nahi hua: " + error.message);
       });
     };
 

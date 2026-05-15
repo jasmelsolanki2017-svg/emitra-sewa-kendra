@@ -199,6 +199,49 @@
       font-size:14px;
     }
 
+    .profile-form{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr)) auto;
+      gap:10px;
+      align-items:end;
+      margin:16px 0 18px;
+    }
+
+    .profile-form label{
+      color:var(--muted);
+      font-size:12px;
+      font-weight:800;
+    }
+
+    .profile-form input{
+      width:100%;
+      min-width:0;
+      margin-top:4px;
+      padding:10px 11px;
+      border:1px solid var(--line);
+      border-radius:8px;
+      font-size:13px;
+      background:#f9fbff;
+    }
+
+    .profile-form button{
+      border:0;
+      border-radius:8px;
+      background:var(--blue);
+      color:white;
+      font-weight:800;
+      padding:11px 15px;
+      cursor:pointer;
+    }
+
+    .profile-status{
+      color:var(--blue);
+      font-size:12px;
+      font-weight:800;
+      margin-top:-8px;
+      margin-bottom:14px;
+    }
+
     .stats-grid{
       display:grid;
       grid-template-columns:repeat(3,minmax(0,1fr));
@@ -496,6 +539,45 @@
       background:#d10000;
     }
 
+    .cloud-link-list{
+      display:grid;
+      gap:10px;
+    }
+
+    .cloud-link{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) auto;
+      gap:10px;
+      align-items:center;
+      background:var(--soft);
+      border:1px solid var(--line);
+      border-left:5px solid var(--yellow);
+      border-radius:8px;
+      padding:12px;
+    }
+
+    .cloud-link strong{
+      display:block;
+      color:var(--blue);
+      overflow-wrap:anywhere;
+    }
+
+    .cloud-link small{
+      display:block;
+      color:var(--muted);
+      font-weight:700;
+      overflow-wrap:anywhere;
+    }
+
+    .cloud-link a{
+      background:var(--blue);
+      color:white;
+      text-decoration:none;
+      padding:9px 12px;
+      border-radius:8px;
+      font-weight:800;
+    }
+
     .whatsapp{
       position:fixed;
       right:28px;
@@ -530,10 +612,11 @@
       nav a,nav button{white-space:nowrap;}
       .container{padding:28px 4% 0;}
       .stats-grid{grid-template-columns:1fr;}
+      .profile-form{grid-template-columns:1fr;}
       .stat-box small{text-align:left;}
       .section{padding:20px;}
       .section h2{font-size:23px;}
-      .storage-tools,.file-row{grid-template-columns:1fr;}
+      .storage-tools,.file-row,.cloud-link{grid-template-columns:1fr;}
       .file-actions{justify-content:flex-start;}
       .whatsapp{right:18px;bottom:18px;width:54px;height:54px;font-size:27px;}
       .whatsapp i{margin-top:13px;}
@@ -782,6 +865,20 @@ body.dark-mode .nav-logo img {
       </div>
     </div>
 
+    <div class="profile-form">
+      <label>Name
+        <input type="text" id="profileName" placeholder="Your name">
+      </label>
+      <label>Mobile No.
+        <input type="tel" id="profileMobile" placeholder="Mobile number">
+      </label>
+      <label>Profile Email
+        <input type="email" id="profileEmail" placeholder="Contact email">
+      </label>
+      <button onclick="saveUserProfile()">Save Profile</button>
+    </div>
+    <div class="profile-status" id="profileStatus"></div>
+
     <div class="stats-grid">
       <div class="stat-box">
         <span id="updatesCount">0</span>
@@ -859,6 +956,13 @@ body.dark-mode .nav-logo img {
     <p class="message" id="uploadStatus">Aap apni files yahan upload karke baad me download kar sakte hain.</p>
     <div class="file-list" id="userFilesList">
       <div class="message">Files loading...</div>
+    </div>
+  </section>
+
+  <section class="section" id="myDataFolderSection">
+    <h2>My Data Folder</h2>
+    <div class="cloud-link-list" id="cloudLinksList">
+      <div class="message">Data links loading...</div>
     </div>
   </section>
 
@@ -953,6 +1057,7 @@ body.dark-mode .nav-logo img {
   let currentUser = null;
   let currentMember = {};
   let currentFiles = [];
+  let currentCloudLinks = [];
 
   const escapeHTML = (value = "") => String(value)
     .replace(/&/g, "&amp;")
@@ -1032,6 +1137,30 @@ body.dark-mode .nav-logo img {
     `).join("");
   };
 
+  const renderUserProfile = () => {
+    document.getElementById("profileName").value = currentMember.name || "";
+    document.getElementById("profileMobile").value = currentMember.mobile || "";
+    document.getElementById("profileEmail").value = currentMember.profileEmail || currentMember.email || currentUser?.email || "";
+  };
+
+  const renderCloudLinks = () => {
+    const list = document.getElementById("cloudLinksList");
+    if(!currentCloudLinks.length){
+      list.innerHTML = '<div class="message">Admin ne abhi koi data link add nahi kiya hai.</div>';
+      return;
+    }
+
+    list.innerHTML = currentCloudLinks.map((entry) => `
+      <div class="cloud-link">
+        <div>
+          <strong>${escapeHTML(entry.link.title || "My Data")}</strong>
+          <small>${escapeHTML(entry.link.url || "")}</small>
+        </div>
+        <a href="${safeUrl(entry.link.url)}" target="_blank" rel="noopener noreferrer">Open</a>
+      </div>
+    `).join("");
+  };
+
   function startSessionTimer(){
     const timerBox = document.getElementById("sessionTimer");
     let loginTime = Number(localStorage.getItem(sessionKey));
@@ -1098,6 +1227,7 @@ body.dark-mode .nav-logo img {
         if(snapshot.exists()){
           const member = snapshot.val() || {};
           currentMember = member;
+          renderUserProfile();
           renderStorageInfo();
           if(member.status === "Deleted" || member.status === "Blocked"){
             alert("Your account access is blocked. Please contact admin.");
@@ -1108,6 +1238,7 @@ body.dark-mode .nav-logo img {
           }
         } else {
           currentMember = {};
+          renderUserProfile();
           renderStorageInfo();
         }
       });
@@ -1123,10 +1254,58 @@ body.dark-mode .nav-logo img {
         renderUserFiles();
       });
 
+      onValue(ref(db, "memberCloudLinks/" + user.uid), (snapshot) => {
+        currentCloudLinks = [];
+        if(snapshot.exists()){
+          snapshot.forEach((child) => {
+            const link = child.val() || {};
+            if(link.url){
+              currentCloudLinks.push({ id:child.key, link:link });
+            }
+          });
+        }
+        currentCloudLinks.sort((a, b) => Number(b.link.createdAt || 0) - Number(a.link.createdAt || 0));
+        renderCloudLinks();
+      });
+
     } else {
       window.location.href = "index.html";
     }
   });
+
+  window.saveUserProfile = () => {
+    if(!currentUser){
+      alert("Login required.");
+      return;
+    }
+
+    const name = document.getElementById("profileName").value.trim();
+    const mobile = document.getElementById("profileMobile").value.trim();
+    const profileEmail = document.getElementById("profileEmail").value.trim();
+    const status = document.getElementById("profileStatus");
+
+    if(profileEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profileEmail)){
+      status.innerText = "Valid profile email likhein.";
+      return;
+    }
+
+    if(mobile && !/^[0-9+\-\s]{8,15}$/.test(mobile)){
+      status.innerText = "Valid mobile number likhein.";
+      return;
+    }
+
+    status.innerText = "Saving profile...";
+    update(ref(db, "members/" + currentUser.uid), {
+      name:name || (currentUser.email || "").split("@")[0],
+      mobile:mobile,
+      profileEmail:profileEmail || currentUser.email || "",
+      updatedAt:Date.now()
+    }).then(() => {
+      status.innerText = "Profile saved.";
+    }).catch((error) => {
+      status.innerText = "Profile save nahi hui: " + error.message;
+    });
+  };
 
   window.uploadUserFile = () => {
     if(!currentUser){
@@ -1230,6 +1409,9 @@ body.dark-mode .nav-logo img {
 
     try{
       if(item.file.path){
+        if(!String(item.file.path).startsWith(currentUser.uid + "/")){
+          throw new Error("Ye file aapke account folder ki nahi hai.");
+        }
         const { error } = await supabase.storage.from(item.file.bucket || supabaseBucket).remove([item.file.path]);
         if(error){ throw error; }
       }
