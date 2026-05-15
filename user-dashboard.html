@@ -1100,6 +1100,10 @@ body.dark-mode .nav-logo img {
     return data?.publicUrl || "";
   };
 
+  const getFileBucket = (file = {}) => {
+    return !file.bucket || file.bucket === "user-uploads" ? supabaseBucket : file.bucket;
+  };
+
   const renderStorageInfo = () => {
     const used = Number(currentMember.storageUsedBytes || 0);
     const limit = getStorageLimitBytes();
@@ -1383,7 +1387,9 @@ body.dark-mode .nav-logo img {
       alert("Download link nahi mila.");
       return;
     }
-    const url = item.file.downloadUrl || getSupabasePublicUrl(item.file.path);
+    const url = item.file.storageProvider === "supabase"
+      ? getSupabasePublicUrl(item.file.path)
+      : item.file.downloadUrl || getSupabasePublicUrl(item.file.path);
     if(!url){
       alert("Download link nahi mila.");
       return;
@@ -1412,7 +1418,7 @@ body.dark-mode .nav-logo img {
         if(!String(item.file.path).startsWith(currentUser.uid + "/")){
           throw new Error("Ye file aapke account folder ki nahi hai.");
         }
-        const { error } = await supabase.storage.from(item.file.bucket || supabaseBucket).remove([item.file.path]);
+        const { error } = await supabase.storage.from(getFileBucket(item.file)).remove([item.file.path]);
         if(error){ throw error; }
       }
       await remove(ref(db, "memberFiles/" + currentUser.uid + "/" + id));

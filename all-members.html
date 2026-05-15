@@ -193,6 +193,10 @@
       return data?.publicUrl || "";
     };
 
+    const getFileBucket = (file = {}) => {
+      return !file.bucket || file.bucket === "user-uploads" ? supabaseBucket : file.bucket;
+    };
+
     const getFieldValue = (uid, field) => {
       const input = document.querySelector(`[data-uid="${CSS.escape(uid)}"][data-field="${field}"]`);
       return input ? input.value.trim() : "";
@@ -454,7 +458,9 @@
         alert("Download link nahi mila.");
         return;
       }
-      const url = entry.file.downloadUrl || getSupabasePublicUrl(entry.file.path, entry.file.bucket || supabaseBucket);
+      const url = entry.file.storageProvider === "supabase"
+        ? getSupabasePublicUrl(entry.file.path, getFileBucket(entry.file))
+        : entry.file.downloadUrl || getSupabasePublicUrl(entry.file.path, getFileBucket(entry.file));
       if(!url){
         alert("Download link nahi mila.");
         return;
@@ -475,7 +481,7 @@
 
       try{
         if(entry.file.path){
-          const { error } = await supabase.storage.from(entry.file.bucket || supabaseBucket).remove([entry.file.path]);
+          const { error } = await supabase.storage.from(getFileBucket(entry.file)).remove([entry.file.path]);
           if(error){ throw error; }
         }
         await remove(ref(db, "memberFiles/" + uid + "/" + fileId));
