@@ -242,6 +242,61 @@
       margin-bottom:14px;
     }
 
+    .profile-summary{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:10px;
+      margin-bottom:18px;
+    }
+
+    .profile-chip{
+      background:#f9fbff;
+      border:1px solid var(--line);
+      border-radius:8px;
+      padding:11px 12px;
+      min-width:0;
+    }
+
+    .profile-chip small{
+      display:block;
+      color:var(--muted);
+      font-size:11px;
+      font-weight:800;
+      margin-bottom:3px;
+    }
+
+    .profile-chip strong{
+      display:block;
+      color:var(--blue);
+      font-size:13px;
+      overflow-wrap:anywhere;
+    }
+
+    .profile-card{
+      border-top:4px solid var(--blue);
+    }
+
+    .profile-card .profile-card-row{
+      display:flex;
+      align-items:center;
+      gap:9px;
+      margin-top:9px;
+      color:var(--muted);
+      font-size:13px;
+      font-weight:700;
+      overflow-wrap:anywhere;
+    }
+
+    .profile-card .profile-card-row i{
+      width:auto;
+      height:auto;
+      margin:0;
+      background:transparent;
+      color:var(--yellow);
+      font-size:14px;
+      border-radius:0;
+    }
+
     .stats-grid{
       display:grid;
       grid-template-columns:repeat(3,minmax(0,1fr));
@@ -612,6 +667,7 @@
       nav a,nav button{white-space:nowrap;}
       .container{padding:28px 4% 0;}
       .stats-grid{grid-template-columns:1fr;}
+      .profile-summary{grid-template-columns:1fr;}
       .profile-form{grid-template-columns:1fr;}
       .stat-box small{text-align:left;}
       .section{padding:20px;}
@@ -879,6 +935,25 @@ body.dark-mode .nav-logo img {
     </div>
     <div class="profile-status" id="profileStatus"></div>
 
+    <div class="profile-summary">
+      <div class="profile-chip">
+        <small>Name</small>
+        <strong id="summaryName">Not added</strong>
+      </div>
+      <div class="profile-chip">
+        <small>Mobile</small>
+        <strong id="summaryMobile">Not added</strong>
+      </div>
+      <div class="profile-chip">
+        <small>Profile Email</small>
+        <strong id="summaryProfileEmail">Not added</strong>
+      </div>
+      <div class="profile-chip">
+        <small>Upload Access</small>
+        <strong id="summaryUploadStatus">Pending</strong>
+      </div>
+    </div>
+
     <div class="stats-grid">
       <div class="stat-box">
         <span id="updatesCount">0</span>
@@ -898,10 +973,14 @@ body.dark-mode .nav-logo img {
   </div>
 
   <div class="grid">
-    <div class="card">
+    <div class="card profile-card">
       <i class="fa-solid fa-user"></i>
       <h3>My Profile</h3>
-      <p>Apni account details aur login status yahan se quick check karein.</p>
+      <p>Apni account details aur upload access status yahan quick check karein.</p>
+      <div class="profile-card-row"><i class="fa-solid fa-id-card"></i><span id="cardProfileName">Name: Not added</span></div>
+      <div class="profile-card-row"><i class="fa-solid fa-phone"></i><span id="cardProfileMobile">Mobile: Not added</span></div>
+      <div class="profile-card-row"><i class="fa-solid fa-envelope"></i><span id="cardProfileEmail">Email: Checking...</span></div>
+      <div class="profile-card-row"><i class="fa-solid fa-cloud-arrow-up"></i><span id="cardUploadAccess">Upload: Pending</span></div>
     </div>
 
     <div class="card">
@@ -1142,9 +1221,22 @@ body.dark-mode .nav-logo img {
   };
 
   const renderUserProfile = () => {
-    document.getElementById("profileName").value = currentMember.name || "";
-    document.getElementById("profileMobile").value = currentMember.mobile || "";
-    document.getElementById("profileEmail").value = currentMember.profileEmail || currentMember.email || currentUser?.email || "";
+    const name = currentMember.name || "";
+    const mobile = currentMember.mobile || "";
+    const profileEmail = currentMember.profileEmail || currentMember.email || currentUser?.email || "";
+    const uploadStatus = currentMember.uploadApproved === true ? "Approved" : "Pending";
+
+    document.getElementById("profileName").value = name;
+    document.getElementById("profileMobile").value = mobile;
+    document.getElementById("profileEmail").value = profileEmail;
+    document.getElementById("summaryName").innerText = name || "Not added";
+    document.getElementById("summaryMobile").innerText = mobile || "Not added";
+    document.getElementById("summaryProfileEmail").innerText = profileEmail || "Not added";
+    document.getElementById("summaryUploadStatus").innerText = uploadStatus;
+    document.getElementById("cardProfileName").innerText = "Name: " + (name || "Not added");
+    document.getElementById("cardProfileMobile").innerText = "Mobile: " + (mobile || "Not added");
+    document.getElementById("cardProfileEmail").innerText = "Email: " + (profileEmail || "Not added");
+    document.getElementById("cardUploadAccess").innerText = "Upload: " + uploadStatus;
   };
 
   const renderCloudLinks = () => {
