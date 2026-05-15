@@ -53,6 +53,24 @@ text-decoration:none;
 font-weight:600;
 }
 
+.topbar-admin{
+display:inline-flex;
+align-items:center;
+gap:6px;
+background:#ff7a00;
+color:#043a76 !important;
+padding:7px 13px;
+border-radius:7px;
+font-size:13px;
+font-weight:800;
+box-shadow:0 2px 8px rgba(0,0,0,0.18);
+}
+
+.topbar-admin:hover{
+background:white;
+color:#0057a8 !important;
+}
+
 #liveTime{
 color:#ff7a00;
 font-weight:700;
@@ -159,8 +177,15 @@ position:relative;
 }
 
 .login-box h2{
-margin-bottom:20px;
+margin-bottom:6px;
 color:#0057a8;
+}
+
+.login-hint{
+font-size:13px;
+color:#53677f;
+margin-bottom:18px;
+font-weight:600;
 }
 
 .login-box input{
@@ -983,6 +1008,12 @@ justify-content:center;
 text-align:center;
 }
 
+.topbar-admin{
+width:100%;
+justify-content:center;
+max-width:180px;
+}
+
 nav{
 flex-direction:column;
 gap:15px;
@@ -1317,6 +1348,10 @@ body.dark-mode .nav-logo img {
 ⏰ <span id="liveTime"></span> | <span id="weatherInfo">Weather loading...</span> | Rajasthan, India
 </div>
 
+<a class="topbar-admin" href="#" onclick="openLogin('admin')">
+<i class="fa-solid fa-user-shield"></i> Admin Login
+</a>
+
 </div>
 
 <!-- NAVBAR -->
@@ -1329,7 +1364,7 @@ body.dark-mode .nav-logo img {
 <li><a href="index.html">Home</a></li>
 <li><a href="about.html">About</a></li>
 <li><a href="OFFLINEFORM.HTML">PDF FORM</a></li>
-<li><a href="#" onclick="openLogin()">Login</a></li>
+<li><a href="#" onclick="openLogin('user')">Login</a></li>
 <li><a href="job-form.html">Latest Job</a></li>
 <li><a href="stationery.html">Stationery</a></li>
 <li><a href="useful-pages.html">Useful Pages</a></li>
@@ -1350,16 +1385,17 @@ body.dark-mode .nav-logo img {
 
 <span class="close-login" onclick="closeLogin()">&times;</span>
 
-<h2>Login / Signup</h2>
+<h2 id="loginTitle">User Login / Signup</h2>
+<p class="login-hint" id="loginHint">User account se login karein.</p>
 
 <input type="email" id="email" placeholder="Enter Email">
 
 <input type="password" id="password" placeholder="Enter Password">
 <button class="login-btn" onclick="loginUser(document.getElementById('email').value,document.getElementById('password').value)">
-Login
+<span id="loginActionText">User Login</span>
 </button>
 
-<button class="signup-btn" onclick="signUpUser(document.getElementById('email').value,document.getElementById('password').value)">
+<button class="signup-btn" id="signupButton" onclick="signUpUser(document.getElementById('email').value,document.getElementById('password').value)">
 Create Account
 </button>
 
@@ -1724,7 +1760,20 @@ weatherInfo.innerText = "Weather unavailable";
 updateWeather();
 setInterval(updateWeather,10 * 60 * 1000);
 
-function openLogin(){
+function openLogin(mode = "user"){
+const title = document.getElementById("loginTitle");
+const hint = document.getElementById("loginHint");
+const actionText = document.getElementById("loginActionText");
+const signupButton = document.getElementById("signupButton");
+
+if(title && hint && actionText && signupButton){
+  const isAdmin = mode === "admin";
+  title.innerText = isAdmin ? "Admin Login" : "User Login / Signup";
+  hint.innerText = isAdmin ? "Admin account se dashboard login karein." : "User account se login karein.";
+  actionText.innerText = isAdmin ? "Admin Login" : "User Login";
+  signupButton.style.display = isAdmin ? "none" : "block";
+}
+
 document.getElementById("loginModal").style.display = "flex";
 }
 
@@ -1870,6 +1919,7 @@ const escapeHTML = (value = "") => String(value)
 const adminEmail = "jasmelsolanki@gmail.com";
 const sessionKey = "loginTime";
 const sessionLimitMs = 60 * 60 * 1000;
+let currentLoginMode = "user";
 
 const startFreshUserSession = () => {
 localStorage.setItem(sessionKey, String(Date.now()));
@@ -1893,13 +1943,30 @@ setPersistence(auth,browserLocalPersistence).catch(() => {});
 
 const requestsRef = ref(db,"serviceRequests");
 
-window.openLogin = ()=>{
+window.openLogin = (mode = "user")=>{
+currentLoginMode = mode === "admin" ? "admin" : "user";
 const currentUser = auth.currentUser;
 
-if(currentUser && (currentUser.email === adminEmail || hasActiveUserSession())){
+if(currentLoginMode === "admin" && currentUser && currentUser.email === adminEmail){
 redirectByRole(currentUser.email);
 return;
 }
+
+if(currentLoginMode === "user" && currentUser && currentUser.email !== adminEmail && hasActiveUserSession()){
+redirectByRole(currentUser.email);
+return;
+}
+
+const title = document.getElementById("loginTitle");
+const hint = document.getElementById("loginHint");
+const actionText = document.getElementById("loginActionText");
+const signupButton = document.getElementById("signupButton");
+const isAdmin = currentLoginMode === "admin";
+
+title.innerText = isAdmin ? "Admin Login" : "User Login / Signup";
+hint.innerText = isAdmin ? "Admin account se dashboard login karein." : "User account se login karein. Admin login ke liye Admin button use karein.";
+actionText.innerText = isAdmin ? "Admin Login" : "User Login";
+signupButton.style.display = isAdmin ? "none" : "block";
 
 document.getElementById("loginModal").style.display = "flex";
 };
@@ -1957,6 +2024,11 @@ alert("Password kam se kam 6 character ka hona chahiye.");
 return;
 }
 
+if(email.toLowerCase() === adminEmail.toLowerCase()){
+alert("Admin account create/login ke liye upar wala Admin button use karein.");
+return;
+}
+
 createUserWithEmailAndPassword(auth,email,password)
 
 .then((userCredential)=>{
@@ -2003,14 +2075,26 @@ alert("Please email aur password enter karein.");
 return;
 }
 
+const isAdminEmail = email.toLowerCase() === adminEmail.toLowerCase();
+
+if(currentLoginMode === "admin" && !isAdminEmail){
+alert("Yeh Admin Login hai. User login ke liye Login button use karein.");
+return;
+}
+
+if(currentLoginMode === "user" && isAdminEmail){
+alert("Admin login ke liye navbar me Admin button use karein.");
+return;
+}
+
 signInWithEmailAndPassword(auth,email,password)
 
 .then((userCredential)=>{
 
 const userEmail = userCredential.user.email;
-startFreshUserSession();
 
 if(userCredential.user.uid && userEmail !== adminEmail){
+startFreshUserSession();
 update(ref(db, "members/" + userCredential.user.uid), {
 lastLoginAt:Date.now(),
 email:userEmail,
