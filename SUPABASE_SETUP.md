@@ -58,4 +58,12 @@ Create a Supabase Storage bucket named `user-files`. If you want browser downloa
 
 Important security note: this static site uses Firebase Auth, but Supabase Storage policies cannot automatically see Firebase Auth users when uploads happen directly from the browser with a publishable key. The current UI blocks upload unless `members/<uid>/uploadApproved` is true, but the strongest production setup is a server upload endpoint with a Supabase service-role key stored only on the server.
 
+If the browser shows:
+
+```json
+{"statusCode":"404","error":"Bucket not found","message":"Bucket not found"}
+```
+
+run `supabase-storage-policies.sql` in the Supabase SQL Editor. It makes the `user-files` bucket public and adds read/upload/delete policies for the current browser-based flow.
+
 If this site is later converted to Next.js, then add the Supabase SSR `server.ts`, `client.ts`, and middleware files inside the Next app structure.
