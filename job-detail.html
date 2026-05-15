@@ -43,6 +43,7 @@ main{max-width:1120px;margin:auto;padding:34px 6% 46px;}
 .meta{background:var(--soft);border:1px solid var(--line);border-left:4px solid var(--blue);border-radius:8px;padding:12px;}
 .meta small{display:block;color:var(--muted);font-weight:800;margin-bottom:4px;}
 .meta strong{color:var(--text);font-size:16px;}
+.meta strong.last-date{color:#d90000;font-weight:900;}
 .content-box{white-space:pre-wrap;color:#394253;font-weight:600;background:#fbfdff;border:1px solid var(--line);border-radius:8px;padding:16px;}
 .empty{color:#6a7281;font-weight:700;}
 .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;}
@@ -92,7 +93,7 @@ body.dark-mode .quick a{background:#13243b!important;color:#f4f8ff!important;bor
         <h2>Important Details</h2>
         <div class="meta-grid">
           <div class="meta"><small>Start Date</small><strong id="startDate">Update Soon</strong></div>
-          <div class="meta"><small>Last Date</small><strong id="lastDate">Update Soon</strong></div>
+          <div class="meta"><small>Last Date</small><strong id="lastDate" class="last-date">Update Soon</strong></div>
           <div class="meta"><small>Qualification</small><strong id="qualification">Update Soon</strong></div>
           <div class="meta"><small>Location</small><strong id="location">All India</strong></div>
         </div>
@@ -189,6 +190,41 @@ const normalizeJob = (value) => {
   return value && typeof value === "object" ? value : {};
 };
 
+const parseJobLastDate = (value = "") => {
+  const text = String(value || "").trim();
+  if(!text || /update soon/i.test(text)){ return null; }
+  const monthMap = {
+    jan:0,january:0,
+    feb:1,february:1,
+    mar:2,march:2,
+    apr:3,april:3,
+    may:4,
+    jun:5,june:5,
+    jul:6,july:6,
+    aug:7,august:7,
+    sep:8,sept:8,september:8,
+    oct:9,october:9,
+    nov:10,november:10,
+    dec:11,december:11
+  };
+  let match = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if(match){ return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]), 23, 59, 59, 999); }
+  match = text.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/);
+  if(match){ return new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1]), 23, 59, 59, 999); }
+  match = text.match(/^(\d{1,2})\s+([a-zA-Z]+)\s+(\d{4})$/);
+  if(match){
+    const month = monthMap[match[2].toLowerCase()];
+    if(month !== undefined){ return new Date(Number(match[3]), month, Number(match[1]), 23, 59, 59, 999); }
+  }
+  const parsed = new Date(text);
+  return Number.isNaN(parsed.getTime()) ? null : new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate(), 23, 59, 59, 999);
+};
+
+const isJobVisible = (lastDate) => {
+  const date = parseJobLastDate(lastDate);
+  return !date || Date.now() <= date.getTime() + (24 * 60 * 60 * 1000);
+};
+
 const id = new URLSearchParams(window.location.search).get("id");
 const message = document.getElementById("jobMessage");
 const wrap = document.getElementById("jobDetailWrap");
@@ -204,6 +240,12 @@ if(!id){
     }
 
     const job = normalizeJob(snapshot.val());
+    if(!isJobVisible(job.lastDate)){
+      message.textContent = "Is form ki last date nikal chuki hai, job public page se remove ho gayi hai.";
+      wrap.style.display = "none";
+      return;
+    }
+
     const title = job.title || "Job Update";
     const type = job.type || "Online Form";
     const content = String(job.pageContent || "").trim();

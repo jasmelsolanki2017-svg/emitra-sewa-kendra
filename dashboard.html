@@ -62,10 +62,12 @@
     .row strong{color:#0057a8;font-size:12px;line-height:1.2;overflow-wrap:anywhere;}
 
     .delete-btn{background:#d90000;color:white;border:none;padding:5px 8px;border-radius:5px;font-weight:700;cursor:pointer;font-size:11px;}
+    .edit-btn{background:#ff7a00;color:#03224d;border:none;padding:5px 8px;border-radius:5px;font-weight:800;cursor:pointer;font-size:11px;margin-right:4px;}
     .action-btn{display:inline-block;background:#0057a8;color:white;border:none;text-decoration:none;padding:5px 8px;border-radius:5px;font-weight:700;cursor:pointer;margin:1px;font-size:11px;}
     .done-btn{background:#138a36;}
     .status-badge{display:inline-block;background:#ff7a00;color:#0057a8;padding:2px 6px;border-radius:6px;font-size:10px;font-weight:800;margin-top:3px;}
     .status-badge.done{background:#138a36;color:white;}
+    .danger-date{color:#d90000!important;font-weight:900;}
     .status{margin-top:4px;margin-bottom:6px;text-align:center;font-weight:700;color:#0057a8;font-size:12px;}
 
     footer{background:#0057a8;color:white;text-align:center;padding:11px;margin-top:16px;font-size:12px;}
@@ -417,7 +419,8 @@ body.dark-mode .nav-logo img {
       <input type="url" id="jobApplyLink" placeholder="Apply Link https://...">
       <input type="url" id="jobDetailLink" placeholder="Official Detail / Notification Link https://...">
       <textarea id="jobPageContent" placeholder="Job detail page ke liye details likhein. Example: Total Posts, Age Limit, Fees, Selection Process, Important Dates..."></textarea>
-      <button onclick="addLatestJob()">Add Job</button>
+      <button id="jobSubmitBtn" onclick="addLatestJob()">Add Job</button>
+      <button id="jobCancelEditBtn" type="button" style="display:none;background:#555;" onclick="cancelJobEdit()">Cancel Edit</button>
     </div>
 
     <div id="jobStatus" class="status"></div>
@@ -460,6 +463,7 @@ body.dark-mode .nav-logo img {
 
   const adminEmail = "jasmelsolanki@gmail.com";
   let adminAllowed = false;
+  let editingJobId = null;
 
   const escapeHTML = (value = "") => String(value)
     .replace(/&/g, "&amp;")
@@ -474,6 +478,100 @@ body.dark-mode .nav-logo img {
   };
 
   const safePhone = (value = "") => String(value).replace(/[^\d]/g, "").slice(-10);
+
+  const normalizeJob = (value) => {
+    if(typeof value === "string"){
+      return { title:value, type:"Online Form", createdAt:0 };
+    }
+
+    return value && typeof value === "object" ? value : {};
+  };
+
+  const formatAdminTime = (value) => {
+    const time = Number(value || 0);
+    if(!time){ return "Time not saved"; }
+    return new Date(time).toLocaleString("hi-IN", {
+      day:"2-digit",
+      month:"short",
+      year:"numeric",
+      hour:"2-digit",
+      minute:"2-digit"
+    });
+  };
+
+  const parseJobLastDate = (value = "") => {
+    const text = String(value || "").trim();
+    if(!text || /update soon/i.test(text)){ return null; }
+
+    const monthMap = {
+      jan:0,january:0,
+      feb:1,february:1,
+      mar:2,march:2,
+      apr:3,april:3,
+      may:4,
+      jun:5,june:5,
+      jul:6,july:6,
+      aug:7,august:7,
+      sep:8,sept:8,september:8,
+      oct:9,october:9,
+      nov:10,november:10,
+      dec:11,december:11
+    };
+
+    let match = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+    if(match){ return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]), 23, 59, 59, 999); }
+
+    match = text.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/);
+    if(match){ return new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1]), 23, 59, 59, 999); }
+
+    match = text.match(/^(\d{1,2})\s+([a-zA-Z]+)\s+(\d{4})$/);
+    if(match){
+      const month = monthMap[match[2].toLowerCase()];
+      if(month !== undefined){ return new Date(Number(match[3]), month, Number(match[1]), 23, 59, 59, 999); }
+    }
+
+    const parsed = new Date(text);
+    return Number.isNaN(parsed.getTime()) ? null : new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate(), 23, 59, 59, 999);
+  };
+
+  const shouldDeleteJobAfterLastDate = (lastDate) => {
+    const date = parseJobLastDate(lastDate);
+    if(!date){ return false; }
+    return Date.now() > date.getTime() + (24 * 60 * 60 * 1000);
+  };
+
+  const getJobFormData = () => ({
+    title:document.getElementById("jobTitle").value.trim(),
+    type:document.getElementById("jobType").value.trim(),
+    startDate:document.getElementById("jobStartDate").value.trim(),
+    lastDate:document.getElementById("jobLastDate").value.trim(),
+    qualification:document.getElementById("jobQualification").value.trim(),
+    location:document.getElementById("jobLocation").value.trim(),
+    applyLink:document.getElementById("jobApplyLink").value.trim(),
+    detailLink:document.getElementById("jobDetailLink").value.trim(),
+    pageContent:document.getElementById("jobPageContent").value.trim()
+  });
+
+  const clearJobForm = () => {
+    document.getElementById("jobTitle").value = "";
+    document.getElementById("jobType").value = "";
+    document.getElementById("jobStartDate").value = "";
+    document.getElementById("jobLastDate").value = "";
+    document.getElementById("jobQualification").value = "";
+    document.getElementById("jobLocation").value = "";
+    document.getElementById("jobApplyLink").value = "";
+    document.getElementById("jobDetailLink").value = "";
+    document.getElementById("jobPageContent").value = "";
+  };
+
+  const cleanupExpiredJobs = () => {
+    if(!adminAllowed || !window.latestJobsCache){ return; }
+    Object.entries(window.latestJobsCache).forEach(([id, data]) => {
+      if(shouldDeleteJobAfterLastDate(data.lastDate)){
+        remove(ref(db, "LatestJobs/" + id)).catch(() => {});
+      }
+    });
+  };
 
   onAuthStateChanged(auth, (user) => {
     if(user && user.email === adminEmail){
@@ -749,55 +847,72 @@ body.dark-mode .nav-logo img {
   window.addLatestJob = () => {
     if(!adminAllowed){ alert("Admin verify नहीं हुआ।"); return; }
 
-    const title = document.getElementById("jobTitle").value.trim();
-    const type = document.getElementById("jobType").value.trim();
-    const startDate = document.getElementById("jobStartDate").value.trim();
-    const lastDate = document.getElementById("jobLastDate").value.trim();
-    const qualification = document.getElementById("jobQualification").value.trim();
-    const location = document.getElementById("jobLocation").value.trim();
-    const applyLink = document.getElementById("jobApplyLink").value.trim();
-    const detailLink = document.getElementById("jobDetailLink").value.trim();
-    const pageContent = document.getElementById("jobPageContent").value.trim();
+    const form = getJobFormData();
 
-    if(title === ""){ alert("Job Title जरूर भरें"); return; }
+    if(form.title === ""){ alert("Job Title जरूर भरें"); return; }
 
-    if(applyLink !== "" && !applyLink.startsWith("http://") && !applyLink.startsWith("https://")){
+    if(form.applyLink !== "" && !form.applyLink.startsWith("http://") && !form.applyLink.startsWith("https://")){
       alert("Apply Link http:// या https:// से शुरू होना चाहिए");
       return;
     }
 
-    if(detailLink !== "" && !detailLink.startsWith("http://") && !detailLink.startsWith("https://")){
+    if(form.detailLink !== "" && !form.detailLink.startsWith("http://") && !form.detailLink.startsWith("https://")){
       alert("Detail Link http:// या https:// से शुरू होना चाहिए");
       return;
     }
 
-    document.getElementById("jobStatus").innerText = "Saving...";
+    document.getElementById("jobStatus").innerText = editingJobId ? "Updating..." : "Saving...";
 
-    set(push(jobsRef), {
-      title:title,
-      type:type || "Online Form",
-      startDate:startDate || "Update Soon",
-      lastDate:lastDate || "Update Soon",
-      qualification:qualification || "Update Soon",
-      location:location || "All India",
-      applyLink:applyLink || "#",
-      detailLink:detailLink || "#",
-      pageContent:pageContent || "",
-      createdAt:Date.now()
-    }).then(() => {
-      document.getElementById("jobStatus").innerText = "Job Added Successfully!";
+    const jobData = {
+      title:form.title,
+      type:form.type || "Online Form",
+      startDate:form.startDate || "Update Soon",
+      lastDate:form.lastDate || "Update Soon",
+      qualification:form.qualification || "Update Soon",
+      location:form.location || "All India",
+      applyLink:form.applyLink || "#",
+      detailLink:form.detailLink || "#",
+      pageContent:form.pageContent || "",
+      updatedAt:Date.now()
+    };
 
-      document.getElementById("jobTitle").value = "";
-      document.getElementById("jobType").value = "";
-      document.getElementById("jobStartDate").value = "";
-      document.getElementById("jobLastDate").value = "";
-      document.getElementById("jobQualification").value = "";
-      document.getElementById("jobLocation").value = "";
-      document.getElementById("jobApplyLink").value = "";
-      document.getElementById("jobDetailLink").value = "";
-      document.getElementById("jobPageContent").value = "";
+    const saveTask = editingJobId
+      ? update(ref(db, "LatestJobs/" + editingJobId), jobData)
+      : set(push(jobsRef), { ...jobData, createdAt:Date.now() });
+
+    saveTask.then(() => {
+      document.getElementById("jobStatus").innerText = editingJobId ? "Job Updated Successfully!" : "Job Added Successfully!";
+      window.cancelJobEdit();
 
     }).catch((error) => alert("Error: " + error.message));
+  };
+
+  window.editLatestJob = (id) => {
+    if(!adminAllowed){ alert("Admin verify नहीं हुआ।"); return; }
+    const data = window.latestJobsCache && window.latestJobsCache[id];
+    if(!data){ alert("Job data load nahi hua. Page refresh karke try karein."); return; }
+
+    editingJobId = id;
+    document.getElementById("jobTitle").value = data.title || "";
+    document.getElementById("jobType").value = data.type || "";
+    document.getElementById("jobStartDate").value = data.startDate || "";
+    document.getElementById("jobLastDate").value = data.lastDate || "";
+    document.getElementById("jobQualification").value = data.qualification || "";
+    document.getElementById("jobLocation").value = data.location || "";
+    document.getElementById("jobApplyLink").value = data.applyLink && data.applyLink !== "#" ? data.applyLink : "";
+    document.getElementById("jobDetailLink").value = data.detailLink && data.detailLink !== "#" ? data.detailLink : "";
+    document.getElementById("jobPageContent").value = data.pageContent || "";
+    document.getElementById("jobSubmitBtn").innerText = "Update Job";
+    document.getElementById("jobCancelEditBtn").style.display = "block";
+    document.getElementById("jobStatus").innerText = "Edit mode: changes karke Update Job dabayein.";
+    document.getElementById("jobsManager").scrollIntoView({ behavior:"smooth", block:"start" });
+  };
+
+  window.cancelJobEdit = () => {
+    editingJobId = null;
+    clearJobForm();
+    document.getElementById("jobSubmitBtn").innerText = "Add Job";
+    document.getElementById("jobCancelEditBtn").style.display = "none";
   };
 
   window.deleteLatestJob = (id) => {
@@ -813,11 +928,25 @@ body.dark-mode .nav-logo img {
   onValue(jobsRef, (snapshot) => {
     const list = document.getElementById("adminJobsList");
     list.innerHTML = "";
+    window.latestJobsCache = {};
 
     if(snapshot.exists()){
+      const jobs = [];
+
       snapshot.forEach((child) => {
-        const id = child.key;
-        const data = child.val();
+        const data = normalizeJob(child.val());
+        if(shouldDeleteJobAfterLastDate(data.lastDate)){
+          remove(ref(db, "LatestJobs/" + child.key)).catch(() => {});
+          return;
+        }
+        window.latestJobsCache[child.key] = data;
+        jobs.push({ id:child.key, data:data });
+      });
+
+      jobs.sort((a,b) => Number(b.data.createdAt || 0) - Number(a.data.createdAt || 0));
+
+      jobs.forEach(({ id, data }) => {
+        const lastDateText = escapeHTML(data.lastDate || "Update Soon");
 
         list.innerHTML += `
           <div class="row">
@@ -825,7 +954,9 @@ body.dark-mode .nav-logo img {
               <strong>${escapeHTML(data.title)}</strong>
               <small>Type: ${escapeHTML(data.type || "Online Form")}</small>
               <small>Start Date: ${escapeHTML(data.startDate || "Update Soon")}</small>
-              <small>Last Date: ${escapeHTML(data.lastDate || "Update Soon")}</small>
+              <small>Last Date: <span class="danger-date">${lastDateText}</span></small>
+              <small>Added Time: ${escapeHTML(formatAdminTime(data.createdAt))}</small>
+              <small>Updated Time: ${escapeHTML(data.updatedAt ? formatAdminTime(data.updatedAt) : "Not edited yet")}</small>
               <small>Qualification: ${escapeHTML(data.qualification || "Update Soon")}</small>
               <small>Location: ${escapeHTML(data.location || "All India")}</small>
               <small>Job Page: <a href="job-detail.html?id=${id}" target="_blank" rel="noopener noreferrer">Open Design Page</a></small>
@@ -833,14 +964,23 @@ body.dark-mode .nav-logo img {
               <small>Official Detail Link: <a href="${safeUrl(data.detailLink)}" target="_blank" rel="noopener noreferrer">${escapeHTML(data.detailLink || "#")}</a></small>
               <small>Page Content: ${escapeHTML(data.pageContent || "No content added")}</small>
             </div>
-            <button class="delete-btn" onclick="deleteLatestJob('${id}')">Delete</button>
+            <div>
+              <button class="edit-btn" onclick="editLatestJob('${id}')">Edit</button>
+              <button class="delete-btn" onclick="deleteLatestJob('${id}')">Delete</button>
+            </div>
           </div>
         `;
       });
+
+      if(jobs.length === 0){
+        list.innerHTML = "<p>Expired jobs delete ho chuki hain. Abhi koi Latest Job save नहीं है।</p>";
+      }
     } else {
       list.innerHTML = "<p>अभी कोई Latest Job save नहीं है।</p>";
     }
   });
+
+  setInterval(cleanupExpiredJobs, 60 * 60 * 1000);
 </script>
 
 <button class="theme-toggle" type="button" aria-label="Toggle dark mode" title="Dark mode" onclick="toggleDarkMode()"><span class="theme-symbol" aria-hidden="true">☾</span></button>

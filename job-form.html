@@ -380,6 +380,46 @@ const normalizeJob = (value) => {
   return value && typeof value === "object" ? value : {};
 };
 
+const parseJobLastDate = (value = "") => {
+  const text = String(value || "").trim();
+  if(!text || /update soon/i.test(text)){ return null; }
+
+  const monthMap = {
+    jan:0,january:0,
+    feb:1,february:1,
+    mar:2,march:2,
+    apr:3,april:3,
+    may:4,
+    jun:5,june:5,
+    jul:6,july:6,
+    aug:7,august:7,
+    sep:8,sept:8,september:8,
+    oct:9,october:9,
+    nov:10,november:10,
+    dec:11,december:11
+  };
+
+  let match = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if(match){ return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]), 23, 59, 59, 999); }
+
+  match = text.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/);
+  if(match){ return new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1]), 23, 59, 59, 999); }
+
+  match = text.match(/^(\d{1,2})\s+([a-zA-Z]+)\s+(\d{4})$/);
+  if(match){
+    const month = monthMap[match[2].toLowerCase()];
+    if(month !== undefined){ return new Date(Number(match[3]), month, Number(match[1]), 23, 59, 59, 999); }
+  }
+
+  const parsed = new Date(text);
+  return Number.isNaN(parsed.getTime()) ? null : new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate(), 23, 59, 59, 999);
+};
+
+const isJobVisible = (lastDate) => {
+  const date = parseJobLastDate(lastDate);
+  return !date || Date.now() <= date.getTime() + (24 * 60 * 60 * 1000);
+};
+
 const jobsRef = ref(db, "LatestJobs");
 
 onValue(jobsRef, (snapshot) => {
@@ -390,10 +430,13 @@ onValue(jobsRef, (snapshot) => {
     const jobs = [];
 
     snapshot.forEach((child) => {
-      jobs.push({
-        id: child.key,
-        job: normalizeJob(child.val())
-      });
+      const job = normalizeJob(child.val());
+      if(isJobVisible(job.lastDate)){
+        jobs.push({
+          id: child.key,
+          job: job
+        });
+      }
     });
 
     jobs.sort((a, b) => Number(b.job.createdAt || 0) - Number(a.job.createdAt || 0));
