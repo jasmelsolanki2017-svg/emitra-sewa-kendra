@@ -16,7 +16,7 @@
   <main>
     <section class="panel admin-info"><h2 id="accessTitle">Admin Access Checking...</h2><p id="adminEmailText">Please wait...</p></section>
     <section class="panel"><h2>Add Update</h2><div class="form"><input id="updateText" placeholder="Update text"><button onclick="addLatestUpdate()">Add Update</button></div><div id="updateStatus" class="status"></div></section>
-    <section class="panel"><h2>Saved Updates</h2><div id="adminUpdatesList"><div class="empty">Loading...</div></div></section>
+    <section class="panel"><h2>Saved Updates (<span id="updatesCount">0</span>)</h2><div id="adminUpdatesList"><div class="empty">Loading...</div></div></section>
   </main>
   <script>function updateLiveTime(){liveTime.innerText=new Date().toLocaleString("hi-IN")}updateLiveTime();setInterval(updateLiveTime,1000)</script>
   <script type="module">
@@ -25,13 +25,15 @@
     import { getDatabase,ref,push,set,remove,onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
     const firebaseConfig={apiKey:"AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",authDomain:"my-website-73785.firebaseapp.com",databaseURL:"https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app/",projectId:"my-website-73785",storageBucket:"my-website-73785.firebasestorage.app",messagingSenderId:"854088341990",appId:"1:854088341990:web:3211d4ef9fe4b78d025e27"};
     const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getDatabase(app),adminEmail="jasmelsolanki@gmail.com",updatesRef=ref(db,"latestUpdates");let adminAllowed=false;
-    const accessTitle=document.getElementById("accessTitle"),adminEmailText=document.getElementById("adminEmailText"),updateText=document.getElementById("updateText"),updateStatus=document.getElementById("updateStatus"),adminUpdatesList=document.getElementById("adminUpdatesList");
+    const accessTitle=document.getElementById("accessTitle"),adminEmailText=document.getElementById("adminEmailText"),updateText=document.getElementById("updateText"),updateStatus=document.getElementById("updateStatus"),adminUpdatesList=document.getElementById("adminUpdatesList"),updatesCount=document.getElementById("updatesCount");
     const escapeHTML=(v="")=>String(v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
     const formatDate=(v)=>v?new Date(Number(v)).toLocaleString("hi-IN"):"Not available";
+    const normalizeUpdate=(id,value)=>typeof value==="string"?{id,text:value,createdAt:0}:{id,...(value&&typeof value==="object"?value:{})};
+    const getUpdateRows=(snapshot)=>{const rows=[];if(!snapshot.exists()){return rows}const value=snapshot.val();if(value&&typeof value==="object"&&("text" in value)){return [normalizeUpdate(snapshot.key||"latest",value)]}snapshot.forEach(child=>rows.push(normalizeUpdate(child.key,child.val())));return rows.filter(item=>String(item.text||"").trim()).sort((a,b)=>Number(b.createdAt||0)-Number(a.createdAt||0))};
     onAuthStateChanged(auth,(user)=>{if(user&&user.email===adminEmail){adminAllowed=true;accessTitle.innerText="Admin Access Verified";adminEmailText.innerText=user.email}else{location.href="index.html"}});
     window.addLatestUpdate=()=>{if(!adminAllowed){alert("Admin verify nahi hua.");return}const text=updateText.value.trim();if(!text){alert("Update text likhen");return}updateStatus.innerText="Saving...";set(push(updatesRef),{text,createdAt:Date.now()}).then(()=>{updateStatus.innerText="Update Added.";updateText.value=""}).catch(e=>alert(e.message))};
     window.deleteLatestUpdate=(id)=>{if(!adminAllowed){alert("Admin verify nahi hua.");return}if(confirm("Ye update delete karna hai?"))remove(ref(db,"latestUpdates/"+id)).catch(e=>alert(e.message))};
-    onValue(updatesRef,(snapshot)=>{adminUpdatesList.innerHTML="";if(snapshot.exists()){const rows=[];snapshot.forEach(child=>rows.push({id:child.key,...(child.val()||{})}));rows.sort((a,b)=>Number(b.createdAt||0)-Number(a.createdAt||0));rows.forEach(data=>{adminUpdatesList.innerHTML+=`<div class="row"><div><strong>${escapeHTML(data.text||"Update")}</strong><small>Added: ${escapeHTML(formatDate(data.createdAt))}</small></div><button class="delete" onclick="deleteLatestUpdate('${data.id}')">Delete</button></div>`})}else{adminUpdatesList.innerHTML='<div class="empty">Abhi koi update save nahi hai.</div>'}});
+    onValue(updatesRef,(snapshot)=>{adminUpdatesList.innerHTML="";const rows=getUpdateRows(snapshot);updatesCount.innerText=rows.length;if(rows.length){rows.forEach(data=>{adminUpdatesList.innerHTML+=`<div class="row"><div><strong>${escapeHTML(data.text||"Update")}</strong><small>Added: ${escapeHTML(formatDate(data.createdAt))}</small></div><button class="delete" onclick="deleteLatestUpdate('${data.id}')">Delete</button></div>`})}else{adminUpdatesList.innerHTML='<div class="empty">Abhi koi update save nahi hai.</div>'}});
     window.logoutUser=()=>signOut(auth).then(()=>location.href="index.html");
   </script>
 </body>

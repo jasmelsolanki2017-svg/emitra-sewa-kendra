@@ -232,9 +232,15 @@ background:#eaf4ff;
 padding:28px 6%;
 }
 
-.ad-box{
+.ad-list{
 max-width:980px;
 margin:auto;
+display:grid;
+gap:14px;
+}
+
+.ad-box{
+width:100%;
 background:white;
 border-radius:8px;
 overflow:hidden;
@@ -1420,15 +1426,17 @@ Create Account
 
 <section class="ad-section" id="advertisementSection" style="display:none;">
 
-<div id="advertisementBox" class="ad-box">
-  <div class="ad-media">
-    <i class="fa-solid fa-rectangle-ad ad-placeholder"></i>
-  </div>
+<div id="advertisementBox" class="ad-list">
+  <div class="ad-box">
+    <div class="ad-media">
+      <i class="fa-solid fa-rectangle-ad ad-placeholder"></i>
+    </div>
 
-  <div class="ad-content">
-    <span class="ad-label">विज्ञापन</span>
-    <h1>यहाँ आपका विज्ञापन दिखेगा</h1>
-    <p>Latest offers aur important service updates yahan show honge.</p>
+    <div class="ad-content">
+      <span class="ad-label">विज्ञापन</span>
+      <h1>यहाँ आपका विज्ञापन दिखेगा</h1>
+      <p>Latest offers aur important service updates yahan show honge.</p>
+    </div>
   </div>
 </div>
 
@@ -2231,7 +2239,7 @@ box.innerHTML = '<p class="home-job-message">अभी कोई latest job avai
 return;
 }
 
-box.innerHTML = jobs.slice(0,6).map(({ id, job })=>`
+box.innerHTML = jobs.map(({ id, job })=>`
   <article class="home-job-card">
     <span>${escapeHTML(job.type || "Online Form")}</span>
     <h3>${escapeHTML(job.title || "Job Update")}</h3>
@@ -2276,14 +2284,18 @@ const ads = [];
 
 if(snapshot.exists()){
 snapshot.forEach((child)=>{
-ads.push({ id:child.key, ...child.val() });
+const value = child.val();
+if(typeof value === "string"){
+ads.push({ id:child.key, title:value, createdAt:0 });
+} else if(value && typeof value === "object"){
+ads.push({ id:child.key, ...value });
+}
 });
 }
 
 ads.sort((a,b)=>Number(b.createdAt || 0) - Number(a.createdAt || 0));
-const ad = ads[0];
 
-if(!ad){
+if(!ads.length){
 section.style.display = "none";
 box.innerHTML = "";
 return;
@@ -2291,6 +2303,7 @@ return;
 
 section.style.display = "block";
 
+box.innerHTML = ads.map((ad)=>{
 const cleanPhotoName = cleanAdPhotoName(ad.photoName || "");
 const imageHtml = cleanPhotoName
 ? `<img src="${adPhotoSrc(cleanPhotoName)}" data-photo-name="${escapeHTML(cleanPhotoName)}" data-ext-index="0" onerror="loadNextAdPhoto(this)" alt="${escapeHTML(ad.title || "Advertisement")}">`
@@ -2302,7 +2315,8 @@ const linkHtml = safeUrl(ad.linkUrl) !== "#"
 ? `<a href="${safeUrl(ad.linkUrl)}" target="_blank" rel="noopener noreferrer">Open Advertisement</a>`
 : "";
 
-box.innerHTML = `
+return `
+<article class="ad-box">
   <div class="ad-media">
     ${imageHtml}
   </div>
@@ -2313,13 +2327,38 @@ box.innerHTML = `
     <p>${escapeHTML(ad.description || "More details coming soon.")}</p>
     ${linkHtml}
   </div>
+</article>
 `;
+}).join("");
 });
 
 /* LATEST UPDATES */
 
 const updatesRef = ref(db,"latestUpdates");
 let latestNewsItems = [];
+
+const getUpdateRows = (snapshot) => {
+const rows = [];
+if(!snapshot.exists()){ return rows; }
+
+const value = snapshot.val();
+if(value && typeof value === "object" && "text" in value){
+return [value];
+}
+
+snapshot.forEach((child)=>{
+const item = child.val();
+if(typeof item === "string"){
+rows.push({ text:item, createdAt:0 });
+} else if(item && typeof item === "object"){
+rows.push(item);
+}
+});
+
+return rows
+.filter((item)=>String(item.text || "").trim() !== "")
+.sort((a,b)=>Number(b.createdAt || 0) - Number(a.createdAt || 0));
+};
 
 const renderNewsRows = () => {
 const rowsBox = document.getElementById("newsTickerRows");
@@ -2386,21 +2425,7 @@ window.openNewsBox();
 
 onValue(updatesRef,(snapshot)=>{
 
-latestNewsItems = [];
-
-if(snapshot.exists()){
-
-snapshot.forEach((child)=>{
-
-const text = child.val().text;
-
-if(text){
-latestNewsItems.push(text);
-}
-
-});
-
-}
+latestNewsItems = getUpdateRows(snapshot).map((item)=>item.text);
 
 renderNewsRows();
 renderNewsModal();

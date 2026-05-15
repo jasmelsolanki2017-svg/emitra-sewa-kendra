@@ -924,6 +924,54 @@ body.dark-mode .nav-logo img {
     element.innerHTML = `<p class="message">${escapeHTML(text)}</p>`;
   };
 
+  const normalizeUpdate = (value) => {
+    if(typeof value === "string"){
+      return { text:value, createdAt:0 };
+    }
+
+    return value && typeof value === "object" ? value : {};
+  };
+
+  const getUpdateRows = (snapshot) => {
+    const rows = [];
+    if(!snapshot.exists()){ return rows; }
+
+    const value = snapshot.val();
+    if(value && typeof value === "object" && "text" in value){
+      return [normalizeUpdate(value)];
+    }
+
+    snapshot.forEach((child) => {
+      rows.push(normalizeUpdate(child.val()));
+    });
+
+    return rows
+      .filter((item) => String(item.text || "").trim() !== "")
+      .sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
+  };
+
+  const normalizeJob = (value) => {
+    if(typeof value === "string"){
+      return { title:value, type:"Online Form", createdAt:0 };
+    }
+
+    return value && typeof value === "object" ? value : {};
+  };
+
+  const getJobRows = (snapshot) => {
+    const rows = [];
+    if(!snapshot.exists()){ return rows; }
+
+    snapshot.forEach((child) => {
+      const job = normalizeJob(child.val());
+      if(String(job.title || job.text || "").trim()){
+        rows.push({ id:child.key, job:job });
+      }
+    });
+
+    return rows.sort((a, b) => Number(b.job.createdAt || 0) - Number(a.job.createdAt || 0));
+  };
+
   const updatesRef = ref(db, "latestUpdates");
 
   onValue(updatesRef, (snapshot) => {
@@ -931,9 +979,10 @@ body.dark-mode .nav-logo img {
     box.innerHTML = "";
     let count = 0;
 
-    if(snapshot.exists()){
-      snapshot.forEach((child) => {
-        const data = child.val();
+    const rows = getUpdateRows(snapshot);
+
+    if(rows.length){
+      rows.forEach((data) => {
         count += 1;
 
         box.innerHTML += `
@@ -986,15 +1035,15 @@ body.dark-mode .nav-logo img {
     box.innerHTML = "";
     let count = 0;
 
-    if(snapshot.exists()){
-      snapshot.forEach((child) => {
-        const id = child.key;
-        const job = child.val();
+    const rows = getJobRows(snapshot);
+
+    if(rows.length){
+      rows.forEach(({ id, job }) => {
         count += 1;
 
         box.innerHTML += `
           <div class="job-card">
-            <h3>${escapeHTML(job.title || "Job Update")}</h3>
+            <h3>${escapeHTML(job.title || job.text || "Job Update")}</h3>
             <p><b>Type:</b> ${escapeHTML(job.type || "Online Form")}</p>
             <p><b>Start Date:</b> ${escapeHTML(job.startDate || "Update Soon")}</p>
             <p><b>Last Date:</b> <span class="last-date">${escapeHTML(job.lastDate || "Update Soon")}</span></p>

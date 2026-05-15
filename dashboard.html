@@ -507,6 +507,35 @@ body.dark-mode .nav-logo img {
     });
   };
 
+  const normalizeUpdate = (id, value) => {
+    if(typeof value === "string"){
+      return { id:id, text:value, createdAt:0 };
+    }
+
+    return {
+      id:id,
+      ...(value && typeof value === "object" ? value : {})
+    };
+  };
+
+  const getUpdateRows = (snapshot) => {
+    const rows = [];
+    if(!snapshot.exists()){ return rows; }
+
+    const value = snapshot.val();
+    if(value && typeof value === "object" && "text" in value){
+      return [normalizeUpdate(snapshot.key || "latest", value)];
+    }
+
+    snapshot.forEach((child) => {
+      rows.push(normalizeUpdate(child.key, child.val()));
+    });
+
+    return rows
+      .filter((item) => String(item.text || "").trim() !== "")
+      .sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
+  };
+
   const parseJobLastDate = (value = "") => {
     const text = String(value || "").trim();
     if(!text || /update soon/i.test(text)){ return null; }
@@ -695,16 +724,17 @@ body.dark-mode .nav-logo img {
   onValue(updatesRef, (snapshot) => {
     const list = document.getElementById("adminUpdatesList");
     list.innerHTML = "";
+    const rows = getUpdateRows(snapshot);
 
-    if(snapshot.exists()){
-      snapshot.forEach((child) => {
-        const id = child.key;
-        const data = child.val();
-
+    if(rows.length){
+      rows.forEach((data) => {
         list.innerHTML += `
           <div class="row">
-            <div><strong>${escapeHTML(data.text)}</strong></div>
-            <button class="delete-btn" onclick="deleteLatestUpdate('${id}')">Delete</button>
+            <div>
+              <strong>${escapeHTML(data.text)}</strong>
+              <small>${escapeHTML(formatAdminTime(data.createdAt))}</small>
+            </div>
+            <button class="delete-btn" onclick="deleteLatestUpdate('${data.id}')">Delete</button>
           </div>
         `;
       });
