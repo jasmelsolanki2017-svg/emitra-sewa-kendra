@@ -263,78 +263,42 @@ body.dark-mode .nav-logo img {
     <div class="portal-box" id="results">
       <h2 class="box-title">Result</h2>
       <ul class="link-list" id="resultList">
-        <li><a href="contact.html">LIC AAO / AE Final Result 2026</a></li>
-        <li><a href="contact.html">SSC CGL Final Result 2026</a></li>
-        <li><a href="contact.html">Haryana Board HBSE Class 10 Result 2026</a></li>
-        <li><a href="contact.html">RSMSSB Result / Cut Off Update</a></li>
-        <li><a href="contact.html">UPSC Pre Result with Marks</a></li>
-        <li><a href="contact.html">Rajasthan Board Result Help</a></li>
-        <li><a href="contact.html">CBSE Board 10th / 12th Result</a></li>
-        <li><a href="contact.html">Punjab Board PSEB Result</a></li>
-        <li><a href="contact.html">MPPSC SET Result 2026</a></li>
-        <li><a href="contact.html">RPF SI Final Merit List</a></li>
+        <li class="message">Loading...</li>
       </ul>
-      <a class="view-all" href="contact.html">View All</a>
     </div>
 
     <div class="portal-box" id="admitCard">
       <h2 class="box-title">Admit Card</h2>
       <ul class="link-list" id="admitCardList">
-        <li><a href="contact.html">RRB NTPC Admit Card 2026</a></li>
-        <li><a href="contact.html">SSC GD Constable Admit Card 2026</a></li>
-        <li><a href="contact.html">UPSSSC Exam City Details 2026</a></li>
-        <li><a href="contact.html">NTA NEET UG Exam City Slip</a></li>
-        <li><a href="contact.html">Indian Army Agniveer CEE Admit Card</a></li>
-        <li><a href="contact.html">BPSC Bihar Police Admit Card</a></li>
-        <li><a href="contact.html">NCERT Non Teaching Admit Card</a></li>
-        <li><a href="contact.html">JEE / CUET Admit Card Help</a></li>
-        <li><a href="contact.html">RPSC Exam Admit Card</a></li>
-        <li><a href="contact.html">Railway Exam Hall Ticket</a></li>
+        <li class="message">Loading...</li>
       </ul>
-      <a class="view-all" href="contact.html">View All</a>
     </div>
 
     <div class="portal-box" id="latestJobs">
       <h2 class="box-title">Top Online Form</h2>
       <ul class="link-list" id="jobList"><li class="message">Jobs load ho rahi hain...</li></ul>
       <p class="message" id="noResult" style="display:none;">कोई matching job नहीं मिली</p>
-      <a class="view-all" href="#latestJobs">View All</a>
     </div>
 
     <div class="portal-box" id="answerKey">
       <h2 class="box-title">Answer Keys</h2>
       <ul class="link-list" id="answerKeyList">
-        <li><a href="contact.html">Bihar Vidhan Parishad Answer Key 2026</a></li>
-        <li><a href="contact.html">EMRS Teaching / Non Teaching Answer Key</a></li>
-        <li><a href="contact.html">Rajasthan Exam Answer Key 2026</a></li>
-        <li><a href="contact.html">UP PET Answer Key 2026</a></li>
-        <li><a href="contact.html">MPESB PAT Answer Key</a></li>
+        <li class="message">Loading...</li>
       </ul>
-      <a class="view-all" href="contact.html">View All</a>
     </div>
 
     <div class="portal-box" id="syllabus">
       <h2 class="box-title">Syllabus</h2>
       <ul class="link-list" id="syllabusList">
-        <li><a href="contact.html">SSC GD Constable Syllabus 2026</a></li>
-        <li><a href="contact.html">UPSSSC Exam Syllabus 2026</a></li>
-        <li><a href="contact.html">BPSC Bihar Police Syllabus</a></li>
-        <li><a href="contact.html">CHPR Constable Tradesman Syllabus</a></li>
-        <li><a href="contact.html">RPSC 2nd Grade Teacher Syllabus</a></li>
+        <li class="message">Loading...</li>
       </ul>
-      <a class="view-all" href="contact.html">View All</a>
     </div>
 
     <div class="portal-box" id="admission">
       <h2 class="box-title">Admission Form</h2>
       <ul class="link-list" id="admissionList">
-        <li><a href="contact.html">CIET September Online Form 2026</a></li>
-        <li><a href="contact.html">NTA ICAR AIEEA Admission Form</a></li>
-        <li><a href="contact.html">NTA SWAYAM Online Form 2026</a></li>
-        <li><a href="contact.html">UPCATET Online Form 2026</a></li>
-        <li><a href="contact.html">UPBED Correction / Edit Form</a></li>
+        <li class="message">Loading...</li>
       </ul>
-      <a class="view-all" href="contact.html">View All</a>
     </div>
   </section>
 
@@ -458,7 +422,12 @@ const portalCategoryMap = {
 
 const renderPortalItems = (category, items) => {
   const list = document.getElementById(portalCategoryMap[category]);
-  if(!list || !items.length){ return; }
+  if(!list){ return; }
+
+  if(!items.length){
+    list.innerHTML = '<li class="message">Abhi koi update nahi hai.</li>';
+    return;
+  }
 
   list.innerHTML = items.map((item) => `
     <li><a href="${safeUrl(item.url)}" target="_blank" rel="noopener noreferrer">${escapeHTML(item.title || "Update")}</a></li>
@@ -466,13 +435,11 @@ const renderPortalItems = (category, items) => {
 };
 
 onValue(portalItemsRef, (snapshot) => {
-  if(!snapshot.exists()){ return; }
-
   Object.keys(portalCategoryMap).forEach((category) => {
     const categorySnapshot = snapshot.child(category);
     const items = [];
 
-    if(categorySnapshot.exists()){
+    if(snapshot.exists() && categorySnapshot.exists()){
       categorySnapshot.forEach((child) => {
         const item = child.val() || {};
         if(item.title){
@@ -483,6 +450,13 @@ onValue(portalItemsRef, (snapshot) => {
 
     items.sort((a,b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
     renderPortalItems(category, items);
+  });
+}, (error) => {
+  Object.keys(portalCategoryMap).forEach((category) => {
+    const list = document.getElementById(portalCategoryMap[category]);
+    if(list){
+      list.innerHTML = `<li class="message">Data load nahi hua: ${escapeHTML(error.message)}</li>`;
+    }
   });
 });
 
