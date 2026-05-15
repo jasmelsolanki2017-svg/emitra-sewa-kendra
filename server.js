@@ -15,7 +15,12 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const DEFAULT_FIREBASE_URL = "https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app";
-const FIREBASE_URL = (process.env.FIREBASE_URL || DEFAULT_FIREBASE_URL).replace(/\/+$/, "");
+const extractUrl = (value, fallback = "") => {
+  const text = String(value || "").trim();
+  const match = text.match(/https?:\/\/[^\s"'<>]+/i);
+  return (match ? match[0] : fallback).replace(/\/+$/, "");
+};
+const FIREBASE_URL = extractUrl(process.env.FIREBASE_URL, DEFAULT_FIREBASE_URL);
 const JOBS_PATH = process.env.JOBS_PATH || "LatestJobs";
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "jasmelsolanki@gmail.com";
 let adminDb = null;
