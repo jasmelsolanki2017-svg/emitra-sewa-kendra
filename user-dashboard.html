@@ -402,6 +402,96 @@
       border-radius:8px;
     }
 
+    .storage-tools{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) auto;
+      gap:12px;
+      align-items:center;
+      margin-bottom:16px;
+    }
+
+    .storage-tools input[type="file"]{
+      width:100%;
+      min-width:0;
+      padding:12px;
+      border:1px dashed var(--blue);
+      border-radius:8px;
+      background:#f9fbff;
+      font-weight:700;
+    }
+
+    .storage-tools button,
+    .file-actions button{
+      border:0;
+      border-radius:8px;
+      background:var(--blue);
+      color:white;
+      font-weight:800;
+      padding:12px 16px;
+      cursor:pointer;
+    }
+
+    .storage-tools button:hover,
+    .file-actions button:hover{
+      background:var(--yellow);
+      color:var(--blue);
+    }
+
+    .storage-meter{
+      height:12px;
+      background:#dbe8f7;
+      border-radius:999px;
+      overflow:hidden;
+      margin:8px 0;
+    }
+
+    .storage-meter span{
+      display:block;
+      height:100%;
+      width:0;
+      background:linear-gradient(90deg,var(--blue),var(--yellow));
+      transition:width .25s ease;
+    }
+
+    .file-list{
+      display:grid;
+      gap:10px;
+    }
+
+    .file-row{
+      background:var(--soft);
+      border:1px solid var(--line);
+      border-left:5px solid var(--blue);
+      border-radius:8px;
+      padding:12px;
+      display:grid;
+      grid-template-columns:minmax(0,1fr) auto;
+      gap:10px;
+      align-items:center;
+    }
+
+    .file-row strong{
+      color:var(--blue);
+      overflow-wrap:anywhere;
+      display:block;
+    }
+
+    .file-row small{
+      color:var(--muted);
+      font-weight:700;
+    }
+
+    .file-actions{
+      display:flex;
+      gap:7px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .file-actions .delete-file{
+      background:#d10000;
+    }
+
     .whatsapp{
       position:fixed;
       right:28px;
@@ -439,6 +529,8 @@
       .stat-box small{text-align:left;}
       .section{padding:20px;}
       .section h2{font-size:23px;}
+      .storage-tools,.file-row{grid-template-columns:1fr;}
+      .file-actions{justify-content:flex-start;}
       .whatsapp{right:18px;bottom:18px;width:54px;height:54px;font-size:27px;}
       .whatsapp i{margin-top:13px;}
     }
@@ -752,6 +844,20 @@ body.dark-mode .nav-logo img {
     <div id="jobNoResult" class="message" style="display:none;">कोई matching job नहीं मिली।</div>
   </section>
 
+  <section class="section" id="myDocumentsSection">
+    <h2>My Documents</h2>
+    <p class="message" id="storageInfo">Storage checking...</p>
+    <div class="storage-meter"><span id="storageBar"></span></div>
+    <div class="storage-tools">
+      <input type="file" id="userFileInput">
+      <button onclick="uploadUserFile()">Upload</button>
+    </div>
+    <p class="message" id="uploadStatus">Aap apni files yahan upload karke baad me download kar sakte hain.</p>
+    <div class="file-list" id="userFilesList">
+      <div class="message">Files loading...</div>
+    </div>
+  </section>
+
   <section class="section" id="downloadSection">
     <h2>Download Center</h2>
 
@@ -810,8 +916,20 @@ body.dark-mode .nav-logo img {
   import {
     getDatabase,
     ref,
-    onValue
+    onValue,
+    push,
+    set,
+    update,
+    remove
   } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+
+  import {
+    getStorage,
+    ref as storageRef,
+    uploadBytesResumable,
+    getDownloadURL,
+    deleteObject
+  } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-storage.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",
@@ -826,9 +944,13 @@ body.dark-mode .nav-logo img {
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getDatabase(app);
+  const storage = getStorage(app);
   const sessionKey = "loginTime";
   const sessionLimitMs = 60 * 60 * 1000;
   let sessionIntervalId = null;
+  let currentUser = null;
+  let currentMember = {};
+  let currentFiles = [];
 
   const escapeHTML = (value = "") => String(value)
     .replace(/&/g, "&amp;")
@@ -840,6 +962,60 @@ body.dark-mode .nav-logo img {
   const safeUrl = (value = "#") => {
     const url = String(value || "#").trim();
     return /^https?:\/\//i.test(url) ? url : "#";
+  };
+
+  const formatBytes = (bytes = 0) => {
+    const size = Number(bytes || 0);
+    if(size >= 1024 * 1024){
+      return (size / (1024 * 1024)).toFixed(2) + " MB";
+    }
+    if(size >= 1024){
+      return (size / 1024).toFixed(1) + " KB";
+    }
+    return size + " B";
+  };
+
+  const getStorageLimitBytes = () => {
+    const direct = Number(currentMember.storageLimitBytes || 0);
+    if(direct > 0){ return direct; }
+    const mb = Number(currentMember.freeStorageLimitMb || 0);
+    return (mb > 0 ? mb : 50) * 1024 * 1024;
+  };
+
+  const cleanFileName = (name = "file") => String(name)
+    .replace(/[^a-zA-Z0-9._-]+/g, "-")
+    .replace(/-+/g, "-")
+    .slice(0, 90) || "file";
+
+  const renderStorageInfo = () => {
+    const used = Number(currentMember.storageUsedBytes || 0);
+    const limit = getStorageLimitBytes();
+    const percent = Math.min(100, Math.round((used / limit) * 100));
+    document.getElementById("storageInfo").innerText = `${formatBytes(used)} used / ${formatBytes(limit)} available`;
+    document.getElementById("storageBar").style.width = percent + "%";
+  };
+
+  const renderUserFiles = () => {
+    const list = document.getElementById("userFilesList");
+    renderStorageInfo();
+
+    if(!currentFiles.length){
+      list.innerHTML = '<div class="message">Abhi koi file upload nahi hai.</div>';
+      return;
+    }
+
+    list.innerHTML = currentFiles.map((item) => `
+      <div class="file-row">
+        <div>
+          <strong>${escapeHTML(item.file.name || "Document")}</strong>
+          <small>${formatBytes(item.file.size)} · ${item.file.uploadedAt ? new Date(item.file.uploadedAt).toLocaleString("hi-IN") : "Recently uploaded"}</small>
+        </div>
+        <div class="file-actions">
+          <button onclick="downloadUserFile('${escapeHTML(item.id)}')">Download</button>
+          <button class="delete-file" onclick="deleteUserFile('${escapeHTML(item.id)}')">Delete</button>
+        </div>
+      </div>
+    `).join("");
   };
 
   function startSessionTimer(){
@@ -885,6 +1061,16 @@ body.dark-mode .nav-logo img {
 
   onAuthStateChanged(auth, (user) => {
     if(user){
+      if(!user.emailVerified){
+        alert("Email verification pending hai. Gmail verify karke login karein.");
+        localStorage.removeItem(sessionKey);
+        signOut(auth).then(() => {
+          window.location.href = "index.html";
+        });
+        return;
+      }
+
+      currentUser = user;
 
       if(!localStorage.getItem(sessionKey)){
         localStorage.setItem(sessionKey, String(Date.now()));
@@ -897,6 +1083,8 @@ body.dark-mode .nav-logo img {
       onValue(ref(db, "members/" + user.uid), (snapshot) => {
         if(snapshot.exists()){
           const member = snapshot.val() || {};
+          currentMember = member;
+          renderStorageInfo();
           if(member.status === "Deleted" || member.status === "Blocked"){
             alert("Your account access is blocked. Please contact admin.");
             localStorage.removeItem(sessionKey);
@@ -904,13 +1092,137 @@ body.dark-mode .nav-logo img {
               window.location.href = "index.html";
             });
           }
+        } else {
+          currentMember = {};
+          renderStorageInfo();
         }
+      });
+
+      onValue(ref(db, "memberFiles/" + user.uid), (snapshot) => {
+        currentFiles = [];
+        if(snapshot.exists()){
+          snapshot.forEach((child) => {
+            currentFiles.push({ id:child.key, file:child.val() || {} });
+          });
+        }
+        currentFiles.sort((a, b) => Number(b.file.uploadedAt || 0) - Number(a.file.uploadedAt || 0));
+        renderUserFiles();
       });
 
     } else {
       window.location.href = "index.html";
     }
   });
+
+  window.uploadUserFile = () => {
+    if(!currentUser){
+      alert("Login required.");
+      return;
+    }
+
+    const input = document.getElementById("userFileInput");
+    const file = input.files && input.files[0];
+    const status = document.getElementById("uploadStatus");
+
+    if(!file){
+      alert("Upload ke liye file select karein.");
+      return;
+    }
+
+    const used = Number(currentMember.storageUsedBytes || 0);
+    const limit = getStorageLimitBytes();
+
+    if(used + file.size > limit){
+      status.innerText = `Storage limit full hai. ${formatBytes(limit)} tak free allowed hai. Extra storage ke liye admin se paid plan activate karwayein.`;
+      return;
+    }
+
+    const fileRecordRef = push(ref(db, "memberFiles/" + currentUser.uid));
+    const safeName = cleanFileName(file.name);
+    const path = `user-files/${currentUser.uid}/${fileRecordRef.key}-${safeName}`;
+    const uploadTask = uploadBytesResumable(storageRef(storage, path), file, {
+      contentType:file.type || "application/octet-stream",
+      customMetadata:{
+        ownerUid:currentUser.uid,
+        ownerEmail:currentUser.email || ""
+      }
+    });
+
+    status.innerText = "Upload starting...";
+
+    uploadTask.on("state_changed", (snapshot) => {
+      const percent = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+      status.innerText = `Uploading... ${percent}%`;
+    }, (error) => {
+      status.innerText = "Upload nahi hua: " + error.message;
+    }, async () => {
+      try{
+        const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
+        const nextUsed = used + file.size;
+
+        await set(fileRecordRef, {
+          name:file.name,
+          size:file.size,
+          type:file.type || "",
+          path:path,
+          downloadUrl:downloadUrl,
+          uploadedAt:Date.now()
+        });
+
+        await update(ref(db, "members/" + currentUser.uid), {
+          storageUsedBytes:nextUsed,
+          storageLimitBytes:limit,
+          updatedAt:Date.now()
+        });
+
+        input.value = "";
+        status.innerText = "File upload ho gayi.";
+      } catch(error){
+        status.innerText = "Upload save nahi hua: " + error.message;
+      }
+    });
+  };
+
+  window.downloadUserFile = (id) => {
+    const item = currentFiles.find((entry) => entry.id === id);
+    if(!item || !item.file.downloadUrl){
+      alert("Download link nahi mila.");
+      return;
+    }
+    window.open(item.file.downloadUrl, "_blank", "noopener,noreferrer");
+  };
+
+  window.deleteUserFile = async (id) => {
+    if(!currentUser){
+      alert("Login required.");
+      return;
+    }
+
+    const item = currentFiles.find((entry) => entry.id === id);
+    if(!item){
+      alert("File data nahi mila.");
+      return;
+    }
+
+    if(!confirm("Ye file delete karni hai?")){
+      return;
+    }
+
+    try{
+      if(item.file.path){
+        await deleteObject(storageRef(storage, item.file.path));
+      }
+      await remove(ref(db, "memberFiles/" + currentUser.uid + "/" + id));
+      const used = Math.max(0, Number(currentMember.storageUsedBytes || 0) - Number(item.file.size || 0));
+      await update(ref(db, "members/" + currentUser.uid), {
+        storageUsedBytes:used,
+        updatedAt:Date.now()
+      });
+      document.getElementById("uploadStatus").innerText = "File delete ho gayi.";
+    } catch(error){
+      alert("File delete nahi hui: " + error.message);
+    }
+  };
 
   window.logoutUser = () => {
     localStorage.removeItem(sessionKey);

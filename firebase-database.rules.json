@@ -1,0 +1,42 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "members": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || auth.token.email === 'jasmelsolanki@gmail.com')",
+        ".write": "auth != null && (auth.uid === $uid || auth.token.email === 'jasmelsolanki@gmail.com')"
+      }
+    },
+    "memberFiles": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || auth.token.email === 'jasmelsolanki@gmail.com')",
+        ".write": "auth != null && (auth.uid === $uid || auth.token.email === 'jasmelsolanki@gmail.com')"
+      }
+    },
+    "importantLinks": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email === 'jasmelsolanki@gmail.com'"
+    },
+    "latestUpdates": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email === 'jasmelsolanki@gmail.com'"
+    },
+    "LatestJobs": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email === 'jasmelsolanki@gmail.com'"
+    },
+    "advertisements": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email === 'jasmelsolanki@gmail.com'"
+    },
+    "portalItems": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email === 'jasmelsolanki@gmail.com'"
+    },
+    "serviceRequests": {
+      ".read": "auth != null && auth.token.email === 'jasmelsolanki@gmail.com'",
+      ".write": true
+    }
+  }
+}

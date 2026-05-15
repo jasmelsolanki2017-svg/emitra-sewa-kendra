@@ -39,6 +39,13 @@
     .actions button:hover{background:#ff7a00;color:#03224d;}
     .actions .danger{background:#d90000;}
     .actions .reset{background:#138a36;}
+    .storage-line{margin-top:8px;background:#f7fbff;border:1px solid #d8e6f5;border-radius:6px;padding:7px;font-size:12px;font-weight:800;color:#0057a8;}
+    .member-files{margin-top:8px;display:grid;gap:6px;}
+    .file-row{background:#f7fbff;border:1px solid #d8e6f5;border-left:3px solid #0057a8;border-radius:6px;padding:7px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px;align-items:center;}
+    .file-row strong{display:block;color:#0057a8;font-size:12px;overflow-wrap:anywhere;}
+    .file-row small{display:block;color:#55657a;font-size:10px;}
+    .file-row button{border:0;border-radius:5px;padding:6px 8px;font-size:10px;font-weight:800;background:#0057a8;color:white;cursor:pointer;margin-left:4px;}
+    .file-row .danger{background:#d90000;}
     .empty{background:white;border:1px dashed #bdd0e5;border-radius:7px;padding:18px;text-align:center;color:#55657a;font-weight:700;}
     footer{background:#0057a8;color:white;text-align:center;padding:12px;font-size:12px;}
     @media(max-width:640px){
@@ -47,6 +54,7 @@
       .toolbar input{min-width:0;max-width:none;}
       .edit-grid{grid-template-columns:1fr;}
       .edit-grid textarea{grid-column:auto;}
+      .file-row{grid-template-columns:1fr;}
     }
   </style>
 </head>
@@ -106,8 +114,15 @@
       getDatabase,
       ref,
       onValue,
-      update
+      update,
+      remove
     } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+
+    import {
+      getStorage,
+      ref as storageRef,
+      deleteObject
+    } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-storage.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",
@@ -122,10 +137,12 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getDatabase(app);
+    const storage = getStorage(app);
     const adminEmail = "jasmelsolanki@gmail.com";
     const membersRef = ref(db, "members");
     let adminAllowed = false;
     let allMembers = [];
+    let memberFiles = {};
 
     const escapeHTML = (value = "") => String(value)
       .replace(/&/g, "&amp;")
@@ -137,6 +154,20 @@
     const formatDate = (value) => {
       const time = Number(value || 0);
       return time ? new Date(time).toLocaleString("hi-IN") : "Not available";
+    };
+
+    const formatBytes = (bytes = 0) => {
+      const size = Number(bytes || 0);
+      if(size >= 1024 * 1024){ return (size / (1024 * 1024)).toFixed(2) + " MB"; }
+      if(size >= 1024){ return (size / 1024).toFixed(1) + " KB"; }
+      return size + " B";
+    };
+
+    const getMemberLimitBytes = (member) => {
+      const direct = Number(member.storageLimitBytes || 0);
+      if(direct > 0){ return direct; }
+      const mb = Number(member.freeStorageLimitMb || 0);
+      return (mb > 0 ? mb : 50) * 1024 * 1024;
     };
 
     const getFieldValue = (uid, field) => {
@@ -168,6 +199,10 @@
       list.innerHTML = filtered.map(({ uid, member }) => {
         const status = member.status || "Active";
         const deleted = status === "Deleted" || status === "Blocked";
+        const files = memberFiles[uid] || [];
+        const usedBytes = Number(member.storageUsedBytes || 0);
+        const limitBytes = getMemberLimitBytes(member);
+        const freeMb = Math.round(limitBytes / (1024 * 1024));
         return `
           <article class="member-card ${deleted ? "deleted" : ""}">
             <div class="member-head">
@@ -179,6 +214,8 @@
             <p class="detail"><strong>UID:</strong> ${escapeHTML(uid)}</p>
             <p class="detail"><strong>Created:</strong> ${formatDate(member.createdAt)}</p>
             <p class="detail"><strong>Last Login:</strong> ${formatDate(member.lastLoginAt)}</p>
+            <p class="detail"><strong>Email Verified:</strong> ${member.emailVerified ? "Yes" : "Pending/Unknown"}</p>
+            <div class="storage-line">Storage: ${formatBytes(usedBytes)} used / ${formatBytes(limitBytes)} allowed</div>
 
             <div class="edit-grid">
               <input data-uid="${escapeHTML(uid)}" data-field="name" value="${escapeHTML(member.name || "")}" placeholder="Name">
@@ -189,7 +226,23 @@
                 <option value="Deleted" ${status === "Deleted" ? "selected" : ""}>Deleted</option>
               </select>
               <input data-uid="${escapeHTML(uid)}" data-field="newPassword" type="password" placeholder="New password">
+              <input data-uid="${escapeHTML(uid)}" data-field="freeStorageLimitMb" type="number" min="1" step="1" value="${escapeHTML(freeMb)}" placeholder="Free storage MB">
               <textarea data-uid="${escapeHTML(uid)}" data-field="notes" placeholder="Admin notes">${escapeHTML(member.notes || "")}</textarea>
+            </div>
+
+            <div class="member-files">
+              ${files.length ? files.map((entry) => `
+                <div class="file-row">
+                  <div>
+                    <strong>${escapeHTML(entry.file.name || "Document")}</strong>
+                    <small>${formatBytes(entry.file.size)} · ${formatDate(entry.file.uploadedAt)}</small>
+                  </div>
+                  <div>
+                    <button onclick="downloadMemberFile('${escapeHTML(uid)}','${escapeHTML(entry.id)}')">Download</button>
+                    <button class="danger" onclick="deleteMemberFile('${escapeHTML(uid)}','${escapeHTML(entry.id)}')">Delete</button>
+                  </div>
+                </div>
+              `).join("") : '<div class="storage-line">No uploaded files</div>'}
             </div>
 
             <div class="actions">
@@ -226,6 +279,21 @@
       renderMembers();
     });
 
+    onValue(ref(db, "memberFiles"), (snapshot) => {
+      memberFiles = {};
+      if(snapshot.exists()){
+        snapshot.forEach((memberNode) => {
+          const uid = memberNode.key;
+          memberFiles[uid] = [];
+          memberNode.forEach((fileNode) => {
+            memberFiles[uid].push({ id:fileNode.key, file:fileNode.val() || {} });
+          });
+          memberFiles[uid].sort((a, b) => Number(b.file.uploadedAt || 0) - Number(a.file.uploadedAt || 0));
+        });
+      }
+      renderMembers();
+    });
+
     document.getElementById("memberSearch").addEventListener("input", renderMembers);
 
     async function callAdminApi(path, body){
@@ -254,18 +322,59 @@
 
     window.saveMember = (uid) => {
       if(!adminAllowed){ alert("Admin verify nahi hua."); return; }
+      const freeStorageLimitMb = Math.max(1, Number(getFieldValue(uid, "freeStorageLimitMb") || 50));
 
       update(ref(db, "members/" + uid), {
         name:getFieldValue(uid, "name"),
         mobile:getFieldValue(uid, "mobile"),
         status:getFieldValue(uid, "status") || "Active",
         notes:getFieldValue(uid, "notes"),
+        freeStorageLimitMb:freeStorageLimitMb,
+        storageLimitBytes:freeStorageLimitMb * 1024 * 1024,
         updatedAt:Date.now()
       }).then(() => {
         alert("Member saved.");
       }).catch((error) => {
         alert("Save nahi hua: " + error.message);
       });
+    };
+
+    window.downloadMemberFile = (uid, fileId) => {
+      if(!adminAllowed){ alert("Admin verify nahi hua."); return; }
+      const entry = (memberFiles[uid] || []).find((item) => item.id === fileId);
+      if(!entry || !entry.file.downloadUrl){
+        alert("Download link nahi mila.");
+        return;
+      }
+      window.open(entry.file.downloadUrl, "_blank", "noopener,noreferrer");
+    };
+
+    window.deleteMemberFile = async (uid, fileId) => {
+      if(!adminAllowed){ alert("Admin verify nahi hua."); return; }
+      const entry = (memberFiles[uid] || []).find((item) => item.id === fileId);
+      if(!entry){
+        alert("File record nahi mila.");
+        return;
+      }
+      if(!confirm("Is member ki ye file delete karni hai?")){
+        return;
+      }
+
+      try{
+        if(entry.file.path){
+          await deleteObject(storageRef(storage, entry.file.path));
+        }
+        await remove(ref(db, "memberFiles/" + uid + "/" + fileId));
+        const member = (allMembers.find((item) => item.uid === uid) || {}).member || {};
+        const used = Math.max(0, Number(member.storageUsedBytes || 0) - Number(entry.file.size || 0));
+        await update(ref(db, "members/" + uid), {
+          storageUsedBytes:used,
+          updatedAt:Date.now()
+        });
+        alert("File delete ho gayi.");
+      } catch(error){
+        alert("File delete nahi hui: " + error.message);
+      }
     };
 
     window.resetMemberPassword = (uid) => {

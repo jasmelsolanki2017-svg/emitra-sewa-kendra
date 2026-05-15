@@ -1885,7 +1885,9 @@ getAuth,
 setPersistence,
 browserLocalPersistence,
 createUserWithEmailAndPassword,
-signInWithEmailAndPassword
+signInWithEmailAndPassword,
+sendEmailVerification,
+signOut
 }
 from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 
@@ -2054,25 +2056,28 @@ createUserWithEmailAndPassword(auth,email,password)
 
 const user = userCredential.user;
 
-return set(ref(db, "members/" + user.uid), {
+return sendEmailVerification(user)
+.then(()=>set(ref(db, "members/" + user.uid), {
 uid:user.uid,
 email:user.email || email,
 name:(user.email || email).split("@")[0],
 mobile:"",
 role:"member",
 status:"Active",
+emailVerified:false,
+freeStorageLimitMb:50,
+storageLimitBytes:50 * 1024 * 1024,
+storageUsedBytes:0,
 createdAt:Date.now(),
 lastLoginAt:Date.now()
-}).catch(() => {});
+}).catch(() => {}))
+.then(()=>signOut(auth));
 
 })
 
 .then(()=>{
 
-alert("Account Created Successfully!");
-startFreshUserSession();
-
-window.closeLogin();
+alert("Account create ho gaya. Gmail par verification link bheja gaya hai. Pehle email verify karein, phir login hoga.");
 
 })
 
@@ -2111,13 +2116,22 @@ signInWithEmailAndPassword(auth,email,password)
 .then((userCredential)=>{
 
 const userEmail = userCredential.user.email;
+const firebaseUser = userCredential.user;
+
+if(userEmail !== adminEmail && !firebaseUser.emailVerified){
+sendEmailVerification(firebaseUser).catch(() => {});
+return signOut(auth).then(()=>{
+alert("Gmail verification pending hai. Verification mail dobara bhej diya gaya hai. Email verify karke login karein.");
+});
+}
 
 if(userCredential.user.uid && userEmail !== adminEmail){
 startFreshUserSession();
 update(ref(db, "members/" + userCredential.user.uid), {
 lastLoginAt:Date.now(),
 email:userEmail,
-status:"Active"
+status:"Active",
+emailVerified:true
 }).catch(() => {});
 }
 
