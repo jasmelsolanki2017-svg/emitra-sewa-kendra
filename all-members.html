@@ -215,6 +215,7 @@
             <p class="detail"><strong>Created:</strong> ${formatDate(member.createdAt)}</p>
             <p class="detail"><strong>Last Login:</strong> ${formatDate(member.lastLoginAt)}</p>
             <p class="detail"><strong>Email Verified:</strong> ${member.emailVerified ? "Yes" : "Pending/Unknown"}</p>
+            <p class="detail"><strong>Upload Approval:</strong> ${member.uploadApproved ? "Approved" : "Pending/Blocked"}</p>
             <div class="storage-line">Storage: ${formatBytes(usedBytes)} used / ${formatBytes(limitBytes)} allowed</div>
 
             <div class="edit-grid">
@@ -227,6 +228,10 @@
               </select>
               <input data-uid="${escapeHTML(uid)}" data-field="newPassword" type="password" placeholder="New password">
               <input data-uid="${escapeHTML(uid)}" data-field="freeStorageLimitMb" type="number" min="1" step="1" value="${escapeHTML(freeMb)}" placeholder="Free storage MB">
+              <select data-uid="${escapeHTML(uid)}" data-field="uploadApproved">
+                <option value="false" ${member.uploadApproved ? "" : "selected"}>Upload Pending/Blocked</option>
+                <option value="true" ${member.uploadApproved ? "selected" : ""}>Upload Approved</option>
+              </select>
               <textarea data-uid="${escapeHTML(uid)}" data-field="notes" placeholder="Admin notes">${escapeHTML(member.notes || "")}</textarea>
             </div>
 
@@ -329,6 +334,7 @@
         mobile:getFieldValue(uid, "mobile"),
         status:getFieldValue(uid, "status") || "Active",
         notes:getFieldValue(uid, "notes"),
+        uploadApproved:getFieldValue(uid, "uploadApproved") === "true",
         freeStorageLimitMb:freeStorageLimitMb,
         storageLimitBytes:freeStorageLimitMb * 1024 * 1024,
         updatedAt:Date.now()

@@ -410,6 +410,10 @@
       margin-bottom:16px;
     }
 
+    .storage-tools.locked{
+      display:none;
+    }
+
     .storage-tools input[type="file"]{
       width:100%;
       min-width:0;
@@ -848,7 +852,7 @@ body.dark-mode .nav-logo img {
     <h2>My Documents</h2>
     <p class="message" id="storageInfo">Storage checking...</p>
     <div class="storage-meter"><span id="storageBar"></span></div>
-    <div class="storage-tools">
+    <div class="storage-tools locked" id="uploadTools">
       <input type="file" id="userFileInput">
       <button onclick="uploadUserFile()">Upload</button>
     </div>
@@ -991,8 +995,14 @@ body.dark-mode .nav-logo img {
     const used = Number(currentMember.storageUsedBytes || 0);
     const limit = getStorageLimitBytes();
     const percent = Math.min(100, Math.round((used / limit) * 100));
+    const approved = currentMember.uploadApproved === true;
+
     document.getElementById("storageInfo").innerText = `${formatBytes(used)} used / ${formatBytes(limit)} available`;
     document.getElementById("storageBar").style.width = percent + "%";
+    document.getElementById("uploadTools").classList.toggle("locked", !approved);
+    document.getElementById("uploadStatus").innerText = approved
+      ? "Aap apni files yahan upload karke baad me download kar sakte hain."
+      : "Upload ke liye admin approval pending hai. Approval milne ke baad upload button show hoga.";
   };
 
   const renderUserFiles = () => {
@@ -1117,6 +1127,11 @@ body.dark-mode .nav-logo img {
   window.uploadUserFile = () => {
     if(!currentUser){
       alert("Login required.");
+      return;
+    }
+
+    if(currentMember.uploadApproved !== true){
+      alert("Upload ke liye admin approval zaroori hai.");
       return;
     }
 
