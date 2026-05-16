@@ -127,7 +127,7 @@
         <input type="text" id="newMemberName" placeholder="Name">
         <input type="email" id="newMemberEmail" placeholder="Email ID">
         <input type="tel" id="newMemberMobile" placeholder="Mobile No.">
-        <input type="password" id="newMemberPassword" placeholder="Password">
+        <input type="password" id="newMemberPassword" placeholder="Password (blank = User@123)">
         <button type="button" onclick="createAdminMember()">Add User</button>
       </div>
       <div class="form-status" id="createMemberStatus"></div>
@@ -135,12 +135,12 @@
 
     <section class="create-member">
       <h2>Upload Excel Users</h2>
-      <p>Excel/CSV me columns rakhein: name, email, mobile, password. Har row se ek user banega.</p>
+      <p>Excel/CSV me columns rakhein: name, email, mobile, password. Password blank hoga to User@123 lagega.</p>
       <div class="bulk-grid">
         <input type="file" id="bulkMemberFile" accept=".xlsx,.xls,.csv">
         <button type="button" onclick="uploadMembersExcel()">Upload Excel</button>
       </div>
-      <div class="bulk-help">Supported: .xlsx, .xls, .csv. Password minimum 6 character hona chahiye.</div>
+      <div class="bulk-help">Supported: .xlsx, .xls, .csv. Password column blank ho to default User@123 use hoga.</div>
       <div class="form-status" id="bulkMemberStatus"></div>
     </section>
 
