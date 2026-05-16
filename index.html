@@ -407,15 +407,20 @@ padding-left:100%;
 color:#0057a8;
 font-size:15px;
 font-weight:800;
-animation:newsSlide 22s linear infinite;
+animation:newsSlide var(--news-duration, 42s) linear infinite;
 }
 
 .news-line:nth-child(2) .news-track{
-animation-duration:26s;
+animation-duration:var(--news-duration, 48s);
 }
 
 .news-line:nth-child(3) .news-track{
-animation-duration:30s;
+animation-duration:var(--news-duration, 54s);
+}
+
+.news-line.static .news-track{
+padding-left:14px;
+animation:none;
 }
 
 @keyframes newsSlide{
@@ -2390,9 +2395,9 @@ const rowsBox = document.getElementById("newsTickerRows");
 
 if(latestNewsItems.length === 0){
 rowsBox.innerHTML = `
-  <div class="news-line"><span class="news-track">अभी कोई latest update नहीं है।</span></div>
-  <div class="news-line"><span class="news-track">अभी कोई latest update नहीं है।</span></div>
-  <div class="news-line"><span class="news-track">अभी कोई latest update नहीं है।</span></div>
+  <div class="news-line static"><span class="news-track">अभी कोई latest update नहीं है।</span></div>
+  <div class="news-line static"><span class="news-track">अभी कोई latest update नहीं है।</span></div>
+  <div class="news-line static"><span class="news-track">अभी कोई latest update नहीं है।</span></div>
 `;
 return;
 }
@@ -2400,9 +2405,10 @@ return;
 const rows = [0,1,2].map((rowIndex)=>{
 const rowItems = latestNewsItems.filter((_,index)=>index % 3 === rowIndex);
 const text = (rowItems.length ? rowItems : latestNewsItems).join("  •  ");
+const duration = Math.max(44, Math.min(120, Math.round(text.length * 0.34)));
 
 return `
-  <div class="news-line">
+  <div class="news-line" style="--news-duration:${duration}s">
     <span class="news-track">${escapeHTML(text)}  •  ${escapeHTML(text)}</span>
   </div>
 `;

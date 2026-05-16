@@ -72,6 +72,74 @@ const getFileBucket = (file = {}) => {
   return !file.bucket || file.bucket === "user-uploads" ? supabaseBucket : file.bucket;
 };
 
+const getFileUrl = (file = {}) => {
+  return file.storageProvider === "supabase"
+    ? getSupabasePublicUrl(file.path)
+    : file.downloadUrl || getSupabasePublicUrl(file.path);
+};
+
+const getPreviewKind = (file = {}) => {
+  const type = String(file.type || "").toLowerCase();
+  const name = String(file.name || file.path || "").toLowerCase();
+  if(type.startsWith("image/") || /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(name)){ return "image"; }
+  if(type === "application/pdf" || /\.pdf$/i.test(name)){ return "pdf"; }
+  if(type.startsWith("video/") || /\.(mp4|webm|ogg)$/i.test(name)){ return "video"; }
+  if(type.startsWith("audio/") || /\.(mp3|wav|ogg|m4a)$/i.test(name)){ return "audio"; }
+  if(type.startsWith("text/") || /\.(txt|csv|json|log)$/i.test(name)){ return "text"; }
+  return "";
+};
+
+const ensurePreviewModal = () => {
+  let modal = document.getElementById("filePreviewModal");
+  if(modal){ return modal; }
+  modal = document.createElement("div");
+  modal.id = "filePreviewModal";
+  modal.className = "preview-modal";
+  modal.innerHTML = `
+    <div class="preview-dialog" role="dialog" aria-modal="true" aria-labelledby="filePreviewTitle">
+      <div class="preview-head">
+        <strong id="filePreviewTitle">Document Preview</strong>
+        <button type="button" onclick="closeFilePreview()">Close</button>
+      </div>
+      <div class="preview-body" id="filePreviewBody"></div>
+    </div>
+  `;
+  modal.addEventListener("click", (event) => {
+    if(event.target === modal){ window.closeFilePreview(); }
+  });
+  document.body.appendChild(modal);
+  return modal;
+};
+
+const openFilePreview = (file = {}) => {
+  const url = getFileUrl(file);
+  if(!url){
+    alert("Preview link nahi mila.");
+    return;
+  }
+  const modal = ensurePreviewModal();
+  const title = document.getElementById("filePreviewTitle");
+  const body = document.getElementById("filePreviewBody");
+  const name = file.name || "Document Preview";
+  const safeName = escapeHTML(name);
+  const safePreviewUrl = url.replace(/"/g, "&quot;");
+  const safeDownloadUrl = safeUrl(url);
+  title.innerText = name;
+  const kind = getPreviewKind(file);
+  if(kind === "image"){
+    body.innerHTML = `<img src="${safePreviewUrl}" alt="${safeName}">`;
+  }else if(kind === "pdf" || kind === "text"){
+    body.innerHTML = `<iframe src="${safePreviewUrl}" title="${safeName}"></iframe>`;
+  }else if(kind === "video"){
+    body.innerHTML = `<video src="${safePreviewUrl}" controls></video>`;
+  }else if(kind === "audio"){
+    body.innerHTML = `<audio src="${safePreviewUrl}" controls></audio>`;
+  }else{
+    body.innerHTML = `<div class="preview-empty"><p>Is file ka browser preview available nahi hai.</p><a class="preview-download" href="${safeDownloadUrl}" target="_blank" rel="noopener noreferrer">Download</a></div>`;
+  }
+  modal.classList.add("open");
+};
+
 const setText = (id, value) => {
   const el = document.getElementById(id);
   if(el){ el.innerText = value; }
@@ -257,6 +325,7 @@ function renderUserFiles(){
         <small>${formatBytes(item.file.size)} - ${item.file.uploadedAt ? new Date(item.file.uploadedAt).toLocaleString("hi-IN") : "Recently uploaded"}</small>
       </div>
       <div class="file-actions">
+        <button class="preview-file" onclick="previewUserFile('${escapeHTML(item.id)}')">Preview</button>
         <button onclick="downloadUserFile('${escapeHTML(item.id)}')">Download</button>
         <button class="delete-file" onclick="deleteUserFile('${escapeHTML(item.id)}')">Delete</button>
       </div>
@@ -371,14 +440,28 @@ window.downloadUserFile = (id) => {
     alert("Download link nahi mila.");
     return;
   }
-  const url = item.file.storageProvider === "supabase"
-    ? getSupabasePublicUrl(item.file.path)
-    : item.file.downloadUrl || getSupabasePublicUrl(item.file.path);
+  const url = getFileUrl(item.file);
   if(!url){
     alert("Download link nahi mila.");
     return;
   }
   window.open(url, "_blank", "noopener,noreferrer");
+};
+
+window.previewUserFile = (id) => {
+  const item = currentFiles.find((entry) => entry.id === id);
+  if(!item){
+    alert("Preview link nahi mila.");
+    return;
+  }
+  openFilePreview(item.file);
+};
+
+window.closeFilePreview = () => {
+  const modal = document.getElementById("filePreviewModal");
+  const body = document.getElementById("filePreviewBody");
+  if(body){ body.innerHTML = ""; }
+  if(modal){ modal.classList.remove("open"); }
 };
 
 window.deleteUserFile = async (id) => {
