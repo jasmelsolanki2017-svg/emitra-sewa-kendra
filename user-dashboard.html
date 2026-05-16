@@ -898,10 +898,12 @@ body.dark-mode .nav-logo img {
 
 <nav>
   <a href="index.html">Home</a>
-  <a href="job-form.html">Latest Jobs</a>
+  <a href="user-latest-updates.html">Latest Updates</a>
+  <a href="user-important-links.html">Important Links</a>
+  <a href="user-latest-jobs.html">Latest Jobs</a>
+  <a href="user-download-center.html">Download Center</a>
+  <a href="user-data-folder.html">My Data Folder</a>
   <a href="OFFLINEFORM.HTML">Offline Forms</a>
-  <a href="stationery.html">Stationery</a>
-  <a href="useful-pages.html">Useful Pages</a>
   <a href="contact.html">Contact</a>
   <button onclick="logoutUser()">Logout</button>
 </nav>
@@ -984,85 +986,40 @@ body.dark-mode .nav-logo img {
     </div>
 
     <div class="card">
+      <i class="fa-solid fa-bell"></i>
+      <h3>Latest Updates</h3>
+      <p>Admin se aayi latest information aur notices alag page par dekhein.</p>
+      <a href="user-latest-updates.html">Open Updates</a>
+    </div>
+
+    <div class="card">
       <i class="fa-solid fa-briefcase"></i>
       <h3>Latest Jobs</h3>
       <p>Latest job updates yahan ek jagah milengi.</p>
-      <a href="#jobsSection">View Jobs</a>
+      <a href="user-latest-jobs.html">View Jobs</a>
     </div>
 
     <div class="card">
       <i class="fa-solid fa-download"></i>
       <h3>Download Center</h3>
       <p>Forms, PDFs aur documents download karein.</p>
-      <a href="#downloadSection">Open Downloads</a>
+      <a href="user-download-center.html">Open Downloads</a>
     </div>
 
     <div class="card">
       <i class="fa-solid fa-link"></i>
       <h3>Important Links</h3>
       <p>Useful government links aur services yahan available rahenge.</p>
-      <a href="#linksSection">Open Links</a>
+      <a href="user-important-links.html">Open Links</a>
+    </div>
+
+    <div class="card">
+      <i class="fa-solid fa-folder-open"></i>
+      <h3>My Data Folder</h3>
+      <p>My Documents, uploaded files aur admin data links ek alag page par rahenge.</p>
+      <a href="user-data-folder.html">Open Data Folder</a>
     </div>
   </div>
-
-  <section class="section">
-    <h2>Latest Updates</h2>
-    <div id="updatesList">Loading...</div>
-  </section>
-
-  <section class="section" id="linksSection">
-    <h2>Important Links</h2>
-    <div id="importantLinksList">Loading...</div>
-  </section>
-
-  <section class="section" id="jobsSection">
-    <h2>Latest Jobs</h2>
-    <div class="search-box">
-      <input type="search" id="jobSearch" placeholder="Job search karein... SSC, Police, Railway, Teacher">
-    </div>
-    <div id="jobsList">Loading...</div>
-    <div id="jobNoResult" class="message" style="display:none;">कोई matching job नहीं मिली।</div>
-  </section>
-
-  <section class="section" id="myDocumentsSection">
-    <h2>My Documents</h2>
-    <p class="message" id="storageInfo">Storage checking...</p>
-    <div class="storage-meter"><span id="storageBar"></span></div>
-    <div class="storage-tools locked" id="uploadTools">
-      <input type="file" id="userFileInput">
-      <button onclick="uploadUserFile()">Upload</button>
-    </div>
-    <p class="message" id="uploadStatus">Aap apni files yahan upload karke baad me download kar sakte hain.</p>
-    <div class="file-list" id="userFilesList">
-      <div class="message">Files loading...</div>
-    </div>
-  </section>
-
-  <section class="section" id="myDataFolderSection">
-    <h2>My Data Folder</h2>
-    <div class="cloud-link-list" id="cloudLinksList">
-      <div class="message">Data links loading...</div>
-    </div>
-  </section>
-
-  <section class="section" id="downloadSection">
-    <h2>Download Center</h2>
-
-    <div class="row">
-      <strong>Offline Forms</strong><br>
-      <a href="OFFLINEFORM.HTML">Open Forms Page</a>
-    </div>
-
-    <div class="row">
-      <strong>Latest Jobs</strong><br>
-      <a href="job-form.html">Open Job Page</a>
-    </div>
-
-    <div class="row">
-      <strong>Stationery</strong><br>
-      <a href="stationery.html">Open Stationery Page</a>
-    </div>
-  </section>
 
 </div>
 
@@ -1184,21 +1141,28 @@ body.dark-mode .nav-logo img {
   };
 
   const renderStorageInfo = () => {
+    const storageInfo = document.getElementById("storageInfo");
+    const storageBar = document.getElementById("storageBar");
+    const uploadTools = document.getElementById("uploadTools");
+    const uploadStatus = document.getElementById("uploadStatus");
+    if(!storageInfo || !storageBar || !uploadTools || !uploadStatus){ return; }
+
     const used = Number(currentMember.storageUsedBytes || 0);
     const limit = getStorageLimitBytes();
     const percent = Math.min(100, Math.round((used / limit) * 100));
     const approved = currentMember.uploadApproved === true;
 
-    document.getElementById("storageInfo").innerText = `${formatBytes(used)} used / ${formatBytes(limit)} available`;
-    document.getElementById("storageBar").style.width = percent + "%";
-    document.getElementById("uploadTools").classList.toggle("locked", !approved);
-    document.getElementById("uploadStatus").innerText = approved
+    storageInfo.innerText = `${formatBytes(used)} used / ${formatBytes(limit)} available`;
+    storageBar.style.width = percent + "%";
+    uploadTools.classList.toggle("locked", !approved);
+    uploadStatus.innerText = approved
       ? "Aap apni files yahan upload karke baad me download kar sakte hain."
       : "Upload ke liye admin approval pending hai. Approval milne ke baad upload button show hoga.";
   };
 
   const renderUserFiles = () => {
     const list = document.getElementById("userFilesList");
+    if(!list){ return; }
     renderStorageInfo();
 
     if(!currentFiles.length){
@@ -1241,6 +1205,7 @@ body.dark-mode .nav-logo img {
 
   const renderCloudLinks = () => {
     const list = document.getElementById("cloudLinksList");
+    if(!list){ return; }
     if(!currentCloudLinks.length){
       list.innerHTML = '<div class="message">Admin ne abhi koi data link add nahi kiya hai.</div>';
       return;
@@ -1589,97 +1554,113 @@ body.dark-mode .nav-logo img {
 
   onValue(updatesRef, (snapshot) => {
     const box = document.getElementById("updatesList");
-    box.innerHTML = "";
     let count = 0;
 
     const rows = getUpdateRows(snapshot);
+    if(box){
+      box.innerHTML = "";
+    }
 
     if(rows.length){
       rows.forEach((data) => {
         count += 1;
 
-        box.innerHTML += `
-          <div class="row">
-            <strong>${escapeHTML(data.text)}</strong>
-          </div>
-        `;
+        if(box){
+          box.innerHTML += `
+            <div class="row">
+              <strong>${escapeHTML(data.text)}</strong>
+            </div>
+          `;
+        }
       });
-    } else {
+    } else if(box) {
       renderMessage(box, "अभी कोई update नहीं है।");
     }
 
     document.getElementById("updatesCount").innerText = count;
   }, (error) => {
-    renderMessage(document.getElementById("updatesList"), "Updates load नहीं हो पाईं: " + error.message);
+    const box = document.getElementById("updatesList");
+    if(box){ renderMessage(box, "Updates load नहीं हो पाईं: " + error.message); }
   });
 
   const linksRef = ref(db, "importantLinks");
 
   onValue(linksRef, (snapshot) => {
     const box = document.getElementById("importantLinksList");
-    box.innerHTML = "";
     let count = 0;
+    if(box){
+      box.innerHTML = "";
+    }
 
     if(snapshot.exists()){
       snapshot.forEach((child) => {
         const data = child.val();
         count += 1;
 
-        box.innerHTML += `
-          <div class="row">
-            <strong>${escapeHTML(data.title || "Important Link")}</strong><br>
-            <a href="${safeUrl(data.url)}" target="_blank" rel="noopener noreferrer">Open Link</a>
-          </div>
-        `;
+        if(box){
+          box.innerHTML += `
+            <div class="row">
+              <strong>${escapeHTML(data.title || "Important Link")}</strong><br>
+              <a href="${safeUrl(data.url)}" target="_blank" rel="noopener noreferrer">Open Link</a>
+            </div>
+          `;
+        }
       });
-    } else {
+    } else if(box) {
       renderMessage(box, "अभी कोई important link नहीं है।");
     }
 
     document.getElementById("linksCount").innerText = count;
   }, (error) => {
-    renderMessage(document.getElementById("importantLinksList"), "Important links load नहीं हो पाए: " + error.message);
+    const box = document.getElementById("importantLinksList");
+    if(box){ renderMessage(box, "Important links load नहीं हो पाए: " + error.message); }
   });
 
   const jobsRef = ref(db, "LatestJobs");
 
   onValue(jobsRef, (snapshot) => {
     const box = document.getElementById("jobsList");
-    box.innerHTML = "";
     let count = 0;
 
     const rows = getJobRows(snapshot);
+    if(box){
+      box.innerHTML = "";
+    }
 
     if(rows.length){
       rows.forEach(({ id, job }) => {
         count += 1;
 
-        box.innerHTML += `
-          <div class="job-card">
-            <h3>${escapeHTML(job.title || job.text || "Job Update")}</h3>
-            <p><b>Type:</b> ${escapeHTML(job.type || "Online Form")}</p>
-            <p><b>Start Date:</b> ${escapeHTML(job.startDate || "Update Soon")}</p>
-            <p><b>Last Date:</b> <span class="last-date">${escapeHTML(job.lastDate || "Update Soon")}</span></p>
-            <p><b>Qualification:</b> ${escapeHTML(job.qualification || "Update Soon")}</p>
-            <p><b>Location:</b> ${escapeHTML(job.location || "All India")}</p>
-            <a href="${safeUrl(job.applyLink)}" target="_blank" rel="noopener noreferrer">Apply Now</a>
-            <a class="detail-link" href="job-detail.html?id=${encodeURIComponent(id)}">View Details</a>
-          </div>
-        `;
+        if(box){
+          box.innerHTML += `
+            <div class="job-card">
+              <h3>${escapeHTML(job.title || job.text || "Job Update")}</h3>
+              <p><b>Type:</b> ${escapeHTML(job.type || "Online Form")}</p>
+              <p><b>Start Date:</b> ${escapeHTML(job.startDate || "Update Soon")}</p>
+              <p><b>Last Date:</b> <span class="last-date">${escapeHTML(job.lastDate || "Update Soon")}</span></p>
+              <p><b>Qualification:</b> ${escapeHTML(job.qualification || "Update Soon")}</p>
+              <p><b>Location:</b> ${escapeHTML(job.location || "All India")}</p>
+              <a href="${safeUrl(job.applyLink)}" target="_blank" rel="noopener noreferrer">Apply Now</a>
+              <a class="detail-link" href="job-detail.html?id=${encodeURIComponent(id)}">View Details</a>
+            </div>
+          `;
+        }
       });
-    } else {
+    } else if(box) {
       renderMessage(box, "अभी कोई job available नहीं है।");
     }
 
     document.getElementById("jobsCount").innerText = count;
     filterJobs();
   }, (error) => {
-    renderMessage(document.getElementById("jobsList"), "Jobs load नहीं हो पाईं: " + error.message);
+    const box = document.getElementById("jobsList");
+    if(box){ renderMessage(box, "Jobs load नहीं हो पाईं: " + error.message); }
   });
 
   function filterJobs(){
     const input = document.getElementById("jobSearch");
     const noResult = document.getElementById("jobNoResult");
+    if(!input || !noResult){ return; }
     const query = input.value.trim().toLowerCase();
     const cards = document.querySelectorAll(".job-card");
     let visibleCount = 0;
@@ -1693,7 +1674,10 @@ body.dark-mode .nav-logo img {
     noResult.style.display = cards.length > 0 && visibleCount === 0 ? "block" : "none";
   }
 
-  document.getElementById("jobSearch").addEventListener("input", filterJobs);
+  const jobSearch = document.getElementById("jobSearch");
+  if(jobSearch){
+    jobSearch.addEventListener("input", filterJobs);
+  }
 </script>
 
 <button class="theme-toggle" type="button" aria-label="Toggle dark mode" title="Dark mode" onclick="toggleDarkMode()"><span class="theme-symbol" aria-hidden="true">☾</span></button>

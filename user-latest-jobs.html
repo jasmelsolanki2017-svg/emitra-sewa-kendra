@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Latest Jobs | E-MITRA WALA User Panel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans+Devanagari:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="user-panel-pages.css">
+</head>
+<body data-page="jobs">
+  <div class="topbar"><div>User Panel</div><div>Time: <span id="liveTime"></span></div></div>
+  <div id="sessionTimer" class="session-timer">Logout in: 60:00</div>
+  <header>
+    <div class="hero-wrap">
+      <div class="hero-copy">
+        <h1>Latest Jobs</h1>
+        <p>Latest job list, apply link aur full details.</p>
+      </div>
+      <div class="hero-badge">Logged in: <span id="userEmail">Checking...</span></div>
+    </div>
+  </header>
+  <nav>
+    <a href="user-dashboard.html">User Panel</a>
+    <a href="user-latest-updates.html">Latest Updates</a>
+    <a href="user-important-links.html">Important Links</a>
+    <a href="user-download-center.html">Download Center</a>
+    <a href="user-data-folder.html">My Data Folder</a>
+    <button onclick="logoutUser()">Logout</button>
+  </nav>
+  <main class="container">
+    <section class="section">
+      <h2>Latest Jobs</h2>
+      <div class="search-box">
+        <input type="search" id="jobSearch" placeholder="Job search karein... SSC, Police, Railway, Teacher">
+      </div>
+      <div id="jobsList">Loading...</div>
+      <div id="jobNoResult" class="message" style="display:none;">Koi matching job nahi mili.</div>
+    </section>
+  </main>
+  <a class="whatsapp" target="_blank" rel="noopener noreferrer" href="https://wa.me/919509403258?text=Hello%20E-MITRA%20WALA,%20mujhe%20help%20chahiye."><i class="fa-brands fa-whatsapp"></i></a>
+  <footer><p>© 2026 E-MITRA WALA | User Panel</p></footer>
+  <button class="theme-toggle" type="button" aria-label="Toggle dark mode" title="Dark mode" onclick="toggleDarkMode()"><span class="theme-symbol" aria-hidden="true">☾</span></button>
+  <script type="module" src="user-panel-pages.js"></script>
+</body>
+</html>
