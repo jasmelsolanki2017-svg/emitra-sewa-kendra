@@ -26,11 +26,14 @@
     .create-member{background:white;border:1px solid #d8e6f5;border-top:3px solid #138a36;border-radius:7px;padding:12px;margin-bottom:14px;box-shadow:0 4px 14px rgba(0,0,0,.07);}
     .create-member h2{color:#0057a8;font-size:17px;margin-bottom:4px;}
     .create-member p{font-size:12px;color:#55657a;font-weight:700;margin-bottom:9px;}
-    .create-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr)) auto;gap:7px;align-items:end;}
-    .create-grid input{width:100%;min-width:0;padding:8px 9px;border:1px solid #c9d9ea;border-radius:6px;font-size:12px;}
+    .create-grid,.bulk-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr)) auto;gap:7px;align-items:end;}
+    .bulk-grid{grid-template-columns:minmax(0,1fr) auto;}
+    .create-grid input,.bulk-grid input{width:100%;min-width:0;padding:8px 9px;border:1px solid #c9d9ea;border-radius:6px;font-size:12px;}
     .create-grid button{border:0;border-radius:6px;padding:8px 11px;font-size:12px;font-weight:800;background:#138a36;color:white;cursor:pointer;}
-    .create-grid button:hover{background:#ff7a00;color:#03224d;}
+    .bulk-grid button{border:0;border-radius:6px;padding:8px 11px;font-size:12px;font-weight:800;background:#0057a8;color:white;cursor:pointer;}
+    .create-grid button:hover,.bulk-grid button:hover{background:#ff7a00;color:#03224d;}
     .form-status{margin-top:8px;font-size:12px;font-weight:800;color:#0057a8;}
+    .bulk-help{margin-top:7px;font-size:11px;color:#55657a;font-weight:700;}
     .toolbar{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;}
     .toolbar input{min-width:240px;flex:1;max-width:420px;padding:8px 10px;border:1px solid #bdd0e5;border-radius:6px;font-size:13px;}
     .count{font-weight:800;color:#0057a8;}
@@ -86,7 +89,7 @@
       nav{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap;}
       nav a,nav button{white-space:nowrap;}
       .toolbar input{min-width:0;max-width:none;}
-      .create-grid{grid-template-columns:1fr;}
+      .create-grid,.bulk-grid{grid-template-columns:1fr;}
       .edit-grid{grid-template-columns:1fr;}
       .edit-grid textarea{grid-column:auto;}
       .file-row,.cloud-link-row,.link-grid{grid-template-columns:1fr;}
@@ -130,6 +133,17 @@
       <div class="form-status" id="createMemberStatus"></div>
     </section>
 
+    <section class="create-member">
+      <h2>Upload Excel Users</h2>
+      <p>Excel/CSV me columns rakhein: name, email, mobile, password. Har row se ek user banega.</p>
+      <div class="bulk-grid">
+        <input type="file" id="bulkMemberFile" accept=".xlsx,.xls,.csv">
+        <button type="button" onclick="uploadMembersExcel()">Upload Excel</button>
+      </div>
+      <div class="bulk-help">Supported: .xlsx, .xls, .csv. Password minimum 6 character hona chahiye.</div>
+      <div class="form-status" id="bulkMemberStatus"></div>
+    </section>
+
     <div class="toolbar">
       <input type="search" id="memberSearch" placeholder="Search by name, email, mobile, status...">
       <div class="count" id="memberCount">Members: 0</div>
@@ -149,6 +163,8 @@
     updateLiveTime();
     setInterval(updateLiveTime,1000);
   </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
@@ -500,6 +516,44 @@
       return data;
     }
 
+    const normalizeBulkKey = (value = "") => String(value)
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "");
+
+    const getBulkValue = (row, names) => {
+      const wanted = names.map(normalizeBulkKey);
+      const foundKey = Object.keys(row).find((key) => wanted.includes(normalizeBulkKey(key)));
+      return foundKey ? String(row[foundKey] || "").trim() : "";
+    };
+
+    const getBulkRows = (workbook) => {
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      if(!sheet){ return []; }
+      return XLSX.utils.sheet_to_json(sheet, { defval:"" });
+    };
+
+    const buildBulkMember = (row) => ({
+      name:getBulkValue(row, ["name", "naam", "user name", "member name"]),
+      email:getBulkValue(row, ["email", "email id", "emailid", "gmail", "mail"]),
+      mobile:getBulkValue(row, ["mobile", "mobile no", "mobile number", "phone", "phone no"]),
+      password:getBulkValue(row, ["password", "passord", "pasord", "pass", "user password"])
+    });
+
+    const readBulkWorkbook = (file) => new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try{
+          const data = new Uint8Array(event.target.result);
+          resolve(XLSX.read(data, { type:"array" }));
+        }catch(error){
+          reject(error);
+        }
+      };
+      reader.onerror = () => reject(reader.error || new Error("File read failed"));
+      reader.readAsArrayBuffer(file);
+    });
+
     window.createAdminMember = () => {
       if(!adminAllowed){ alert("Admin verify nahi hua."); return; }
 
@@ -536,6 +590,73 @@
       }).catch((error) => {
         status.innerText = "User add nahi hua: " + error.message;
       });
+    };
+
+    window.uploadMembersExcel = async () => {
+      if(!adminAllowed){ alert("Admin verify nahi hua."); return; }
+      const input = document.getElementById("bulkMemberFile");
+      const status = document.getElementById("bulkMemberStatus");
+      const file = input.files && input.files[0];
+
+      if(!file){
+        status.innerText = "Excel/CSV file select karein.";
+        return;
+      }
+
+      if(!window.XLSX){
+        status.innerText = "Excel reader load nahi hua. Internet/CDN check karein.";
+        return;
+      }
+
+      status.innerText = "Excel file read ho rahi hai...";
+
+      try{
+        const workbook = await readBulkWorkbook(file);
+        const rows = getBulkRows(workbook);
+        const existingEmails = new Set(allMembers.map(({ member }) => String(member.email || "").toLowerCase()));
+        const users = rows.map(buildBulkMember).filter((user) => user.name || user.email || user.mobile || user.password);
+
+        if(!users.length){
+          status.innerText = "Excel me valid rows nahi mili. Header row me name, email, mobile, password rakhein.";
+          return;
+        }
+
+        let success = 0;
+        let failed = 0;
+        const errors = [];
+
+        for(let index = 0; index < users.length; index += 1){
+          const user = users[index];
+          const rowNo = index + 2;
+          status.innerText = `Creating users... ${index + 1}/${users.length}`;
+
+          if(!user.name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user.email) || !user.mobile || user.password.length < 6){
+            failed += 1;
+            errors.push(`Row ${rowNo}: invalid data`);
+            continue;
+          }
+
+          if(existingEmails.has(user.email.toLowerCase())){
+            failed += 1;
+            errors.push(`Row ${rowNo}: email already exists`);
+            continue;
+          }
+
+          try{
+            await callAdminApi("/admin/create-member", user);
+            existingEmails.add(user.email.toLowerCase());
+            success += 1;
+          }catch(error){
+            failed += 1;
+            errors.push(`Row ${rowNo}: ${error.message}`);
+          }
+        }
+
+        input.value = "";
+        status.innerText = `Excel upload complete. Created: ${success}, Failed: ${failed}${errors.length ? " | " + errors.slice(0, 4).join(" | ") : ""}`;
+      }catch(error){
+        status.innerText = "Excel upload nahi hua: " + error.message;
+      }
     };
 
     window.saveMember = (uid) => {

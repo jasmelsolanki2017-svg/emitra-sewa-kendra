@@ -244,6 +244,45 @@
       margin-bottom:14px;
     }
 
+    .password-form{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr)) auto;
+      gap:10px;
+      align-items:end;
+      margin:0 0 18px;
+      padding:12px;
+      border:1px solid var(--line);
+      border-radius:8px;
+      background:#f9fbff;
+    }
+
+    .password-form label{
+      color:var(--muted);
+      font-size:12px;
+      font-weight:800;
+    }
+
+    .password-form input{
+      width:100%;
+      min-width:0;
+      margin-top:4px;
+      padding:10px 11px;
+      border:1px solid var(--line);
+      border-radius:8px;
+      font-size:13px;
+      background:white;
+    }
+
+    .password-form button{
+      border:0;
+      border-radius:8px;
+      background:#138a36;
+      color:white;
+      font-weight:800;
+      padding:11px 15px;
+      cursor:pointer;
+    }
+
     .profile-summary{
       display:grid;
       grid-template-columns:repeat(4,minmax(0,1fr));
@@ -757,7 +796,7 @@
       .container{padding:28px 4% 0;}
       .stats-grid{grid-template-columns:1fr;}
       .profile-summary{grid-template-columns:1fr;}
-      .profile-form{grid-template-columns:1fr;}
+      .profile-form,.password-form{grid-template-columns:1fr;}
       .stat-box small{text-align:left;}
       .section{padding:20px;}
       .section h2{font-size:23px;}
@@ -1028,6 +1067,20 @@ body.dark-mode .nav-logo img {
     </div>
     <div class="profile-status" id="profileStatus"></div>
 
+    <div class="password-form">
+      <label>Current Password
+        <input type="password" id="currentPassword" placeholder="Current password">
+      </label>
+      <label>New Password
+        <input type="password" id="newUserPassword" placeholder="New password">
+      </label>
+      <label>Confirm Password
+        <input type="password" id="confirmUserPassword" placeholder="Confirm password">
+      </label>
+      <button onclick="changeUserPassword()">Update Password</button>
+    </div>
+    <div class="profile-status" id="passwordStatus"></div>
+
     <div class="profile-summary">
       <div class="profile-chip">
         <small>Name</small>
@@ -1145,7 +1198,10 @@ body.dark-mode .nav-logo img {
   import {
     getAuth,
     onAuthStateChanged,
-    signOut
+    signOut,
+    EmailAuthProvider,
+    reauthenticateWithCredential,
+    updatePassword
   } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 
   import {
@@ -1525,6 +1581,58 @@ body.dark-mode .nav-logo img {
     }).catch((error) => {
       status.innerText = "Profile save nahi hui: " + error.message;
     });
+  };
+
+  window.changeUserPassword = async () => {
+    if(!currentUser || !currentUser.email){
+      alert("Login required.");
+      return;
+    }
+
+    const currentPasswordInput = document.getElementById("currentPassword");
+    const newPasswordInput = document.getElementById("newUserPassword");
+    const confirmPasswordInput = document.getElementById("confirmUserPassword");
+    const status = document.getElementById("passwordStatus");
+    const currentPassword = currentPasswordInput.value.trim();
+    const newPassword = newPasswordInput.value.trim();
+    const confirmPassword = confirmPasswordInput.value.trim();
+
+    if(!currentPassword || !newPassword || !confirmPassword){
+      status.innerText = "Current password, new password aur confirm password fill karein.";
+      return;
+    }
+
+    if(newPassword.length < 6){
+      status.innerText = "New password kam se kam 6 character ka hona chahiye.";
+      return;
+    }
+
+    if(newPassword !== confirmPassword){
+      status.innerText = "New password aur confirm password match nahi ho rahe.";
+      return;
+    }
+
+    status.innerText = "Password update ho raha hai...";
+
+    try{
+      const credential = EmailAuthProvider.credential(currentUser.email, currentPassword);
+      await reauthenticateWithCredential(currentUser, credential);
+      await updatePassword(currentUser, newPassword);
+      await update(ref(db, "members/" + currentUser.uid), {
+        passwordChangedAt:Date.now(),
+        updatedAt:Date.now()
+      }).catch(() => {});
+
+      currentPasswordInput.value = "";
+      newPasswordInput.value = "";
+      confirmPasswordInput.value = "";
+      status.innerText = "Password update ho gaya.";
+    }catch(error){
+      const message = error.code === "auth/wrong-password" || error.code === "auth/invalid-credential"
+        ? "Current password galat hai."
+        : "Password update nahi hua: " + error.message;
+      status.innerText = message;
+    }
   };
 
   window.uploadUserFile = () => {
