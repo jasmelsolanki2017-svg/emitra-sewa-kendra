@@ -1635,7 +1635,7 @@ body.dark-mode .nav-logo img {
     }
   };
 
-  window.uploadUserFile = () => {
+  window.uploadUserFile = async () => {
     if(!currentUser){
       alert("Login required.");
       return;
@@ -1647,51 +1647,62 @@ body.dark-mode .nav-logo img {
     }
 
     const input = document.getElementById("userFileInput");
-    const file = input.files && input.files[0];
+    const files = Array.from(input?.files || []);
     const status = document.getElementById("uploadStatus");
 
-    if(!file){
+    if(!files.length){
       alert("Upload ke liye file select karein.");
       return;
     }
 
     const used = Number(currentMember.storageUsedBytes || 0);
     const limit = getStorageLimitBytes();
+    const totalSize = files.reduce((sum, file) => sum + Number(file.size || 0), 0);
 
-    if(used + file.size > limit){
-      status.innerText = `Storage limit full hai. ${formatBytes(limit)} tak free allowed hai. Extra storage ke liye admin se paid plan activate karwayein.`;
+    if(used + totalSize > limit){
+      status.innerText = `Storage limit full hai. Selected files ${formatBytes(totalSize)} hain. ${formatBytes(limit)} tak free allowed hai. Extra storage ke liye admin se paid plan activate karwayein.`;
       return;
     }
 
-    const fileRecordRef = push(ref(db, "memberFiles/" + currentUser.uid));
-    const safeName = cleanFileName(file.name);
-    const path = `${currentUser.uid}/${fileRecordRef.key}-${safeName}`;
+    let uploadedBytes = 0;
+    let uploadedCount = 0;
+    const failed = [];
 
-    status.innerText = "Supabase par upload ho raha hai...";
+    for(let index = 0; index < files.length; index += 1){
+      const file = files[index];
+      const fileRecordRef = push(ref(db, "memberFiles/" + currentUser.uid));
+      const safeName = cleanFileName(file.name);
+      const path = `${currentUser.uid}/${fileRecordRef.key}-${safeName}`;
 
-    supabase.storage.from(supabaseBucket).upload(path, file, {
-      cacheControl:"3600",
-      contentType:file.type || "application/octet-stream",
-      upsert:false
-    }).then(async ({ error }) => {
-      if(error){
-        throw error;
+      status.innerText = `Supabase par upload ho raha hai... ${index + 1}/${files.length}`;
+
+      try{
+        const { error } = await supabase.storage.from(supabaseBucket).upload(path, file, {
+          cacheControl:"3600",
+          contentType:file.type || "application/octet-stream",
+          upsert:false
+        });
+        if(error){ throw error; }
+
+        uploadedBytes += Number(file.size || 0);
+        uploadedCount += 1;
+        await set(fileRecordRef, {
+          name:file.name,
+          size:file.size,
+          type:file.type || "",
+          path:path,
+          storageProvider:"supabase",
+          bucket:supabaseBucket,
+          downloadUrl:getSupabasePublicUrl(path),
+          uploadedAt:Date.now()
+        });
+      }catch(error){
+        failed.push(`${file.name}: ${error.message}`);
       }
+    }
 
-      const downloadUrl = getSupabasePublicUrl(path);
-      const nextUsed = used + file.size;
-
-      await set(fileRecordRef, {
-        name:file.name,
-        size:file.size,
-        type:file.type || "",
-        path:path,
-        storageProvider:"supabase",
-        bucket:supabaseBucket,
-        downloadUrl:downloadUrl,
-        uploadedAt:Date.now()
-      });
-
+    if(uploadedCount > 0){
+      const nextUsed = used + uploadedBytes;
       await update(ref(db, "members/" + currentUser.uid), {
         storageUsedBytes:nextUsed,
         storageLimitBytes:limit,
@@ -1699,10 +1710,11 @@ body.dark-mode .nav-logo img {
       });
 
       input.value = "";
-      status.innerText = "File Supabase par upload ho gayi.";
-    }).catch((error) => {
-      status.innerText = "Upload nahi hua: " + error.message;
-    });
+    }
+
+    status.innerText = failed.length
+      ? `Uploaded: ${uploadedCount}, Failed: ${failed.length}. ${failed.slice(0, 2).join(" | ")}`
+      : `${uploadedCount} file upload ho gayi.`;
   };
 
   window.downloadUserFile = (id) => {

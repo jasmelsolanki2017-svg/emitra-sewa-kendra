@@ -380,7 +380,7 @@ function loadDataFolder(user){
   });
 }
 
-window.uploadUserFile = () => {
+window.uploadUserFile = async () => {
   if(!currentUser){
     alert("Login required.");
     return;
@@ -390,48 +390,68 @@ window.uploadUserFile = () => {
     return;
   }
   const input = document.getElementById("userFileInput");
-  const file = input?.files && input.files[0];
-  if(!file){
+  const files = Array.from(input?.files || []);
+  if(!files.length){
     alert("Upload ke liye file select karein.");
     return;
   }
   const status = document.getElementById("uploadStatus");
   const used = Number(currentMember.storageUsedBytes || 0);
   const limit = getStorageLimitBytes();
-  if(used + file.size > limit){
-    status.innerText = `Storage limit full hai. ${formatBytes(limit)} tak free allowed hai.`;
+  const totalSize = files.reduce((sum, file) => sum + Number(file.size || 0), 0);
+  if(used + totalSize > limit){
+    status.innerText = `Storage limit full hai. Selected files ${formatBytes(totalSize)} hain. ${formatBytes(limit)} tak free allowed hai.`;
     return;
   }
-  const fileRecordRef = push(ref(db, "memberFiles/" + currentUser.uid));
-  const path = `${currentUser.uid}/${fileRecordRef.key}-${cleanFileName(file.name)}`;
-  status.innerText = "Supabase par upload ho raha hai...";
-  supabase.storage.from(supabaseBucket).upload(path, file, {
-    cacheControl:"3600",
-    contentType:file.type || "application/octet-stream",
-    upsert:false
-  }).then(async ({ error }) => {
-    if(error){ throw error; }
-    const nextUsed = used + file.size;
-    await set(fileRecordRef, {
-      name:file.name,
-      size:file.size,
-      type:file.type || "",
-      path:path,
-      storageProvider:"supabase",
-      bucket:supabaseBucket,
-      downloadUrl:getSupabasePublicUrl(path),
-      uploadedAt:Date.now()
-    });
+
+  let uploadedBytes = 0;
+  let uploadedCount = 0;
+  const failed = [];
+
+  for(let index = 0; index < files.length; index += 1){
+    const file = files[index];
+    const fileRecordRef = push(ref(db, "memberFiles/" + currentUser.uid));
+    const path = `${currentUser.uid}/${fileRecordRef.key}-${cleanFileName(file.name)}`;
+    status.innerText = `Supabase par upload ho raha hai... ${index + 1}/${files.length}`;
+
+    try{
+      const { error } = await supabase.storage.from(supabaseBucket).upload(path, file, {
+        cacheControl:"3600",
+        contentType:file.type || "application/octet-stream",
+        upsert:false
+      });
+      if(error){ throw error; }
+
+      uploadedBytes += Number(file.size || 0);
+      uploadedCount += 1;
+      await set(fileRecordRef, {
+        name:file.name,
+        size:file.size,
+        type:file.type || "",
+        path:path,
+        storageProvider:"supabase",
+        bucket:supabaseBucket,
+        downloadUrl:getSupabasePublicUrl(path),
+        uploadedAt:Date.now()
+      });
+    }catch(error){
+      failed.push(`${file.name}: ${error.message}`);
+    }
+  }
+
+  if(uploadedCount > 0){
+    const nextUsed = used + uploadedBytes;
     await update(ref(db, "members/" + currentUser.uid), {
       storageUsedBytes:nextUsed,
       storageLimitBytes:limit,
       updatedAt:Date.now()
     });
     input.value = "";
-    status.innerText = "File Supabase par upload ho gayi.";
-  }).catch((error) => {
-    status.innerText = "Upload nahi hua: " + error.message;
-  });
+  }
+
+  status.innerText = failed.length
+    ? `Uploaded: ${uploadedCount}, Failed: ${failed.length}. ${failed.slice(0, 2).join(" | ")}`
+    : `${uploadedCount} file upload ho gayi.`;
 };
 
 window.downloadUserFile = (id) => {
