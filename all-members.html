@@ -37,11 +37,15 @@
     .toolbar{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;}
     .toolbar input{min-width:240px;flex:1;max-width:420px;padding:8px 10px;border:1px solid #bdd0e5;border-radius:6px;font-size:13px;}
     .count{font-weight:800;color:#0057a8;}
-    .members{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:10px;}
-    .member-card{background:white;border:1px solid #d8e6f5;border-top:3px solid #ff7a00;border-radius:7px;padding:11px;box-shadow:0 4px 14px rgba(0,0,0,.07);overflow:hidden;}
+    .members{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px;}
+    .member-card{background:white;border:1px solid #d8e6f5;border-top:3px solid #ff7a00;border-radius:7px;box-shadow:0 4px 14px rgba(0,0,0,.07);overflow:hidden;}
     .member-card.deleted{opacity:.7;border-top-color:#d90000;}
-    .member-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;margin-bottom:8px;}
+    .member-card.open{grid-column:span 2;}
+    .member-head{width:100%;display:flex;justify-content:space-between;gap:8px;align-items:center;padding:10px 11px;border:0;background:white;cursor:pointer;text-align:left;}
+    .member-head:hover{background:#f1f7ff;}
     .member-head h3{color:#0057a8;font-size:15px;line-height:1.25;overflow-wrap:anywhere;}
+    .member-toggle{color:#ff7a00;font-size:12px;font-weight:900;}
+    .member-body{padding:0 11px 11px;}
     .badge{display:inline-block;padding:3px 7px;border-radius:999px;background:#138a36;color:white;font-size:10px;font-weight:800;}
     .badge.deleted{background:#d90000;}
     .detail{font-size:12px;color:#47566b;margin:4px 0;overflow-wrap:anywhere;}
@@ -90,6 +94,7 @@
       nav a,nav button{white-space:nowrap;}
       .toolbar input{min-width:0;max-width:none;}
       .create-grid,.bulk-grid{grid-template-columns:1fr;}
+      .member-card.open{grid-column:auto;}
       .edit-grid{grid-template-columns:1fr;}
       .edit-grid textarea{grid-column:auto;}
       .file-row,.cloud-link-row,.link-grid{grid-template-columns:1fr;}
@@ -210,6 +215,7 @@
     let allMembers = [];
     let memberFiles = {};
     let memberCloudLinks = {};
+    let activeMemberUid = "";
 
     const escapeHTML = (value = "") => String(value)
       .replace(/&/g, "&amp;")
@@ -352,16 +358,20 @@
       list.innerHTML = filtered.map(({ uid, member }) => {
         const status = member.status || "Active";
         const deleted = status === "Blocked";
+        const isOpen = activeMemberUid === uid;
         const files = memberFiles[uid] || [];
         const usedBytes = Number(member.storageUsedBytes || 0);
         const limitBytes = getMemberLimitBytes(member);
         const freeMb = Math.round(limitBytes / (1024 * 1024));
         return `
-          <article class="member-card ${deleted ? "deleted" : ""}">
-            <div class="member-head">
+          <article class="member-card ${deleted ? "deleted" : ""} ${isOpen ? "open" : ""}">
+            <button class="member-head" type="button" onclick="toggleMemberDetails('${escapeHTML(uid)}')">
               <h3>${escapeHTML(member.name || "Member")}</h3>
               <span class="badge ${deleted ? "deleted" : ""}">${escapeHTML(status)}</span>
-            </div>
+              <span class="member-toggle">${isOpen ? "Close" : "Open"}</span>
+            </button>
+            ${isOpen ? `
+            <div class="member-body">
             <p class="detail"><strong>Email:</strong> ${escapeHTML(member.email || "")}</p>
             <p class="detail"><strong>Profile Email:</strong> ${escapeHTML(member.profileEmail || member.email || "")}</p>
             <p class="detail"><strong>Mobile:</strong> ${escapeHTML(member.mobile || "Not added")}</p>
@@ -432,6 +442,8 @@
               <button class="reset" onclick="resetMemberPassword('${escapeHTML(uid)}')">Reset Password</button>
               <button class="danger" onclick="deleteMember('${escapeHTML(uid)}')">Delete</button>
             </div>
+            </div>
+            ` : ""}
           </article>
         `;
       }).join("");
@@ -491,6 +503,11 @@
     });
 
     document.getElementById("memberSearch").addEventListener("input", renderMembers);
+
+    window.toggleMemberDetails = (uid) => {
+      activeMemberUid = activeMemberUid === uid ? "" : uid;
+      renderMembers();
+    };
 
     async function callAdminApi(path, body){
       const user = auth.currentUser;
