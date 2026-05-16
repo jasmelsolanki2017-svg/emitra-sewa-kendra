@@ -24,6 +24,7 @@ const extractUrl = (value, fallback = "") => {
 const FIREBASE_URL = extractUrl(process.env.FIREBASE_URL, DEFAULT_FIREBASE_URL);
 const JOBS_PATH = process.env.JOBS_PATH || "LatestJobs";
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "jasmelsolanki@gmail.com";
+const DEFAULT_MEMBER_PASSWORD = "User@123";
 let adminDb = null;
 
 app.use(express.json({ limit: "1mb" }));
@@ -229,7 +230,7 @@ app.post("/admin/create-member", async (req, res) => {
     const name = String(req.body?.name || "").trim();
     const email = String(req.body?.email || "").trim().toLowerCase();
     const mobile = String(req.body?.mobile || "").trim();
-    const password = String(req.body?.password || "").trim();
+    const password = String(req.body?.password || DEFAULT_MEMBER_PASSWORD).trim() || DEFAULT_MEMBER_PASSWORD;
 
     if (!name || !email || !mobile || password.length < 6) {
       return res.status(400).json({

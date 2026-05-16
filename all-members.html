@@ -516,6 +516,8 @@
       return data;
     }
 
+    const defaultMemberPassword = "User@123";
+
     const normalizeBulkKey = (value = "") => String(value)
       .trim()
       .toLowerCase()
@@ -537,7 +539,7 @@
       name:getBulkValue(row, ["name", "naam", "user name", "member name"]),
       email:getBulkValue(row, ["email", "email id", "emailid", "gmail", "mail"]),
       mobile:getBulkValue(row, ["mobile", "mobile no", "mobile number", "phone", "phone no"]),
-      password:getBulkValue(row, ["password", "passord", "pasord", "pass", "user password"])
+      password:getBulkValue(row, ["password", "passord", "pasord", "pass", "user password"]) || defaultMemberPassword
     });
 
     const readBulkWorkbook = (file) => new Promise((resolve, reject) => {
@@ -565,10 +567,10 @@
       const name = nameInput.value.trim();
       const email = emailInput.value.trim();
       const mobile = mobileInput.value.trim();
-      const password = passwordInput.value.trim();
+      const password = passwordInput.value.trim() || defaultMemberPassword;
 
       if(!name || !email || !mobile || password.length < 6){
-        status.innerText = "Name, email, mobile aur 6+ character password required hai.";
+        status.innerText = "Name, email, mobile required hai. Password blank hoga to User@123 lagega.";
         return;
       }
 
