@@ -221,6 +221,70 @@ app.post("/admin/update-member-password", async (req, res) => {
   }
 });
 
+app.post("/admin/create-member", async (req, res) => {
+  let createdUid = "";
+
+  try {
+    const { db, decoded } = await requireAdmin(req);
+    const name = String(req.body?.name || "").trim();
+    const email = String(req.body?.email || "").trim().toLowerCase();
+    const mobile = String(req.body?.mobile || "").trim();
+    const password = String(req.body?.password || "").trim();
+
+    if (!name || !email || !mobile || password.length < 6) {
+      return res.status(400).json({
+        ok: false,
+        error: "Name, email, mobile and 6+ character password required"
+      });
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ ok: false, error: "Valid email required" });
+    }
+
+    const userRecord = await admin.auth().createUser({
+      email,
+      password,
+      displayName: name,
+      emailVerified: false,
+      disabled: false
+    });
+    createdUid = userRecord.uid;
+
+    const now = Date.now();
+    const storageLimitBytes = 50 * 1024 * 1024;
+    await db.ref(`members/${createdUid}`).set({
+      uid: createdUid,
+      email,
+      profileEmail: email,
+      name,
+      mobile,
+      role: "member",
+      status: "Active",
+      emailVerified: false,
+      uploadApproved: false,
+      freeStorageLimitMb: 50,
+      storageLimitBytes,
+      storageUsedBytes: 0,
+      createdAt: now,
+      createdBy: decoded.email || ADMIN_EMAIL,
+      adminCreated: true,
+      lastLoginAt: 0
+    });
+
+    return res.json({
+      ok: true,
+      uid: createdUid,
+      message: "Member created. User will receive verification mail on first login."
+    });
+  } catch (err) {
+    if (createdUid) {
+      await admin.auth().deleteUser(createdUid).catch(() => {});
+    }
+    return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
+  }
+});
+
 app.post("/admin/delete-member", async (req, res) => {
   try {
     const { db } = await requireAdmin(req);

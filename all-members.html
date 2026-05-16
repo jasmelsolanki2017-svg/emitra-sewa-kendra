@@ -23,6 +23,14 @@
     main{max-width:1180px;margin:auto;padding:16px 3% 34px;}
     .admin-info{background:#eaf4ff;border-left:4px solid #ff7a00;border-radius:7px;padding:10px 12px;margin-bottom:14px;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.07);}
     .admin-info h2{color:#0057a8;font-size:17px;margin-bottom:3px;}
+    .create-member{background:white;border:1px solid #d8e6f5;border-top:3px solid #138a36;border-radius:7px;padding:12px;margin-bottom:14px;box-shadow:0 4px 14px rgba(0,0,0,.07);}
+    .create-member h2{color:#0057a8;font-size:17px;margin-bottom:4px;}
+    .create-member p{font-size:12px;color:#55657a;font-weight:700;margin-bottom:9px;}
+    .create-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr)) auto;gap:7px;align-items:end;}
+    .create-grid input{width:100%;min-width:0;padding:8px 9px;border:1px solid #c9d9ea;border-radius:6px;font-size:12px;}
+    .create-grid button{border:0;border-radius:6px;padding:8px 11px;font-size:12px;font-weight:800;background:#138a36;color:white;cursor:pointer;}
+    .create-grid button:hover{background:#ff7a00;color:#03224d;}
+    .form-status{margin-top:8px;font-size:12px;font-weight:800;color:#0057a8;}
     .toolbar{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;}
     .toolbar input{min-width:240px;flex:1;max-width:420px;padding:8px 10px;border:1px solid #bdd0e5;border-radius:6px;font-size:13px;}
     .count{font-weight:800;color:#0057a8;}
@@ -78,6 +86,7 @@
       nav{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap;}
       nav a,nav button{white-space:nowrap;}
       .toolbar input{min-width:0;max-width:none;}
+      .create-grid{grid-template-columns:1fr;}
       .edit-grid{grid-template-columns:1fr;}
       .edit-grid textarea{grid-column:auto;}
       .file-row,.cloud-link-row,.link-grid{grid-template-columns:1fr;}
@@ -106,6 +115,19 @@
     <section class="admin-info">
       <h2 id="accessTitle">Admin Access Checking...</h2>
       <p id="adminEmailText">Please wait...</p>
+    </section>
+
+    <section class="create-member">
+      <h2>Add New User</h2>
+      <p>Admin user bana sakta hai. User first login karega to Gmail verification mail automatically jayegi.</p>
+      <div class="create-grid">
+        <input type="text" id="newMemberName" placeholder="Name">
+        <input type="email" id="newMemberEmail" placeholder="Email ID">
+        <input type="tel" id="newMemberMobile" placeholder="Mobile No.">
+        <input type="password" id="newMemberPassword" placeholder="Password">
+        <button type="button" onclick="createAdminMember()">Add User</button>
+      </div>
+      <div class="form-status" id="createMemberStatus"></div>
     </section>
 
     <div class="toolbar">
@@ -477,6 +499,44 @@
 
       return data;
     }
+
+    window.createAdminMember = () => {
+      if(!adminAllowed){ alert("Admin verify nahi hua."); return; }
+
+      const nameInput = document.getElementById("newMemberName");
+      const emailInput = document.getElementById("newMemberEmail");
+      const mobileInput = document.getElementById("newMemberMobile");
+      const passwordInput = document.getElementById("newMemberPassword");
+      const status = document.getElementById("createMemberStatus");
+      const name = nameInput.value.trim();
+      const email = emailInput.value.trim();
+      const mobile = mobileInput.value.trim();
+      const password = passwordInput.value.trim();
+
+      if(!name || !email || !mobile || password.length < 6){
+        status.innerText = "Name, email, mobile aur 6+ character password required hai.";
+        return;
+      }
+
+      if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+        status.innerText = "Valid email ID likhein.";
+        return;
+      }
+
+      status.innerText = "User create ho raha hai...";
+      callAdminApi("/admin/create-member", { name, email, mobile, password }).then((data) => {
+        nameInput.value = "";
+        emailInput.value = "";
+        mobileInput.value = "";
+        passwordInput.value = "";
+        status.innerText = "User add ho gaya. First login par email verification mail jayegi.";
+        if(data.uid){
+          document.getElementById("memberSearch").value = email;
+        }
+      }).catch((error) => {
+        status.innerText = "User add nahi hua: " + error.message;
+      });
+    };
 
     window.saveMember = (uid) => {
       if(!adminAllowed){ alert("Admin verify nahi hua."); return; }
