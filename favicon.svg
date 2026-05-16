@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">E-MITRA WALA favicon</title>
+  <desc id="desc">Blue and orange E-Mitra icon with document mark.</desc>
+  <defs>
+    <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#003a8c"/><stop offset="1" stop-color="#0078c8"/></linearGradient>
+    <linearGradient id="orange" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff6b00"/><stop offset="1" stop-color="#ff9d1f"/></linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="16" stdDeviation="16" flood-color="#082b5f" flood-opacity=".22"/></filter>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="#ffffff"/>
+  <g filter="url(#shadow)">
+    <path d="M92 288C53 166 145 62 276 52c87-7 165 35 207 101-59-44-131-59-203-43-101 23-169 101-150 197 19 103 122 162 235 132-120 64-242 3-273-151Z" fill="url(#orange)"/>
+    <path d="M105 327c62 113 202 151 326 82-92 111-287 91-371-38-9-14-5-31 10-39l35-5Z" fill="url(#blue)"/>
+    <path d="M172 132h185c26 0 45 22 41 48l-27 169c-4 24-25 42-49 42H136c-25 0-44-23-39-48l31-169c5-24 25-42 44-42Z" fill="#ffffff" stroke="url(#blue)" stroke-width="24" stroke-linejoin="round"/>
+    <path d="M202 188h117M193 248h94" stroke="url(#blue)" stroke-width="25" stroke-linecap="round"/>
+    <text x="185" y="344" font-family="Arial, Helvetica, sans-serif" font-size="170" font-weight="900" fill="url(#blue)">E</text>
+    <path d="M324 279h69" stroke="url(#orange)" stroke-width="28" stroke-linecap="round"/>
+  </g>
+</svg>
