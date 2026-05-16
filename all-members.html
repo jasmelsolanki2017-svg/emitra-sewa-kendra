@@ -206,6 +206,9 @@
       const list = document.getElementById("membersList");
       const query = document.getElementById("memberSearch").value.trim().toLowerCase();
       const filtered = allMembers.filter(({ member }) => {
+        if((member.status || "Active") === "Deleted"){
+          return false;
+        }
         const text = [
           member.name,
           member.email,
@@ -226,7 +229,7 @@
 
       list.innerHTML = filtered.map(({ uid, member }) => {
         const status = member.status || "Active";
-        const deleted = status === "Deleted" || status === "Blocked";
+        const deleted = status === "Blocked";
         const files = memberFiles[uid] || [];
         const usedBytes = Number(member.storageUsedBytes || 0);
         const limitBytes = getMemberLimitBytes(member);
@@ -254,7 +257,6 @@
               <select data-uid="${escapeHTML(uid)}" data-field="status">
                 <option value="Active" ${status === "Active" ? "selected" : ""}>Active</option>
                 <option value="Blocked" ${status === "Blocked" ? "selected" : ""}>Blocked</option>
-                <option value="Deleted" ${status === "Deleted" ? "selected" : ""}>Deleted</option>
               </select>
               <input data-uid="${escapeHTML(uid)}" data-field="newPassword" type="password" placeholder="New password">
               <input data-uid="${escapeHTML(uid)}" data-field="freeStorageLimitMb" type="number" min="1" step="1" value="${escapeHTML(freeMb)}" placeholder="Free storage MB">
@@ -305,7 +307,7 @@
               <button onclick="saveMember('${escapeHTML(uid)}')">Save</button>
               <button onclick="changeMemberPassword('${escapeHTML(uid)}')">Change Password</button>
               <button class="reset" onclick="resetMemberPassword('${escapeHTML(uid)}')">Reset Password</button>
-              <button class="danger" onclick="deleteMember('${escapeHTML(uid)}')">Delete/Block</button>
+              <button class="danger" onclick="deleteMember('${escapeHTML(uid)}')">Delete</button>
             </div>
           </article>
         `;
@@ -535,12 +537,12 @@
     window.deleteMember = (uid) => {
       if(!adminAllowed){ alert("Admin verify nahi hua."); return; }
 
-      if(!confirm("Is member ka Auth account delete karna hai? Server unavailable hua to site access block hoga.")){
+      if(!confirm("Is member ko permanently delete karna hai? Server unavailable hua to member hidden/block rahega.")){
         return;
       }
 
       callAdminApi("/admin/delete-member", { uid }).then(() => {
-        alert("Member Auth account delete ho gaya.");
+        alert("Member delete ho gaya.");
       }).catch((error) => {
         update(ref(db, "members/" + uid), {
           status:"Deleted",

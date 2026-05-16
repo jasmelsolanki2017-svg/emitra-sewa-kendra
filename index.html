@@ -1897,6 +1897,7 @@ ref,
 push,
 set,
 update,
+get,
 onValue
 }
 from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
@@ -2114,7 +2115,7 @@ return;
 
 signInWithEmailAndPassword(auth,email,password)
 
-.then((userCredential)=>{
+.then(async (userCredential)=>{
 
 const userEmail = userCredential.user.email;
 const firebaseUser = userCredential.user;
@@ -2127,11 +2128,18 @@ alert("Gmail verification pending hai. Verification mail dobara bhej diya gaya h
 }
 
 if(userCredential.user.uid && userEmail !== adminEmail){
+const memberRef = ref(db, "members/" + userCredential.user.uid);
+const memberSnapshot = await get(memberRef).catch(() => null);
+const memberStatus = memberSnapshot && memberSnapshot.exists() ? (memberSnapshot.val() || {}).status : "";
+if(memberStatus === "Deleted" || memberStatus === "Blocked"){
+return signOut(auth).then(()=>{
+alert("Aapka account blocked/deleted hai. Admin se contact karein.");
+});
+}
 startFreshUserSession();
-update(ref(db, "members/" + userCredential.user.uid), {
+update(memberRef, {
 lastLoginAt:Date.now(),
 email:userEmail,
-status:"Active",
 emailVerified:true
 }).catch(() => {});
 }

@@ -230,14 +230,21 @@ app.post("/admin/delete-member", async (req, res) => {
       return res.status(400).json({ ok: false, error: "UID required" });
     }
 
-    await admin.auth().deleteUser(uid);
-    await db.ref(`members/${uid}`).update({
-      status: "Deleted",
-      deletedAt: Date.now(),
-      updatedAt: Date.now()
+    try {
+      await admin.auth().deleteUser(uid);
+    } catch (err) {
+      if (err.code !== "auth/user-not-found") {
+        throw err;
+      }
+    }
+
+    await db.ref().update({
+      [`members/${uid}`]: null,
+      [`memberFiles/${uid}`]: null,
+      [`memberCloudLinks/${uid}`]: null
     });
 
-    return res.json({ ok: true, message: "Member auth account deleted" });
+    return res.json({ ok: true, message: "Member deleted" });
   } catch (err) {
     return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
   }
