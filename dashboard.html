@@ -428,7 +428,15 @@ body.dark-mode .nav-logo img {
       <input type="text" id="jobLocation" placeholder="Location जैसे All India">
       <input type="url" id="jobApplyLink" placeholder="Apply Link https://...">
       <input type="url" id="jobDetailLink" placeholder="Official Detail / Notification Link https://...">
-      <textarea id="jobPageContent" placeholder="Job detail page ke liye details likhein. Example: Total Posts, Age Limit, Fees, Selection Process, Important Dates..."></textarea>
+      <textarea id="jobPageContent" placeholder="Detail sections likhein. Example:
+Application Fee:
+- General/OBC : Rs. 100/-
+- SC/ST : 0/-
+
+Vacancy Details
+Post Name | Male | Female
+Driver | 3176 |
+Cook | 1426 |"></textarea>
       <button id="jobSubmitBtn" onclick="addLatestJob()">Add Job</button>
       <button id="jobCancelEditBtn" type="button" style="display:none;background:#555;" onclick="cancelJobEdit()">Cancel Edit</button>
     </div>

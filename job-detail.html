@@ -25,7 +25,7 @@
 }
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins','Noto Sans Devanagari',sans-serif;}
 html{scroll-behavior:smooth;}
-body{background:linear-gradient(180deg,#fbfdff 0%,#f7fbff 100%);color:var(--text);line-height:1.65;overflow-x:hidden;}
+body{background:#f4f7fb;color:var(--text);line-height:1.55;overflow-x:hidden;}
 a{color:inherit;}
 nav{background:var(--blue);padding:14px 6%;display:flex;align-items:center;justify-content:space-between;gap:18px;position:sticky;top:0;z-index:20;box-shadow:0 4px 15px rgba(0,0,0,.14);}
 .logo{color:white;text-decoration:none;font-size:26px;font-weight:900;letter-spacing:.2px;white-space:nowrap;}
@@ -33,29 +33,38 @@ nav{background:var(--blue);padding:14px 6%;display:flex;align-items:center;justi
 nav ul{display:flex;list-style:none;gap:16px;flex-wrap:wrap;justify-content:flex-end;}
 nav a{color:#fff;text-decoration:none;font-weight:700;}
 nav a:hover{color:var(--orange);}
-.hero{background:linear-gradient(135deg,var(--blue),var(--deep));color:#fff;padding:52px 6% 44px;border-bottom:6px solid var(--orange);}
+.hero{background:linear-gradient(135deg,var(--blue),var(--deep));color:#fff;padding:26px 6% 24px;border-bottom:4px solid var(--orange);}
 .hero-inner{max-width:1120px;margin:auto;}
 .tag{display:inline-block;background:var(--orange);color:var(--deep);padding:7px 12px;border-radius:6px;font-weight:900;font-size:13px;margin-bottom:14px;}
-.hero h1{font-size:clamp(30px,5vw,50px);line-height:1.16;color:#fff;margin-bottom:12px;}
-.hero p{max-width:850px;color:#fff1df;font-weight:600;font-size:17px;}
-main{max-width:1120px;margin:auto;padding:34px 6% 46px;}
-.layout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:22px;align-items:start;}
-.panel{background:white;border:1px solid var(--line);border-top:5px solid var(--orange);border-radius:8px;padding:24px;box-shadow:0 8px 24px rgba(8,31,74,.08);margin-bottom:20px;}
-.panel h2{color:var(--blue);font-size:26px;margin-bottom:14px;}
-.panel h3{color:var(--blue);font-size:20px;margin:18px 0 8px;}
-.meta-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;}
-.meta{background:var(--soft);border:1px solid var(--line);border-left:4px solid var(--blue);border-radius:8px;padding:12px;}
-.meta small{display:block;color:var(--muted);font-weight:800;margin-bottom:4px;}
-.meta strong{color:var(--text);font-size:16px;}
-.meta strong.last-date{color:#d90000;font-weight:900;}
-.content-box{white-space:pre-wrap;color:#394253;font-weight:600;background:#fbfdff;border:1px solid var(--line);border-radius:8px;padding:16px;}
+.hero h1{font-size:clamp(22px,4vw,36px);line-height:1.18;color:#fff;margin-bottom:8px;}
+.hero p{max-width:850px;color:#fff1df;font-weight:600;font-size:14px;}
+main{max-width:920px;margin:auto;padding:26px 3% 42px;}
+.layout{display:block;}
+.detail-sheet{background:white;border:2px solid #222;box-shadow:0 8px 24px rgba(8,31,74,.08);padding:8px 8px 14px;}
+.detail-heading{text-align:center;padding:8px 6px 12px;}
+.detail-heading h2{font-size:17px;color:#c40000;text-decoration:underline;margin-bottom:10px;}
+.detail-heading h3{font-size:16px;color:#008000;text-decoration:underline;}
+.panel{background:white;border:0;border-radius:0;padding:0;box-shadow:none;margin-bottom:26px;}
+.panel h2,.sarkari-section-title{background:#79cdf0;border:1px solid #70bfe0;color:#000;text-align:center;font-size:17px;font-weight:900;line-height:1.25;padding:8px 10px;margin:0;}
+.info-list{padding:9px 18px 2px 34px;font-size:13px;font-weight:600;color:#000;}
+.info-list li{margin:4px 0;}
+.info-list strong{color:#000;}
+.danger-date{color:#d90000!important;font-weight:900;}
+.content-box{color:#000;font-weight:600;background:white;border:0;padding:0;}
+.content-section{margin-bottom:26px;}
+.content-section ul{padding:9px 18px 2px 34px;font-size:13px;font-weight:600;}
+.content-section li{margin:5px 0;}
+.content-section p{padding:8px 10px;font-size:13px;font-weight:600;}
+.content-table{width:100%;border-collapse:collapse;font-size:12px;margin:0 0 2px;}
+.content-table th,.content-table td{border:1px solid #d3d3d3;padding:8px 9px;text-align:center;vertical-align:middle;color:#000;}
+.content-table th{font-weight:900;background:#fff;}
+.content-table td:first-child,.content-table th:first-child{text-align:center;}
+.content-table ul{text-align:left;padding:0 0 0 18px;}
 .empty{color:#6a7281;font-weight:700;}
-.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--blue);color:white;text-decoration:none;padding:11px 16px;border-radius:8px;font-weight:900;}
+.actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:12px 0 4px;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--blue);color:white;text-decoration:none;padding:9px 14px;border-radius:4px;font-weight:900;font-size:13px;}
 .btn.alt{background:var(--orange);color:var(--deep);}
 .btn.whatsapp{background:var(--green);color:white;}
-.quick a{display:block;background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:11px 12px;margin-bottom:9px;color:var(--blue);text-decoration:none;font-weight:800;}
-.quick a:hover{background:var(--blue);color:white;}
 .message{text-align:center;background:white;border:1px solid var(--line);border-top:5px solid var(--orange);border-radius:8px;padding:28px;font-weight:800;color:var(--blue);box-shadow:0 8px 24px rgba(8,31,74,.08);}
 footer{background:var(--blue);color:#fff;text-align:center;padding:24px 6%;}
 footer a{color:var(--orange);text-decoration:none;font-weight:800;margin:0 7px;display:inline-block;}
@@ -63,11 +72,11 @@ footer a{color:var(--orange);text-decoration:none;font-weight:800;margin:0 7px;d
 body.dark-mode{background:#07111f!important;color:#e8f1ff!important;}
 body.dark-mode nav,body.dark-mode footer,body.dark-mode .hero{background:linear-gradient(135deg,#06101f,#0b2749)!important;}
 body.dark-mode main{background:#07111f!important;}
-body.dark-mode .panel,body.dark-mode .meta,body.dark-mode .content-box,body.dark-mode .message{background:#101b2d!important;color:#e8f1ff!important;border-color:#24405f!important;box-shadow:0 8px 24px rgba(0,0,0,.34)!important;}
+body.dark-mode .detail-sheet,body.dark-mode .panel,body.dark-mode .content-box,body.dark-mode .message{background:#101b2d!important;color:#e8f1ff!important;border-color:#24405f!important;box-shadow:0 8px 24px rgba(0,0,0,.34)!important;}
 body.dark-mode h1,body.dark-mode h2,body.dark-mode h3,body.dark-mode strong{color:#ffb15c!important;}
 body.dark-mode p,body.dark-mode small,body.dark-mode .empty{color:#cbd8ea!important;}
-body.dark-mode .quick a{background:#13243b!important;color:#f4f8ff!important;border-color:#24405f!important;}
-@media(max-width:820px){nav{flex-direction:column;align-items:flex-start}.layout{grid-template-columns:1fr}.hero{padding:40px 5%}main{padding:26px 4%}.panel{padding:20px}.theme-toggle{right:16px;bottom:16px;width:50px;height:50px;}}
+body.dark-mode .content-table th,body.dark-mode .content-table td,body.dark-mode .info-list,body.dark-mode .content-section p,body.dark-mode .content-section ul{color:#e8f1ff!important;border-color:#24405f!important;}
+@media(max-width:820px){nav{flex-direction:column;align-items:flex-start}.hero{padding:28px 5%}main{padding:18px 1% 34px}.detail-sheet{border-left:1px solid #222;border-right:1px solid #222}.panel h2,.sarkari-section-title{font-size:14px}.content-table{font-size:11px}.content-table th,.content-table td{padding:7px 5px}.theme-toggle{right:16px;bottom:16px;width:50px;height:50px;}}
 </style>
 </head>
 <body>
@@ -93,42 +102,35 @@ body.dark-mode .quick a{background:#13243b!important;color:#f4f8ff!important;bor
   <div id="jobMessage" class="message">Job details load ho rahi hain...</div>
   <div id="jobDetailWrap" class="layout" style="display:none;">
     <article>
-      <section class="panel">
-        <h2>Important Details</h2>
-        <div class="meta-grid">
-          <div class="meta"><small>Start Date</small><strong id="startDate">Update Soon</strong></div>
-          <div class="meta"><small>Last Date</small><strong id="lastDate" class="last-date">Update Soon</strong></div>
-          <div class="meta"><small>Qualification</small><strong id="qualification">Update Soon</strong></div>
-          <div class="meta"><small>Location</small><strong id="location">All India</strong></div>
+      <div class="detail-sheet">
+        <div class="detail-heading">
+          <h2 id="sheetTitle">Job Update</h2>
+          <h3 id="sheetSubTitle">Apply Online Form</h3>
         </div>
-        <div class="actions">
-          <a class="btn" id="applyBtn" href="#" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-arrow-up-right-from-square"></i> Apply Now</a>
-          <a class="btn alt" id="officialBtn" href="#" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-file-lines"></i> Official Details</a>
-        </div>
-      </section>
 
-      <section class="panel" id="pageContentPanel" style="display:none;">
-        <h2>Full Details</h2>
-        <div id="pageContent" class="content-box"></div>
-      </section>
+        <section class="panel" id="importantPanel" style="display:none;">
+          <h2>Important Dates</h2>
+          <ul class="info-list" id="importantList"></ul>
+        </section>
+
+        <section class="panel" id="jobInfoPanel" style="display:none;">
+          <h2>Job Information</h2>
+          <ul class="info-list" id="jobInfoList"></ul>
+        </section>
+
+        <section class="panel" id="linksPanel" style="display:none;">
+          <h2>Important Links</h2>
+          <div class="actions">
+            <a class="btn" id="applyBtn" href="#" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-arrow-up-right-from-square"></i> Apply Online</a>
+            <a class="btn alt" id="officialBtn" href="#" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-file-lines"></i> Official Notification</a>
+          </div>
+        </section>
+
+        <section class="panel" id="pageContentPanel" style="display:none;">
+          <div id="pageContent" class="content-box"></div>
+        </section>
+      </div>
     </article>
-
-    <aside>
-      <section class="panel quick">
-        <h2>Quick Links</h2>
-        <a href="job-form.html">Back to Jobs</a>
-        <a href="government-job-form.html">Job Form Guide</a>
-        <a href="OFFLINEFORM.HTML">Offline Forms</a>
-        <a href="contact.html">Contact Help</a>
-      </section>
-      <section class="panel">
-        <h2>Need Help?</h2>
-        <p>Form apply karne se pehle notification, dates, documents aur fees verify kar lein.</p>
-        <div class="actions">
-          <a class="btn whatsapp" target="_blank" rel="noopener noreferrer" href="https://wa.me/919509403258?text=Hello%20E-MITRA%20WALA,%20mujhe%20job%20form%20help%20chahiye."><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
-        </div>
-      </section>
-    </aside>
   </div>
 </main>
 
@@ -229,6 +231,129 @@ const isJobVisible = (lastDate) => {
   return !date || Date.now() <= date.getTime() + (24 * 60 * 60 * 1000);
 };
 
+const isFilledValue = (value, options = {}) => {
+  const text = String(value || "").trim();
+  if(!text || text === "#"){ return false; }
+  if(/^(update soon|not available|n\/a|null|undefined)$/i.test(text)){ return false; }
+  if(options.hideDefaultAllIndia && /^all india$/i.test(text)){ return false; }
+  return true;
+};
+
+const renderList = (listId, panelId, rows) => {
+  const list = document.getElementById(listId);
+  const panel = document.getElementById(panelId);
+  const html = rows
+    .filter((row) => isFilledValue(row.value, row.options))
+    .map((row) => `<li>${escapeHTML(row.label)} : <strong class="${row.className || ""}">${escapeHTML(row.value)}</strong></li>`)
+    .join("");
+  list.innerHTML = html;
+  panel.style.display = html ? "block" : "none";
+};
+
+const splitTableCells = (line) => line
+  .trim()
+  .replace(/^\|/, "")
+  .replace(/\|$/, "")
+  .split("|")
+  .map((cell) => cell.trim());
+
+const isSeparatorRow = (line) => /^\s*\|?[\s:-]+\|[\s|:-]*$/.test(line);
+
+const isMeaningfulCell = (value) => {
+  const text = String(value || "").trim();
+  return Boolean(text && !/^[-–—]+$/.test(text));
+};
+
+const renderTableBlock = (lines) => {
+  const rows = lines.filter((line) => !isSeparatorRow(line)).map(splitTableCells);
+  if(!rows.length){ return ""; }
+  const maxCols = Math.max(...rows.map((row) => row.length));
+  const bodyRows = rows.slice(1);
+  const keepColumns = Array.from({ length:maxCols }, (_, index) => {
+    if(index === 0){ return rows.some((row) => isMeaningfulCell(row[index])); }
+    return bodyRows.length ? bodyRows.some((row) => isMeaningfulCell(row[index])) : isMeaningfulCell(rows[0]?.[index]);
+  });
+  const normalized = rows.map((row) => keepColumns.map((keep, index) => keep ? (row[index] || "") : null).filter((cell) => cell !== null));
+  const head = normalized[0] || [];
+  const body = normalized.slice(1);
+  const th = head.map((cell) => `<th>${escapeHTML(cell)}</th>`).join("");
+  const tr = body.map((row) => `<tr>${row.map((cell) => `<td>${renderInlineList(cell)}</td>`).join("")}</tr>`).join("");
+  return `<table class="content-table"><thead><tr>${th}</tr></thead><tbody>${tr}</tbody></table>`;
+};
+
+const renderInlineList = (text = "") => {
+  const value = String(text || "").trim();
+  if(value.includes(";")){
+    const items = value.split(";").map((item) => item.trim()).filter(Boolean);
+    if(items.length > 1){
+      return `<ul>${items.map((item) => `<li>${escapeHTML(item)}</li>`).join("")}</ul>`;
+    }
+  }
+  return escapeHTML(value || "—");
+};
+
+const sectionTitleFromLine = (line) => String(line || "")
+  .replace(/^#{1,4}\s*/, "")
+  .replace(/^\[(.+)\]$/, "$1")
+  .replace(/:$/, "")
+  .trim();
+
+const looksLikeSectionTitle = (line) => {
+  const text = String(line || "").trim();
+  return Boolean(text && (/^#{1,4}\s+/.test(text) || /^\[.+\]$/.test(text) || (/:$/.test(text) && text.length <= 90)));
+};
+
+const renderPageContent = (content, title) => {
+  const lines = String(content || "").split(/\r?\n/);
+  let html = "";
+  let currentTitle = "";
+  let buffer = [];
+
+  const flush = () => {
+    const items = buffer.map((line) => line.trim()).filter(Boolean);
+    if(!items.length){ return; }
+    const heading = currentTitle || title || "Details";
+    html += `<div class="content-section"><h2 class="sarkari-section-title">${escapeHTML(heading)}</h2>`;
+    for(let index = 0; index < items.length; index += 1){
+      if(items[index].includes("|")){
+        const tableLines = [];
+        while(index < items.length && items[index].includes("|")){
+          tableLines.push(items[index]);
+          index += 1;
+        }
+        index -= 1;
+        html += renderTableBlock(tableLines);
+      }else{
+        const bullets = [];
+        while(index < items.length && !items[index].includes("|")){
+          bullets.push(items[index].replace(/^[-*•]\s*/, ""));
+          index += 1;
+        }
+        index -= 1;
+        if(bullets.length === 1){
+          html += `<p>${escapeHTML(bullets[0])}</p>`;
+        }else{
+          html += `<ul>${bullets.map((item) => `<li>${escapeHTML(item)}</li>`).join("")}</ul>`;
+        }
+      }
+    }
+    html += "</div>";
+    buffer = [];
+  };
+
+  lines.forEach((line) => {
+    if(looksLikeSectionTitle(line)){
+      flush();
+      currentTitle = sectionTitleFromLine(line);
+    }else{
+      buffer.push(line);
+    }
+  });
+  flush();
+
+  return html || "";
+};
+
 const id = new URLSearchParams(window.location.search).get("id");
 const message = document.getElementById("jobMessage");
 const wrap = document.getElementById("jobDetailWrap");
@@ -258,29 +383,41 @@ if(!id){
     document.getElementById("jobType").textContent = type;
     document.getElementById("jobTitle").textContent = title;
     document.getElementById("jobIntro").textContent = `${type} - dates, qualification, apply link aur important details.`;
-    document.getElementById("startDate").textContent = job.startDate || "Update Soon";
-    document.getElementById("lastDate").textContent = job.lastDate || "Update Soon";
-    document.getElementById("qualification").textContent = job.qualification || "Update Soon";
-    document.getElementById("location").textContent = job.location || "All India";
+    document.getElementById("sheetTitle").textContent = title;
+    document.getElementById("sheetSubTitle").textContent = `${title} ${type}`.trim();
+
+    renderList("importantList", "importantPanel", [
+      { label:"Application Start Date", value:job.startDate },
+      { label:"Last Date", value:job.lastDate, className:"danger-date" }
+    ]);
+
+    renderList("jobInfoList", "jobInfoPanel", [
+      { label:"Job Type", value:job.type },
+      { label:"Qualification", value:job.qualification },
+      { label:"Location", value:job.location, options:{ hideDefaultAllIndia:true } }
+    ]);
 
     const applyBtn = document.getElementById("applyBtn");
     const officialBtn = document.getElementById("officialBtn");
     applyBtn.href = safeUrl(job.applyLink);
     officialBtn.href = safeUrl(job.detailLink);
-    applyBtn.style.display = applyBtn.href.endsWith("#") ? "none" : "inline-flex";
-    officialBtn.style.display = officialBtn.href.endsWith("#") ? "none" : "inline-flex";
+    const hasApply = !applyBtn.href.endsWith("#");
+    const hasOfficial = !officialBtn.href.endsWith("#");
+    applyBtn.style.display = hasApply ? "inline-flex" : "none";
+    officialBtn.style.display = hasOfficial ? "inline-flex" : "none";
+    document.getElementById("linksPanel").style.display = hasApply || hasOfficial ? "block" : "none";
 
     const contentBox = document.getElementById("pageContent");
     if(content){
       document.getElementById("pageContentPanel").style.display = "block";
       contentBox.classList.remove("empty");
-      contentBox.innerHTML = escapeHTML(content);
+      contentBox.innerHTML = renderPageContent(content, `${title} Details`) || escapeHTML(content);
     }else{
       document.getElementById("pageContentPanel").style.display = "none";
     }
 
     message.style.display = "none";
-    wrap.style.display = "grid";
+    wrap.style.display = "block";
   }, (error) => {
     message.textContent = "Job details load nahi ho payi: " + error.message;
   });

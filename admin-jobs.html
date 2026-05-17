@@ -30,7 +30,15 @@
         <input id="jobLocation" placeholder="Location जैसे All India">
         <input id="jobApplyLink" type="url" placeholder="Apply Link https://...">
         <input id="jobDetailLink" type="url" placeholder="Official Detail / Notification Link https://...">
-        <textarea id="jobPageContent" placeholder="Job detail page ke liye details likhein."></textarea>
+        <textarea id="jobPageContent" placeholder="Detail sections likhein. Example:
+Application Fee:
+- General/OBC : Rs. 100/-
+- SC/ST : 0/-
+
+Vacancy Details
+Post Name | Male | Female
+Driver | 3176 |
+Cook | 1426 |"></textarea>
         <div class="buttons">
           <button id="jobSubmitBtn" onclick="saveLatestJob()">Add Job</button>
           <button class="cancel" id="jobCancelBtn" onclick="cancelJobEdit()">Cancel Edit</button>
