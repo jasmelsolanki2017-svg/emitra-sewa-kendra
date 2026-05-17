@@ -534,8 +534,6 @@ Cook | 1426 |"></textarea>
     return /^https?:\/\//i.test(url) ? url : "#";
   };
 
-  const safePhone = (value = "") => String(value).replace(/[^\d]/g, "").slice(-10);
-
   const normalizeJob = (value) => {
     if(typeof value === "string"){
       return { title:value, type:"Online Form", createdAt:0 };
@@ -865,6 +863,27 @@ Cook | 1426 |"></textarea>
       .catch((error) => alert("Error: " + error.message));
   };
 
+  window.replyServiceRequest = (id, userUid = "") => {
+    if(!adminAllowed){ alert("Admin verify नहीं हुआ।"); return; }
+    if(!userUid){ alert("Reply sirf logged-in user request par save hoga."); return; }
+
+    const reply = prompt("User ko reply likhiye:");
+    if(reply === null){ return; }
+    const adminNote = reply.trim();
+    if(!adminNote){ alert("Reply message खाली है।"); return; }
+
+    const data = {
+      status:"Replied",
+      adminNote,
+      repliedAt:Date.now(),
+      updatedAt:Date.now()
+    };
+    update(ref(db, "serviceRequests/" + id), data)
+      .then(() => syncUserRequestStatus(id, userUid, data))
+      .then(() => alert("Reply user ke My Requests me save ho gaya."))
+      .catch((error) => alert("Reply save नहीं हुआ: " + error.message));
+  };
+
   window.deleteServiceRequest = (id, userUid = "") => {
     if(!adminAllowed){ alert("Admin verify नहीं हुआ।"); return; }
 
@@ -892,8 +911,6 @@ Cook | 1426 |"></textarea>
 
       requests.forEach((data) => {
         if((data.status || "New") !== "Done"){ pendingCount += 1; }
-        const phone = safePhone(data.mobile);
-        const whatsappText = encodeURIComponent(`Hello ${data.name || ""}, E-MITRA WALA se bol rahe hain. Aapki ${data.service || "service"} request ke baare me contact kar rahe hain.`);
         const statusClass = data.status === "Done" ? "status-badge done" : "status-badge";
 
         list.innerHTML += `
@@ -906,7 +923,7 @@ Cook | 1426 |"></textarea>
               <small>Message: ${escapeHTML(data.message || "")}</small>
             </div>
             <div>
-              ${phone ? `<a class="action-btn" target="_blank" rel="noopener noreferrer" href="https://wa.me/91${phone}?text=${whatsappText}">Reply</a>` : ""}
+              ${data.userUid ? `<button class="action-btn" onclick="replyServiceRequest('${data.id}','${escapeHTML(data.userUid || "")}')">Reply</button>` : ""}
               <button class="action-btn done-btn" onclick="markRequestDone('${data.id}','${escapeHTML(data.userUid || "")}')">Done</button>
               <button class="delete-btn" onclick="deleteServiceRequest('${data.id}','${escapeHTML(data.userUid || "")}')">Delete</button>
             </div>

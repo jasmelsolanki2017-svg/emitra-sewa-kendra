@@ -138,7 +138,6 @@
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#039;");
 
-    const safePhone = (value = "") => String(value).replace(/[^\d]/g, "").slice(-10);
     const formatDate = (value) => {
       const time = Number(value || 0);
       return time ? new Date(time).toLocaleString("hi-IN") : "Not available";
@@ -200,8 +199,6 @@
       list.innerHTML = rows.map((data) => {
         const status = data.status || "New";
         const doneClass = status === "Done" ? "done" : "";
-        const phone = safePhone(data.mobile);
-        const whatsappText = encodeURIComponent(`Hello ${data.name || ""}, E-MITRA WALA se bol rahe hain. Aapki ${data.service || "service"} request ke baare me contact kar rahe hain.`);
         return `
           <article class="request ${doneClass}">
             <h3>${escapeHTML(data.name || "Customer")}</h3>
@@ -214,13 +211,14 @@
             <div class="edit-grid">
               <select data-id="${escapeHTML(data.id)}" data-field="status">
                 <option value="New" ${status === "New" ? "selected" : ""}>New</option>
+                <option value="Replied" ${status === "Replied" ? "selected" : ""}>Replied</option>
                 <option value="Working" ${status === "Working" ? "selected" : ""}>Working</option>
                 <option value="Done" ${status === "Done" ? "selected" : ""}>Done</option>
               </select>
               <textarea data-id="${escapeHTML(data.id)}" data-field="adminNote" placeholder="Admin note / status update">${escapeHTML(data.adminNote || "")}</textarea>
             </div>
             <div class="actions">
-              ${phone ? `<a target="_blank" rel="noopener noreferrer" href="https://wa.me/91${phone}?text=${whatsappText}">Reply</a>` : ""}
+              ${data.userUid ? `<button onclick="replyRequest('${escapeHTML(data.id)}','${escapeHTML(data.userUid || "")}')">Reply</button>` : ""}
               <button onclick="saveRequest('${escapeHTML(data.id)}','${escapeHTML(data.userUid || "")}')">Save</button>
               <button class="done" onclick="markDone('${escapeHTML(data.id)}','${escapeHTML(data.userUid || "")}')">Done</button>
               <button class="danger" onclick="deleteRequest('${escapeHTML(data.id)}','${escapeHTML(data.userUid || "")}')">Delete</button>
@@ -264,6 +262,28 @@
         .then(() => syncUserRequest(id, userUid, data))
         .then(() => alert("Request saved."))
         .catch((error) => alert("Save nahi hua: " + error.message));
+    };
+
+    window.replyRequest = (id, userUid = "") => {
+      if(!adminAllowed){ alert("Admin verify nahi hua."); return; }
+      if(!userUid){ alert("Reply sirf logged-in user request par save hoga."); return; }
+      let adminNote = getFieldValue(id, "adminNote");
+      if(!adminNote){
+        const reply = prompt("User ko reply likhiye:");
+        if(reply === null){ return; }
+        adminNote = reply.trim();
+      }
+      if(!adminNote){ alert("Reply message khali hai."); return; }
+      const data = {
+        status:"Replied",
+        adminNote,
+        repliedAt:Date.now(),
+        updatedAt:Date.now()
+      };
+      update(ref(db, "serviceRequests/" + id), data)
+        .then(() => syncUserRequest(id, userUid, data))
+        .then(() => alert("Reply user ke My Requests me save ho gaya."))
+        .catch((error) => alert("Reply save nahi hua: " + error.message));
     };
 
     window.markDone = (id, userUid = "") => {
