@@ -572,18 +572,155 @@ color:#555;
 line-height:1.8;
 }
 
+.business-strip{
+padding:34px 6%;
+background:#ffffff;
+}
+
+.business-grid{
+max-width:1120px;
+margin:auto;
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+gap:10px;
+}
+
+.business-card{
+background:#f8fbff;
+border:1px solid #d8e2f0;
+border-left:5px solid #0057a8;
+border-radius:8px;
+padding:14px;
+display:flex;
+gap:10px;
+align-items:flex-start;
+box-shadow:0 4px 14px rgba(8,31,74,.06);
+}
+
+.business-card i{
+color:#ff7a00;
+font-size:20px;
+margin-top:2px;
+}
+
+.business-card strong{
+display:block;
+color:#0057a8;
+font-size:15px;
+line-height:1.25;
+}
+
+.business-card small{
+display:block;
+color:#586174;
+font-weight:700;
+line-height:1.35;
+margin-top:3px;
+}
+
+.process-section{
+padding:48px 6%;
+background:#f7fbff;
+}
+
+.process-wrap{
+max-width:1120px;
+margin:auto;
+}
+
+.process-head{
+display:flex;
+justify-content:space-between;
+align-items:end;
+gap:16px;
+margin-bottom:14px;
+}
+
+.process-head h2{
+color:#0057a8;
+font-size:32px;
+}
+
+.process-head p{
+color:#555;
+line-height:1.55;
+max-width:560px;
+}
+
+.process-grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+gap:12px;
+}
+
+.process-card{
+background:white;
+border:1px solid #d8e2f0;
+border-top:4px solid #ff7a00;
+border-radius:8px;
+padding:16px;
+box-shadow:0 5px 16px rgba(8,31,74,.07);
+}
+
+.process-card span{
+display:inline-flex;
+align-items:center;
+justify-content:center;
+width:30px;
+height:30px;
+border-radius:50%;
+background:#0057a8;
+color:white;
+font-weight:900;
+margin-bottom:9px;
+}
+
+.process-card h3{
+color:#0057a8;
+font-size:17px;
+margin-bottom:6px;
+}
+
+.process-card p{
+color:#555;
+font-size:13px;
+line-height:1.5;
+}
+
+.request-cta{
+margin-top:16px;
+display:flex;
+gap:10px;
+flex-wrap:wrap;
+align-items:center;
+}
+
+.request-cta a{
+background:#0057a8;
+color:white;
+text-decoration:none;
+font-weight:800;
+border-radius:7px;
+padding:9px 13px;
+}
+
+.request-cta a.alt{
+background:#ff7a00;
+color:#03224d;
+}
+
 /* SERVICES */
 
 .services{
-padding:80px 6%;
+padding:58px 6%;
 background:#eaf4ff;
 text-align:center;
 }
 
 .services h2{
-font-size:42px;
+font-size:34px;
 color:#0057a8;
-margin-bottom:40px;
+margin-bottom:24px;
 }
 
 .service-grid{
@@ -599,8 +736,8 @@ color:inherit;
 
 .service-card{
 background:white;
-padding:28px 20px;
-border-radius:18px;
+padding:18px 16px;
+border-radius:8px;
 box-shadow:0 5px 20px rgba(0,0,0,0.08);
 transition:0.3s;
 }
@@ -610,9 +747,9 @@ transform:translateY(-8px);
 }
 
 .service-card i{
-font-size:38px;
+font-size:28px;
 color:#0057a8;
-margin-bottom:15px;
+margin-bottom:10px;
 }
 
 .service-card h3{
@@ -1125,6 +1262,27 @@ font-size:14px;
 padding:42px 4%;
 }
 
+.business-strip{
+padding:24px 4%;
+}
+
+.process-section{
+padding:34px 4%;
+}
+
+.process-head{
+display:block;
+}
+
+.process-head h2{
+font-size:26px;
+}
+
+.request-cta a{
+width:100%;
+text-align:center;
+}
+
 .latest-jobs-head{
 display:block;
 }
@@ -1252,6 +1410,8 @@ body.dark-mode main,
 body.dark-mode .features,
 body.dark-mode .services,
 body.dark-mode .latest-jobs-home,
+body.dark-mode .business-strip,
+body.dark-mode .process-section,
 body.dark-mode .about,
 body.dark-mode .counter-section,
 body.dark-mode .contact,
@@ -1274,6 +1434,8 @@ body.dark-mode .doc-panel,
 body.dark-mode .enquiry-panel,
 body.dark-mode .doc-list,
 body.dark-mode .counter-box,
+body.dark-mode .business-card,
+body.dark-mode .process-card,
 body.dark-mode .ad-box,
 body.dark-mode .latest-box,
 body.dark-mode .news-line,
@@ -1548,6 +1710,15 @@ Important Links
 
 </section>
 
+<section class="business-strip" aria-label="Service highlights">
+  <div class="business-grid">
+    <div class="business-card"><i class="fa-solid fa-file-circle-check"></i><div><strong>Document Ready Help</strong><small>Required documents aur form details pehle clear.</small></div></div>
+    <div class="business-card"><i class="fa-solid fa-clock"></i><div><strong>Fast Follow-up</strong><small>Request save hone ke baad admin panel me track hoti hai.</small></div></div>
+    <div class="business-card"><i class="fa-solid fa-briefcase"></i><div><strong>Jobs + Forms</strong><small>Latest job, admit card, result aur PDF forms ek jagah.</small></div></div>
+    <div class="business-card"><i class="fa-solid fa-headset"></i><div><strong>WhatsApp Support</strong><small>Call, WhatsApp aur service enquiry direct available.</small></div></div>
+  </div>
+</section>
+
 <!-- SERVICES -->
 
 <section class="services" id="services">
@@ -1590,6 +1761,27 @@ Important Links
 
 </div>
 
+</section>
+
+<section class="process-section">
+  <div class="process-wrap">
+    <div class="process-head">
+      <div>
+        <h2>Kaam Kaise Hoga</h2>
+        <p>Service choose karein, documents ready karein, request bhejein. Admin panel me request track hogi aur aapko follow-up mil jayega.</p>
+      </div>
+      <div class="request-cta">
+        <a href="#documentHelp">Send Request</a>
+        <a class="alt" href="tel:9509403258">Call Now</a>
+      </div>
+    </div>
+    <div class="process-grid">
+      <div class="process-card"><span>1</span><h3>Service Select</h3><p>Certificate, form, job ya printing work choose karein.</p></div>
+      <div class="process-card"><span>2</span><h3>Document Check</h3><p>Checklist se required documents aur details confirm karein.</p></div>
+      <div class="process-card"><span>3</span><h3>Request Submit</h3><p>Naam, mobile aur short detail bhejein. Request admin dashboard me save hogi.</p></div>
+      <div class="process-card"><span>4</span><h3>Follow-up</h3><p>Admin aapse contact karke next step aur status update karega.</p></div>
+    </div>
+  </div>
 </section>
 
 <!-- LATEST JOBS -->

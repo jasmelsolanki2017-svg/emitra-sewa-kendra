@@ -282,6 +282,59 @@
       margin-bottom:10px;
     }
 
+    .action-strip{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+      gap:8px;
+      margin-bottom:12px;
+    }
+
+    .action-tile{
+      display:flex;
+      align-items:center;
+      gap:9px;
+      background:#f9fbff;
+      color:var(--blue);
+      border:1px solid var(--line);
+      border-left:4px solid var(--yellow);
+      border-radius:8px;
+      padding:9px 10px;
+      text-decoration:none;
+      font-weight:800;
+      font-size:12px;
+      min-height:52px;
+    }
+
+    .action-tile i{
+      width:28px;
+      height:28px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      background:var(--soft);
+      border-radius:7px;
+      color:var(--blue);
+      flex:0 0 auto;
+    }
+
+    .panel-alert{
+      display:grid;
+      grid-template-columns:auto minmax(0,1fr) auto;
+      gap:10px;
+      align-items:center;
+      background:#fff7ed;
+      border:1px solid #ffd2a4;
+      border-left:5px solid var(--yellow);
+      border-radius:8px;
+      padding:10px 12px;
+      margin-bottom:12px;
+    }
+
+    .panel-alert i{color:var(--yellow);font-size:18px;}
+    .panel-alert strong{display:block;color:var(--blue);font-size:13px;}
+    .panel-alert small{display:block;color:var(--muted);font-weight:700;line-height:1.35;}
+    .panel-alert a{background:var(--blue);color:white;text-decoration:none;border-radius:6px;padding:7px 10px;font-weight:800;font-size:12px;white-space:nowrap;}
+
     .profile-chip{
       background:#f9fbff;
       border:1px solid var(--line);
@@ -790,6 +843,7 @@
       .stats-grid{grid-template-columns:1fr;}
       .profile-summary{grid-template-columns:1fr;}
       .profile-form,.password-form{grid-template-columns:1fr;}
+      .panel-alert{grid-template-columns:1fr;}
       .stat-box small{text-align:left;}
       .section{padding:20px;}
       .section h2{font-size:23px;}
@@ -1091,6 +1145,22 @@ body.dark-mode .nav-logo img {
         <small>Upload Access</small>
         <strong id="summaryUploadStatus">Pending</strong>
       </div>
+    </div>
+
+    <div class="action-strip">
+      <a class="action-tile" href="user-data-folder.html"><i class="fa-solid fa-cloud-arrow-up"></i><span>Upload / View Documents</span></a>
+      <a class="action-tile" href="user-latest-jobs.html"><i class="fa-solid fa-magnifying-glass"></i><span>Search Latest Jobs</span></a>
+      <a class="action-tile" href="user-download-center.html"><i class="fa-solid fa-file-arrow-down"></i><span>Download Forms</span></a>
+      <a class="action-tile" href="contact.html"><i class="fa-solid fa-headset"></i><span>Need Help</span></a>
+    </div>
+
+    <div class="panel-alert">
+      <i class="fa-solid fa-circle-info"></i>
+      <div>
+        <strong>Account Status Center</strong>
+        <small>Profile, password, documents aur admin-added data folder links ke liye ye main hub hai.</small>
+      </div>
+      <a href="user-data-folder.html">Open Folder</a>
     </div>
 
     <div class="stats-grid">
