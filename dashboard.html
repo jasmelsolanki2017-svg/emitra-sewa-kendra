@@ -307,7 +307,7 @@ body.dark-mode .nav-logo img {
   <a href="index.html">Home</a>
   <a href="admin-links.html">Important Links</a>
   <a href="admin-updates.html">Latest Updates</a>
-  <a href="#requestsManager">Requests</a>
+  <a href="admin-requests.html">Requests</a>
   <a href="admin-ads.html">Advertisements</a>
   <a href="admin-jobs.html">Latest Jobs Manage</a>
   <a href="portal-items.html">Portal Items</a>
@@ -364,7 +364,7 @@ body.dark-mode .nav-logo img {
       <i class="fa-solid fa-inbox"></i>
       <h3>Service Requests</h3>
       <p>Website enquiry form se aayi requests manage करें।</p>
-      <a href="#requestsManager">Manage</a>
+      <a href="admin-requests.html">Manage</a>
     </div>
 
     <div class="card">
@@ -843,20 +843,34 @@ Cook | 1426 |"></textarea>
     }
   });
 
-  window.markRequestDone = (id) => {
-    if(!adminAllowed){ alert("Admin verify नहीं हुआ।"); return; }
-
-    update(ref(db, "serviceRequests/" + id), {
-      status:"Done",
-      updatedAt:Date.now()
-    }).catch((error) => alert("Error: " + error.message));
+  const syncUserRequestStatus = (id, userUid, data) => {
+    if(!userUid){ return Promise.resolve(); }
+    return update(ref(db, "userServiceRequests/" + userUid + "/" + id), data).catch(() => {});
   };
 
-  window.deleteServiceRequest = (id) => {
+  const removeUserRequestMirror = (id, userUid) => {
+    if(!userUid){ return Promise.resolve(); }
+    return remove(ref(db, "userServiceRequests/" + userUid + "/" + id)).catch(() => {});
+  };
+
+  window.markRequestDone = (id, userUid = "") => {
+    if(!adminAllowed){ alert("Admin verify नहीं हुआ।"); return; }
+
+    const data = {
+      status:"Done",
+      updatedAt:Date.now()
+    };
+    update(ref(db, "serviceRequests/" + id), data)
+      .then(() => syncUserRequestStatus(id, userUid, data))
+      .catch((error) => alert("Error: " + error.message));
+  };
+
+  window.deleteServiceRequest = (id, userUid = "") => {
     if(!adminAllowed){ alert("Admin verify नहीं हुआ।"); return; }
 
     if(confirm("क्या आप यह request delete करना चाहते हैं?")){
       remove(ref(db, "serviceRequests/" + id))
+      .then(() => removeUserRequestMirror(id, userUid))
       .then(() => alert("Request Deleted Successfully!"))
       .catch((error) => alert("Error: " + error.message));
     }
@@ -894,8 +908,8 @@ Cook | 1426 |"></textarea>
             <div>
               ${phone ? `<a class="action-btn" href="tel:${phone}">Call</a>` : ""}
               ${phone ? `<a class="action-btn" target="_blank" rel="noopener noreferrer" href="https://wa.me/91${phone}?text=${whatsappText}">WhatsApp</a>` : ""}
-              <button class="action-btn done-btn" onclick="markRequestDone('${data.id}')">Done</button>
-              <button class="delete-btn" onclick="deleteServiceRequest('${data.id}')">Delete</button>
+              <button class="action-btn done-btn" onclick="markRequestDone('${data.id}','${escapeHTML(data.userUid || "")}')">Done</button>
+              <button class="delete-btn" onclick="deleteServiceRequest('${data.id}','${escapeHTML(data.userUid || "")}')">Delete</button>
             </div>
           </div>
         `;

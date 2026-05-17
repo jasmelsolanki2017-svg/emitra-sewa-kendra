@@ -295,6 +295,39 @@ function loadJobs(){
   if(search){ search.addEventListener("input", filterJobs); }
 }
 
+function loadMyRequests(user){
+  const box = document.getElementById("myRequestsList");
+  if(!box){ return; }
+  onValue(ref(db, "userServiceRequests/" + user.uid), (snapshot) => {
+    const rows = [];
+    if(snapshot.exists()){
+      snapshot.forEach((child) => {
+        const data = child.val() || {};
+        rows.push({ id:child.key, ...data });
+      });
+    }
+    rows.sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
+    if(!rows.length){
+      renderMessage(box, "Aapki logged-in request abhi save nahi hai. Homepage se service enquiry bhej sakte hain.");
+      return;
+    }
+    box.innerHTML = rows.map((item) => {
+      const status = item.status || "New";
+      const done = status === "Done";
+      return `
+        <article class="request-card ${done ? "done" : ""}">
+          <h3>${escapeHTML(item.service || "Service Request")}</h3>
+          <span class="request-badge ${done ? "done" : ""}">${escapeHTML(status)}</span>
+          <small>Date: ${item.createdAt ? new Date(Number(item.createdAt)).toLocaleString("hi-IN") : "Not available"}</small>
+          <small>Name: ${escapeHTML(item.name || "Not added")} | Mobile: ${escapeHTML(item.mobile || "Not added")}</small>
+          <p>${escapeHTML(item.message || "No message")}</p>
+          ${item.adminNote ? `<small><b>Admin Note:</b> ${escapeHTML(item.adminNote)}</small>` : ""}
+        </article>
+      `;
+    }).join("");
+  }, (error) => renderMessage(box, "Requests load nahi ho payi: " + error.message));
+}
+
 function renderStorageInfo(){
   const used = Number(currentMember.storageUsedBytes || 0);
   const limit = getStorageLimitBytes();
@@ -570,5 +603,6 @@ onAuthStateChanged(auth, (user) => {
   if(pageType === "updates"){ loadUpdates(); }
   if(pageType === "links"){ loadLinks(); }
   if(pageType === "jobs"){ loadJobs(); }
+  if(pageType === "requests"){ loadMyRequests(user); }
   if(pageType === "data-folder"){ loadDataFolder(user); }
 });

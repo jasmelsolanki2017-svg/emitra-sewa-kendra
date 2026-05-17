@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Service Requests | Admin Dashboard</title>
+  <link rel="icon" type="image/png" sizes="512x512" href="favicon.png">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="shortcut icon" href="favicon.ico">
+  <link rel="apple-touch-icon" href="favicon.png">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans+Devanagari:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins','Noto Sans Devanagari',sans-serif;}
+    body{background:#f7fbff;color:#172033;}
+    .topbar{background:#043a76;color:white;padding:6px 3%;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:12px;}
+    header{background:linear-gradient(135deg,#0057a8,#03224d);color:white;text-align:center;padding:16px 3%;border-bottom:3px solid #ff7a00;}
+    header h1{color:#ff7a00;font-size:clamp(22px,4vw,32px);}
+    header p{font-size:13px;margin-top:4px;}
+    nav{background:white;padding:8px 3%;display:flex;gap:7px;flex-wrap:wrap;justify-content:center;box-shadow:0 3px 12px rgba(0,0,0,.08);position:sticky;top:0;z-index:10;}
+    nav a,nav button{background:#0057a8;color:white;border:0;text-decoration:none;padding:7px 11px;border-radius:6px;font-weight:700;font-size:12px;cursor:pointer;}
+    nav a:hover,nav button:hover{background:#ff7a00;color:#03224d;}
+    main{max-width:1180px;margin:auto;padding:16px 3% 34px;}
+    .admin-info,.panel{background:white;border:1px solid #d8e6f5;border-top:3px solid #ff7a00;border-radius:7px;padding:12px;margin-bottom:14px;box-shadow:0 4px 14px rgba(0,0,0,.07);}
+    .admin-info{text-align:center;background:#eaf4ff;border-top:0;border-left:4px solid #ff7a00;}
+    .admin-info h2,.panel h2{color:#0057a8;font-size:18px;margin-bottom:6px;}
+    .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:12px;}
+    .stat{background:white;border:1px solid #d8e6f5;border-top:3px solid #0057a8;border-radius:7px;padding:9px 10px;box-shadow:0 3px 10px rgba(0,0,0,.05);}
+    .stat.hot{border-top-color:#d90000;background:#fff8f8;}
+    .stat small{display:block;color:#55657a;font-size:10px;font-weight:800;text-transform:uppercase;}
+    .stat strong{display:block;color:#0057a8;font-size:22px;line-height:1.1;margin-top:3px;}
+    .stat.hot strong{color:#d90000;}
+    .toolbar{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px;}
+    .toolbar input,.toolbar select{padding:8px 10px;border:1px solid #bdd0e5;border-radius:6px;font-size:13px;background:white;}
+    .toolbar input{min-width:240px;flex:1;max-width:460px;}
+    .count{font-weight:800;color:#0057a8;font-size:13px;}
+    .requests{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:10px;}
+    .request{background:#eaf4ff;border:1px solid #d8e6f5;border-left:4px solid #0057a8;border-radius:7px;padding:10px;overflow:hidden;}
+    .request.done{border-left-color:#138a36;background:#f2fbf5;}
+    .request h3{color:#0057a8;font-size:15px;line-height:1.3;overflow-wrap:anywhere;}
+    .request small,.request p{display:block;color:#4d5d72;font-size:12px;line-height:1.45;margin-top:4px;overflow-wrap:anywhere;}
+    .badge{display:inline-block;background:#ff7a00;color:#03224d;border-radius:999px;padding:3px 7px;font-size:10px;font-weight:900;margin-top:6px;}
+    .badge.done{background:#138a36;color:white;}
+    .edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px;}
+    .edit-grid textarea{grid-column:1 / -1;min-height:58px;resize:vertical;}
+    .edit-grid select,.edit-grid textarea{width:100%;min-width:0;padding:7px 8px;border:1px solid #bdd0e5;border-radius:6px;font-size:12px;background:white;}
+    .actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px;}
+    .actions a,.actions button{border:0;border-radius:6px;padding:7px 9px;font-size:11px;font-weight:800;cursor:pointer;background:#0057a8;color:white;text-decoration:none;}
+    .actions .done{background:#138a36;}
+    .actions .danger{background:#d90000;}
+    .actions a:hover,.actions button:hover{background:#ff7a00;color:#03224d;}
+    .empty{background:white;border:1px dashed #bdd0e5;border-radius:7px;padding:18px;text-align:center;color:#55657a;font-weight:700;}
+    footer{background:#0057a8;color:white;text-align:center;padding:12px;font-size:12px;}
+    @media(max-width:720px){
+      nav{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap;}
+      nav a,nav button{white-space:nowrap;}
+      .toolbar input,.toolbar select{width:100%;max-width:none;min-width:0;}
+      .edit-grid{grid-template-columns:1fr;}
+      .edit-grid textarea{grid-column:auto;}
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar"><div>Admin Requests</div><div id="liveTime">Loading...</div></div>
+  <header>
+    <h1>Service Requests</h1>
+    <p>Website enquiry requests ko search, filter, call, WhatsApp aur status ke saath manage karein.</p>
+  </header>
+  <nav>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="admin-services.html">Services</a>
+    <a href="all-members.html">All Members</a>
+    <a href="index.html">Home</a>
+    <button onclick="logoutUser()">Logout</button>
+  </nav>
+  <main>
+    <section class="admin-info">
+      <h2 id="accessTitle">Admin Access Checking...</h2>
+      <p id="adminEmailText">Please wait...</p>
+    </section>
+    <section class="stats">
+      <div class="stat hot"><small>Pending</small><strong id="pendingCount">0</strong></div>
+      <div class="stat"><small>Done</small><strong id="doneCount">0</strong></div>
+      <div class="stat"><small>Total</small><strong id="totalCount">0</strong></div>
+      <div class="stat"><small>Today</small><strong id="todayCount">0</strong></div>
+    </section>
+    <section class="panel">
+      <div class="toolbar">
+        <input type="search" id="requestSearch" placeholder="Search name, mobile, service, message...">
+        <select id="requestFilter">
+          <option value="pending">Pending First</option>
+          <option value="new">Pending Only</option>
+          <option value="done">Done Only</option>
+          <option value="all">All Requests</option>
+        </select>
+        <div class="count" id="requestCount">Requests: 0</div>
+      </div>
+      <section class="requests" id="requestsList">
+        <div class="empty">Loading requests...</div>
+      </section>
+    </section>
+  </main>
+  <footer>© 2026 E-MITRA WALA | Request Management</footer>
+
+  <script>
+    function updateLiveTime(){
+      document.getElementById("liveTime").innerText = new Date().toLocaleString("hi-IN");
+    }
+    updateLiveTime();
+    setInterval(updateLiveTime,1000);
+  </script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+    import { getDatabase, ref, onValue, update, remove } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",
+      authDomain: "my-website-73785.firebaseapp.com",
+      databaseURL: "https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app/",
+      projectId: "my-website-73785",
+      storageBucket: "my-website-73785.firebasestorage.app",
+      messagingSenderId: "854088341990",
+      appId: "1:854088341990:web:3211d4ef9fe4b78d025e27"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+    const adminEmail = "jasmelsolanki@gmail.com";
+    let adminAllowed = false;
+    let allRequests = [];
+
+    const escapeHTML = (value = "") => String(value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+
+    const safePhone = (value = "") => String(value).replace(/[^\d]/g, "").slice(-10);
+    const formatDate = (value) => {
+      const time = Number(value || 0);
+      return time ? new Date(time).toLocaleString("hi-IN") : "Not available";
+    };
+
+    const setText = (id, value) => {
+      const el = document.getElementById(id);
+      if(el){ el.innerText = String(value); }
+    };
+
+    function getFieldValue(id, field){
+      const el = document.querySelector(`[data-id="${CSS.escape(id)}"][data-field="${field}"]`);
+      return el ? el.value.trim() : "";
+    }
+
+    function syncUserRequest(id, userUid, data){
+      if(!userUid){ return Promise.resolve(); }
+      return update(ref(db, "userServiceRequests/" + userUid + "/" + id), data).catch(() => {});
+    }
+
+    function removeUserRequest(id, userUid){
+      if(!userUid){ return Promise.resolve(); }
+      return remove(ref(db, "userServiceRequests/" + userUid + "/" + id)).catch(() => {});
+    }
+
+    function renderRequests(){
+      const list = document.getElementById("requestsList");
+      const query = document.getElementById("requestSearch").value.trim().toLowerCase();
+      const filter = document.getElementById("requestFilter").value;
+      const today = new Date().toDateString();
+      const pending = allRequests.filter((item) => (item.status || "New") !== "Done").length;
+      const done = allRequests.filter((item) => (item.status || "New") === "Done").length;
+      const todayRows = allRequests.filter((item) => item.createdAt && new Date(Number(item.createdAt)).toDateString() === today).length;
+      setText("pendingCount", pending);
+      setText("doneCount", done);
+      setText("totalCount", allRequests.length);
+      setText("todayCount", todayRows);
+
+      let rows = allRequests.filter((item) => {
+        const status = item.status || "New";
+        if(filter === "new" && status === "Done"){ return false; }
+        if(filter === "done" && status !== "Done"){ return false; }
+        const text = [item.name, item.mobile, item.service, item.message, item.userEmail, item.adminNote, status].join(" ").toLowerCase();
+        return text.includes(query);
+      });
+      if(filter === "pending"){
+        rows = rows.sort((a, b) => {
+          const aDone = (a.status || "New") === "Done" ? 1 : 0;
+          const bDone = (b.status || "New") === "Done" ? 1 : 0;
+          return aDone - bDone || Number(b.createdAt || 0) - Number(a.createdAt || 0);
+        });
+      }
+      setText("requestCount", `Requests: ${rows.length}`);
+      if(!rows.length){
+        list.innerHTML = '<div class="empty">Koi request nahi mili.</div>';
+        return;
+      }
+
+      list.innerHTML = rows.map((data) => {
+        const status = data.status || "New";
+        const doneClass = status === "Done" ? "done" : "";
+        const phone = safePhone(data.mobile);
+        const whatsappText = encodeURIComponent(`Hello ${data.name || ""}, E-MITRA WALA se bol rahe hain. Aapki ${data.service || "service"} request ke baare me contact kar rahe hain.`);
+        return `
+          <article class="request ${doneClass}">
+            <h3>${escapeHTML(data.name || "Customer")}</h3>
+            <span class="badge ${doneClass}">${escapeHTML(status)}</span>
+            <small>Mobile: ${escapeHTML(data.mobile || "Not added")}</small>
+            <small>Service: ${escapeHTML(data.service || "Not selected")}</small>
+            <small>Date: ${escapeHTML(formatDate(data.createdAt))}</small>
+            ${data.userEmail ? `<small>User: ${escapeHTML(data.userEmail)}</small>` : ""}
+            <p>${escapeHTML(data.message || "No message")}</p>
+            <div class="edit-grid">
+              <select data-id="${escapeHTML(data.id)}" data-field="status">
+                <option value="New" ${status === "New" ? "selected" : ""}>New</option>
+                <option value="Working" ${status === "Working" ? "selected" : ""}>Working</option>
+                <option value="Done" ${status === "Done" ? "selected" : ""}>Done</option>
+              </select>
+              <textarea data-id="${escapeHTML(data.id)}" data-field="adminNote" placeholder="Admin note / status update">${escapeHTML(data.adminNote || "")}</textarea>
+            </div>
+            <div class="actions">
+              ${phone ? `<a href="tel:${phone}">Call</a>` : ""}
+              ${phone ? `<a target="_blank" rel="noopener noreferrer" href="https://wa.me/91${phone}?text=${whatsappText}">WhatsApp</a>` : ""}
+              <button onclick="saveRequest('${escapeHTML(data.id)}','${escapeHTML(data.userUid || "")}')">Save</button>
+              <button class="done" onclick="markDone('${escapeHTML(data.id)}','${escapeHTML(data.userUid || "")}')">Done</button>
+              <button class="danger" onclick="deleteRequest('${escapeHTML(data.id)}','${escapeHTML(data.userUid || "")}')">Delete</button>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    onAuthStateChanged(auth, (user) => {
+      if(user && user.email === adminEmail){
+        adminAllowed = true;
+        setText("accessTitle", "Admin Access Verified");
+        setText("adminEmailText", user.email);
+        return;
+      }
+      adminAllowed = false;
+      window.location.href = "index.html";
+    });
+
+    onValue(ref(db, "serviceRequests"), (snapshot) => {
+      allRequests = [];
+      if(snapshot.exists()){
+        snapshot.forEach((child) => allRequests.push({ id:child.key, ...(child.val() || {}) }));
+      }
+      allRequests.sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
+      renderRequests();
+    });
+
+    document.getElementById("requestSearch").addEventListener("input", renderRequests);
+    document.getElementById("requestFilter").addEventListener("change", renderRequests);
+
+    window.saveRequest = (id, userUid = "") => {
+      if(!adminAllowed){ alert("Admin verify nahi hua."); return; }
+      const data = {
+        status:getFieldValue(id, "status") || "New",
+        adminNote:getFieldValue(id, "adminNote"),
+        updatedAt:Date.now()
+      };
+      update(ref(db, "serviceRequests/" + id), data)
+        .then(() => syncUserRequest(id, userUid, data))
+        .then(() => alert("Request saved."))
+        .catch((error) => alert("Save nahi hua: " + error.message));
+    };
+
+    window.markDone = (id, userUid = "") => {
+      if(!adminAllowed){ alert("Admin verify nahi hua."); return; }
+      const data = {
+        status:"Done",
+        updatedAt:Date.now()
+      };
+      update(ref(db, "serviceRequests/" + id), data)
+        .then(() => syncUserRequest(id, userUid, data))
+        .catch((error) => alert("Done nahi hua: " + error.message));
+    };
+
+    window.deleteRequest = (id, userUid = "") => {
+      if(!adminAllowed){ alert("Admin verify nahi hua."); return; }
+      if(confirm("Ye request delete karni hai?")){
+        remove(ref(db, "serviceRequests/" + id))
+          .then(() => removeUserRequest(id, userUid))
+          .catch((error) => alert("Delete nahi hua: " + error.message));
+      }
+    };
+
+    window.logoutUser = () => {
+      signOut(auth).then(() => { window.location.href = "index.html"; });
+    };
+  </script>
+</body>
+</html>

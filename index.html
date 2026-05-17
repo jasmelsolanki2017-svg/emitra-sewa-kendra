@@ -2218,6 +2218,7 @@ const mobile = document.getElementById("requestMobile").value.trim();
 const service = document.getElementById("requestService").value.trim();
 const message = document.getElementById("requestMessage").value.trim();
 const status = document.getElementById("requestStatus");
+const loggedInUser = auth.currentUser;
 
 if(name === "" || mobile === "" || service === ""){
 status.innerText = "Naam, mobile aur service जरूर भरें।";
@@ -2231,13 +2232,26 @@ return;
 
 status.innerText = "Request sending...";
 
-set(push(requestsRef),{
+const requestRef = push(requestsRef);
+const requestData = {
 name:name,
 mobile:mobile,
 service:service,
 message:message || "No extra detail",
 status:"New",
+userUid:loggedInUser ? loggedInUser.uid : "",
+userEmail:loggedInUser ? (loggedInUser.email || "") : "",
 createdAt:Date.now()
+};
+
+set(requestRef, requestData).then(() => {
+if(loggedInUser){
+return set(ref(db, "userServiceRequests/" + loggedInUser.uid + "/" + requestRef.key), {
+...requestData,
+requestId:requestRef.key
+}).catch(() => {});
+}
+return null;
 }).then(()=>{
 status.innerText = "Request sent successfully! Hum jaldi contact karenge.";
 document.getElementById("serviceRequestForm").reset();

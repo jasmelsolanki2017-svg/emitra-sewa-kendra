@@ -133,6 +133,12 @@ nav button,.primary-btn{background:var(--yellow);border-color:var(--yellow);colo
 .job-card p{margin:5px 0;color:#3f4858;font-size:13px;}
 .job-card{transition:transform .2s ease,box-shadow .2s ease;}
 .job-card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(8,31,74,.10);}
+.request-card{background:var(--soft);border:1px solid var(--line);border-left:5px solid var(--blue);border-radius:8px;padding:12px;margin-bottom:10px;}
+.request-card.done{border-left-color:#138a36;background:#f3fbf5;}
+.request-card h3{color:var(--blue);font-size:15px;margin-bottom:5px;overflow-wrap:anywhere;}
+.request-card p,.request-card small{display:block;color:#3f4858;font-size:12px;line-height:1.45;margin-top:4px;overflow-wrap:anywhere;}
+.request-badge{display:inline-block;background:var(--yellow);color:var(--blue-dark);border-radius:999px;padding:3px 7px;font-size:10px;font-weight:900;margin:4px 0;}
+.request-badge.done{background:#138a36;color:white;}
 .last-date{color:#d10000;font-weight:800;}
 
 .search-box{margin-bottom:18px;}
