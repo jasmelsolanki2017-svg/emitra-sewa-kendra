@@ -31,12 +31,18 @@
     .create-grid button{border:0;border-radius:6px;padding:8px 11px;font-size:12px;font-weight:800;background:#138a36;color:white;cursor:pointer;}
     .create-grid button:hover{background:#ff7a00;color:#03224d;}
     .form-status{margin-top:8px;font-size:12px;font-weight:800;color:#0057a8;}
+    .member-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:8px;margin-bottom:12px;}
+    .stat-pill{background:white;border:1px solid #d8e6f5;border-left:4px solid #0057a8;border-radius:7px;padding:9px 10px;box-shadow:0 3px 10px rgba(0,0,0,.05);}
+    .stat-pill small{display:block;color:#55657a;font-size:10px;font-weight:800;text-transform:uppercase;}
+    .stat-pill strong{display:block;color:#0057a8;font-size:18px;line-height:1.2;}
     .toolbar{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;}
     .toolbar input{min-width:240px;flex:1;max-width:420px;padding:8px 10px;border:1px solid #bdd0e5;border-radius:6px;font-size:13px;}
+    .toolbar select{padding:8px 10px;border:1px solid #bdd0e5;border-radius:6px;font-size:13px;background:white;color:#172033;font-weight:700;}
     .count{font-weight:800;color:#0057a8;}
     .members{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px;}
     .member-card{background:white;border:1px solid #d8e6f5;border-top:3px solid #ff7a00;border-radius:7px;box-shadow:0 4px 14px rgba(0,0,0,.07);overflow:hidden;}
     .member-card.deleted{opacity:.7;border-top-color:#d90000;}
+    .member-card.blocked{border-top-color:#d90000;}
     .member-card.open{grid-column:span 2;}
     .member-head{width:100%;display:flex;justify-content:space-between;gap:8px;align-items:center;padding:10px 11px;border:0;background:white;cursor:pointer;text-align:left;}
     .member-head:hover{background:#f1f7ff;}
@@ -90,6 +96,7 @@
       nav{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap;}
       nav a,nav button{white-space:nowrap;}
       .toolbar input{min-width:0;max-width:none;}
+      .toolbar select{width:100%;}
       .create-grid{grid-template-columns:1fr;}
       .member-card.open{grid-column:auto;}
       .edit-grid{grid-template-columns:1fr;}
@@ -137,8 +144,23 @@
 
     <div class="toolbar">
       <input type="search" id="memberSearch" placeholder="Search by name, email, mobile, status...">
+      <select id="memberStatusFilter">
+        <option value="visible">Active + Blocked</option>
+        <option value="active">Active Only</option>
+        <option value="blocked">Blocked Only</option>
+        <option value="deleted">Deleted Only</option>
+        <option value="all">All Records</option>
+      </select>
       <div class="count" id="memberCount">Members: 0</div>
     </div>
+
+    <section class="member-stats">
+      <div class="stat-pill"><small>Total Records</small><strong id="totalMembersStat">0</strong></div>
+      <div class="stat-pill"><small>Active</small><strong id="activeMembersStat">0</strong></div>
+      <div class="stat-pill"><small>Blocked/Deleted</small><strong id="blockedMembersStat">0</strong></div>
+      <div class="stat-pill"><small>Upload Approved</small><strong id="approvedMembersStat">0</strong></div>
+      <div class="stat-pill"><small>Total Files</small><strong id="memberFilesStat">0</strong></div>
+    </section>
 
     <section class="members" id="membersList">
       <div class="empty">Loading members...</div>
@@ -317,10 +339,24 @@
     function renderMembers(){
       const list = document.getElementById("membersList");
       const query = document.getElementById("memberSearch").value.trim().toLowerCase();
+      const statusFilter = document.getElementById("memberStatusFilter").value;
+      const totalFiles = Object.values(memberFiles).reduce((sum, files) => sum + files.length, 0);
+      const activeCount = allMembers.filter(({ member }) => (member.status || "Active") === "Active").length;
+      const blockedCount = allMembers.filter(({ member }) => ["Blocked", "Deleted"].includes(member.status || "Active")).length;
+      const approvedCount = allMembers.filter(({ member }) => member.uploadApproved === true).length;
+
+      document.getElementById("totalMembersStat").innerText = allMembers.length;
+      document.getElementById("activeMembersStat").innerText = activeCount;
+      document.getElementById("blockedMembersStat").innerText = blockedCount;
+      document.getElementById("approvedMembersStat").innerText = approvedCount;
+      document.getElementById("memberFilesStat").innerText = totalFiles;
+
       const filtered = allMembers.filter(({ member }) => {
-        if((member.status || "Active") === "Deleted"){
-          return false;
-        }
+        const status = member.status || "Active";
+        if(statusFilter === "visible" && status === "Deleted"){ return false; }
+        if(statusFilter === "active" && status !== "Active"){ return false; }
+        if(statusFilter === "blocked" && status !== "Blocked"){ return false; }
+        if(statusFilter === "deleted" && status !== "Deleted"){ return false; }
         const text = [
           member.name,
           member.email,
@@ -341,17 +377,19 @@
 
       list.innerHTML = filtered.map(({ uid, member }) => {
         const status = member.status || "Active";
-        const deleted = status === "Blocked";
+        const deleted = status === "Deleted";
+        const blocked = status === "Blocked";
         const isOpen = activeMemberUid === uid;
         const files = memberFiles[uid] || [];
+        const cloudLinks = memberCloudLinks[uid] || [];
         const usedBytes = Number(member.storageUsedBytes || 0);
         const limitBytes = getMemberLimitBytes(member);
         const freeMb = Math.round(limitBytes / (1024 * 1024));
         return `
-          <article class="member-card ${deleted ? "deleted" : ""} ${isOpen ? "open" : ""}">
+          <article class="member-card ${deleted ? "deleted" : ""} ${blocked ? "blocked" : ""} ${isOpen ? "open" : ""}">
             <button class="member-head" type="button" onclick="toggleMemberDetails('${escapeHTML(uid)}')">
               <h3>${escapeHTML(member.name || "Member")}</h3>
-              <span class="badge ${deleted ? "deleted" : ""}">${escapeHTML(status)}</span>
+              <span class="badge ${deleted || blocked ? "deleted" : ""}">${escapeHTML(status)}</span>
               <span class="member-toggle">${isOpen ? "Close" : "Open"}</span>
             </button>
             ${isOpen ? `
@@ -364,6 +402,8 @@
             <p class="detail"><strong>Last Login:</strong> ${formatDate(member.lastLoginAt)}</p>
             <p class="detail"><strong>Email Verified:</strong> ${member.emailVerified ? "Yes" : "Pending/Unknown"}</p>
             <p class="detail"><strong>Upload Approval:</strong> ${member.uploadApproved ? "Approved" : "Pending/Blocked"}</p>
+            <p class="detail"><strong>Files:</strong> ${files.length} uploaded · <strong>Data Links:</strong> ${cloudLinks.length}</p>
+            <p class="detail"><strong>Admin Notes:</strong> ${escapeHTML(member.notes || "No notes")}</p>
             <div class="storage-line">Storage: ${formatBytes(usedBytes)} used / ${formatBytes(limitBytes)} allowed</div>
 
             <div class="edit-grid">
@@ -406,7 +446,7 @@
               <button onclick="addMemberCloudLink('${escapeHTML(uid)}')">Add Link</button>
             </div>
             <div class="cloud-links">
-              ${(memberCloudLinks[uid] || []).length ? (memberCloudLinks[uid] || []).map((entry) => `
+              ${cloudLinks.length ? cloudLinks.map((entry) => `
                 <div class="cloud-link-row">
                   <div>
                     <strong>${escapeHTML(entry.link.title || "My Data")}</strong>
@@ -487,6 +527,7 @@
     });
 
     document.getElementById("memberSearch").addEventListener("input", renderMembers);
+    document.getElementById("memberStatusFilter").addEventListener("change", renderMembers);
 
     window.toggleMemberDetails = (uid) => {
       activeMemberUid = activeMemberUid === uid ? "" : uid;

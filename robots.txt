@@ -5,6 +5,7 @@ Disallow: /admin-links.html
 Disallow: /admin-updates.html
 Disallow: /admin-ads.html
 Disallow: /admin-jobs.html
+Disallow: /admin-services.html
 Disallow: /all-members.html
 Disallow: /portal-items.html
 Disallow: /user-dashboard.html
