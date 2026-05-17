@@ -247,7 +247,7 @@ app.post("/admin/create-member", async (req, res) => {
       email,
       password,
       displayName: name,
-      emailVerified: false,
+      emailVerified: true,
       disabled: false
     });
     createdUid = userRecord.uid;
@@ -262,7 +262,7 @@ app.post("/admin/create-member", async (req, res) => {
       mobile,
       role: "member",
       status: "Active",
-      emailVerified: false,
+      emailVerified: true,
       uploadApproved: false,
       freeStorageLimitMb: 50,
       storageLimitBytes,
@@ -276,7 +276,7 @@ app.post("/admin/create-member", async (req, res) => {
     return res.json({
       ok: true,
       uid: createdUid,
-      message: "Member created. User will receive verification mail on first login."
+      message: "Member created and active. Email verification is not required."
     });
   } catch (err) {
     if (createdUid) {
