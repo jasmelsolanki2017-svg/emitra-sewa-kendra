@@ -39,6 +39,13 @@
     .ops-pill small{display:block;color:#66748a;font-size:10px;font-weight:800;text-transform:uppercase;}
     .ops-pill strong{display:block;color:#0057a8;font-size:13px;line-height:1.25;}
 
+    .live-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin:0 0 14px;}
+    .stat-card{background:white;border:1px solid #d8e7f7;border-radius:6px;padding:9px 10px;box-shadow:0 3px 10px rgba(0,0,0,.05);border-top:3px solid #0057a8;}
+    .stat-card.hot{border-top-color:#d90000;background:#fff8f8;}
+    .stat-card small{display:block;color:#66748a;font-size:10px;font-weight:800;text-transform:uppercase;}
+    .stat-card strong{display:block;color:#0057a8;font-size:22px;line-height:1.1;margin-top:3px;}
+    .stat-card.hot strong{color:#d90000;}
+
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;}
     .card{background:white;border-radius:6px;padding:10px 8px;text-align:left;box-shadow:0 4px 12px rgba(0,0,0,.06);border-top:3px solid #ff7a00;min-height:126px;display:flex;flex-direction:column;}
     .card i{font-size:20px;color:#0057a8;margin-bottom:5px;}
@@ -90,6 +97,7 @@
       nav a,nav button{padding:6px 8px;font-size:11px;white-space:nowrap;}
       .grid{grid-template-columns:repeat(auto-fit,minmax(125px,1fr));}
       .ops-strip{grid-template-columns:1fr 1fr;}
+      .live-stats{grid-template-columns:1fr 1fr;}
       .row{display:block;}
       .row .delete-btn,.row .action-btn{margin-top:7px;}
     }
@@ -316,6 +324,17 @@ body.dark-mode .nav-logo img {
   <div class="admin-info">
     <h3>Admin Access Checking...</h3>
     <p id="adminEmailText">Please wait...</p>
+  </div>
+
+  <div class="live-stats">
+    <div class="stat-card hot"><small>Pending Requests</small><strong id="pendingRequestsCount">0</strong></div>
+    <div class="stat-card"><small>Total Members</small><strong id="membersCount">0</strong></div>
+    <div class="stat-card"><small>Latest Jobs</small><strong id="jobsCount">0</strong></div>
+    <div class="stat-card"><small>Updates</small><strong id="updatesCount">0</strong></div>
+    <div class="stat-card"><small>Advertisements</small><strong id="adsCount">0</strong></div>
+    <div class="stat-card"><small>Links</small><strong id="linksCount">0</strong></div>
+    <div class="stat-card"><small>Portal Items</small><strong id="portalItemsCount">0</strong></div>
+    <div class="stat-card"><small>Service Pages</small><strong id="serviceGuidesCount">0</strong></div>
   </div>
 
   <div class="ops-strip">
@@ -666,6 +685,53 @@ Cook | 1426 |"></textarea>
   const requestsRef = ref(db, "serviceRequests");
   const adsRef = ref(db, "advertisements");
   const jobsRef = ref(db, "LatestJobs");
+  const membersRef = ref(db, "members");
+  const portalItemsRef = ref(db, "portalItems");
+  const serviceGuidesRef = ref(db, "serviceGuides");
+
+  const setCount = (id, value) => {
+    const element = document.getElementById(id);
+    if(element){ element.innerText = String(value); }
+  };
+
+  const countSnapshotChildren = (snapshot) => {
+    let count = 0;
+    if(snapshot.exists()){
+      snapshot.forEach(() => { count += 1; });
+    }
+    return count;
+  };
+
+  const countNestedSnapshotChildren = (snapshot) => {
+    let count = 0;
+    if(snapshot.exists()){
+      snapshot.forEach((group) => {
+        if(group.hasChildren()){
+          group.forEach(() => { count += 1; });
+        }
+      });
+    }
+    return count;
+  };
+
+  onValue(membersRef, (snapshot) => {
+    let count = 0;
+    if(snapshot.exists()){
+      snapshot.forEach((child) => {
+        const member = child.val() || {};
+        if(member.status !== "Deleted"){ count += 1; }
+      });
+    }
+    setCount("membersCount", count);
+  });
+
+  onValue(portalItemsRef, (snapshot) => {
+    setCount("portalItemsCount", countNestedSnapshotChildren(snapshot));
+  });
+
+  onValue(serviceGuidesRef, (snapshot) => {
+    setCount("serviceGuidesCount", countSnapshotChildren(snapshot));
+  });
 
   window.addImportantLink = () => {
     if(!adminAllowed){ alert("Admin verify नहीं हुआ।"); return; }
@@ -702,9 +768,11 @@ Cook | 1426 |"></textarea>
   onValue(linksRef, (snapshot) => {
     const list = document.getElementById("adminLinksList");
     list.innerHTML = "";
+    let count = 0;
 
     if(snapshot.exists()){
       snapshot.forEach((child) => {
+        count += 1;
         const id = child.key;
         const data = child.val();
 
@@ -721,6 +789,7 @@ Cook | 1426 |"></textarea>
     } else {
       list.innerHTML = "<p>अभी कोई Important Link save नहीं है।</p>";
     }
+    setCount("linksCount", count);
   });
 
   window.addLatestUpdate = () => {
@@ -755,6 +824,7 @@ Cook | 1426 |"></textarea>
     const list = document.getElementById("adminUpdatesList");
     list.innerHTML = "";
     const rows = getUpdateRows(snapshot);
+    setCount("updatesCount", rows.length);
 
     if(rows.length){
       rows.forEach((data) => {
@@ -795,6 +865,7 @@ Cook | 1426 |"></textarea>
   onValue(requestsRef, (snapshot) => {
     const list = document.getElementById("adminRequestsList");
     list.innerHTML = "";
+    let pendingCount = 0;
 
     if(snapshot.exists()){
       const requests = [];
@@ -806,6 +877,7 @@ Cook | 1426 |"></textarea>
       requests.sort((a,b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
 
       requests.forEach((data) => {
+        if((data.status || "New") !== "Done"){ pendingCount += 1; }
         const phone = safePhone(data.mobile);
         const whatsappText = encodeURIComponent(`Hello ${data.name || ""}, E-MITRA WALA se bol rahe hain. Aapki ${data.service || "service"} request ke baare me contact kar rahe hain.`);
         const statusClass = data.status === "Done" ? "status-badge done" : "status-badge";
@@ -831,6 +903,7 @@ Cook | 1426 |"></textarea>
     } else {
       list.innerHTML = "<p>अभी कोई Service Request नहीं है।</p>";
     }
+    setCount("pendingRequestsCount", pendingCount);
   });
 
   window.addAdvertisement = () => {
@@ -884,11 +957,13 @@ Cook | 1426 |"></textarea>
   onValue(adsRef, (snapshot) => {
     const list = document.getElementById("adminAdsList");
     list.innerHTML = "";
+    let count = 0;
 
     if(snapshot.exists()){
       const ads = [];
 
       snapshot.forEach((child) => {
+        count += 1;
         ads.push({ id:child.key, ...child.val() });
       });
 
@@ -910,6 +985,7 @@ Cook | 1426 |"></textarea>
     } else {
       list.innerHTML = "<p>अभी कोई Advertisement save नहीं है।</p>";
     }
+    setCount("adsCount", count);
   });
 
   window.addLatestJob = () => {
@@ -997,6 +1073,7 @@ Cook | 1426 |"></textarea>
     const list = document.getElementById("adminJobsList");
     list.innerHTML = "";
     window.latestJobsCache = {};
+    let activeJobsCount = 0;
 
     if(snapshot.exists()){
       const jobs = [];
@@ -1012,6 +1089,7 @@ Cook | 1426 |"></textarea>
       });
 
       jobs.sort((a,b) => Number(b.data.createdAt || 0) - Number(a.data.createdAt || 0));
+      activeJobsCount = jobs.length;
 
       jobs.forEach(({ id, data }) => {
         const lastDateText = escapeHTML(data.lastDate || "Update Soon");
@@ -1046,6 +1124,7 @@ Cook | 1426 |"></textarea>
     } else {
       list.innerHTML = "<p>अभी कोई Latest Job save नहीं है।</p>";
     }
+    setCount("jobsCount", activeJobsCount);
   });
 
   setInterval(cleanupExpiredJobs, 60 * 60 * 1000);
