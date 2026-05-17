@@ -64,7 +64,7 @@
   <div class="topbar"><div>Admin Requests</div><div id="liveTime">Loading...</div></div>
   <header>
     <h1>Service Requests</h1>
-    <p>Website enquiry requests ko search, filter, call, WhatsApp aur status ke saath manage karein.</p>
+    <p>Website enquiry requests ko search, filter, reply aur status ke saath manage karein.</p>
   </header>
   <nav>
     <a href="dashboard.html">Dashboard</a>
@@ -220,8 +220,7 @@
               <textarea data-id="${escapeHTML(data.id)}" data-field="adminNote" placeholder="Admin note / status update">${escapeHTML(data.adminNote || "")}</textarea>
             </div>
             <div class="actions">
-              ${phone ? `<a href="tel:${phone}">Call</a>` : ""}
-              ${phone ? `<a target="_blank" rel="noopener noreferrer" href="https://wa.me/91${phone}?text=${whatsappText}">WhatsApp</a>` : ""}
+              ${phone ? `<a target="_blank" rel="noopener noreferrer" href="https://wa.me/91${phone}?text=${whatsappText}">Reply</a>` : ""}
               <button onclick="saveRequest('${escapeHTML(data.id)}','${escapeHTML(data.userUid || "")}')">Save</button>
               <button class="done" onclick="markDone('${escapeHTML(data.id)}','${escapeHTML(data.userUid || "")}')">Done</button>
               <button class="danger" onclick="deleteRequest('${escapeHTML(data.id)}','${escapeHTML(data.userUid || "")}')">Delete</button>

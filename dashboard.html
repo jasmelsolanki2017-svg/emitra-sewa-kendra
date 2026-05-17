@@ -906,8 +906,7 @@ Cook | 1426 |"></textarea>
               <small>Message: ${escapeHTML(data.message || "")}</small>
             </div>
             <div>
-              ${phone ? `<a class="action-btn" href="tel:${phone}">Call</a>` : ""}
-              ${phone ? `<a class="action-btn" target="_blank" rel="noopener noreferrer" href="https://wa.me/91${phone}?text=${whatsappText}">WhatsApp</a>` : ""}
+              ${phone ? `<a class="action-btn" target="_blank" rel="noopener noreferrer" href="https://wa.me/91${phone}?text=${whatsappText}">Reply</a>` : ""}
               <button class="action-btn done-btn" onclick="markRequestDone('${data.id}','${escapeHTML(data.userUid || "")}')">Done</button>
               <button class="delete-btn" onclick="deleteServiceRequest('${data.id}','${escapeHTML(data.userUid || "")}')">Delete</button>
             </div>
