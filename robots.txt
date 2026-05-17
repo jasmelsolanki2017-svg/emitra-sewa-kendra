@@ -8,5 +8,11 @@ Disallow: /admin-jobs.html
 Disallow: /all-members.html
 Disallow: /portal-items.html
 Disallow: /user-dashboard.html
+Disallow: /user-latest-updates.html
+Disallow: /user-important-links.html
+Disallow: /user-latest-jobs.html
+Disallow: /user-download-center.html
+Disallow: /user-data-folder.html
+Disallow: /server.js
 
-Sitemap: https://example.com/sitemap.xml
+Sitemap: https://emitrawala.online/sitemap.xml
