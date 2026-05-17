@@ -34,12 +34,17 @@
     .admin-info h3{color:#0057a8;margin-bottom:2px;font-size:15px;}
     .admin-info p{font-size:12px;word-break:break-word;}
 
+    .ops-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin:0 0 12px;}
+    .ops-pill{background:#fff;border:1px solid #d8e7f7;border-left:4px solid #0057a8;border-radius:6px;padding:8px 10px;box-shadow:0 3px 10px rgba(0,0,0,.05);}
+    .ops-pill small{display:block;color:#66748a;font-size:10px;font-weight:800;text-transform:uppercase;}
+    .ops-pill strong{display:block;color:#0057a8;font-size:13px;line-height:1.25;}
+
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;}
-    .card{background:white;border-radius:6px;padding:10px 8px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,.06);border-top:3px solid #ff7a00;}
-    .card i{font-size:22px;color:#0057a8;margin-bottom:5px;}
+    .card{background:white;border-radius:6px;padding:10px 8px;text-align:left;box-shadow:0 4px 12px rgba(0,0,0,.06);border-top:3px solid #ff7a00;min-height:126px;display:flex;flex-direction:column;}
+    .card i{font-size:20px;color:#0057a8;margin-bottom:5px;}
     .card h3{color:#0057a8;margin-bottom:3px;font-size:14px;}
-    .card p{color:#555;margin-bottom:7px;line-height:1.25;font-size:11px;}
-    .card a{display:inline-block;background:#0057a8;color:white;text-decoration:none;padding:5px 9px;border-radius:6px;font-weight:700;font-size:11px;}
+    .card p{color:#555;margin-bottom:7px;line-height:1.25;font-size:11px;flex:1;}
+    .card a{display:inline-block;align-self:flex-start;background:#0057a8;color:white;text-decoration:none;padding:5px 9px;border-radius:6px;font-weight:700;font-size:11px;}
     .card a:hover{background:#ff7a00;color:#0057a8;}
 
     .manager{margin-top:14px;background:white;padding:12px;border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.07);border-top:3px solid #ff7a00;max-width:100%;overflow:hidden;}
@@ -84,6 +89,7 @@
       nav{justify-content:flex-start;gap:6px;overflow-x:auto;flex-wrap:nowrap;}
       nav a,nav button{padding:6px 8px;font-size:11px;white-space:nowrap;}
       .grid{grid-template-columns:repeat(auto-fit,minmax(125px,1fr));}
+      .ops-strip{grid-template-columns:1fr 1fr;}
       .row{display:block;}
       .row .delete-btn,.row .action-btn{margin-top:7px;}
     }
@@ -311,7 +317,13 @@ body.dark-mode .nav-logo img {
     <p id="adminEmailText">Please wait...</p>
   </div>
 
-  <h2>Dashboard Options</h2>
+  <div class="ops-strip">
+    <div class="ops-pill"><small>Primary</small><strong>Requests, Members, Jobs</strong></div>
+    <div class="ops-pill"><small>Public Site</small><strong>Updates, Links, Ads</strong></div>
+    <div class="ops-pill"><small>Quick Work</small><strong>Open page, edit, delete</strong></div>
+  </div>
+
+  <h2>Dashboard Shortcuts</h2>
 
   <div class="grid">
     <div class="card">
