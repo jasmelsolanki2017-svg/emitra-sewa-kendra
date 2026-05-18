@@ -409,8 +409,9 @@ const parseJobLastDate = (value = "") => {
   return Number.isNaN(parsed.getTime()) ? null : new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate(), 23, 59, 59, 999);
 };
 
-const isJobVisible = (lastDate) => {
-  const date = parseJobLastDate(lastDate);
+const isJobVisible = (job) => {
+  if(String(job.postStatus || "published").toLowerCase() === "draft"){ return false; }
+  const date = parseJobLastDate(job.lastDate || job.lastApplyDate);
   return !date || Date.now() <= date.getTime() + (24 * 60 * 60 * 1000);
 };
 
@@ -474,7 +475,7 @@ onValue(jobsRef, (snapshot) => {
 
     snapshot.forEach((child) => {
       const job = normalizeJob(child.val());
-      if(isJobVisible(job.lastDate)){
+      if(isJobVisible(job)){
         jobs.push({
           id: child.key,
           job: job
@@ -490,7 +491,7 @@ onValue(jobsRef, (snapshot) => {
       item.innerHTML = `
         <span class="badge">${escapeHTML(job.type || "Online Form")}</span>
         <h3><a href="job-detail.html?id=${encodeURIComponent(id)}">${escapeHTML(job.title || job.text || "Job Update")}</a></h3>
-        <p>Start: ${escapeHTML(job.startDate || "Update Soon")} | Last: <span class="last-date">${escapeHTML(job.lastDate || "Update Soon")}</span></p>
+        <p>Start: ${escapeHTML(job.startDate || "Update Soon")} | Last: <span class="last-date">${escapeHTML(job.lastDate || job.lastApplyDate || "Update Soon")}</span></p>
         <p>Qualification: ${escapeHTML(job.qualification || "Update Soon")}</p>
         <p>Location: ${escapeHTML(job.location || "All India")}</p>
         <div class="job-actions">

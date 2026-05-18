@@ -1900,7 +1900,7 @@ body.dark-mode .nav-logo img {
 
     snapshot.forEach((child) => {
       const job = normalizeJob(child.val());
-      if(String(job.title || job.text || "").trim()){
+      if(String(job.title || job.text || "").trim() && String(job.postStatus || "published").toLowerCase() !== "draft"){
         rows.push({ id:child.key, job:job });
       }
     });
@@ -1995,7 +1995,7 @@ body.dark-mode .nav-logo img {
               <h3>${escapeHTML(job.title || job.text || "Job Update")}</h3>
               <p><b>Type:</b> ${escapeHTML(job.type || "Online Form")}</p>
               <p><b>Start Date:</b> ${escapeHTML(job.startDate || "Update Soon")}</p>
-              <p><b>Last Date:</b> <span class="last-date">${escapeHTML(job.lastDate || "Update Soon")}</span></p>
+              <p><b>Last Date:</b> <span class="last-date">${escapeHTML(job.lastDate || job.lastApplyDate || "Update Soon")}</span></p>
               <p><b>Qualification:</b> ${escapeHTML(job.qualification || "Update Soon")}</p>
               <p><b>Location:</b> ${escapeHTML(job.location || "All India")}</p>
               <a href="${safeUrl(job.applyLink)}" target="_blank" rel="noopener noreferrer">Apply Now</a>

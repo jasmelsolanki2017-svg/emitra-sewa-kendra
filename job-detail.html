@@ -49,7 +49,7 @@ main{max-width:920px;margin:auto;padding:26px 3% 42px;}
 .panel h2,.sarkari-section-title{background:#79cdf0;border:1px solid #70bfe0;color:#000;text-align:center;font-size:17px;font-weight:900;line-height:1.25;padding:8px 10px;margin:0;}
 .info-list{padding:9px 18px 2px 34px;font-size:13px;font-weight:600;color:#000;}
 .info-list li{margin:4px 0;}
-.info-list strong{color:#000;}
+.info-list strong{color:#000;white-space:pre-line;}
 .danger-date{color:#d90000!important;font-weight:900;}
 .content-box{color:#000;font-weight:600;background:white;border:0;padding:0;}
 .content-section{margin-bottom:26px;}
@@ -119,11 +119,41 @@ body.dark-mode .content-table th,body.dark-mode .content-table td,body.dark-mode
           <ul class="info-list" id="jobInfoList"></ul>
         </section>
 
+        <section class="panel" id="feePanel" style="display:none;">
+          <h2>Application Fee</h2>
+          <ul class="info-list" id="feeList"></ul>
+        </section>
+
+        <section class="panel" id="agePanel" style="display:none;">
+          <h2>Age Limit</h2>
+          <ul class="info-list" id="ageList"></ul>
+        </section>
+
+        <section class="panel" id="vacancyPanel" style="display:none;">
+          <h2>Vacancy Details</h2>
+          <ul class="info-list" id="vacancyList"></ul>
+        </section>
+
+        <section class="panel" id="eligibilityPanel" style="display:none;">
+          <h2>Eligibility / Qualification</h2>
+          <ul class="info-list" id="eligibilityList"></ul>
+        </section>
+
+        <section class="panel" id="extraPanel" style="display:none;">
+          <h2>Extra Useful Details</h2>
+          <ul class="info-list" id="extraList"></ul>
+        </section>
+
         <section class="panel" id="linksPanel" style="display:none;">
           <h2>Important Links</h2>
           <div class="actions">
             <a class="btn" id="applyBtn" href="#" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-arrow-up-right-from-square"></i> Apply Online</a>
             <a class="btn alt" id="officialBtn" href="#" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-file-lines"></i> Official Notification</a>
+            <a class="btn" id="websiteBtn" href="#" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-globe"></i> Official Website</a>
+            <a class="btn" id="admitCardBtn" href="#" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-id-card"></i> Admit Card</a>
+            <a class="btn" id="resultBtn" href="#" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-square-poll-vertical"></i> Result</a>
+            <a class="btn" id="syllabusBtn" href="#" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-book-open"></i> Syllabus</a>
+            <a class="btn" id="answerKeyBtn" href="#" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-key"></i> Answer Key</a>
           </div>
         </section>
 
@@ -227,7 +257,9 @@ const parseJobLastDate = (value = "") => {
   return Number.isNaN(parsed.getTime()) ? null : new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate(), 23, 59, 59, 999);
 };
 
-const isJobVisible = (lastDate) => {
+const isJobVisible = (job) => {
+  if(String(job.postStatus || "published").toLowerCase() === "draft"){ return false; }
+  const lastDate = job.lastDate || job.lastApplyDate;
   const date = parseJobLastDate(lastDate);
   return !date || Date.now() <= date.getTime() + (24 * 60 * 60 * 1000);
 };
@@ -370,7 +402,7 @@ if(!id){
     }
 
     const job = normalizeJob(snapshot.val());
-    if(!isJobVisible(job.lastDate)){
+    if(!isJobVisible(job)){
       message.textContent = "Is form ki last date nikal chuki hai, job public page se remove ho gayi hai.";
       wrap.style.display = "none";
       return;
@@ -380,7 +412,9 @@ if(!id){
     const type = job.type || "Online Form";
     const content = String(job.pageContent || "").trim();
 
-    document.title = `${title} | E-MITRA WALA`;
+    document.title = `${job.seoTitle || title} | E-MITRA WALA`;
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if(metaDescription && job.metaDescription){ metaDescription.setAttribute("content", job.metaDescription); }
     document.getElementById("jobType").textContent = type;
     document.getElementById("jobTitle").textContent = title;
     document.getElementById("jobIntro").textContent = `${type} - dates, qualification, apply link aur important details.`;
@@ -388,25 +422,76 @@ if(!id){
     document.getElementById("sheetSubTitle").textContent = `${title} ${type}`.trim();
 
     renderList("importantList", "importantPanel", [
+      { label:"Post Date", value:job.postDate },
       { label:"Application Start Date", value:job.startDate },
-      { label:"Last Date", value:job.lastDate, className:"danger-date" }
+      { label:"Last Date Apply Online", value:job.lastApplyDate || job.lastDate, className:"danger-date" },
+      { label:"Last Date Fee Payment", value:job.lastFeeDate },
+      { label:"Admit Card Date", value:job.admitCardDate },
+      { label:"Exam Date", value:job.examDate },
+      { label:"Result Date", value:job.resultDate }
     ]);
 
     renderList("jobInfoList", "jobInfoPanel", [
+      { label:"Department / Board Name", value:job.department },
+      { label:"Category", value:job.category },
+      { label:"Total Posts", value:job.totalPosts },
       { label:"Job Type", value:job.type },
-      { label:"Qualification", value:job.qualification },
-      { label:"Location", value:job.location, options:{ hideDefaultAllIndia:true } }
+      { label:"Job Location", value:job.location, options:{ hideDefaultAllIndia:true } },
+      { label:"Short Information", value:job.shortInfo }
     ]);
 
-    const applyBtn = document.getElementById("applyBtn");
-    const officialBtn = document.getElementById("officialBtn");
-    applyBtn.href = safeUrl(job.applyLink);
-    officialBtn.href = safeUrl(job.detailLink);
-    const hasApply = !applyBtn.href.endsWith("#");
-    const hasOfficial = !officialBtn.href.endsWith("#");
-    applyBtn.style.display = hasApply ? "inline-flex" : "none";
-    officialBtn.style.display = hasOfficial ? "inline-flex" : "none";
-    document.getElementById("linksPanel").style.display = hasApply || hasOfficial ? "block" : "none";
+    renderList("feeList", "feePanel", [
+      { label:"General / OBC Fee", value:job.generalObcFee },
+      { label:"SC / ST Fee", value:job.scStFee },
+      { label:"Female Fee", value:job.femaleFee },
+      { label:"Payment Mode", value:job.paymentMode }
+    ]);
+
+    renderList("ageList", "agePanel", [
+      { label:"Minimum Age", value:job.minAge },
+      { label:"Maximum Age", value:job.maxAge },
+      { label:"Age Relaxation", value:job.ageRelaxation },
+      { label:"Age Calculate Date", value:job.ageCalculateDate }
+    ]);
+
+    renderList("vacancyList", "vacancyPanel", [
+      { label:"Post Name", value:job.postName },
+      { label:"Total Vacancy", value:job.totalVacancy || job.totalPosts },
+      { label:"Category Wise Vacancy", value:job.categoryWiseVacancy },
+      { label:"State Wise Vacancy", value:job.stateWiseVacancy }
+    ]);
+
+    renderList("eligibilityList", "eligibilityPanel", [
+      { label:"Education Qualification", value:job.qualification },
+      { label:"Experience", value:job.experience },
+      { label:"Required Documents", value:job.requiredDocuments },
+      { label:"Physical Eligibility", value:job.physicalEligibility }
+    ]);
+
+    renderList("extraList", "extraPanel", [
+      { label:"Salary / Pay Scale", value:job.salary },
+      { label:"Selection Process", value:job.selectionProcess },
+      { label:"How to Apply", value:job.howToApply }
+    ]);
+
+    const linkButtons = [
+      ["applyBtn", job.applyLink],
+      ["officialBtn", job.detailLink],
+      ["websiteBtn", job.officialWebsite],
+      ["admitCardBtn", job.admitCardLink],
+      ["resultBtn", job.resultLink],
+      ["syllabusBtn", job.syllabusLink],
+      ["answerKeyBtn", job.answerKeyLink]
+    ];
+    let hasLink = false;
+    linkButtons.forEach(([buttonId, url]) => {
+      const button = document.getElementById(buttonId);
+      button.href = safeUrl(url);
+      const visible = !button.href.endsWith("#");
+      button.style.display = visible ? "inline-flex" : "none";
+      hasLink = hasLink || visible;
+    });
+    document.getElementById("linksPanel").style.display = hasLink ? "block" : "none";
 
     const contentBox = document.getElementById("pageContent");
     if(content){
