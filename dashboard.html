@@ -23,8 +23,8 @@
     header h1{color:#ff7a00;font-size:clamp(20px,3.4vw,28px);line-height:1.15;}
     header p{margin-top:3px;font-size:12px;}
 
-    nav{background:white;padding:7px 3%;display:flex;justify-content:center;gap:6px;flex-wrap:wrap;box-shadow:0 3px 12px rgba(0,0,0,.08);position:sticky;top:0;z-index:999;}
-    nav a,nav button{background:#0057a8;color:white;text-decoration:none;border:none;padding:6px 10px;border-radius:6px;font-weight:700;cursor:pointer;font-size:11px;line-height:1.15;}
+    nav{background:white;padding:10px 3%;display:grid;grid-template-columns:repeat(6,minmax(130px,1fr));gap:9px;box-shadow:0 3px 12px rgba(0,0,0,.08);position:sticky;top:0;z-index:999;}
+    nav a,nav button{background:#0057a8;color:white;text-decoration:none;border:none;padding:11px 14px;border-radius:8px;font-weight:800;cursor:pointer;font-size:13px;line-height:1.2;text-align:center;min-height:42px;display:flex;align-items:center;justify-content:center;}
     nav a:hover,nav button:hover{background:#ff7a00;color:#0057a8;}
 
     .dashboard{padding:15px 3%;max-width:1120px;margin:auto;}
@@ -93,8 +93,8 @@
       .form-box,.form-box.single,.job-form-box,.ad-form-box{grid-template-columns:1fr;}
       .job-form-box button,.ad-form-box button,.form-box textarea{grid-column:auto;}
       .manager{padding:10px 8px;}
-      nav{justify-content:flex-start;gap:6px;overflow-x:auto;flex-wrap:nowrap;}
-      nav a,nav button{padding:6px 8px;font-size:11px;white-space:nowrap;}
+      nav{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;overflow:visible;}
+      nav a,nav button{padding:9px 8px;font-size:12px;white-space:normal;min-height:40px;}
       .grid{grid-template-columns:repeat(auto-fit,minmax(125px,1fr));}
       .ops-strip{grid-template-columns:1fr 1fr;}
       .live-stats{grid-template-columns:1fr 1fr;}
