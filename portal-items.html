@@ -89,7 +89,7 @@
           <option value="admission">Admission Form</option>
         </select>
         <input type="text" id="itemTitle" placeholder="Title जैसे SSC CGL Final Result 2026">
-        <input type="url" id="itemUrl" placeholder="Link https://...">
+        <input type="url" id="itemUrl" placeholder="Link ya domain जैसे rssb.rajasthan.gov.in">
         <button id="saveBtn" onclick="savePortalItem()">Add</button>
         <button class="cancel" id="cancelBtn" onclick="cancelEdit()">Cancel</button>
       </div>
@@ -161,6 +161,16 @@
     const safeUrl = (value = "#") => {
       const url = String(value || "#").trim();
       return /^https?:\/\//i.test(url) ? url : "#";
+    };
+
+    const normalizePortalUrl = (value = "") => {
+      let url = String(value || "").trim();
+      if(!url){ return ""; }
+      url = url.replace(/\s+/g, "");
+      if(!/^https?:\/\//i.test(url)){
+        url = "https://" + url;
+      }
+      return url.replace(/\.+(?=\/?$)/, "");
     };
 
     const formatDate = (value) => {
@@ -248,10 +258,10 @@
       const selectedCategory = document.getElementById("itemCategory").value;
       const category = editing ? editing.category : selectedCategory;
       const title = document.getElementById("itemTitle").value.trim();
-      const url = document.getElementById("itemUrl").value.trim();
+      const url = normalizePortalUrl(document.getElementById("itemUrl").value);
 
       if(!title){ alert("Title जरूर भरें"); return; }
-      if(!url.startsWith("http://") && !url.startsWith("https://")){ alert("Link http:// या https:// से शुरू होना चाहिए"); return; }
+      if(!url){ alert("Link जरूर भरें"); return; }
 
       document.getElementById("itemStatus").innerText = editing ? "Updating..." : "Saving...";
       const data = { title, url, updatedAt:Date.now() };
