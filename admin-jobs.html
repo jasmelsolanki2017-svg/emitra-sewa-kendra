@@ -10,7 +10,7 @@
 <link rel="apple-touch-icon" href="favicon.png">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
-    *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins','Noto Sans Devanagari',sans-serif}body{background:#f7fbff;color:#172033}.topbar{background:#043a76;color:white;padding:6px 3%;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:12px}header{background:linear-gradient(135deg,#0057a8,#03224d);color:white;text-align:center;padding:16px 3%;border-bottom:3px solid #ff7a00}header h1{color:#ff7a00;font-size:clamp(22px,4vw,32px)}nav{background:white;padding:8px 3%;display:flex;gap:7px;flex-wrap:wrap;justify-content:center;box-shadow:0 3px 12px rgba(0,0,0,.08);position:sticky;top:0;z-index:10}nav a,nav button{background:#0057a8;color:white;border:0;text-decoration:none;padding:7px 11px;border-radius:6px;font-weight:700;font-size:12px;cursor:pointer}nav a:hover,nav button:hover{background:#ff7a00;color:#03224d}main{max-width:1120px;margin:auto;padding:16px 3% 34px}.panel{background:white;border:1px solid #d8e6f5;border-top:3px solid #ff7a00;border-radius:7px;padding:12px;margin-bottom:14px;box-shadow:0 4px 14px rgba(0,0,0,.07)}.admin-info{text-align:center;background:#eaf4ff;border-left:4px solid #ff7a00;border-top:0}.panel h2{color:#0057a8;font-size:18px;margin-bottom:8px}.form{display:grid;grid-template-columns:1fr 1fr;gap:9px}.form-section{grid-column:1/-1;border:1px solid #d8e6f5;border-radius:7px;padding:10px;background:#fbfdff}.form-section h3{font-size:14px;color:#03224d;margin-bottom:8px}.section-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.form input,.form textarea,.form select{width:100%;min-width:0;padding:8px 9px;border:1px solid #bdd0e5;border-radius:6px;font-size:12px;background:white}.form textarea{min-height:72px;resize:vertical}.wide{grid-column:1/-1}.buttons{display:grid;grid-template-columns:1fr 1fr;gap:7px;grid-column:1/-1}button{border:0;border-radius:6px;padding:8px 11px;font-size:12px;font-weight:800;cursor:pointer;background:#0057a8;color:white}.cancel{background:#555;display:none}.delete{background:#d90000}.edit{background:#ff7a00;color:#03224d}.status{font-weight:800;color:#0057a8;margin-top:8px;font-size:12px}.row{background:#eaf4ff;border-left:3px solid #0057a8;border-radius:7px;padding:9px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:10px}.row strong{color:#0057a8;font-size:14px;line-height:1.35;overflow-wrap:anywhere}.row small{display:block;color:#56677c;font-weight:700;margin-top:2px}.job-name{min-width:0;flex:1}.actions{display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0}.empty{padding:18px;text-align:center;color:#55657a;font-weight:700}@media(max-width:720px){.form,.buttons,.section-grid{grid-template-columns:1fr}.wide,.buttons{grid-column:auto}nav{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap}nav a,nav button{white-space:nowrap}.row{align-items:flex-start}.actions{margin-left:auto}}
+    *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins','Noto Sans Devanagari',sans-serif}body{background:#f7fbff;color:#172033}.topbar{background:#043a76;color:white;padding:6px 3%;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:12px}header{background:linear-gradient(135deg,#0057a8,#03224d);color:white;text-align:center;padding:16px 3%;border-bottom:3px solid #ff7a00}header h1{color:#ff7a00;font-size:clamp(22px,4vw,32px)}nav{background:white;padding:8px 3%;display:flex;gap:7px;flex-wrap:wrap;justify-content:center;box-shadow:0 3px 12px rgba(0,0,0,.08);position:sticky;top:0;z-index:10}nav a,nav button{background:#0057a8;color:white;border:0;text-decoration:none;padding:7px 11px;border-radius:6px;font-weight:700;font-size:12px;cursor:pointer}nav a:hover,nav button:hover{background:#ff7a00;color:#03224d}main{max-width:1120px;margin:auto;padding:16px 3% 34px}.panel{background:white;border:1px solid #d8e6f5;border-top:3px solid #ff7a00;border-radius:7px;padding:12px;margin-bottom:14px;box-shadow:0 4px 14px rgba(0,0,0,.07)}.admin-info{text-align:center;background:#eaf4ff;border-left:4px solid #ff7a00;border-top:0}.panel h2{color:#0057a8;font-size:18px;margin-bottom:8px}.form{display:grid;grid-template-columns:1fr 1fr;gap:9px}.form-section{grid-column:1/-1;border:1px solid #d8e6f5;border-radius:7px;padding:10px;background:#fbfdff}.form-section h3{font-size:14px;color:#03224d;margin-bottom:8px}.section-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.form input,.form textarea,.form select,.ai-panel textarea{width:100%;min-width:0;padding:8px 9px;border:1px solid #bdd0e5;border-radius:6px;font-size:12px;background:white}.form textarea{min-height:72px;resize:vertical}.wide{grid-column:1/-1}.buttons,.ai-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;grid-column:1/-1}button{border:0;border-radius:6px;padding:8px 11px;font-size:12px;font-weight:800;cursor:pointer;background:#0057a8;color:white}.cancel{background:#555;display:none}.delete{background:#d90000}.edit{background:#ff7a00;color:#03224d}.ai-toolbar{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 10px}.ai-panel{display:none;border:1px solid #bdd0e5;border-left:4px solid #0057a8;background:#fbfdff;border-radius:7px;padding:10px;margin-bottom:12px}.ai-panel.open{display:block}.ai-panel textarea{min-height:170px;font-family:Consolas,monospace;resize:vertical}.ai-status{font-size:12px;font-weight:800;color:#0057a8;margin-top:7px}.status{font-weight:800;color:#0057a8;margin-top:8px;font-size:12px}.row{background:#eaf4ff;border-left:3px solid #0057a8;border-radius:7px;padding:9px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:10px}.row strong{color:#0057a8;font-size:14px;line-height:1.35;overflow-wrap:anywhere}.row small{display:block;color:#56677c;font-weight:700;margin-top:2px}.job-name{min-width:0;flex:1}.actions{display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0}.empty{padding:18px;text-align:center;color:#55657a;font-weight:700}@media(max-width:720px){.form,.buttons,.section-grid,.ai-actions{grid-template-columns:1fr}.wide,.buttons{grid-column:auto}nav{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap}nav a,nav button{white-space:nowrap}.row{align-items:flex-start}.actions{margin-left:auto}}
   </style>
 </head>
 <body>
@@ -21,6 +21,17 @@
     <section class="panel admin-info"><h2 id="accessTitle">Admin Access Checking...</h2><p id="adminEmailText">Please wait...</p></section>
     <section class="panel">
       <h2 id="formTitle">Add Job</h2>
+      <div class="ai-toolbar">
+        <button type="button" onclick="toggleAiPaste()">Paste AI Data</button>
+      </div>
+      <div class="ai-panel" id="aiPastePanel">
+        <textarea id="aiJsonInput" placeholder='ChatGPT JSON yahan paste karein'></textarea>
+        <div class="ai-actions">
+          <button type="button" onclick="fillJobFromAiJson()">Fill Form</button>
+          <button type="button" class="cancel" style="display:block" onclick="clearAiJson()">Clear AI Data</button>
+        </div>
+        <div id="aiJsonStatus" class="ai-status"></div>
+      </div>
       <div class="form">
         <div class="form-section"><h3>Basic Details</h3><div class="section-grid">
           <input id="jobTitle" placeholder="Post Title">
@@ -99,7 +110,7 @@
     import { getDatabase,ref,push,set,update,remove,onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
     const firebaseConfig={apiKey:"AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",authDomain:"my-website-73785.firebaseapp.com",databaseURL:"https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app/",projectId:"my-website-73785",storageBucket:"my-website-73785.firebasestorage.app",messagingSenderId:"854088341990",appId:"1:854088341990:web:3211d4ef9fe4b78d025e27"};
     const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getDatabase(app),adminEmail="jasmelsolanki@gmail.com",jobsRef=ref(db,"LatestJobs");let adminAllowed=false,editingJobId=null,latestJobsCache={};
-    const accessTitle=document.getElementById("accessTitle"),adminEmailText=document.getElementById("adminEmailText"),formTitle=document.getElementById("formTitle"),jobSubmitBtn=document.getElementById("jobSubmitBtn"),jobCancelBtn=document.getElementById("jobCancelBtn"),jobStatus=document.getElementById("jobStatus"),adminJobsList=document.getElementById("adminJobsList");
+    const accessTitle=document.getElementById("accessTitle"),adminEmailText=document.getElementById("adminEmailText"),formTitle=document.getElementById("formTitle"),jobSubmitBtn=document.getElementById("jobSubmitBtn"),jobCancelBtn=document.getElementById("jobCancelBtn"),jobStatus=document.getElementById("jobStatus"),adminJobsList=document.getElementById("adminJobsList"),aiPastePanel=document.getElementById("aiPastePanel"),aiJsonInput=document.getElementById("aiJsonInput"),aiJsonStatus=document.getElementById("aiJsonStatus");
     const fieldIds=["jobTitle","jobDepartment","jobCategory","jobTotalPosts","jobLocation","jobPostDate","jobLastDate","jobShortInfo","jobStartDate","jobLastApplyDate","jobLastFeeDate","jobAdmitCardDate","jobExamDate","jobResultDate","jobGeneralObcFee","jobScStFee","jobFemaleFee","jobPaymentMode","jobMinAge","jobMaxAge","jobAgeRelaxation","jobAgeCalculateDate","jobPostName","jobTotalVacancy","jobCategoryWiseVacancy","jobStateWiseVacancy","jobQualification","jobExperience","jobRequiredDocuments","jobPhysicalEligibility","jobApplyLink","jobDetailLink","jobOfficialWebsite","jobAdmitCardLink","jobResultLink","jobSyllabusLink","jobAnswerKeyLink","jobType","jobSalary","jobSelectionProcess","jobHowToApply","jobSeoTitle","jobMetaDescription","jobPostStatus","jobPageContent"];
     const fields=Object.fromEntries(fieldIds.map((id)=>[id,document.getElementById(id)]));
     const escapeHTML=(v="")=>String(v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
@@ -108,7 +119,63 @@
     const normalizeJob=(v)=>typeof v==="string"?{title:v,type:"Online Form",createdAt:0}:(v&&typeof v==="object"?v:{});
     const parseJobLastDate=(value="")=>{const text=String(value||"").trim();if(!text||/update soon/i.test(text))return null;const months={jan:0,january:0,feb:1,february:1,mar:2,march:2,apr:3,april:3,may:4,jun:5,june:5,jul:6,july:6,aug:7,august:7,sep:8,sept:8,september:8,oct:9,october:9,nov:10,november:10,dec:11,december:11};let m=text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);if(m)return new Date(Number(m[1]),Number(m[2])-1,Number(m[3]),23,59,59,999);m=text.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/);if(m)return new Date(Number(m[3]),Number(m[2])-1,Number(m[1]),23,59,59,999);m=text.match(/^(\d{1,2})\s+([a-zA-Z]+)\s+(\d{4})$/);if(m&&months[m[2].toLowerCase()]!==undefined)return new Date(Number(m[3]),months[m[2].toLowerCase()],Number(m[1]),23,59,59,999);const parsed=new Date(text);return Number.isNaN(parsed.getTime())?null:new Date(parsed.getFullYear(),parsed.getMonth(),parsed.getDate(),23,59,59,999)};
     const getField=(id)=>fields[id].value.trim();
-    const setField=(id,value="")=>{fields[id].value=value||""};
+    const valueToText=(value)=>{if(value===undefined||value===null)return "";if(Array.isArray(value))return value.map(valueToText).filter(Boolean).join("\n");if(typeof value==="object")return Object.entries(value).map(([key,val])=>`${key}: ${valueToText(val)}`).filter((line)=>line.trim()!==":").join("\n");return String(value).trim()};
+    const setField=(id,value="")=>{fields[id].value=valueToText(value)};
+    const normalizeAiKey=(key="")=>String(key).toLowerCase().replace(/[^a-z0-9]/g,"");
+    const flattenAiData=(input,prefix="",out={})=>{if(Array.isArray(input)){out[normalizeAiKey(prefix)]=valueToText(input);return out}if(input&&typeof input==="object"){Object.entries(input).forEach(([key,value])=>{const next=prefix?`${prefix}.${key}`:key;if(value&&typeof value==="object"&&!Array.isArray(value)){flattenAiData(value,next,out)}else{const direct=normalizeAiKey(key),full=normalizeAiKey(next),text=valueToText(value);if(text){out[full]=text;if(!out[direct])out[direct]=text}}});return out}return out};
+    const pickAiValue=(lookup,keys)=>{for(const key of keys){const found=lookup[normalizeAiKey(key)];if(found)return found}return ""};
+    const extractAiJsonText=(text)=>{let raw=String(text||"").trim();raw=raw.replace(/^```(?:json)?/i,"").replace(/```$/,"").trim();const firstBrace=raw.search(/[\[{]/),lastObject=raw.lastIndexOf("}"),lastArray=raw.lastIndexOf("]"),lastBrace=Math.max(lastObject,lastArray);return firstBrace>=0&&lastBrace>firstBrace?raw.slice(firstBrace,lastBrace+1):raw};
+    const parseAiJson=()=>{const raw=extractAiJsonText(aiJsonInput.value);if(!raw)throw new Error("JSON paste karein.");const parsed=JSON.parse(raw);if(Array.isArray(parsed)){if(!parsed.length)throw new Error("JSON list empty hai.");return parsed[0]}return parsed.job||parsed.data||parsed.latestJob||parsed.latest_job||parsed};
+    const aiFieldMap={
+      jobTitle:["jobTitle","title","postTitle","notificationTitle","recruitmentTitle","vacancyTitle","name"],
+      jobDepartment:["jobDepartment","department","board","organization","organisation","authority","recruitingBody"],
+      jobCategory:["jobCategory","category","jobCategoryName","typeCategory"],
+      jobTotalPosts:["jobTotalPosts","totalPosts","totalPost","noOfPosts","posts","vacancies"],
+      jobLocation:["jobLocation","location","place","jobPlace"],
+      jobPostDate:["jobPostDate","postDate","publishedDate","notificationDate","releaseDate"],
+      jobLastDate:["jobLastDate","lastDate","lastApplyDate","applicationLastDate","lastDateApplyOnline","closingDate"],
+      jobShortInfo:["jobShortInfo","shortInfo","summary","description","about","overview"],
+      jobStartDate:["jobStartDate","startDate","applicationStartDate","applyStartDate","importantDates.startDate"],
+      jobLastApplyDate:["jobLastApplyDate","lastApplyDate","applicationLastDate","importantDates.lastApplyDate","importantDates.lastDate"],
+      jobLastFeeDate:["jobLastFeeDate","lastFeeDate","feeLastDate","importantDates.lastFeeDate","importantDates.feePaymentLastDate"],
+      jobAdmitCardDate:["jobAdmitCardDate","admitCardDate","importantDates.admitCardDate"],
+      jobExamDate:["jobExamDate","examDate","importantDates.examDate"],
+      jobResultDate:["jobResultDate","resultDate","importantDates.resultDate"],
+      jobGeneralObcFee:["jobGeneralObcFee","generalObcFee","applicationFee.generalObc","fees.generalObc","generalFee","obcFee"],
+      jobScStFee:["jobScStFee","scStFee","applicationFee.scSt","fees.scSt","scFee","stFee"],
+      jobFemaleFee:["jobFemaleFee","femaleFee","applicationFee.female","fees.female"],
+      jobPaymentMode:["jobPaymentMode","paymentMode","feePaymentMode","applicationFee.paymentMode"],
+      jobMinAge:["jobMinAge","minAge","minimumAge","ageLimit.minAge","ageLimit.minimumAge"],
+      jobMaxAge:["jobMaxAge","maxAge","maximumAge","ageLimit.maxAge","ageLimit.maximumAge"],
+      jobAgeRelaxation:["jobAgeRelaxation","ageRelaxation","ageLimit.relaxation"],
+      jobAgeCalculateDate:["jobAgeCalculateDate","ageCalculateDate","ageLimit.ageCalculateDate","ageAsOn"],
+      jobPostName:["jobPostName","postName","designation"],
+      jobTotalVacancy:["jobTotalVacancy","totalVacancy","vacancy","vacancyDetails.totalVacancy"],
+      jobCategoryWiseVacancy:["jobCategoryWiseVacancy","categoryWiseVacancy","vacancyDetails.categoryWise","categoryWise"],
+      jobStateWiseVacancy:["jobStateWiseVacancy","stateWiseVacancy","vacancyDetails.stateWise","stateWise"],
+      jobQualification:["jobQualification","qualification","educationQualification","eligibility.qualification","eligibility.education"],
+      jobExperience:["jobExperience","experience","eligibility.experience"],
+      jobRequiredDocuments:["jobRequiredDocuments","requiredDocuments","documents","documentList"],
+      jobPhysicalEligibility:["jobPhysicalEligibility","physicalEligibility","eligibility.physicalEligibility"],
+      jobApplyLink:["jobApplyLink","applyLink","applyOnlineLink","links.apply","importantLinks.applyOnline"],
+      jobDetailLink:["jobDetailLink","detailLink","notificationPdf","officialNotification","officialNotificationPdf","links.notification","importantLinks.notification"],
+      jobOfficialWebsite:["jobOfficialWebsite","officialWebsite","website","links.officialWebsite","importantLinks.officialWebsite"],
+      jobAdmitCardLink:["jobAdmitCardLink","admitCardLink","links.admitCard"],
+      jobResultLink:["jobResultLink","resultLink","links.result"],
+      jobSyllabusLink:["jobSyllabusLink","syllabusLink","links.syllabus"],
+      jobAnswerKeyLink:["jobAnswerKeyLink","answerKeyLink","links.answerKey"],
+      jobType:["jobType","type","formType"],
+      jobSalary:["jobSalary","salary","payScale","pay"],
+      jobSelectionProcess:["jobSelectionProcess","selectionProcess","selection"],
+      jobHowToApply:["jobHowToApply","howToApply","applyProcess","applicationProcess"],
+      jobSeoTitle:["jobSeoTitle","seoTitle"],
+      jobMetaDescription:["jobMetaDescription","metaDescription","seoDescription"],
+      jobPostStatus:["jobPostStatus","postStatus","status"],
+      jobPageContent:["jobPageContent","pageContent","extraContent","fullDetails","fullNotificationDetails"]
+    };
+    window.toggleAiPaste=()=>{aiPastePanel.classList.toggle("open");if(aiPastePanel.classList.contains("open"))aiJsonInput.focus()};
+    window.clearAiJson=()=>{aiJsonInput.value="";aiJsonStatus.innerText=""};
+    window.fillJobFromAiJson=()=>{try{const data=parseAiJson(),lookup=flattenAiData(data);let filled=0;Object.entries(aiFieldMap).forEach(([fieldId,keys])=>{const value=pickAiValue(lookup,keys);if(value){setField(fieldId,value);filled++}});if(!getField("jobType"))setField("jobType","Online Form");if(!getField("jobPostStatus"))setField("jobPostStatus","published");if(!getField("jobPageContent")){const extra=["Important Dates","Application Fee","Age Limit","Vacancy Details","Eligibility","Selection Process","How To Apply"].map((label)=>{const key=normalizeAiKey(label);return lookup[key]?`${label}:\n${lookup[key]}`:""}).filter(Boolean).join("\n\n");if(extra)setField("jobPageContent",extra)}aiJsonStatus.innerText=filled?`${filled} fields fill ho gaye. Ab check karke Add Job dabayein.`:"JSON read hua, par matching fields nahi mile.";jobStatus.innerText="AI data form me bhar diya gaya. Post karne se pehle details check karein.";aiPastePanel.classList.remove("open");scrollTo({top:0,behavior:"smooth"})}catch(error){aiJsonStatus.innerText="JSON error: "+error.message}};
     const getForm=()=>({
       title:getField("jobTitle"),department:getField("jobDepartment"),category:getField("jobCategory"),totalPosts:getField("jobTotalPosts"),location:getField("jobLocation"),postDate:getField("jobPostDate"),lastDate:getField("jobLastDate"),shortInfo:getField("jobShortInfo"),
       startDate:getField("jobStartDate"),lastApplyDate:getField("jobLastApplyDate"),lastFeeDate:getField("jobLastFeeDate"),admitCardDate:getField("jobAdmitCardDate"),examDate:getField("jobExamDate"),resultDate:getField("jobResultDate"),
