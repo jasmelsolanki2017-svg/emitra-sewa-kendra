@@ -618,12 +618,6 @@ Cook | 1426 |"></textarea>
     return Number.isNaN(parsed.getTime()) ? null : new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate(), 23, 59, 59, 999);
   };
 
-  const shouldDeleteJobAfterLastDate = (lastDate) => {
-    const date = parseJobLastDate(lastDate);
-    if(!date){ return false; }
-    return Date.now() > date.getTime() + (24 * 60 * 60 * 1000);
-  };
-
   const getJobFormData = () => ({
     title:document.getElementById("jobTitle").value.trim(),
     type:document.getElementById("jobType").value.trim(),
@@ -646,15 +640,6 @@ Cook | 1426 |"></textarea>
     document.getElementById("jobApplyLink").value = "";
     document.getElementById("jobDetailLink").value = "";
     document.getElementById("jobPageContent").value = "";
-  };
-
-  const cleanupExpiredJobs = () => {
-    if(!adminAllowed || !window.latestJobsCache){ return; }
-    Object.entries(window.latestJobsCache).forEach(([id, data]) => {
-      if(shouldDeleteJobAfterLastDate(data.lastDate)){
-        remove(ref(db, "LatestJobs/" + id)).catch(() => {});
-      }
-    });
   };
 
   onAuthStateChanged(auth, (user) => {
@@ -1099,6 +1084,15 @@ Cook | 1426 |"></textarea>
     }
   };
 
+  window.toggleJobVisibility = (id) => {
+    if(!adminAllowed){ alert("Admin verify नहीं हुआ।"); return; }
+    const data = window.latestJobsCache && window.latestJobsCache[id];
+    if(!data){ alert("Job data load nahi hua. Page refresh karke try karein."); return; }
+    const nextStatus = String(data.postStatus || "published").toLowerCase() === "draft" ? "published" : "draft";
+    update(ref(db, "LatestJobs/" + id), { postStatus:nextStatus, updatedAt:Date.now() })
+    .catch((error) => alert("Error: " + error.message));
+  };
+
   onValue(jobsRef, (snapshot) => {
     const list = document.getElementById("adminJobsList");
     list.innerHTML = "";
@@ -1110,10 +1104,6 @@ Cook | 1426 |"></textarea>
 
       snapshot.forEach((child) => {
         const data = normalizeJob(child.val());
-        if(shouldDeleteJobAfterLastDate(data.lastDate)){
-          remove(ref(db, "LatestJobs/" + child.key)).catch(() => {});
-          return;
-        }
         window.latestJobsCache[child.key] = data;
         jobs.push({ id:child.key, data:data });
       });
@@ -1123,11 +1113,13 @@ Cook | 1426 |"></textarea>
 
       jobs.forEach(({ id, data }) => {
         const lastDateText = escapeHTML(data.lastDate || "Update Soon");
+        const isHidden = String(data.postStatus || "published").toLowerCase() === "draft";
 
         list.innerHTML += `
           <div class="row">
             <div>
               <strong>${escapeHTML(data.title)}</strong>
+              <small>Status: ${isHidden ? "Hidden" : "Published"}</small>
               <small>Type: ${escapeHTML(data.type || "Online Form")}</small>
               <small>Start Date: ${escapeHTML(data.startDate || "Update Soon")}</small>
               <small>Last Date: <span class="danger-date">${lastDateText}</span></small>
@@ -1142,6 +1134,7 @@ Cook | 1426 |"></textarea>
             </div>
             <div>
               <button class="edit-btn" onclick="editLatestJob('${id}')">Edit</button>
+              <button class="edit-btn" onclick="toggleJobVisibility('${id}')">${isHidden ? "Unhide" : "Hide"}</button>
               <button class="delete-btn" onclick="deleteLatestJob('${id}')">Delete</button>
             </div>
           </div>
@@ -1149,7 +1142,7 @@ Cook | 1426 |"></textarea>
       });
 
       if(jobs.length === 0){
-        list.innerHTML = "<p>Expired jobs delete ho chuki hain. Abhi koi Latest Job save नहीं है।</p>";
+        list.innerHTML = "<p>अभी कोई Latest Job save नहीं है।</p>";
       }
     } else {
       list.innerHTML = "<p>अभी कोई Latest Job save नहीं है।</p>";
@@ -1157,7 +1150,6 @@ Cook | 1426 |"></textarea>
     setCount("jobsCount", activeJobsCount);
   });
 
-  setInterval(cleanupExpiredJobs, 60 * 60 * 1000);
 </script>
 
 <button class="theme-toggle" type="button" aria-label="Toggle dark mode" title="Dark mode" onclick="toggleDarkMode()"><span class="theme-symbol" aria-hidden="true">☾</span></button>
