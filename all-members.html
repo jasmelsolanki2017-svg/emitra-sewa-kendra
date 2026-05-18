@@ -132,6 +132,10 @@
     <section class="create-member">
       <h2>Add New User</h2>
       <p>Admin yahan se user banayega to account seedha active rahega. Gmail verification ki zarurat nahi hogi.</p>
+      <div class="create-grid" style="margin-bottom:8px;">
+        <input type="url" id="adminServerUrl" placeholder="Render Server URL जैसे https://your-app.onrender.com">
+        <button type="button" onclick="saveAdminServerUrl()">Save Server URL</button>
+      </div>
       <div class="create-grid">
         <input type="text" id="newMemberName" placeholder="Name">
         <input type="email" id="newMemberEmail" placeholder="Email ID">
@@ -222,6 +226,11 @@
     let memberFiles = {};
     let memberCloudLinks = {};
     let activeMemberUid = "";
+    const adminServerStorageKey = "emitraAdminServerUrl";
+    const adminServerUrlInput = document.getElementById("adminServerUrl");
+    if(adminServerUrlInput){
+      adminServerUrlInput.value = localStorage.getItem(adminServerStorageKey) || "";
+    }
 
     const escapeHTML = (value = "") => String(value)
       .replace(/&/g, "&amp;")
@@ -534,6 +543,27 @@
       renderMembers();
     };
 
+    const getAdminServerUrl = () => String(localStorage.getItem(adminServerStorageKey) || "").trim().replace(/\/+$/, "");
+    const isStaticHosted = () => /^emitrawala\.online$|github\.io$/i.test(window.location.hostname);
+    const adminApiUrl = (path) => {
+      const base = getAdminServerUrl();
+      if(base){ return base + path; }
+      if(isStaticHosted()){
+        throw new Error("Render Server URL save karein, phir dobara try karein.");
+      }
+      return path;
+    };
+
+    window.saveAdminServerUrl = () => {
+      const value = adminServerUrlInput.value.trim().replace(/\/+$/, "");
+      if(value && !/^https?:\/\/[^/]+/i.test(value)){
+        document.getElementById("createMemberStatus").innerText = "Server URL https:// se start hona chahiye.";
+        return;
+      }
+      localStorage.setItem(adminServerStorageKey, value);
+      document.getElementById("createMemberStatus").innerText = value ? "Server URL save ho gaya." : "Server URL clear ho gaya.";
+    };
+
     async function callAdminApi(path, body){
       const user = auth.currentUser;
       if(!user){
@@ -541,7 +571,8 @@
       }
 
       const token = await user.getIdToken();
-      const response = await fetch(path, {
+      const url = adminApiUrl(path);
+      const response = await fetch(url, {
         method:"POST",
         headers:{
           "Content-Type":"application/json",
@@ -552,7 +583,7 @@
       const data = await response.json().catch(() => ({}));
 
       if(!response.ok || data.ok === false){
-        throw new Error(data.error || "Server action failed");
+        throw new Error(data.error || `Server action failed (${response.status})`);
       }
 
       return data;
