@@ -69,6 +69,11 @@
     .file-row button{border:0;border-radius:5px;padding:6px 8px;font-size:10px;font-weight:800;background:#0057a8;color:white;cursor:pointer;margin-left:4px;}
     .file-row .preview{background:#138a36;}
     .file-row .danger{background:#d90000;}
+    .admin-upload{margin-top:8px;background:#eef8ff;border:1px solid #cfe2f5;border-left:3px solid #138a36;border-radius:6px;padding:8px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;align-items:center;}
+    .admin-upload input{width:100%;min-width:0;padding:7px 8px;border:1px solid #c9d9ea;border-radius:6px;font-size:12px;background:white;}
+    .admin-upload button{border:0;border-radius:6px;padding:8px 10px;font-size:11px;font-weight:800;background:#138a36;color:white;cursor:pointer;}
+    .admin-upload button:hover{background:#ff7a00;color:#03224d;}
+    .admin-upload-status{grid-column:1 / -1;color:#0057a8;font-size:11px;font-weight:800;min-height:14px;}
     .preview-modal{position:fixed;inset:0;background:rgba(3,34,77,.72);display:none;align-items:center;justify-content:center;padding:18px;z-index:9000;}
     .preview-modal.open{display:flex;}
     .preview-dialog{width:min(980px,96vw);height:min(760px,88vh);background:white;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,.35);display:flex;flex-direction:column;overflow:hidden;}
@@ -101,7 +106,8 @@
       .member-card.open{grid-column:auto;}
       .edit-grid{grid-template-columns:1fr;}
       .edit-grid textarea{grid-column:auto;}
-      .file-row,.cloud-link-row,.link-grid{grid-template-columns:1fr;}
+      .file-row,.cloud-link-row,.link-grid,.admin-upload{grid-template-columns:1fr;}
+      .admin-upload-status{grid-column:auto;}
     }
   </style>
 </head>
@@ -255,6 +261,11 @@
       if(size >= 1024){ return (size / 1024).toFixed(1) + " KB"; }
       return size + " B";
     };
+
+    const cleanFileName = (name = "file") => String(name)
+      .replace(/[^a-zA-Z0-9._-]+/g, "-")
+      .replace(/-+/g, "-")
+      .slice(0, 90) || "file";
 
     const getMemberLimitBytes = (member) => {
       const direct = Number(member.storageLimitBytes || 0);
@@ -446,6 +457,11 @@
                   </div>
                 </div>
               `).join("") : '<div class="storage-line">No uploaded files</div>'}
+            </div>
+            <div class="admin-upload">
+              <input data-uid="${escapeHTML(uid)}" data-field="adminUploadFiles" type="file" multiple>
+              <button type="button" onclick="uploadMemberFile('${escapeHTML(uid)}')">Upload For User</button>
+              <div class="admin-upload-status" id="adminUploadStatus-${escapeHTML(uid)}">Admin yahan se user ke My Data Folder me file upload kar sakta hai.</div>
             </div>
 
             <div class="storage-line">My Data Folder Links</div>
@@ -687,6 +703,81 @@
       }).catch((error) => {
         alert("Data link delete nahi hua: " + error.message);
       });
+    };
+
+    window.uploadMemberFile = async (uid) => {
+      if(!adminAllowed){ alert("Admin verify nahi hua."); return; }
+      const input = document.querySelector(`[data-uid="${CSS.escape(uid)}"][data-field="adminUploadFiles"]`);
+      const status = document.getElementById("adminUploadStatus-" + uid);
+      const files = Array.from(input?.files || []);
+      const member = (allMembers.find((item) => item.uid === uid) || {}).member || {};
+
+      if(!files.length){
+        alert("Upload ke liye file select karein.");
+        return;
+      }
+
+      const used = Number(member.storageUsedBytes || 0);
+      const limit = getMemberLimitBytes(member);
+      const totalSize = files.reduce((sum, file) => sum + Number(file.size || 0), 0);
+      if(used + totalSize > limit){
+        const message = `Storage limit full hai. Selected files ${formatBytes(totalSize)} hain. Pehle storage limit badhayein ya old file delete karein.`;
+        if(status){ status.innerText = message; }
+        return;
+      }
+
+      let uploadedBytes = 0;
+      let uploadedCount = 0;
+      const failed = [];
+
+      for(let index = 0; index < files.length; index += 1){
+        const file = files[index];
+        const fileRecordRef = push(ref(db, "memberFiles/" + uid));
+        const path = `${uid}/${fileRecordRef.key}-admin-${cleanFileName(file.name)}`;
+        if(status){ status.innerText = `Upload ho raha hai... ${index + 1}/${files.length}`; }
+
+        try{
+          const { error } = await supabase.storage.from(supabaseBucket).upload(path, file, {
+            cacheControl:"3600",
+            contentType:file.type || "application/octet-stream",
+            upsert:false
+          });
+          if(error){ throw error; }
+
+          uploadedBytes += Number(file.size || 0);
+          uploadedCount += 1;
+          await set(fileRecordRef, {
+            name:file.name,
+            size:file.size,
+            type:file.type || "",
+            path:path,
+            storageProvider:"supabase",
+            bucket:supabaseBucket,
+            downloadUrl:getSupabasePublicUrl(path),
+            uploadedAt:Date.now(),
+            uploadedBy:auth.currentUser?.email || adminEmail,
+            uploadedByRole:"admin"
+          });
+        }catch(error){
+          failed.push(`${file.name}: ${error.message}`);
+        }
+      }
+
+      if(uploadedCount > 0){
+        await update(ref(db, "members/" + uid), {
+          storageUsedBytes:used + uploadedBytes,
+          storageLimitBytes:limit,
+          uploadApproved:member.uploadApproved === true,
+          updatedAt:Date.now()
+        });
+        input.value = "";
+      }
+
+      if(status){
+        status.innerText = failed.length
+          ? `Uploaded: ${uploadedCount}, Failed: ${failed.length}. ${failed.slice(0, 2).join(" | ")}`
+          : `${uploadedCount} file user ke My Data Folder me upload ho gayi.`;
+      }
     };
 
     window.downloadMemberFile = (uid, fileId) => {
