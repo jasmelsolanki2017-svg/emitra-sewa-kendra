@@ -1319,6 +1319,24 @@ body.dark-mode .nav-logo img {
     return /^https?:\/\//i.test(url) ? url : "#";
   };
 
+  const normalizeMobile = (value = "") => {
+    const digits = String(value || "").replace(/\D/g, "");
+    let mobileDigits = digits;
+    if(mobileDigits.length === 11 && mobileDigits.startsWith("0")){
+      mobileDigits = "91" + mobileDigits.slice(1);
+    }else if(mobileDigits.length === 10){
+      mobileDigits = "91" + mobileDigits;
+    }
+    if(!(mobileDigits.length === 12 && mobileDigits.startsWith("91"))){
+      return null;
+    }
+    return {
+      key:mobileDigits,
+      e164:"+" + mobileDigits,
+      display:mobileDigits.slice(2)
+    };
+  };
+
   const formatBytes = (bytes = 0) => {
     const size = Number(bytes || 0);
     if(size >= 1024 * 1024){
@@ -1624,23 +1642,50 @@ body.dark-mode .nav-logo img {
     const mobile = document.getElementById("profileMobile").value.trim();
     const profileEmail = document.getElementById("profileEmail").value.trim();
     const status = document.getElementById("profileStatus");
+    const oldMobile = normalizeMobile(currentMember.mobile || currentMember.phoneNumber || "");
+    const newMobile = mobile ? normalizeMobile(mobile) : null;
 
     if(profileEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profileEmail)){
       status.innerText = "Valid profile email likhein.";
       return;
     }
 
-    if(mobile && !/^[0-9+\-\s]{8,15}$/.test(mobile)){
+    if(mobile && !newMobile){
       status.innerText = "Valid mobile number likhein.";
       return;
     }
 
     status.innerText = "Saving profile...";
-    update(ref(db, "members/" + currentUser.uid), {
+    const memberData = {
+      ...currentMember,
       name:name || (currentUser.email || "").split("@")[0],
-      mobile:mobile,
+      mobile:newMobile ? newMobile.display : "",
+      mobileKey:newMobile ? newMobile.key : "",
+      phoneNumber:newMobile ? newMobile.e164 : "",
       profileEmail:profileEmail || currentUser.email || "",
       updatedAt:Date.now()
+    };
+
+    const indexUpdates = {};
+    if(oldMobile && (!newMobile || oldMobile.key !== newMobile.key)){
+      indexUpdates["mobileIndex/" + oldMobile.key] = null;
+    }
+
+    if(newMobile){
+      indexUpdates["mobileIndex/" + newMobile.key] = {
+        uid:currentUser.uid,
+        email:currentUser.email || currentMember.email || "",
+        mobile:newMobile.display,
+        phoneNumber:newMobile.e164,
+        updatedAt:Date.now()
+      };
+    }
+
+    update(ref(db, "members/" + currentUser.uid), memberData).then(() => {
+      if(Object.keys(indexUpdates).length){
+        return update(ref(db), indexUpdates).catch(() => {});
+      }
+      return null;
     }).then(() => {
       status.innerText = "Profile saved.";
     }).catch((error) => {

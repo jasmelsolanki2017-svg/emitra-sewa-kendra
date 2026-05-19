@@ -8,6 +8,12 @@
         ".write": "auth != null && (auth.uid === $uid || auth.token.email === 'jasmelsolanki@gmail.com')"
       }
     },
+    "mobileIndex": {
+      "$mobile": {
+        ".read": true,
+        ".write": "auth != null && (newData.val() === null || newData.child('uid').val() === auth.uid || auth.token.email === 'jasmelsolanki@gmail.com')"
+      }
+    },
     "memberFiles": {
       "$uid": {
         ".read": "auth != null && (auth.uid === $uid || auth.token.email === 'jasmelsolanki@gmail.com')",

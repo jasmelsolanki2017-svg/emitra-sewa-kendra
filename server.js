@@ -27,6 +27,27 @@ const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "jasmelsolanki@gmail.com";
 const DEFAULT_MEMBER_PASSWORD = "User@123";
 let adminDb = null;
 
+function normalizeMobile(value = "") {
+  const digits = String(value || "").replace(/\D/g, "");
+  let mobileDigits = digits;
+
+  if (mobileDigits.length === 11 && mobileDigits.startsWith("0")) {
+    mobileDigits = `91${mobileDigits.slice(1)}`;
+  } else if (mobileDigits.length === 10) {
+    mobileDigits = `91${mobileDigits}`;
+  }
+
+  if (!(mobileDigits.length === 12 && mobileDigits.startsWith("91"))) {
+    return null;
+  }
+
+  return {
+    key: mobileDigits,
+    e164: `+${mobileDigits}`,
+    display: mobileDigits.slice(2)
+  };
+}
+
 app.use(express.json({ limit: "1mb" }));
 app.use((req, res, next) => {
   const origin = req.headers.origin || "*";
@@ -254,6 +275,11 @@ app.post("/admin/create-member", async (req, res) => {
       return res.status(400).json({ ok: false, error: "Valid email required" });
     }
 
+    const normalizedMobile = normalizeMobile(mobile);
+    if (!normalizedMobile) {
+      return res.status(400).json({ ok: false, error: "Valid 10 digit mobile required" });
+    }
+
     const userRecord = await admin.auth().createUser({
       email,
       password,
@@ -270,7 +296,10 @@ app.post("/admin/create-member", async (req, res) => {
       email,
       profileEmail: email,
       name,
-      mobile,
+      mobile: normalizedMobile.display,
+      mobileKey: normalizedMobile.key,
+      phoneNumber: normalizedMobile.e164,
+      mobileVerified: true,
       role: "member",
       status: "Active",
       emailVerified: true,
@@ -282,6 +311,15 @@ app.post("/admin/create-member", async (req, res) => {
       createdBy: decoded.email || ADMIN_EMAIL,
       adminCreated: true,
       lastLoginAt: 0
+    });
+
+    await db.ref(`mobileIndex/${normalizedMobile.key}`).set({
+      uid: createdUid,
+      email,
+      mobile: normalizedMobile.display,
+      phoneNumber: normalizedMobile.e164,
+      createdAt: now,
+      updatedAt: now
     });
 
     return res.json({
@@ -306,6 +344,10 @@ app.post("/admin/delete-member", async (req, res) => {
       return res.status(400).json({ ok: false, error: "UID required" });
     }
 
+    const memberSnapshot = await db.ref(`members/${uid}`).get();
+    const member = memberSnapshot.exists() ? memberSnapshot.val() || {} : {};
+    const mobile = normalizeMobile(member.mobile || member.phoneNumber || "");
+
     try {
       await admin.auth().deleteUser(uid);
     } catch (err) {
@@ -319,6 +361,10 @@ app.post("/admin/delete-member", async (req, res) => {
       [`memberFiles/${uid}`]: null,
       [`memberCloudLinks/${uid}`]: null
     });
+
+    if (mobile) {
+      await db.ref(`mobileIndex/${mobile.key}`).remove();
+    }
 
     return res.json({ ok: true, message: "Member deleted" });
   } catch (err) {

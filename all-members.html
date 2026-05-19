@@ -114,7 +114,7 @@
 <body>
   <div class="topbar">
     <div>Admin Members Panel</div>
-    <div id="liveTime">Loading...</div>
+    <div id="liveTime"></div>
   </div>
 
   <header>
@@ -173,7 +173,7 @@
     </section>
 
     <section class="members" id="membersList">
-      <div class="empty">Loading members...</div>
+      <div class="empty" aria-live="polite"></div>
     </section>
   </main>
 
@@ -233,6 +233,9 @@
     let memberCloudLinks = {};
     let activeMemberUid = "";
     const adminServerStorageKey = "emitraAdminServerUrl";
+    const membersCacheKey = "emitraAdminMembersCache";
+    const memberFilesCacheKey = "emitraAdminMemberFilesCache";
+    const memberCloudLinksCacheKey = "emitraAdminMemberCloudLinksCache";
     const adminServerUrlInput = document.getElementById("adminServerUrl");
     if(adminServerUrlInput){
       adminServerUrlInput.value = localStorage.getItem(adminServerStorageKey) || "";
@@ -253,6 +256,39 @@
     const safeUrl = (value = "#") => {
       const url = String(value || "#").trim();
       return /^https?:\/\//i.test(url) ? url : "#";
+    };
+
+    const normalizeMobile = (value = "") => {
+      const digits = String(value || "").replace(/\D/g, "");
+      let mobileDigits = digits;
+      if(mobileDigits.length === 11 && mobileDigits.startsWith("0")){
+        mobileDigits = "91" + mobileDigits.slice(1);
+      }else if(mobileDigits.length === 10){
+        mobileDigits = "91" + mobileDigits;
+      }
+      if(!(mobileDigits.length === 12 && mobileDigits.startsWith("91"))){
+        return null;
+      }
+      return {
+        key:mobileDigits,
+        e164:"+" + mobileDigits,
+        display:mobileDigits.slice(2)
+      };
+    };
+
+    const readCache = (key, fallback) => {
+      try{
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : fallback;
+      }catch(error){
+        return fallback;
+      }
+    };
+
+    const writeCache = (key, value) => {
+      try{
+        localStorage.setItem(key, JSON.stringify(value));
+      }catch(error){}
     };
 
     const formatBytes = (bytes = 0) => {
@@ -498,6 +534,82 @@
       }).join("");
     }
 
+    const loadCachedMembers = () => {
+      const cachedMembers = readCache(membersCacheKey, []);
+      const cachedFiles = readCache(memberFilesCacheKey, {});
+      const cachedLinks = readCache(memberCloudLinksCacheKey, {});
+
+      if(!Array.isArray(cachedMembers) || !cachedMembers.length){ return; }
+
+      allMembers = cachedMembers;
+      memberFiles = cachedFiles && typeof cachedFiles === "object" ? cachedFiles : {};
+      memberCloudLinks = cachedLinks && typeof cachedLinks === "object" ? cachedLinks : {};
+      renderMembers();
+    };
+
+    loadCachedMembers();
+
+    const removeMemberFromLocalState = (uid) => {
+      allMembers = allMembers.filter((entry) => entry.uid !== uid);
+      delete memberFiles[uid];
+      delete memberCloudLinks[uid];
+      if(activeMemberUid === uid){ activeMemberUid = ""; }
+      writeCache(membersCacheKey, allMembers);
+      writeCache(memberFilesCacheKey, memberFiles);
+      writeCache(memberCloudLinksCacheKey, memberCloudLinks);
+      renderMembers();
+    };
+
+    const removeMemberDatabaseRecords = async (uid) => {
+      const member = (allMembers.find((entry) => entry.uid === uid) || {}).member || {};
+      const mobile = normalizeMobile(member.mobile || member.phoneNumber || "");
+      const removals = [
+        remove(ref(db, "members/" + uid)),
+        remove(ref(db, "memberFiles/" + uid)),
+        remove(ref(db, "memberCloudLinks/" + uid))
+      ];
+      if(mobile){
+        removals.push(remove(ref(db, "mobileIndex/" + mobile.key)).catch(() => {}));
+      }
+      await Promise.all(removals);
+    };
+
+    const removeMemberStorageFiles = async (uid) => {
+      const files = memberFiles[uid] || [];
+      const pathsByBucket = {};
+
+      files.forEach((entry) => {
+        if(!entry.file || !entry.file.path){ return; }
+        const bucket = getFileBucket(entry.file);
+        pathsByBucket[bucket] = pathsByBucket[bucket] || [];
+        pathsByBucket[bucket].push(entry.file.path);
+      });
+
+      await Promise.all(Object.entries(pathsByBucket).map(([bucket, paths]) => {
+        return supabase.storage.from(bucket).remove(paths).catch(() => {});
+      }));
+    };
+
+    const syncMobileIndexForMembers = () => {
+      const updates = {};
+      [...allMembers].reverse().forEach(({ uid, member }) => {
+        if((member.status || "Active") === "Deleted"){ return; }
+        const mobile = normalizeMobile(member.mobile || member.phoneNumber || "");
+        const email = String(member.email || "").trim().toLowerCase();
+        if(!mobile || !email){ return; }
+        updates["mobileIndex/" + mobile.key] = {
+          uid,
+          email,
+          mobile:mobile.display,
+          phoneNumber:mobile.e164,
+          updatedAt:Date.now()
+        };
+      });
+      if(Object.keys(updates).length){
+        update(ref(db), updates).catch(() => {});
+      }
+    };
+
     onAuthStateChanged(auth, (user) => {
       if(user && user.email === adminEmail){
         adminAllowed = true;
@@ -518,6 +630,8 @@
         });
       }
       allMembers.sort((a, b) => Number(b.member.createdAt || 0) - Number(a.member.createdAt || 0));
+      writeCache(membersCacheKey, allMembers);
+      syncMobileIndexForMembers();
       renderMembers();
     });
 
@@ -533,6 +647,7 @@
           memberFiles[uid].sort((a, b) => Number(b.file.uploadedAt || 0) - Number(a.file.uploadedAt || 0));
         });
       }
+      writeCache(memberFilesCacheKey, memberFiles);
       renderMembers();
     });
 
@@ -548,6 +663,7 @@
           memberCloudLinks[uid].sort((a, b) => Number(b.link.createdAt || 0) - Number(a.link.createdAt || 0));
         });
       }
+      writeCache(memberCloudLinksCacheKey, memberCloudLinks);
       renderMembers();
     });
 
@@ -648,10 +764,17 @@
     window.saveMember = (uid) => {
       if(!adminAllowed){ alert("Admin verify nahi hua."); return; }
       const freeStorageLimitMb = Math.max(1, Number(getFieldValue(uid, "freeStorageLimitMb") || 50));
-
-      update(ref(db, "members/" + uid), {
+      const item = allMembers.find((entry) => entry.uid === uid);
+      const oldMember = item?.member || {};
+      const oldMobile = normalizeMobile(oldMember.mobile || oldMember.phoneNumber || "");
+      const newMobile = normalizeMobile(getFieldValue(uid, "mobile"));
+      const email = String(oldMember.email || getFieldValue(uid, "profileEmail") || "").trim().toLowerCase();
+      const memberData = {
+        ...oldMember,
         name:getFieldValue(uid, "name"),
-        mobile:getFieldValue(uid, "mobile"),
+        mobile:newMobile ? newMobile.display : getFieldValue(uid, "mobile"),
+        mobileKey:newMobile ? newMobile.key : "",
+        phoneNumber:newMobile ? newMobile.e164 : "",
         profileEmail:getFieldValue(uid, "profileEmail"),
         status:getFieldValue(uid, "status") || "Active",
         notes:getFieldValue(uid, "notes"),
@@ -659,6 +782,28 @@
         freeStorageLimitMb:freeStorageLimitMb,
         storageLimitBytes:freeStorageLimitMb * 1024 * 1024,
         updatedAt:Date.now()
+      };
+
+      const indexUpdates = {};
+      if(oldMobile && (!newMobile || oldMobile.key !== newMobile.key)){
+        indexUpdates["mobileIndex/" + oldMobile.key] = null;
+      }
+
+      if(newMobile && email){
+        indexUpdates["mobileIndex/" + newMobile.key] = {
+          uid,
+          email,
+          mobile:newMobile.display,
+          phoneNumber:newMobile.e164,
+          updatedAt:Date.now()
+        };
+      }
+
+      update(ref(db, "members/" + uid), memberData).then(() => {
+        if(Object.keys(indexUpdates).length){
+          return update(ref(db), indexUpdates).catch(() => {});
+        }
+        return null;
       }).then(() => {
         alert("Member saved.");
       }).catch((error) => {
@@ -876,40 +1021,28 @@
       });
     };
 
-    window.deleteMember = (uid) => {
+    window.deleteMember = async (uid) => {
       if(!adminAllowed){ alert("Admin verify nahi hua."); return; }
 
-      if(!confirm("Is member ko permanently delete karna hai? Server unavailable hua to member hidden/block rahega.")){
+      if(!confirm("Is member ko permanently delete karna hai? Isse member list, files aur data links se record hat jayega.")){
         return;
       }
 
-      callAdminApi("/admin/delete-member", { uid }).then(() => {
-        alert("Member delete ho gaya.");
-      }).catch((error) => {
-        update(ref(db, "members/" + uid), {
-          status:"Deleted",
-          deletedAt:Date.now(),
-          updatedAt:Date.now()
-        }).then(() => {
-          alert("Server delete nahi hua, lekin member site access block ho gaya: " + error.message);
-        }).catch((dbError) => {
-          alert("Delete/block nahi hua: " + dbError.message);
-        });
-      });
-    };
+      const serverDelete = callAdminApi("/admin/delete-member", { uid });
 
-    window.blockMember = (uid) => {
-      if(!adminAllowed){ alert("Admin verify nahi hua."); return; }
-
-      update(ref(db, "members/" + uid), {
-        status:"Deleted",
-        deletedAt:Date.now(),
-        updatedAt:Date.now()
-      }).then(() => {
-        alert("Member deleted/blocked.");
-      }).catch((error) => {
-        alert("Delete/block nahi hua: " + error.message);
-      });
+      try{
+        await removeMemberStorageFiles(uid);
+        try{
+          await serverDelete;
+        }catch(error){
+          await removeMemberDatabaseRecords(uid);
+          console.warn("Auth delete server unavailable, database records removed:", error);
+        }
+        removeMemberFromLocalState(uid);
+        alert("Member permanently delete ho gaya.");
+      }catch(error){
+        alert("Permanent delete nahi hua: " + error.message);
+      }
     };
 
     window.logoutUser = () => {
