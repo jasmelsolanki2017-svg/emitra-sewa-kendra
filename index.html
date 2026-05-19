@@ -639,6 +639,196 @@ margin-top:15px;
 font-weight:600;
 }
 
+.home-portal{
+background:#f3f8ff;
+padding:0 6% 46px;
+}
+
+.home-portal-wrap{
+max-width:1180px;
+margin:auto;
+}
+
+.home-portal-masthead{
+background:white;
+border:1px solid #d8e2f0;
+border-bottom:0;
+text-align:center;
+padding:22px 14px 16px;
+}
+
+.home-portal-masthead h2{
+color:#e65f00;
+font-size:clamp(28px,5vw,45px);
+font-weight:900;
+line-height:1.15;
+}
+
+.home-portal-masthead p{
+color:#043a76;
+font-size:17px;
+font-weight:800;
+margin-top:8px;
+}
+
+.home-portal-links{
+display:flex;
+justify-content:center;
+gap:8px;
+flex-wrap:wrap;
+margin-top:12px;
+}
+
+.home-portal-links a{
+color:#0057a8;
+font-size:14px;
+font-weight:900;
+text-decoration:underline;
+}
+
+.home-portal-main{
+background:#f3f8ff;
+border-top:1px solid #c9d2e4;
+padding:18px 0 0;
+}
+
+.home-portal-ticker{
+background:white;
+border:1px solid #c9d2e4;
+padding:10px 12px;
+color:#e65f00;
+font-weight:900;
+text-align:center;
+margin-bottom:14px;
+}
+
+.home-portal-ticker span{
+color:#0057a8;
+}
+
+.home-portal-search{
+background:white;
+border:1px solid #c9d2e4;
+padding:14px;
+margin-bottom:14px;
+display:flex;
+gap:10px;
+align-items:center;
+}
+
+.home-portal-search i{
+color:#e65f00;
+font-size:19px;
+}
+
+.home-portal-search input{
+width:100%;
+border:1px solid #c9d2e4;
+padding:11px 12px;
+font-size:16px;
+font-weight:800;
+outline:none;
+}
+
+.home-portal-quick{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:8px;
+margin-bottom:16px;
+}
+
+.home-portal-quick a{
+min-height:48px;
+display:flex;
+align-items:center;
+justify-content:center;
+text-align:center;
+color:white;
+text-decoration:none;
+font-weight:900;
+padding:9px;
+border:1px solid rgba(0,0,0,.12);
+}
+
+.home-portal-quick .q1{background:#8a2b00;}
+.home-portal-quick .q2{background:#004f9e;}
+.home-portal-quick .q3{background:#067a35;}
+.home-portal-quick .q4{background:#8f0c18;}
+.home-portal-quick .q5{background:#4a148c;}
+.home-portal-quick .q6{background:#006064;}
+.home-portal-quick .q7{background:#c27200;}
+.home-portal-quick .q8{background:#ad1457;}
+
+.home-portal-grid{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:12px;
+align-items:start;
+}
+
+.home-portal-box{
+background:white;
+border:2px solid #b30000;
+min-height:270px;
+display:flex;
+flex-direction:column;
+}
+
+.home-portal-title{
+background:#b30000;
+color:white;
+text-align:center;
+font-size:20px;
+font-weight:900;
+padding:7px 8px;
+}
+
+.home-portal-list{
+padding:9px 12px 10px 24px;
+flex:1;
+}
+
+.home-portal-list li{
+padding:4px 0;
+color:#111;
+font-size:12px;
+font-weight:800;
+line-height:1.35;
+list-style:disc;
+}
+
+.home-portal-list a{
+color:#003ac0;
+text-decoration:none;
+}
+
+.home-portal-list a:hover{
+color:#b30000;
+}
+
+.home-portal-job-card .badge,
+.home-portal-job-card p,
+.home-portal-job-card .job-actions{
+display:none;
+}
+
+.home-portal-job-card h3{
+font-size:12px;
+line-height:1.35;
+font-weight:800;
+}
+
+.home-portal-job-card h3 a{
+color:#003ac0;
+text-decoration:none;
+}
+
+.home-portal-message{
+padding:12px;
+color:#b30000;
+font-weight:900;
+}
+
 /* FEATURES */
 
 .features{
@@ -1369,6 +1559,31 @@ font-size:14px;
 padding:42px 4%;
 }
 
+.home-portal{
+padding:0 4% 34px;
+}
+
+.home-portal-masthead{
+text-align:left;
+padding:18px 12px 14px;
+}
+
+.home-portal-links{
+justify-content:flex-start;
+}
+
+.home-portal-quick{
+grid-template-columns:repeat(2,1fr);
+}
+
+.home-portal-grid{
+grid-template-columns:1fr;
+}
+
+.home-portal-title{
+font-size:20px;
+}
+
 .business-strip{
 padding:24px 4%;
 }
@@ -1517,6 +1732,8 @@ body.dark-mode main,
 body.dark-mode .features,
 body.dark-mode .services,
 body.dark-mode .latest-jobs-home,
+body.dark-mode .home-portal,
+body.dark-mode .home-portal-main,
 body.dark-mode .business-strip,
 body.dark-mode .process-section,
 body.dark-mode .about,
@@ -1537,6 +1754,10 @@ body.dark-mode .card,
 body.dark-mode .feature-box,
 body.dark-mode .service-card,
 body.dark-mode .home-job-card,
+body.dark-mode .home-portal-masthead,
+body.dark-mode .home-portal-search,
+body.dark-mode .home-portal-ticker,
+body.dark-mode .home-portal-box,
 body.dark-mode .doc-panel,
 body.dark-mode .enquiry-panel,
 body.dark-mode .doc-list,
@@ -1631,6 +1852,11 @@ body.dark-mode .primary-btn,
 body.dark-mode .signup-btn {
   background: #ff7a00 !important;
   color: #03224d !important;
+}
+
+body.dark-mode .home-portal-title {
+  background: #b30000 !important;
+  color: #ffffff !important;
 }
 
 body.dark-mode .logo img,
@@ -1841,6 +2067,75 @@ Important Links
 
 </section>
 
+<section class="home-portal" id="homeJobPortal">
+  <div class="home-portal-wrap">
+    <div class="home-portal-masthead">
+      <h2>Sarkari Job, Result & Admit Card</h2>
+      <p>Latest Government Jobs, Online Form, Result, Admit Card, Answer Key aur Exam Updates</p>
+      <div class="home-portal-links">
+        <a href="#homePortalLatestJobs">Latest Jobs</a>
+        <a href="#homePortalResults">Results</a>
+        <a href="#homePortalAdmitCard">Admit Card</a>
+        <a href="#homePortalAnswerKey">Answer Key</a>
+        <a href="government-job-form.html">Form Guide</a>
+      </div>
+    </div>
+
+    <div class="home-portal-main">
+      <div class="home-portal-ticker">Breaking Updates: <span>Latest job updates yahan regularly show hongi.</span></div>
+
+      <div class="home-portal-search">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="search" id="homePortalJobSearch" placeholder="Search karein: SSC, Railway, Police, Army, Teacher, Rajasthan">
+      </div>
+
+      <div class="home-portal-quick" aria-label="Important job categories">
+        <a class="q1" href="#homePortalLatestJobs">Latest Jobs</a>
+        <a class="q2" href="#homePortalResults">Sarkari Result</a>
+        <a class="q3" href="#homePortalAdmitCard">Admit Card</a>
+        <a class="q4" href="#homePortalAnswerKey">Answer Key</a>
+        <a class="q5" href="OFFLINEFORM.HTML">Offline Forms</a>
+        <a class="q6" href="government-job-form.html">Job Form Guide</a>
+        <a class="q7" href="useful-pages.html">Useful Pages</a>
+        <a class="q8" href="contact.html">Contact Help</a>
+      </div>
+
+      <div class="home-portal-grid">
+        <div class="home-portal-box" id="homePortalResults">
+          <h3 class="home-portal-title">Result</h3>
+          <ul class="home-portal-list" id="homePortalResultList"><li class="home-portal-message">Loading...</li></ul>
+        </div>
+
+        <div class="home-portal-box" id="homePortalAdmitCard">
+          <h3 class="home-portal-title">Admit Card</h3>
+          <ul class="home-portal-list" id="homePortalAdmitCardList"><li class="home-portal-message">Loading...</li></ul>
+        </div>
+
+        <div class="home-portal-box" id="homePortalLatestJobs">
+          <h3 class="home-portal-title">Top Online Form</h3>
+          <ul class="home-portal-list" id="homePortalJobList"><li class="home-portal-message">Jobs load ho rahi hain...</li></ul>
+          <p class="home-portal-message" id="homePortalNoResult" style="display:none;">कोई matching job नहीं मिली</p>
+        </div>
+
+        <div class="home-portal-box" id="homePortalAnswerKey">
+          <h3 class="home-portal-title">Answer Keys</h3>
+          <ul class="home-portal-list" id="homePortalAnswerKeyList"><li class="home-portal-message">Loading...</li></ul>
+        </div>
+
+        <div class="home-portal-box" id="homePortalSyllabus">
+          <h3 class="home-portal-title">Syllabus</h3>
+          <ul class="home-portal-list" id="homePortalSyllabusList"><li class="home-portal-message">Loading...</li></ul>
+        </div>
+
+        <div class="home-portal-box" id="homePortalAdmission">
+          <h3 class="home-portal-title">Admission Form</h3>
+          <ul class="home-portal-list" id="homePortalAdmissionList"><li class="home-portal-message">Loading...</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- FEATURES -->
 
 <section class="features">
@@ -1940,23 +2235,6 @@ Important Links
   </div>
 </section>
 
-<!-- LATEST JOBS -->
-
-<section class="latest-jobs-home" id="latestJobs">
-
-<div class="latest-jobs-head">
-<div>
-<h2>Latest Jobs</h2>
-<p>Government job updates, last date, location aur details ek jagah.</p>
-</div>
-<a href="job-form.html">View All Jobs</a>
-</div>
-
-<div class="home-job-list" id="homeJobList">
-<p class="home-job-message">Latest jobs load ho rahi hain...</p>
-</div>
-
-</section>
 
 <!-- USEFUL CONTENT PAGES -->
 
@@ -2659,9 +2937,89 @@ return !date || Date.now() <= date.getTime() + (24 * 60 * 60 * 1000);
 };
 
 const jobsRef = ref(db,"LatestJobs");
+const portalItemsRef = ref(db,"portalItems");
+
+const homePortalCategoryMap = {
+result:"homePortalResultList",
+admitCard:"homePortalAdmitCardList",
+answerKey:"homePortalAnswerKeyList",
+syllabus:"homePortalSyllabusList",
+admission:"homePortalAdmissionList"
+};
+
+const filterHomePortalJobs = () => {
+const input = document.getElementById("homePortalJobSearch");
+const noResult = document.getElementById("homePortalNoResult");
+const jobCards = document.querySelectorAll("#homePortalJobList .home-portal-job-card");
+
+if(!input || !noResult){
+return;
+}
+
+const searchValue = input.value.trim().toLowerCase();
+let found = false;
+
+jobCards.forEach((card)=>{
+const isMatch = searchValue === "" || card.innerText.toLowerCase().includes(searchValue);
+card.style.display = isMatch ? "" : "none";
+if(searchValue !== "" && isMatch){
+found = true;
+}
+});
+
+noResult.style.display = jobCards.length && searchValue !== "" && !found ? "block" : "none";
+};
+
+const homePortalJobSearch = document.getElementById("homePortalJobSearch");
+if(homePortalJobSearch){
+homePortalJobSearch.addEventListener("input", filterHomePortalJobs);
+}
+
+const renderHomePortalItems = (category, items) => {
+const list = document.getElementById(homePortalCategoryMap[category]);
+if(!list){
+return;
+}
+
+if(!items.length){
+list.innerHTML = '<li class="home-portal-message">Abhi koi update nahi hai.</li>';
+return;
+}
+
+list.innerHTML = items.map((item)=>`
+  <li><a href="${safeUrl(item.url)}" target="_blank" rel="noopener noreferrer">${escapeHTML(item.title || "Update")}</a></li>
+`).join("");
+};
+
+onValue(portalItemsRef,(snapshot)=>{
+Object.keys(homePortalCategoryMap).forEach((category)=>{
+const categorySnapshot = snapshot.child(category);
+const items = [];
+
+if(snapshot.exists() && categorySnapshot.exists()){
+categorySnapshot.forEach((child)=>{
+const item = child.val() || {};
+if(item.title){
+items.push(item);
+}
+});
+}
+
+items.sort((a,b)=>Number(b.createdAt || 0) - Number(a.createdAt || 0));
+renderHomePortalItems(category, items);
+});
+},(error)=>{
+Object.keys(homePortalCategoryMap).forEach((category)=>{
+const list = document.getElementById(homePortalCategoryMap[category]);
+if(list){
+list.innerHTML = `<li class="home-portal-message">Data load nahi hua: ${escapeHTML(error.message)}</li>`;
+}
+});
+});
 
 onValue(jobsRef,(snapshot)=>{
 const box = document.getElementById("homeJobList");
+const portalJobList = document.getElementById("homePortalJobList");
 const jobs = [];
 
 if(snapshot.exists()){
@@ -2676,7 +3034,33 @@ jobs.push({ id:child.key, job:job });
 jobs.sort((a,b)=>Number(b.job.createdAt || 0) - Number(a.job.createdAt || 0));
 
 if(jobs.length === 0){
+if(portalJobList){
+portalJobList.innerHTML = '<li class="home-portal-message">अभी कोई job available नहीं है।</li>';
+}
+if(box){
 box.innerHTML = '<p class="home-job-message">अभी कोई latest job available नहीं है।</p>';
+}
+return;
+}
+
+if(portalJobList){
+portalJobList.innerHTML = jobs.map(({ id, job })=>`
+  <li class="home-portal-job-card">
+    <span class="badge">${escapeHTML(job.type || "Online Form")}</span>
+    <h3><a href="job-detail.html?id=${encodeURIComponent(id)}">${escapeHTML(job.title || job.text || "Job Update")}</a></h3>
+    <p>Start: ${escapeHTML(job.startDate || "Update Soon")} | Last: <span class="last-date">${escapeHTML(job.lastDate || job.lastApplyDate || "Update Soon")}</span></p>
+    <p>Qualification: ${escapeHTML(job.qualification || "Update Soon")}</p>
+    <p>Location: ${escapeHTML(job.location || "All India")}</p>
+    <div class="job-actions">
+      <a href="${safeUrl(job.applyLink)}" target="_blank" rel="noopener noreferrer">Apply</a>
+      <a class="detail" href="job-detail.html?id=${encodeURIComponent(id)}">Details</a>
+    </div>
+  </li>
+`).join("");
+filterHomePortalJobs();
+}
+
+if(!box){
 return;
 }
 
@@ -2690,7 +3074,14 @@ box.innerHTML = jobs.map(({ id, job })=>`
   </article>
 `).join("");
 },(error)=>{
-document.getElementById("homeJobList").innerHTML = `<p class="home-job-message">Latest jobs load nahi ho payi: ${escapeHTML(error.message)}</p>`;
+const box = document.getElementById("homeJobList");
+const portalJobList = document.getElementById("homePortalJobList");
+if(box){
+box.innerHTML = `<p class="home-job-message">Latest jobs load nahi ho payi: ${escapeHTML(error.message)}</p>`;
+}
+if(portalJobList){
+portalJobList.innerHTML = `<li class="home-portal-message">Jobs load nahi ho payi: ${escapeHTML(error.message)}</li>`;
+}
 });
 
 /* ADVERTISEMENT */
