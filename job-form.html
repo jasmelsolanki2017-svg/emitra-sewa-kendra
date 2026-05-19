@@ -337,6 +337,127 @@ function filterJobs(){
 
 document.getElementById("jobSearch").addEventListener("input", filterJobs);
 </script>
+<script>
+(function(){
+  const databaseURL = "https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app";
+  const portalCategoryMap = {
+    result:"resultList",
+    admitCard:"admitCardList",
+    answerKey:"answerKeyList",
+    syllabus:"syllabusList",
+    admission:"admissionList"
+  };
+
+  const escapeHTML = (value = "") => String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+  const safeUrl = (value = "#") => {
+    const url = String(value || "#").trim();
+    return /^https?:\/\//i.test(url) ? url : "#";
+  };
+
+  const normalizeJob = (value) => {
+    if(typeof value === "string"){
+      return { title:value, type:"Online Form", createdAt:0 };
+    }
+    return value && typeof value === "object" ? value : {};
+  };
+
+  const parseJobLastDate = (value = "") => {
+    const text = String(value || "").trim();
+    if(!text || /update soon/i.test(text)){ return null; }
+
+    const monthMap = {
+      jan:0,january:0,feb:1,february:1,mar:2,march:2,apr:3,april:3,may:4,
+      jun:5,june:5,jul:6,july:6,aug:7,august:7,sep:8,sept:8,september:8,
+      oct:9,october:9,nov:10,november:10,dec:11,december:11
+    };
+
+    let match = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+    if(match){ return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]), 23, 59, 59, 999); }
+
+    match = text.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/);
+    if(match){ return new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1]), 23, 59, 59, 999); }
+
+    match = text.match(/^(\d{1,2})\s+([a-zA-Z]+)\s+(\d{4})$/);
+    if(match){
+      const month = monthMap[match[2].toLowerCase()];
+      if(month !== undefined){ return new Date(Number(match[3]), month, Number(match[1]), 23, 59, 59, 999); }
+    }
+
+    const parsed = new Date(text);
+    return Number.isNaN(parsed.getTime()) ? null : new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate(), 23, 59, 59, 999);
+  };
+
+  const isJobVisible = (job) => {
+    if(String(job.postStatus || "published").toLowerCase() === "draft"){ return false; }
+    const date = parseJobLastDate(job.lastDate || job.lastApplyDate);
+    return !date || Date.now() <= date.getTime() + (24 * 60 * 60 * 1000);
+  };
+
+  const renderPortalList = (listId, values) => {
+    const list = document.getElementById(listId);
+    if(!list){ return; }
+
+    const items = Object.values(values || {})
+      .filter((item) => item && item.title)
+      .sort((a,b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
+
+    list.innerHTML = items.length
+      ? items.map((item) => `<li><a href="${safeUrl(item.url)}" target="_blank" rel="noopener noreferrer">${escapeHTML(item.title || "Update")}</a></li>`).join("")
+      : '<li class="message">Abhi koi update nahi hai.</li>';
+  };
+
+  const renderJobsList = (values) => {
+    const jobList = document.getElementById("jobList");
+    if(!jobList){ return; }
+
+    const jobs = Object.entries(values || {})
+      .map(([id, value]) => ({ id, job:normalizeJob(value) }))
+      .filter(({ job }) => isJobVisible(job))
+      .sort((a, b) => Number(b.job.createdAt || 0) - Number(a.job.createdAt || 0));
+
+    if(!jobs.length){
+      jobList.innerHTML = '<li class="message">अभी कोई job available नहीं है।</li>';
+      filterJobs();
+      return;
+    }
+
+    jobList.innerHTML = jobs.map(({ id, job }) => `
+      <li class="job-card">
+        <span class="badge">${escapeHTML(job.type || "Online Form")}</span>
+        <h3><a href="job-detail.html?id=${encodeURIComponent(id)}">${escapeHTML(job.title || job.text || "Job Update")}</a></h3>
+        <p>Start: ${escapeHTML(job.startDate || "Update Soon")} | Last: <span class="last-date">${escapeHTML(job.lastDate || job.lastApplyDate || "Update Soon")}</span></p>
+        <p>Qualification: ${escapeHTML(job.qualification || "Update Soon")}</p>
+        <p>Location: ${escapeHTML(job.location || "All India")}</p>
+        <div class="job-actions">
+          <a href="${safeUrl(job.applyLink)}" target="_blank" rel="noopener noreferrer">Apply</a>
+          <a class="detail" href="job-detail.html?id=${encodeURIComponent(id)}">Details</a>
+        </div>
+      </li>
+    `).join("");
+    filterJobs();
+  };
+
+  fetch(`${databaseURL}/LatestJobs.json`)
+    .then((response) => response.ok ? response.json() : null)
+    .then((data) => renderJobsList(data))
+    .catch(() => {});
+
+  fetch(`${databaseURL}/portalItems.json`)
+    .then((response) => response.ok ? response.json() : null)
+    .then((data) => {
+      Object.keys(portalCategoryMap).forEach((category) => {
+        renderPortalList(portalCategoryMap[category], data && data[category]);
+      });
+    })
+    .catch(() => {});
+})();
+</script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
