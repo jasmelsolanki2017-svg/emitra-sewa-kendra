@@ -425,6 +425,7 @@ const portalCategoryMap = {
   syllabus:"syllabusList",
   admission:"admissionList"
 };
+const portalItemHref = (item) => item && item.sourceJobId ? `job-detail.html?id=${encodeURIComponent(item.sourceJobId)}` : safeUrl(item && item.url);
 
 const renderPortalItems = (category, items) => {
   const list = document.getElementById(portalCategoryMap[category]);
@@ -436,7 +437,7 @@ const renderPortalItems = (category, items) => {
   }
 
   list.innerHTML = items.map((item) => `
-    <li><a href="${safeUrl(item.url)}" target="_blank" rel="noopener noreferrer">${escapeHTML(item.title || "Update")}</a></li>
+    <li><a href="${portalItemHref(item)}">${escapeHTML(item.title || "Update")}</a></li>
   `).join("");
 };
 

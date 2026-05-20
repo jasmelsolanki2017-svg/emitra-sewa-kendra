@@ -3082,6 +3082,7 @@ const safeFastUrl = (value = "#") => {
 const url = String(value || "#").trim();
 return /^https?:\/\//i.test(url) ? url : "#";
 };
+const fastPortalHref = (item) => item && item.sourceJobId ? `job-detail.html?id=${encodeURIComponent(item.sourceJobId)}` : safeFastUrl(item && item.url);
 
 const normalizeFastJob = (value) => {
 if(typeof value === "string"){
@@ -3114,7 +3115,7 @@ const items = Object.values(values || {})
 .filter((item)=>item && item.title)
 .sort((a,b)=>Number(b.createdAt || 0) - Number(a.createdAt || 0));
 list.innerHTML = items.length
-? items.map((item)=>`<li><a href="${safeFastUrl(item.url)}" target="_blank" rel="noopener noreferrer">${escapeFastHTML(item.title || "Update")}</a></li>`).join("")
+? items.map((item)=>`<li><a href="${fastPortalHref(item)}">${escapeFastHTML(item.title || "Update")}</a></li>`).join("")
 : '<li class="home-portal-message">Abhi koi update nahi hai.</li>';
 };
 
@@ -3913,9 +3914,11 @@ return;
 }
 
 list.innerHTML = items.map((item)=>`
-  <li><a href="${safeUrl(item.url)}" target="_blank" rel="noopener noreferrer">${escapeHTML(item.title || "Update")}</a></li>
+  <li><a href="${portalItemHref(item)}">${escapeHTML(item.title || "Update")}</a></li>
 `).join("");
 };
+
+const portalItemHref = (item) => item && item.sourceJobId ? `job-detail.html?id=${encodeURIComponent(item.sourceJobId)}` : safeUrl(item && item.url);
 
 onValue(portalItemsRef,(snapshot)=>{
 Object.keys(homePortalCategoryMap).forEach((category)=>{
