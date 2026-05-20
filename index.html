@@ -14,6 +14,8 @@
 <meta property="og:description" content="E-MITRA WALA par e-Mitra services, online forms, latest jobs, PDF forms aur document help.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://emitrawala.online/index.html">
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app" crossorigin>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -3056,6 +3058,121 @@ checklist.innerHTML = `
 document.getElementById("documentService").addEventListener("change", renderDocumentChecklist);
 renderDocumentChecklist();
 
+</script>
+
+<script>
+(function(){
+const databaseURL = "https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app";
+const portalCategoryMap = {
+result:"homePortalResultList",
+admitCard:"homePortalAdmitCardList",
+answerKey:"homePortalAnswerKeyList",
+syllabus:"homePortalSyllabusList",
+admission:"homePortalAdmissionList"
+};
+
+const escapeFastHTML = (value = "") => String(value)
+.replace(/&/g,"&amp;")
+.replace(/</g,"&lt;")
+.replace(/>/g,"&gt;")
+.replace(/"/g,"&quot;")
+.replace(/'/g,"&#039;");
+
+const safeFastUrl = (value = "#") => {
+const url = String(value || "#").trim();
+return /^https?:\/\//i.test(url) ? url : "#";
+};
+
+const normalizeFastJob = (value) => {
+if(typeof value === "string"){
+return { title:value, type:"Online Form", createdAt:0 };
+}
+return value && typeof value === "object" ? value : {};
+};
+
+const parseFastJobLastDate = (value = "") => {
+const text = String(value || "").trim();
+if(!text || /update soon/i.test(text)){ return null; }
+let match = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+if(match){ return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]), 23, 59, 59, 999); }
+match = text.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/);
+if(match){ return new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1]), 23, 59, 59, 999); }
+const parsed = new Date(text);
+return Number.isNaN(parsed.getTime()) ? null : new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate(), 23, 59, 59, 999);
+};
+
+const isFastJobVisible = (job) => {
+if(String(job.postStatus || "published").toLowerCase() === "draft"){ return false; }
+const date = parseFastJobLastDate(job.lastDate || job.lastApplyDate);
+return !date || Date.now() <= date.getTime() + (24 * 60 * 60 * 1000);
+};
+
+const renderFastPortalItems = (category, values) => {
+const list = document.getElementById(portalCategoryMap[category]);
+if(!list){ return; }
+const items = Object.values(values || {})
+.filter((item)=>item && item.title)
+.sort((a,b)=>Number(b.createdAt || 0) - Number(a.createdAt || 0));
+list.innerHTML = items.length
+? items.map((item)=>`<li><a href="${safeFastUrl(item.url)}" target="_blank" rel="noopener noreferrer">${escapeFastHTML(item.title || "Update")}</a></li>`).join("")
+: '<li class="home-portal-message">Abhi koi update nahi hai.</li>';
+};
+
+const renderFastJobs = (values) => {
+const portalJobList = document.getElementById("homePortalJobList");
+const box = document.getElementById("homeJobList");
+const jobs = Object.entries(values || {})
+.map(([id,value])=>({ id, job:normalizeFastJob(value) }))
+.filter(({ job })=>isFastJobVisible(job))
+.sort((a,b)=>Number(b.job.createdAt || 0) - Number(a.job.createdAt || 0));
+
+if(!jobs.length){
+if(portalJobList){ portalJobList.innerHTML = '<li class="home-portal-message">अभी कोई job available नहीं है।</li>'; }
+if(box){ box.innerHTML = '<p class="home-job-message">अभी कोई latest job available नहीं है।</p>'; }
+return;
+}
+
+if(portalJobList){
+portalJobList.innerHTML = jobs.map(({ id, job })=>`
+  <li class="home-portal-job-card">
+    <span class="badge">${escapeFastHTML(job.type || "Online Form")}</span>
+    <h3><a href="job-detail.html?id=${encodeURIComponent(id)}">${escapeFastHTML(job.title || job.text || "Job Update")}</a></h3>
+    <p>Start: ${escapeFastHTML(job.startDate || "Update Soon")} | Last: <span class="last-date">${escapeFastHTML(job.lastDate || job.lastApplyDate || "Update Soon")}</span></p>
+    <p>Qualification: ${escapeFastHTML(job.qualification || "Update Soon")}</p>
+    <p>Location: ${escapeFastHTML(job.location || "All India")}</p>
+    <div class="job-actions">
+      <a href="${safeFastUrl(job.applyLink)}" target="_blank" rel="noopener noreferrer">Apply</a>
+      <a class="detail" href="job-detail.html?id=${encodeURIComponent(id)}">Details</a>
+    </div>
+  </li>
+`).join("");
+}
+
+if(box){
+box.innerHTML = jobs.map(({ id, job })=>`
+  <article class="home-job-card">
+    <span>${escapeFastHTML(job.type || "Online Form")}</span>
+    <h3>${escapeFastHTML(job.title || "Job Update")}</h3>
+    <p>Last Date: <span class="last-date">${escapeFastHTML(job.lastDate || job.lastApplyDate || "Update Soon")}</span></p>
+    <p>Location: ${escapeFastHTML(job.location || "All India")}</p>
+    <a href="job-detail.html?id=${encodeURIComponent(id)}">View Details</a>
+  </article>
+`).join("");
+}
+};
+
+fetch(`${databaseURL}/portalItems.json`)
+.then((response)=>response.ok ? response.json() : null)
+.then((data)=>{
+Object.keys(portalCategoryMap).forEach((category)=>renderFastPortalItems(category, data && data[category]));
+})
+.catch(()=>{});
+
+fetch(`${databaseURL}/LatestJobs.json`)
+.then((response)=>response.ok ? response.json() : null)
+.then((data)=>renderFastJobs(data))
+.catch(()=>{});
+})();
 </script>
 
 <!-- FIREBASE -->
