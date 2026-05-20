@@ -1585,6 +1585,156 @@ z-index:1000;
 margin-top:15px;
 }
 
+.age-float-btn{
+position:fixed;
+width:60px;
+height:60px;
+bottom:172px;
+right:40px;
+background:#0057a8;
+color:white;
+border:0;
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:25px;
+z-index:1000;
+box-shadow:0 8px 22px rgba(0,87,168,.28);
+cursor:pointer;
+}
+
+.age-float-btn:hover{
+background:#ff7a00;
+color:#03224d;
+}
+
+.age-modal{
+display:none;
+position:fixed;
+inset:0;
+background:rgba(3,20,45,.55);
+z-index:1300;
+padding:18px;
+align-items:center;
+justify-content:center;
+}
+
+.age-modal.open{
+display:flex;
+}
+
+.age-modal-box{
+width:min(430px,100%);
+background:white;
+border:1px solid #d8e6f5;
+border-top:5px solid #ff7a00;
+border-radius:10px;
+padding:16px;
+box-shadow:0 20px 45px rgba(0,0,0,.28);
+}
+
+.age-modal-head{
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:10px;
+margin-bottom:12px;
+}
+
+.age-modal-head h2{
+color:#0057a8;
+font-size:20px;
+}
+
+.age-modal-close{
+width:34px;
+height:34px;
+border:0;
+border-radius:50%;
+background:#eaf4ff;
+color:#0057a8;
+font-size:20px;
+font-weight:900;
+cursor:pointer;
+}
+
+.age-modal-grid{
+display:grid;
+gap:10px;
+}
+
+.age-modal-grid label{
+display:block;
+font-size:12px;
+font-weight:900;
+color:#03224d;
+margin-bottom:5px;
+}
+
+.age-modal-grid input{
+width:100%;
+padding:10px 11px;
+border:1px solid #bdd0e5;
+border-radius:7px;
+font-size:14px;
+background:white;
+color:#172033;
+}
+
+.age-modal-grid button{
+border:0;
+border-radius:7px;
+padding:11px;
+background:#0057a8;
+color:white;
+font-weight:900;
+cursor:pointer;
+}
+
+.age-modal-grid .age-clear-btn{
+background:#555;
+}
+
+.age-modal-grid .age-clear-btn:hover{
+background:#d90000;
+color:white;
+}
+
+.age-result{
+display:grid;
+grid-template-columns:repeat(3,minmax(0,1fr));
+gap:8px;
+}
+
+.age-result-card{
+background:#eaf4ff;
+border:1px solid #bdd0e5;
+border-radius:8px;
+padding:10px;
+text-align:center;
+}
+
+.age-result-card strong{
+display:block;
+font-size:22px;
+line-height:1;
+color:#0057a8;
+}
+
+.age-result-card span{
+font-size:12px;
+font-weight:800;
+color:#4d5d72;
+}
+
+.age-status{
+min-height:20px;
+font-size:13px;
+font-weight:800;
+color:#0057a8;
+}
+
 /* MOBILE */
 
 @media(max-width:768px){
@@ -1592,6 +1742,26 @@ margin-top:15px;
 .topbar{
 justify-content:center;
 text-align:center;
+}
+
+.age-result{
+grid-template-columns:1fr;
+}
+
+.age-float-btn{
+right:18px;
+bottom:156px;
+width:54px;
+height:54px;
+font-size:22px;
+}
+
+.whatsapp-btn{
+right:18px;
+bottom:34px;
+width:54px;
+height:54px;
+font-size:27px;
 }
 
 .topbar-admin{
@@ -1868,6 +2038,8 @@ body.dark-mode .home-portal-masthead,
 body.dark-mode .home-portal-search,
 body.dark-mode .home-portal-ticker,
 body.dark-mode .home-portal-box,
+body.dark-mode .age-modal-box,
+body.dark-mode .age-result-card,
 body.dark-mode .doc-panel,
 body.dark-mode .enquiry-panel,
 body.dark-mode .doc-list,
@@ -1912,6 +2084,8 @@ body.dark-mode .panel h3,
 body.dark-mode .card strong,
 body.dark-mode .feature-box h3,
 body.dark-mode .service-card h3,
+body.dark-mode .age-modal-head h2,
+body.dark-mode .age-result-card strong,
 body.dark-mode .doc-list h3,
 body.dark-mode .contact-box h2,
 body.dark-mode .user-box h2 {
@@ -1926,6 +2100,8 @@ body.dark-mode .muted,
 body.dark-mode .card span,
 body.dark-mode .feature-box p,
 body.dark-mode .service-card p,
+body.dark-mode .age-result-card span,
+body.dark-mode .age-status,
 body.dark-mode .panel p,
 body.dark-mode .section-title p,
 body.dark-mode .ad-content p,
@@ -2502,6 +2678,45 @@ rel="noopener noreferrer">
 
 </a>
 
+<button class="age-float-btn" type="button" title="Age Calculator" aria-label="Open age calculator" onclick="openAgeCalculator()">
+<i class="fa-solid fa-calculator"></i>
+</button>
+
+<div class="age-modal" id="ageModal" role="dialog" aria-modal="true" aria-labelledby="ageModalTitle">
+  <div class="age-modal-box">
+    <div class="age-modal-head">
+      <h2 id="ageModalTitle">Age Calculator</h2>
+      <button class="age-modal-close" type="button" aria-label="Close age calculator" onclick="closeAgeCalculator()">×</button>
+    </div>
+    <div class="age-modal-grid">
+      <div>
+        <label for="ageDobText">Date of Birth DD/MM/YYYY</label>
+        <input type="text" id="ageDobText" placeholder="DD/MM/YYYY" inputmode="numeric" maxlength="10">
+      </div>
+      <div>
+        <label for="ageDobCalendar">Calendar se select karein</label>
+        <input type="date" id="ageDobCalendar">
+      </div>
+      <div>
+        <label for="ageTillText">Age kis date tak DD/MM/YYYY</label>
+        <input type="text" id="ageTillText" placeholder="Aaj ki date" inputmode="numeric" maxlength="10">
+      </div>
+      <div>
+        <label for="ageTillCalendar">Till date calendar</label>
+        <input type="date" id="ageTillCalendar">
+      </div>
+      <button type="button" onclick="calculateAge()">Calculate Age</button>
+      <button type="button" class="age-clear-btn" onclick="clearAgeCalculator()">Clear</button>
+      <div class="age-result" aria-live="polite">
+        <div class="age-result-card"><strong id="ageYears">0</strong><span>Years</span></div>
+        <div class="age-result-card"><strong id="ageMonths">0</strong><span>Months</span></div>
+        <div class="age-result-card"><strong id="ageDays">0</strong><span>Days</span></div>
+      </div>
+      <div class="age-status" id="ageStatus"></div>
+    </div>
+  </div>
+</div>
+
 <script>
 
 function updateLiveTime(){
@@ -2557,6 +2772,161 @@ weatherInfo.innerText = "Weather unavailable";
 
 updateWeather();
 setInterval(updateWeather,10 * 60 * 1000);
+
+function calculateAge(){
+const textInput = document.getElementById("ageDobText");
+const calendarInput = document.getElementById("ageDobCalendar");
+const tillTextInput = document.getElementById("ageTillText");
+const tillCalendarInput = document.getElementById("ageTillCalendar");
+const yearsBox = document.getElementById("ageYears");
+const monthsBox = document.getElementById("ageMonths");
+const daysBox = document.getElementById("ageDays");
+const status = document.getElementById("ageStatus");
+const value = textInput.value.trim();
+const tillValue = tillTextInput.value.trim() || formatDateForText(new Date());
+
+if(!value){
+status.innerText = "Date of Birth DD/MM/YYYY me likhein ya calendar se select karein.";
+return;
+}
+
+const birthDate = parseDateText(value);
+if(!birthDate){
+status.innerText = "DOB format DD/MM/YYYY rakhein. Example: 05/09/2001";
+return;
+}
+
+const calculateTillDate = parseDateText(tillValue);
+if(!calculateTillDate){
+status.innerText = "Age kis date tak nikalni hai, uska format DD/MM/YYYY rakhein.";
+return;
+}
+
+if(birthDate > calculateTillDate){
+status.innerText = "Date of Birth, till date se baad ki nahi ho sakti.";
+yearsBox.innerText = "0";
+monthsBox.innerText = "0";
+daysBox.innerText = "0";
+return;
+}
+
+let years = calculateTillDate.getFullYear() - birthDate.getFullYear();
+let months = calculateTillDate.getMonth() - birthDate.getMonth();
+let days = calculateTillDate.getDate() - birthDate.getDate();
+
+if(days < 0){
+months -= 1;
+days += new Date(calculateTillDate.getFullYear(), calculateTillDate.getMonth(), 0).getDate();
+}
+
+if(months < 0){
+years -= 1;
+months += 12;
+}
+
+yearsBox.innerText = years;
+monthsBox.innerText = months;
+daysBox.innerText = days;
+calendarInput.value = formatDateForInput(birthDate);
+tillTextInput.value = formatDateForText(calculateTillDate);
+tillCalendarInput.value = formatDateForInput(calculateTillDate);
+status.innerText = `${formatDateForText(calculateTillDate)} tak age: ${years} year, ${months} month, ${days} day.`;
+}
+
+function parseDateText(value){
+const match = String(value || "").trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+if(!match){ return null; }
+const day = Number(match[1]);
+const month = Number(match[2]);
+const year = Number(match[3]);
+const date = new Date(year, month - 1, day);
+return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day ? date : null;
+}
+
+function formatDateForText(date){
+return `${String(date.getDate()).padStart(2,"0")}/${String(date.getMonth() + 1).padStart(2,"0")}/${date.getFullYear()}`;
+}
+
+function formatDateForInput(date){
+return `${String(date.getFullYear()).padStart(4,"0")}-${String(date.getMonth() + 1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`;
+}
+
+function setDefaultAgeTillDate(){
+const tillTextInput = document.getElementById("ageTillText");
+const tillCalendarInput = document.getElementById("ageTillCalendar");
+const today = new Date();
+const currentDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+if(!tillTextInput.value.trim()){
+tillTextInput.value = formatDateForText(currentDate);
+}
+if(!tillCalendarInput.value){
+tillCalendarInput.value = formatDateForInput(currentDate);
+}
+}
+
+function openAgeCalculator(){
+const modal = document.getElementById("ageModal");
+setDefaultAgeTillDate();
+modal.classList.add("open");
+setTimeout(()=>document.getElementById("ageDobText").focus(),50);
+}
+
+function closeAgeCalculator(){
+document.getElementById("ageModal").classList.remove("open");
+}
+
+function clearAgeCalculator(){
+document.getElementById("ageDobText").value = "";
+document.getElementById("ageDobCalendar").value = "";
+document.getElementById("ageTillText").value = "";
+document.getElementById("ageTillCalendar").value = "";
+document.getElementById("ageYears").innerText = "0";
+document.getElementById("ageMonths").innerText = "0";
+document.getElementById("ageDays").innerText = "0";
+document.getElementById("ageStatus").innerText = "";
+document.getElementById("ageDobText").focus();
+}
+
+document.getElementById("ageDobCalendar").addEventListener("change",(event)=>{
+const value = event.target.value;
+if(!value){ return; }
+const parts = value.split("-");
+document.getElementById("ageDobText").value = `${parts[2]}/${parts[1]}/${parts[0]}`;
+calculateAge();
+});
+
+document.getElementById("ageDobText").addEventListener("input",(event)=>{
+event.target.value = formatDateTyping(event.target.value);
+});
+
+document.getElementById("ageTillCalendar").addEventListener("change",(event)=>{
+const value = event.target.value;
+if(!value){ return; }
+const parts = value.split("-");
+document.getElementById("ageTillText").value = `${parts[2]}/${parts[1]}/${parts[0]}`;
+calculateAge();
+});
+
+document.getElementById("ageTillText").addEventListener("input",(event)=>{
+event.target.value = formatDateTyping(event.target.value);
+});
+
+document.getElementById("ageModal").addEventListener("click",(event)=>{
+if(event.target.id === "ageModal"){
+closeAgeCalculator();
+}
+});
+
+function formatDateTyping(input){
+let value = input.replace(/\D/g,"").slice(0,8);
+if(value.length > 4){
+value = `${value.slice(0,2)}/${value.slice(2,4)}/${value.slice(4)}`;
+}
+else if(value.length > 2){
+value = `${value.slice(0,2)}/${value.slice(2)}`;
+}
+return value;
+}
 
 function openLogin(mode = "user"){
 setAuthView("login", mode === "admin");
