@@ -75,6 +75,9 @@ main{max-width:920px;margin:auto;padding:26px 3% 42px;}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--blue);color:white;text-decoration:none;padding:9px 14px;border-radius:4px;font-weight:900;font-size:13px;}
 .btn.alt{background:var(--orange);color:var(--deep);}
 .btn.whatsapp{background:var(--green);color:white;}
+.post-apply-links{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;padding:6px 10px 12px;}
+.post-apply-links .btn{background:#0b7a3d;}
+.post-apply-links .empty{display:none;}
 .message{text-align:center;background:white;border:1px solid var(--line);border-top:5px solid var(--orange);border-radius:8px;padding:28px;font-weight:800;color:var(--blue);box-shadow:0 8px 24px rgba(8,31,74,.08);}
 footer{background:var(--blue);color:#fff;text-align:center;padding:24px 6%;}
 footer a{color:var(--orange);text-decoration:none;font-weight:800;margin:0 7px;display:inline-block;}
@@ -168,6 +171,7 @@ body.dark-mode .content-table th,body.dark-mode .content-table td,body.dark-mode
             <a class="btn" id="syllabusBtn" href="#" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-book-open"></i> Syllabus</a>
             <a class="btn" id="answerKeyBtn" href="#" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-key"></i> Answer Key</a>
           </div>
+          <div class="post-apply-links" id="postApplyLinks"></div>
         </section>
 
         <section class="panel" id="pageContentPanel" style="display:none;">
@@ -292,6 +296,26 @@ const renderList = (listId, panelId, rows) => {
     .join("");
   list.innerHTML = html;
   panel.style.display = html ? "block" : "none";
+};
+
+const parsePostWiseApplyLinks = (value = "") => String(value || "")
+  .split(/\r?\n/)
+  .map((line) => line.trim())
+  .filter(Boolean)
+  .map((line) => {
+    const urlMatch = line.match(/https?:\/\/\S+/i);
+    if(!urlMatch){ return null; }
+    const url = urlMatch[0];
+    const label = line.slice(0, urlMatch.index).replace(/[:|,-]+$/g, "").trim() || "Apply Link";
+    return { label, url };
+  })
+  .filter(Boolean);
+
+const renderPostWiseApplyLinks = (value = "") => {
+  const box = document.getElementById("postApplyLinks");
+  const links = parsePostWiseApplyLinks(value);
+  box.innerHTML = links.map((item) => `<a class="btn" href="${safeUrl(item.url)}" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-link"></i> ${escapeHTML(item.label)}</a>`).join("");
+  return links.length > 0;
 };
 
 const applyDetailLayout = (layout = "table") => {
@@ -465,6 +489,9 @@ if(!id){
       { label:"General / OBC Fee", value:job.generalObcFee },
       { label:"SC / ST Fee", value:job.scStFee },
       { label:"Female Fee", value:job.femaleFee },
+      { label:"OBC Female Fee", value:job.obcFemaleFee },
+      { label:"SC Female Fee", value:job.scFemaleFee },
+      { label:"Only Female Fee", value:job.onlyFemaleFee },
       { label:"Payment Mode", value:job.paymentMode }
     ]);
 
@@ -505,6 +532,7 @@ if(!id){
       ["answerKeyBtn", job.answerKeyLink]
     ];
     let hasLink = false;
+    const hasPostApplyLinks = renderPostWiseApplyLinks(job.postWiseApplyLinks);
     linkButtons.forEach(([buttonId, url]) => {
       const button = document.getElementById(buttonId);
       button.href = safeUrl(url);
@@ -512,7 +540,7 @@ if(!id){
       button.style.display = visible ? "inline-flex" : "none";
       hasLink = hasLink || visible;
     });
-    document.getElementById("linksPanel").style.display = hasLink ? "block" : "none";
+    document.getElementById("linksPanel").style.display = hasLink || hasPostApplyLinks ? "block" : "none";
 
     const contentBox = document.getElementById("pageContent");
     if(content){
