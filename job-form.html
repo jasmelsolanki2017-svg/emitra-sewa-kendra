@@ -395,6 +395,7 @@ document.getElementById("jobSearch").addEventListener("input", filterJobs);
 
   const isJobVisible = (job) => {
     if(String(job.postStatus || "published").toLowerCase() === "draft"){ return false; }
+    if(job.postTarget && job.postTarget !== "latestJob"){ return false; }
     const date = parseJobLastDate(job.lastDate || job.lastApplyDate);
     return !date || Date.now() <= date.getTime() + (24 * 60 * 60 * 1000);
   };
@@ -532,6 +533,7 @@ const parseJobLastDate = (value = "") => {
 
 const isJobVisible = (job) => {
   if(String(job.postStatus || "published").toLowerCase() === "draft"){ return false; }
+  if(job.postTarget && job.postTarget !== "latestJob"){ return false; }
   const date = parseJobLastDate(job.lastDate || job.lastApplyDate);
   return !date || Date.now() <= date.getTime() + (24 * 60 * 60 * 1000);
 };
