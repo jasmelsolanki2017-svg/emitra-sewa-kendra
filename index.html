@@ -4116,6 +4116,7 @@ rows.push(item);
 
 return rows
 .filter((item)=>String(item.text || "").trim() !== "")
+.filter((item)=>String(item.status || "published").toLowerCase() !== "draft")
 .sort((a,b)=>Number(b.createdAt || 0) - Number(a.createdAt || 0));
 };
 
