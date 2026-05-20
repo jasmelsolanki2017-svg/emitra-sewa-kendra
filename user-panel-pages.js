@@ -211,7 +211,7 @@ const getJobRows = (snapshot) => {
   if(!snapshot.exists()){ return rows; }
   snapshot.forEach((child) => {
     const job = normalizeJob(child.val());
-    if(String(job.title || job.text || "").trim() && String(job.postStatus || "published").toLowerCase() !== "draft" && (!job.postTarget || job.postTarget === "latestJob")){
+    if(String(job.title || job.text || "").trim() && String(job.postStatus || "published").toLowerCase() !== "draft"){
       rows.push({ id:child.key, job:job });
     }
   });
