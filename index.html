@@ -875,13 +875,15 @@ border:1px solid rgba(0,0,0,.12);
 display:grid;
 grid-template-columns:repeat(3,1fr);
 gap:12px;
-align-items:start;
+align-items:stretch;
+grid-auto-rows:1fr;
 }
 
 .home-portal-box{
 background:white;
 border:2px solid #b30000;
 min-height:270px;
+height:100%;
 display:flex;
 flex-direction:column;
 }
@@ -949,11 +951,15 @@ display:grid;
 grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
 gap:30px;
 background:white;
+align-items:stretch;
+grid-auto-rows:1fr;
 }
 
 .features a{
 text-decoration:none;
 color:inherit;
+display:block;
+height:100%;
 }
 
 .feature-box{
@@ -964,6 +970,10 @@ text-align:center;
 box-shadow:0 5px 20px rgba(0,0,0,0.08);
 border-top:5px solid #ff7a00;
 transition:0.3s;
+height:100%;
+display:flex;
+flex-direction:column;
+justify-content:center;
 }
 
 .feature-box:hover{
@@ -992,6 +1002,8 @@ margin:auto;
 display:grid;
 grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
 gap:10px;
+align-items:stretch;
+grid-auto-rows:1fr;
 }
 
 .business-card{
@@ -1004,6 +1016,7 @@ display:flex;
 gap:10px;
 align-items:flex-start;
 box-shadow:0 4px 14px rgba(8,31,74,.06);
+height:100%;
 }
 
 .business-card i{
@@ -1060,6 +1073,8 @@ max-width:560px;
 display:grid;
 grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
 gap:12px;
+align-items:stretch;
+grid-auto-rows:1fr;
 }
 
 .process-card{
@@ -1069,6 +1084,7 @@ border-top:4px solid #ff7a00;
 border-radius:8px;
 padding:16px;
 box-shadow:0 5px 16px rgba(8,31,74,.07);
+height:100%;
 }
 
 .process-card span{
@@ -1136,11 +1152,15 @@ margin-bottom:24px;
 display:grid;
 grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
 gap:25px;
+align-items:stretch;
+grid-auto-rows:1fr;
 }
 
 .service-grid a{
 text-decoration:none;
 color:inherit;
+display:block;
+height:100%;
 }
 
 .service-card{
@@ -1149,6 +1169,10 @@ padding:18px 16px;
 border-radius:8px;
 box-shadow:0 5px 20px rgba(0,0,0,0.08);
 transition:0.3s;
+height:100%;
+display:flex;
+flex-direction:column;
+justify-content:center;
 }
 
 .service-card:hover{
@@ -1212,6 +1236,8 @@ margin:auto;
 display:grid;
 grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
 gap:14px;
+align-items:stretch;
+grid-auto-rows:1fr;
 }
 
 .home-job-card{
@@ -1221,6 +1247,9 @@ border-radius:8px;
 padding:16px;
 background:#f8fbff;
 box-shadow:0 4px 14px rgba(0,0,0,0.06);
+height:100%;
+display:flex;
+flex-direction:column;
 }
 
 .home-job-card span{
@@ -1260,10 +1289,12 @@ margin:0;
 
 .home-job-card a{
 display:inline-flex;
-margin-top:10px;
 color:#0057a8;
 font-weight:800;
 text-decoration:none;
+align-self:flex-start;
+margin-top:auto;
+padding-top:10px;
 }
 
 .home-job-message{
@@ -1529,6 +1560,8 @@ grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
 gap:16px;
 max-width:1120px;
 margin:auto;
+align-items:stretch;
+grid-auto-rows:1fr;
 }
 
 .useful-grid a{
@@ -1542,6 +1575,9 @@ color:#0057a8;
 font-weight:800;
 box-shadow:0 5px 16px rgba(0,0,0,.06);
 transition:.25s;
+height:100%;
+display:flex;
+align-items:center;
 }
 
 .useful-grid a:hover{
