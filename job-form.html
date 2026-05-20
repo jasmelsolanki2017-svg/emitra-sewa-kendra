@@ -411,8 +411,7 @@ const parseJobLastDate = (value = "") => {
 
 const isJobVisible = (job) => {
   if(String(job.postStatus || "published").toLowerCase() === "draft"){ return false; }
-  const date = parseJobLastDate(job.lastDate || job.lastApplyDate);
-  return !date || Date.now() <= date.getTime() + (24 * 60 * 60 * 1000);
+  return true;
 };
 
 const jobsRef = ref(db, "LatestJobs");

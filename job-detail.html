@@ -272,9 +272,7 @@ const parseJobLastDate = (value = "") => {
 
 const isJobVisible = (job) => {
   if(String(job.postStatus || "published").toLowerCase() === "draft"){ return false; }
-  const lastDate = job.lastDate || job.lastApplyDate;
-  const date = parseJobLastDate(lastDate);
-  return !date || Date.now() <= date.getTime() + (24 * 60 * 60 * 1000);
+  return true;
 };
 
 const isFilledValue = (value, options = {}) => {
@@ -425,7 +423,7 @@ if(!id){
 
     const job = normalizeJob(snapshot.val());
     if(!isJobVisible(job)){
-      message.textContent = "Is form ki last date nikal chuki hai, job public page se remove ho gayi hai.";
+      message.textContent = "Ye post abhi public page par hidden hai.";
       wrap.style.display = "none";
       return;
     }

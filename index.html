@@ -3104,8 +3104,7 @@ return Number.isNaN(parsed.getTime()) ? null : new Date(parsed.getFullYear(), pa
 
 const isFastJobVisible = (job) => {
 if(String(job.postStatus || "published").toLowerCase() === "draft"){ return false; }
-const date = parseFastJobLastDate(job.lastDate || job.lastApplyDate);
-return !date || Date.now() <= date.getTime() + (24 * 60 * 60 * 1000);
+return true;
 };
 
 const renderFastPortalItems = (category, values) => {
@@ -3859,8 +3858,7 @@ return Number.isNaN(parsed.getTime()) ? null : new Date(parsed.getFullYear(), pa
 
 const isJobVisible = (job) => {
 if(String(job.postStatus || "published").toLowerCase() === "draft"){ return false; }
-const date = parseJobLastDate(job.lastDate || job.lastApplyDate);
-return !date || Date.now() <= date.getTime() + (24 * 60 * 60 * 1000);
+return true;
 };
 
 const jobsRef = ref(db,"LatestJobs");
