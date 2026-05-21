@@ -26,6 +26,12 @@
         ".write": "auth != null && auth.token.email === 'jasmelsolanki@gmail.com'"
       }
     },
+    "userMessages": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || auth.token.email === 'jasmelsolanki@gmail.com')",
+        ".write": "auth != null && (auth.uid === $uid || auth.token.email === 'jasmelsolanki@gmail.com')"
+      }
+    },
     "importantLinks": {
       ".read": true,
       ".write": "auth != null && auth.token.email === 'jasmelsolanki@gmail.com'"

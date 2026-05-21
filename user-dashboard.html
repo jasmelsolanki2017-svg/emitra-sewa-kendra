@@ -468,6 +468,33 @@
     .chat-reply button{border:0;border-radius:7px;background:var(--blue);color:white;font-weight:900;padding:8px 11px;cursor:pointer;font-size:12px;}
     .chat-empty{color:var(--muted);font-weight:800;font-size:12px;background:white;border:1px dashed var(--line);border-radius:8px;padding:12px;text-align:center;}
 
+    .admin-message-panel{
+      background:#f9fbff;
+      border:1px solid var(--line);
+      border-left:5px solid #138a36;
+      border-radius:8px;
+      padding:11px 12px;
+      margin-bottom:12px;
+    }
+
+    .admin-message-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:9px;
+    }
+
+    .admin-message-head h3{color:var(--blue);font-size:15px;}
+    .admin-message-head button{border:0;border-radius:6px;background:#138a36;color:white;font-weight:900;padding:7px 10px;cursor:pointer;font-size:12px;}
+    .admin-message-list{display:grid;gap:8px;}
+    .admin-message-card{background:white;border:1px solid var(--line);border-radius:8px;padding:9px;border-left:3px solid var(--blue);}
+    .admin-message-card.unread{border-left-color:#d10000;background:#fff8f8;}
+    .admin-message-card h4{color:var(--blue);font-size:13px;overflow-wrap:anywhere;}
+    .admin-message-card p{font-size:12px;line-height:1.45;margin-top:5px;overflow-wrap:anywhere;}
+    .admin-message-card small{display:block;color:var(--muted);font-size:11px;font-weight:800;margin-top:4px;}
+
     .profile-chip{
       background:#f9fbff;
       border:1px solid var(--line);
@@ -1104,6 +1131,8 @@ body.dark-mode .account-tab,
 body.dark-mode .profile-chat,
 body.dark-mode .chat-row,
 body.dark-mode .chat-empty,
+body.dark-mode .admin-message-panel,
+body.dark-mode .admin-message-card,
 body.dark-mode .search {
   background: #101b2d !important;
   color: #e8f1ff !important;
@@ -1345,6 +1374,19 @@ body.dark-mode .nav-logo img {
       </div>
     </div>
 
+    <div class="admin-message-panel">
+      <div class="admin-message-head">
+        <div>
+          <h3><i class="fa-solid fa-envelope-open-text"></i> Admin Messages</h3>
+          <p>Admin ki taraf se bheje gaye notice aur private messages.</p>
+        </div>
+        <button type="button" onclick="markAdminMessagesRead()">Mark Read</button>
+      </div>
+      <div class="admin-message-list" id="adminMessagesList">
+        <div class="chat-empty">Admin messages loading...</div>
+      </div>
+    </div>
+
     <div class="stats-grid">
       <div class="stat-box">
         <span id="updatesCount">0</span>
@@ -1487,6 +1529,7 @@ body.dark-mode .nav-logo img {
   let currentFiles = [];
   let currentCloudLinks = [];
   let currentRequestNotifications = [];
+  let currentAdminMessages = [];
 
   const escapeHTML = (value = "") => String(value)
     .replace(/&/g, "&amp;")
@@ -1510,6 +1553,56 @@ body.dark-mode .nav-logo img {
       button.title = count > 0 ? `${count} new request update` : "No new request update";
     }
   }
+
+  function renderAdminMessages(){
+    const list = document.getElementById("adminMessagesList");
+    if(!list){ return; }
+    const rows = [...currentAdminMessages]
+      .sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0))
+      .slice(0, 8);
+    if(!rows.length){
+      list.innerHTML = '<div class="chat-empty">Admin ne abhi koi message nahi bheja hai.</div>';
+      return;
+    }
+    list.innerHTML = rows.map((item) => `
+      <article class="admin-message-card ${item.read === false ? "unread" : ""}">
+        <h4>${escapeHTML(item.title || "Admin Message")} ${item.read === false ? '<span class="request-new-badge">New</span>' : ""}</h4>
+        <p>${escapeHTML(item.message || "")}</p>
+        <small>${escapeHTML(item.from || "Admin")} · ${escapeHTML(formatRequestTime(item.createdAt))}</small>
+      </article>
+    `).join("");
+  }
+
+  function loadAdminMessages(user){
+    onValue(ref(db, "userMessages/" + user.uid), (snapshot) => {
+      currentAdminMessages = [];
+      if(snapshot.exists()){
+        snapshot.forEach((child) => {
+          currentAdminMessages.push({ id:child.key, ...(child.val() || {}) });
+        });
+      }
+      renderAdminMessages();
+    });
+  }
+
+  window.markAdminMessagesRead = async () => {
+    if(!currentUser){ return; }
+    const unreadRows = currentAdminMessages.filter((item) => item.read === false);
+    if(!unreadRows.length){
+      alert("Koi new admin message nahi hai.");
+      return;
+    }
+    try{
+      const seenAt = Date.now();
+      await Promise.all(unreadRows.map((item) => update(ref(db, "userMessages/" + currentUser.uid + "/" + item.id), {
+        read:true,
+        seenAt
+      })));
+      alert("Admin messages read mark ho gaye.");
+    }catch(error){
+      alert("Messages read mark nahi hue: " + error.message);
+    }
+  };
 
   const formatRequestTime = (value) => {
     const time = Number(value || 0);
@@ -1877,6 +1970,7 @@ body.dark-mode .nav-logo img {
 
       document.getElementById("userEmail").innerText = user.email;
       loadRequestNotifications(user);
+      loadAdminMessages(user);
 
       onValue(ref(db, "members/" + user.uid), (snapshot) => {
         if(snapshot.exists()){
