@@ -2324,27 +2324,15 @@ body.dark-mode #importantLinksMenuList a:hover {
 <button type="button" class="auth-tab" id="signupTab" onclick="setAuthView('signup')">Create Account</button>
 </div>
 
-<input type="text" id="email" placeholder="Email ya Mobile Number">
+<input type="email" id="email" placeholder="Email ID">
 
 <input type="password" id="password" placeholder="Enter Password">
-
-<div id="signupOtpArea" class="signup-panel">
-<p class="auth-note">Mobile OTP optional hai. OTP nahi karna ho to Gmail verification link se account activate ho jayega.</p>
-<input type="tel" id="signupMobile" placeholder="Mobile Number (Create Account ke liye)">
-<div class="otp-row">
-<input type="text" id="signupOtp" placeholder="OTP" inputmode="numeric" maxlength="6">
-<button type="button" onclick="sendSignupOtp()">Send OTP</button>
-</div>
-<button type="button" class="signup-btn" id="verifyOtpButton" onclick="verifySignupOtp()">OTP Verify</button>
-<div class="otp-status" id="signupOtpStatus"></div>
-<div id="signupRecaptcha"></div>
-</div>
 
 <button class="login-btn" id="loginButton" onclick="loginUser(document.getElementById('email').value,document.getElementById('password').value)">
 <span id="loginActionText">User Login</span>
 </button>
 
-<button class="signup-btn" id="signupButton" onclick="signUpUser(document.getElementById('email').value,document.getElementById('password').value,document.getElementById('signupMobile').value)">
+<button class="signup-btn" id="signupButton" onclick="signUpUser(document.getElementById('email').value,document.getElementById('password').value)">
 Create Account
 </button>
 
@@ -3004,7 +2992,6 @@ const hint = document.getElementById("loginHint");
 const actionText = document.getElementById("loginActionText");
 const signupButton = document.getElementById("signupButton");
 const loginButton = document.getElementById("loginButton");
-const signupOtpArea = document.getElementById("signupOtpArea");
 const authTabs = document.getElementById("authTabs");
 const loginTab = document.getElementById("loginTab");
 const signupTab = document.getElementById("signupTab");
@@ -3016,13 +3003,13 @@ title.innerText = isAdmin ? "Admin Login" : (isSignup ? "Create Account" : "User
 if(hint){
 hint.innerText = isAdmin
 ? "Admin account se dashboard login karein."
-: (isSignup ? "Mobile OTP ya Gmail verification me se ek choose karke account create karein." : "Email ya mobile number se same password par login karein.");
+: (isSignup ? "Email ID se account create karein." : "Email ID aur password se login karein.");
 }
 if(actionText){
 actionText.innerText = isAdmin ? "Admin Login" : "Login";
 }
 if(emailInput){
-emailInput.placeholder = isSignup ? "Gmail / Email ID" : "Email ya Mobile Number";
+emailInput.placeholder = "Email ID";
 }
 if(authTabs){
 authTabs.style.display = isAdmin ? "none" : "grid";
@@ -3032,9 +3019,6 @@ loginTab.classList.toggle("active", !isSignup);
 }
 if(signupTab){
 signupTab.classList.toggle("active", isSignup);
-}
-if(signupOtpArea){
-signupOtpArea.style.display = isSignup ? "block" : "none";
 }
 if(loginButton){
 loginButton.style.display = isSignup ? "none" : "block";
@@ -3247,9 +3231,6 @@ createUserWithEmailAndPassword,
 signInWithEmailAndPassword,
 sendEmailVerification,
 signOut,
-RecaptchaVerifier,
-PhoneAuthProvider,
-linkWithCredential,
 deleteUser
 }
 from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
@@ -3306,107 +3287,8 @@ const sessionKey = "loginTime";
 const sessionLimitMs = 60 * 60 * 1000;
 let currentLoginMode = "user";
 let authPanelView = "login";
-let signupRecaptchaVerifier = null;
-let signupVerificationId = "";
-let signupVerifiedPhone = "";
-let signupVerifiedMobileKey = "";
-let signupPhoneCredential = null;
-
-const normalizeMobile = (value = "") => {
-const digits = String(value || "").replace(/\D/g, "");
-let mobileDigits = digits;
-
-if(mobileDigits.length === 11 && mobileDigits.startsWith("0")){
-mobileDigits = "91" + mobileDigits.slice(1);
-}
-else if(mobileDigits.length === 10){
-mobileDigits = "91" + mobileDigits;
-}
-
-if(!(mobileDigits.length === 12 && mobileDigits.startsWith("91"))){
-return null;
-}
-
-return {
-key:mobileDigits,
-e164:"+" + mobileDigits,
-display:mobileDigits.slice(2)
-};
-};
 
 const isEmailLogin = (value = "") => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || "").trim());
-
-const setOtpStatus = (message = "", isError = false) => {
-const status = document.getElementById("signupOtpStatus");
-if(!status){ return; }
-status.innerText = message;
-status.classList.toggle("error", isError);
-};
-
-const resetSignupOtpState = () => {
-signupVerificationId = "";
-signupVerifiedPhone = "";
-signupVerifiedMobileKey = "";
-signupPhoneCredential = null;
-const otpInput = document.getElementById("signupOtp");
-if(otpInput){ otpInput.value = ""; }
-};
-
-const resolveLoginEmail = async (identifier) => {
-const value = String(identifier || "").trim();
-
-if(isEmailLogin(value)){
-return value.toLowerCase();
-}
-
-const mobile = normalizeMobile(value);
-if(!mobile){
-throw new Error("Email ya valid 10 digit mobile number enter karein.");
-}
-
-const indexSnapshot = await get(ref(db, "mobileIndex/" + mobile.key)).catch(() => null);
-if(indexSnapshot && indexSnapshot.exists()){
-const data = indexSnapshot.val() || {};
-if(data.email){ return String(data.email).trim().toLowerCase(); }
-}
-
-const membersSnapshot = await get(ref(db, "members")).catch(() => null);
-if(membersSnapshot && membersSnapshot.exists()){
-const matches = [];
-membersSnapshot.forEach((child) => {
-const member = child.val() || {};
-const memberMobile = normalizeMobile(member.mobile || member.phoneNumber || "");
-if(memberMobile && memberMobile.key === mobile.key && member.email){
-matches.push({
-uid:child.key,
-email:String(member.email).trim().toLowerCase(),
-mobile:memberMobile,
-status:String(member.status || "Active"),
-time:Number(member.lastLoginAt || member.updatedAt || member.createdAt || 0)
-});
-}
-});
-matches.sort((a,b) => {
-const aDeleted = a.status === "Deleted" || a.status === "Blocked";
-const bDeleted = b.status === "Deleted" || b.status === "Blocked";
-if(aDeleted !== bDeleted){ return aDeleted ? 1 : -1; }
-return b.time - a.time;
-});
-const match = matches[0];
-if(match){
-set(ref(db, "mobileIndex/" + mobile.key), {
-uid:match.uid,
-email:match.email,
-mobile:match.mobile.display,
-phoneNumber:match.mobile.e164,
-updatedAt:Date.now()
-}).catch(() => {});
-return match.email;
-}
-}
-
-throw new Error("Is mobile number se account nahi mila. Pehle account create karein ya admin se mobile update karwayein.");
-};
 
 const startFreshUserSession = () => {
 localStorage.setItem(sessionKey, String(Date.now()));
@@ -3439,7 +3321,6 @@ const hint = document.getElementById("loginHint");
 const actionText = document.getElementById("loginActionText");
 const signupButton = document.getElementById("signupButton");
 const loginButton = document.getElementById("loginButton");
-const signupOtpArea = document.getElementById("signupOtpArea");
 const authTabs = document.getElementById("authTabs");
 const loginTab = document.getElementById("loginTab");
 const signupTab = document.getElementById("signupTab");
@@ -3451,13 +3332,13 @@ title.innerText = isAdmin ? "Admin Login" : (isSignup ? "Create Account" : "User
 if(hint){
 hint.innerText = isAdmin
 ? "Admin account se dashboard login karein."
-: (isSignup ? "Mobile OTP ya Gmail verification me se ek choose karke account create karein." : "Email ya mobile number se same password par login karein.");
+: (isSignup ? "Email ID se account create karein." : "Email ID aur password se login karein.");
 }
 if(actionText){
 actionText.innerText = isAdmin ? "Admin Login" : "Login";
 }
 if(emailInput){
-emailInput.placeholder = isSignup ? "Gmail / Email ID" : "Email ya Mobile Number";
+emailInput.placeholder = "Email ID";
 }
 if(authTabs){
 authTabs.style.display = isAdmin ? "none" : "grid";
@@ -3467,9 +3348,6 @@ loginTab.classList.toggle("active", !isSignup);
 }
 if(signupTab){
 signupTab.classList.toggle("active", isSignup);
-}
-if(signupOtpArea){
-signupOtpArea.style.display = isSignup ? "block" : "none";
 }
 if(loginButton){
 loginButton.style.display = isSignup ? "none" : "block";
@@ -3498,60 +3376,6 @@ const isAdmin = currentLoginMode === "admin";
 window.setAuthView("login", isAdmin);
 
 document.getElementById("loginModal").style.display = "flex";
-};
-
-window.sendSignupOtp = async ()=>{
-if(currentLoginMode === "admin"){
-alert("Admin login me OTP ki zarurat nahi hai.");
-return;
-}
-
-const mobile = normalizeMobile(document.getElementById("signupMobile").value);
-if(!mobile){
-setOtpStatus("Valid 10 digit mobile number likhein.", true);
-return;
-}
-
-try{
-resetSignupOtpState();
-setOtpStatus("OTP send ho raha hai...");
-
-if(!signupRecaptchaVerifier){
-signupRecaptchaVerifier = new RecaptchaVerifier(auth, "signupRecaptcha", {
-size:"invisible"
-});
-}
-
-const provider = new PhoneAuthProvider(auth);
-signupVerificationId = await provider.verifyPhoneNumber(mobile.e164, signupRecaptchaVerifier);
-signupVerifiedPhone = mobile.e164;
-signupVerifiedMobileKey = mobile.key;
-setOtpStatus("OTP send ho gaya. Code enter karke OTP Verify dabayein.");
-}catch(error){
-if(signupRecaptchaVerifier && typeof signupRecaptchaVerifier.clear === "function"){
-signupRecaptchaVerifier.clear();
-}
-signupRecaptchaVerifier = null;
-setOtpStatus("OTP send nahi hua: " + error.message, true);
-}
-};
-
-window.verifySignupOtp = ()=>{
-const mobile = normalizeMobile(document.getElementById("signupMobile").value);
-const otp = document.getElementById("signupOtp").value.trim();
-
-if(!mobile || !signupVerificationId || mobile.key !== signupVerifiedMobileKey){
-setOtpStatus("Pehle isi mobile number par OTP send karein.", true);
-return;
-}
-
-if(!/^\d{6}$/.test(otp)){
-setOtpStatus("6 digit OTP enter karein.", true);
-return;
-}
-
-signupPhoneCredential = PhoneAuthProvider.credential(signupVerificationId, otp);
-setOtpStatus("OTP ready hai. Create Account dabane par mobile verification complete ho jayega.");
 };
 
 document.getElementById("serviceRequestForm").addEventListener("submit",(event)=>{
@@ -3606,21 +3430,18 @@ status.innerText = "Request send nahi hui: " + error.message;
 
 /* LOGIN */
 
-window.signUpUser = async (email,password,mobileValue)=>{
+window.signUpUser = async (email,password)=>{
 
 email = String(email || "").trim().toLowerCase();
 password = String(password || "").trim();
-const mobile = normalizeMobile(mobileValue);
-const mobileText = String(mobileValue || "").trim();
-const hasVerifiedOtp = Boolean(mobile && signupPhoneCredential && signupVerifiedMobileKey === mobile.key);
 
 if(email === "" || password === ""){
-alert("Please Gmail ID aur password enter karein.");
+alert("Please email ID aur password enter karein.");
 return;
 }
 
 if(!isEmailLogin(email)){
-alert("Account create ke liye valid Gmail/email ID likhein. Mobile login baad me same password se ho jayega.");
+alert("Account create ke liye valid email ID likhein.");
 return;
 }
 
@@ -3634,37 +3455,12 @@ alert("Admin account create/login ke liye upar wala Admin button use karein.");
 return;
 }
 
-if(mobileText && !mobile){
-setOtpStatus("Mobile number valid 10 digit likhein, ya Gmail verification se account create karna hai to mobile blank chhod dein.", true);
-return;
-}
-
 let createdUser = null;
 
 try{
-setOtpStatus(hasVerifiedOtp ? "Mobile OTP ke saath account create ho raha hai..." : "Gmail verification link ke saath account create ho raha hai...");
-
-if(mobile && !hasVerifiedOtp){
-setOtpStatus("OTP verify nahi hai, isliye Gmail verification link se account create hoga.");
-}
-
-if(mobile){
-const existingMobileEmail = await resolveLoginEmail(mobile.display).catch(() => "");
-if(existingMobileEmail){
-setOtpStatus("Yeh mobile number already ek account me added hai. Login karein ya admin se contact karein.", true);
-return;
-}
-}
-
 const userCredential = await createUserWithEmailAndPassword(auth,email,password);
 createdUser = userCredential.user;
-
-if(hasVerifiedOtp){
-await linkWithCredential(createdUser, signupPhoneCredential);
-}
-else{
 await sendEmailVerification(createdUser);
-}
 
 const now = Date.now();
 await set(ref(db, "members/" + createdUser.uid), {
@@ -3672,14 +3468,10 @@ uid:createdUser.uid,
 email:createdUser.email || email,
 profileEmail:createdUser.email || email,
 name:(createdUser.email || email).split("@")[0],
-mobile:mobile ? mobile.display : "",
-mobileKey:mobile ? mobile.key : "",
-phoneNumber:mobile ? mobile.e164 : "",
-mobileVerified:hasVerifiedOtp,
-verificationMethod:hasVerifiedOtp ? "mobileOtp" : "email",
 role:"member",
 status:"Active",
 emailVerified:false,
+verificationMethod:"email",
 uploadApproved:false,
 freeStorageLimitMb:50,
 storageLimitBytes:50 * 1024 * 1024,
@@ -3688,27 +3480,8 @@ createdAt:now,
 lastLoginAt:now
 }).catch(() => {});
 
-if(mobile){
-await set(ref(db, "mobileIndex/" + mobile.key), {
-uid:createdUser.uid,
-email:createdUser.email || email,
-mobile:mobile.display,
-phoneNumber:mobile.e164,
-mobileVerified:hasVerifiedOtp,
-createdAt:now,
-updatedAt:now
-}).catch(() => {});
-}
-
-resetSignupOtpState();
-setOtpStatus("");
-if(hasVerifiedOtp){
-document.getElementById("signupMobile").value = "";
-}
 await signOut(auth);
-alert(hasVerifiedOtp
-? "Account create ho gaya. Mobile OTP verified hai. Ab Gmail ya mobile number dono se same password se login ho jayega."
-: "Account create ho gaya. Gmail par verification link bheja gaya hai. Gmail verify karne ke baad email ya saved mobile se same password par login hoga.");
+alert("Account create ho gaya. Email par verification link bheja gaya hai. Email verify karne ke baad login hoga.");
 }catch(error){
 if(createdUser){
 await deleteUser(createdUser).catch(() => {});
@@ -3719,21 +3492,18 @@ alert("Account create nahi hua: " + error.message);
 
 };
 
-window.loginUser = async (identifier,password)=>{
+window.loginUser = async (email,password)=>{
 
-identifier = String(identifier || "").trim();
+email = String(email || "").trim().toLowerCase();
 password = String(password || "").trim();
 
-if(identifier === "" || password === ""){
-alert("Please email/mobile aur password enter karein.");
+if(email === "" || password === ""){
+alert("Please email ID aur password enter karein.");
 return;
 }
 
-let email = "";
-try{
-email = await resolveLoginEmail(identifier);
-}catch(error){
-alert(error.message);
+if(!isEmailLogin(email)){
+alert("Login ke liye valid email ID likhein.");
 return;
 }
 
@@ -3766,32 +3536,18 @@ alert("Aapka account blocked/deleted hai. Admin se contact karein.");
 return;
 }
 
-if(!firebaseUser.emailVerified && member.mobileVerified !== true && member.emailVerified !== true){
+if(!firebaseUser.emailVerified && member.emailVerified !== true){
 sendEmailVerification(firebaseUser).catch(() => {});
 await signOut(auth);
-alert("Account verification pending hai. Mobile OTP verified account ya Gmail verified account se login karein.");
+alert("Account verification pending hai. Email verify karke login karein.");
 return;
 }
 
-const memberMobile = normalizeMobile(member.mobile || member.phoneNumber || "");
 const updates = {
 lastLoginAt:Date.now(),
 email:userEmail,
 emailVerified:firebaseUser.emailVerified || member.emailVerified === true
 };
-
-if(memberMobile){
-updates.mobile = memberMobile.display;
-updates.mobileKey = memberMobile.key;
-updates.phoneNumber = memberMobile.e164;
-set(ref(db, "mobileIndex/" + memberMobile.key), {
-uid:firebaseUser.uid,
-email:userEmail,
-mobile:memberMobile.display,
-phoneNumber:memberMobile.e164,
-updatedAt:Date.now()
-}).catch(() => {});
-}
 
 startFreshUserSession();
 update(memberRef, updates).catch(() => {});
