@@ -43,6 +43,7 @@
     .actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
     .delete{background:#d90000;}
     .edit{background:#ff7a00;color:#03224d;}
+    .whatsapp-share{background:#138a36;color:white;}
     .empty{background:white;border:1px dashed #bdd0e5;border-radius:7px;padding:18px;text-align:center;color:#55657a;font-weight:700;}
     footer{background:#0057a8;color:white;text-align:center;padding:12px;font-size:12px;}
     @media(max-width:760px){
@@ -163,6 +164,27 @@
       return /^https?:\/\//i.test(url) ? url : "#";
     };
 
+    const whatsappChannelUrl = "https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q";
+
+    const buildPortalWhatsappText = (item) => {
+      const category = categories[item.category] || "Update";
+      return [
+        `*${category} Update*`,
+        item.title || "Update",
+        `Details: ${safeUrl(item.url)}`,
+        `Join WhatsApp Channel: ${whatsappChannelUrl}`
+      ].filter(Boolean).join("\n");
+    };
+
+    window.sharePortalItemToWhatsapp = (category, id) => {
+      const item = allItems.find((row) => row.category === category && row.id === id);
+      if(!item){ alert("Post data nahi mila."); return; }
+      const text = buildPortalWhatsappText(item);
+      if(navigator.clipboard){ navigator.clipboard.writeText(text).catch(() => {}); }
+      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
+      document.getElementById("itemStatus").innerText = "WhatsApp post text copy ho gaya. WhatsApp me apna channel select karke send kar dein.";
+    };
+
     const normalizePortalUrl = (value = "") => {
       let url = String(value || "").trim();
       if(!url){ return ""; }
@@ -208,6 +230,7 @@
           <small>Added: ${escapeHTML(formatDate(item.createdAt))}</small>
           <small>Updated: ${escapeHTML(item.updatedAt ? formatDate(item.updatedAt) : "Not edited yet")}</small>
           <div class="actions">
+            <button class="whatsapp-share" onclick="sharePortalItemToWhatsapp('${item.category}','${item.id}')">WhatsApp Post</button>
             <button class="edit" onclick="editPortalItem('${item.category}','${item.id}')">Edit</button>
             <button class="delete" onclick="deletePortalItem('${item.category}','${item.id}')">Delete</button>
           </div>

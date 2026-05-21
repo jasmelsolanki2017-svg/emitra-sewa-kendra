@@ -80,6 +80,7 @@
 
     .delete-btn{background:#d90000;color:white;border:none;padding:5px 8px;border-radius:5px;font-weight:700;cursor:pointer;font-size:11px;}
     .edit-btn{background:#ff7a00;color:#03224d;border:none;padding:5px 8px;border-radius:5px;font-weight:800;cursor:pointer;font-size:11px;margin-right:4px;}
+    .whatsapp-share-btn{background:#138a36;color:white;border:none;padding:5px 8px;border-radius:5px;font-weight:800;cursor:pointer;font-size:11px;margin-right:4px;}
     .action-btn{display:inline-block;background:#0057a8;color:white;border:none;text-decoration:none;padding:5px 8px;border-radius:5px;font-weight:700;cursor:pointer;margin:1px;font-size:11px;}
     .done-btn{background:#138a36;}
     .status-badge{display:inline-block;background:#ff7a00;color:#0057a8;padding:2px 6px;border-radius:6px;font-size:10px;font-weight:800;margin-top:3px;}
@@ -598,6 +599,11 @@ Cook | 1426 |"></textarea>
     return /^https?:\/\//i.test(url) ? url : "#";
   };
 
+  const hasRealLink = (value = "") => {
+    const url = String(value || "").trim();
+    return /^https?:\/\//i.test(url) && url !== "#";
+  };
+
   const cleanDisplayOrder = (value) => {
     const number = Number(String(value || "").replace(/[^\d]/g, ""));
     return number > 0 ? number : "";
@@ -614,6 +620,45 @@ Cook | 1426 |"></textarea>
   });
 
   const portalCategories = ["admitCard","result","syllabus","answerKey"];
+  const portalTargetLabels = { latestJob:"Latest Job", admitCard:"Admit Card", result:"Result", syllabus:"Syllabus", answerKey:"Answer Key" };
+  const portalTargetLinks = { admitCard:"admitCardLink", result:"resultLink", syllabus:"syllabusLink", answerKey:"answerKeyLink" };
+  const whatsappChannelUrl = "https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q";
+  const siteBaseUrl = () => location.origin && location.origin !== "null" ? location.origin.replace(/\/+$/, "") : "https://emitrawala.online";
+  const jobDetailUrl = (id) => `${siteBaseUrl()}/job-detail.html?id=${encodeURIComponent(id)}`;
+  const getSharePostUrl = (id, data = {}) => {
+    const targetKey = portalTargetLinks[data.postTarget || "latestJob"];
+    if(targetKey && hasRealLink(data[targetKey])){ return data[targetKey]; }
+    if(hasRealLink(data.detailLink)){ return data.detailLink; }
+    if(hasRealLink(data.applyLink)){ return data.applyLink; }
+    return jobDetailUrl(id);
+  };
+  const buildWhatsappPostText = (id, data = {}) => {
+    const target = data.postTarget || "latestJob";
+    const label = portalTargetLabels[target] || "Update";
+    const lines = [
+      `*${label} Update*`,
+      data.title || "Job Update",
+      data.department ? `Department: ${data.department}` : "",
+      data.totalPosts ? `Total Posts: ${data.totalPosts}` : "",
+      data.startDate ? `Start Date: ${data.startDate}` : "",
+      data.lastDate ? `Last Date: ${data.lastDate}` : "",
+      target === "admitCard" && data.admitCardDate ? `Admit Card: ${data.admitCardDate}` : "",
+      target === "result" && data.resultDate ? `Result: ${data.resultDate}` : "",
+      data.examDate ? `Exam Date: ${data.examDate}` : "",
+      data.qualification ? `Qualification: ${String(data.qualification).split(/\r?\n/)[0]}` : "",
+      data.location ? `Location: ${data.location}` : "",
+      `Details: ${getSharePostUrl(id, data)}`,
+      `Join WhatsApp Channel: ${whatsappChannelUrl}`
+    ];
+    return lines.filter(Boolean).join("\n");
+  };
+  window.shareLatestJobToWhatsapp = (id) => {
+    const data = window.latestJobsCache && window.latestJobsCache[id];
+    if(!data){ alert("Post data load nahi hua. Page refresh karke try karein."); return; }
+    const text = buildWhatsappPostText(id, data);
+    if(navigator.clipboard){ navigator.clipboard.writeText(text).catch(() => {}); }
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
+  };
   const syncDisplayOrderToPortal = (jobId, data) => {
     const target = data && data.postTarget;
     if(!jobId || !portalCategories.includes(target)){ return Promise.resolve(); }
@@ -1354,6 +1399,7 @@ Cook | 1426 |"></textarea>
               <small>Page Content: ${escapeHTML(data.pageContent || "No content added")}</small>
             </div>
             <div>
+              <button class="whatsapp-share-btn" onclick="shareLatestJobToWhatsapp('${id}')">WhatsApp Post</button>
               <button class="edit-btn" onclick="editLatestJob('${id}')">Edit</button>
               <button class="edit-btn" onclick="toggleJobVisibility('${id}')">${isHidden ? "Unhide" : "Hide"}</button>
               <button class="delete-btn" onclick="deleteLatestJob('${id}')">Delete</button>
