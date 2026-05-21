@@ -354,6 +354,39 @@
     .panel-alert small{display:block;color:var(--muted);font-weight:700;line-height:1.35;}
     .panel-alert a{background:var(--blue);color:white;text-decoration:none;border-radius:6px;padding:7px 10px;font-weight:800;font-size:12px;white-space:nowrap;}
 
+    .profile-chat{
+      background:#f9fbff;
+      border:1px solid var(--line);
+      border-left:5px solid var(--blue);
+      border-radius:8px;
+      padding:11px 12px;
+      margin-bottom:12px;
+    }
+
+    .profile-chat-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:9px;
+    }
+
+    .profile-chat-head h3{color:var(--blue);font-size:15px;}
+    .profile-chat-head a{background:var(--blue);color:white;text-decoration:none;border-radius:6px;padding:7px 10px;font-weight:800;font-size:12px;}
+    .chat-thread{display:grid;gap:8px;}
+    .chat-row{background:white;border:1px solid var(--line);border-radius:8px;padding:9px;}
+    .chat-row h4{color:var(--blue);font-size:13px;overflow-wrap:anywhere;}
+    .chat-row small{display:block;color:var(--muted);font-size:11px;font-weight:700;margin-top:3px;}
+    .chat-bubble{margin-top:7px;border-radius:7px;padding:7px 8px;font-size:12px;line-height:1.45;overflow-wrap:anywhere;}
+    .chat-bubble.admin{background:#fff7ed;border:1px solid #ffd2a4;color:var(--blue-dark);}
+    .chat-bubble.user{background:#eaf8ef;border:1px solid #bde8ca;color:#12723c;}
+    .request-new-badge{display:inline-block;background:#d10000;color:white;border-radius:999px;padding:2px 6px;font-size:10px;font-weight:900;margin-left:5px;}
+    .chat-reply{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px;margin-top:8px;}
+    .chat-reply textarea{width:100%;min-height:48px;border:1px solid var(--line);border-radius:7px;padding:8px 9px;font-size:12px;resize:vertical;background:white;}
+    .chat-reply button{border:0;border-radius:7px;background:var(--blue);color:white;font-weight:900;padding:8px 11px;cursor:pointer;font-size:12px;}
+    .chat-empty{color:var(--muted);font-weight:800;font-size:12px;background:white;border:1px dashed var(--line);border-radius:8px;padding:12px;text-align:center;}
+
     .profile-chip{
       background:#f9fbff;
       border:1px solid var(--line);
@@ -863,6 +896,7 @@
       .profile-summary{grid-template-columns:1fr;}
       .profile-form,.password-form{grid-template-columns:1fr;}
       .panel-alert{grid-template-columns:1fr;}
+      .chat-reply{grid-template-columns:1fr;}
       .stat-box small{text-align:left;}
       .section{padding:20px;}
       .section h2{font-size:23px;}
@@ -981,6 +1015,9 @@ body.dark-mode .masthead,
 body.dark-mode .contact-box,
 body.dark-mode .poster-caption,
 body.dark-mode .special-card,
+body.dark-mode .profile-chat,
+body.dark-mode .chat-row,
+body.dark-mode .chat-empty,
 body.dark-mode .search {
   background: #101b2d !important;
   color: #e8f1ff !important;
@@ -1188,6 +1225,19 @@ body.dark-mode .nav-logo img {
       <a href="user-data-folder.html">Open Folder</a>
     </div>
 
+    <div class="profile-chat">
+      <div class="profile-chat-head">
+        <div>
+          <h3><i class="fa-solid fa-comments"></i> Admin Chat</h3>
+          <p>Request reply aur admin update ka jawab yahin se bhejein.</p>
+        </div>
+        <a href="user-my-requests.html">Full History</a>
+      </div>
+      <div class="chat-thread" id="profileChatList">
+        <div class="chat-empty">Request chat loading...</div>
+      </div>
+    </div>
+
     <div class="stats-grid">
       <div class="stat-box">
         <span id="updatesCount">0</span>
@@ -1354,6 +1404,49 @@ body.dark-mode .nav-logo img {
     }
   }
 
+  const formatRequestTime = (value) => {
+    const time = Number(value || 0);
+    return time ? new Date(time).toLocaleString("hi-IN") : "Not available";
+  };
+
+  const normalizeRequestStatus = (status = "") => {
+    const value = String(status || "").trim().toLowerCase();
+    if(value === "done" || value === "completed"){ return "Completed"; }
+    if(value === "working" || value === "replied" || value === "in process" || value === "in-process"){ return "In Process"; }
+    if(value === "rejected" || value === "reject"){ return "Rejected"; }
+    return "Pending";
+  };
+
+  function renderProfileChat(){
+    const list = document.getElementById("profileChatList");
+    if(!list){ return; }
+    const rows = [...currentRequestNotifications]
+      .sort((a, b) => Number(b.updatedAt || b.createdAt || 0) - Number(a.updatedAt || a.createdAt || 0))
+      .slice(0, 5);
+    if(!rows.length){
+      list.innerHTML = '<div class="chat-empty">Abhi koi request chat nahi hai. Homepage se service request bhejne ke baad yahan chat dikhegi.</div>';
+      return;
+    }
+    list.innerHTML = rows.map((item) => {
+      const id = item.id || item.requestId || "";
+      const requestId = item.requestId || item.id || "";
+      const status = normalizeRequestStatus(item.status);
+      return `
+        <div class="chat-row">
+          <h4>${escapeHTML(item.service || "Service Request")} ${item.userUnread === true ? '<span class="request-new-badge">New</span>' : ""}</h4>
+          <small>Tracking ID: ${escapeHTML(item.requestToken || requestId)} | Status: ${escapeHTML(status)}</small>
+          <small>Last Update: ${escapeHTML(formatRequestTime(item.statusUpdatedAt || item.updatedAt || item.createdAt))}</small>
+          ${item.adminNote ? `<div class="chat-bubble admin"><b>Admin:</b> ${escapeHTML(item.adminNote)}</div>` : '<div class="chat-bubble admin"><b>Admin:</b> Reply pending hai.</div>'}
+          ${item.userReply ? `<div class="chat-bubble user"><b>You:</b> ${escapeHTML(item.userReply)}</div>` : ""}
+          <div class="chat-reply">
+            <textarea id="profileChatReply_${escapeHTML(id)}" placeholder="Admin ko reply likhein...">${escapeHTML(item.userReply || "")}</textarea>
+            <button type="button" onclick="sendProfileChatReply('${escapeHTML(id)}','${escapeHTML(requestId)}')">Send</button>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
   function loadRequestNotifications(user){
     onValue(ref(db, "userServiceRequests/" + user.uid), (snapshot) => {
       currentRequestNotifications = [];
@@ -1363,11 +1456,45 @@ body.dark-mode .nav-logo img {
         });
       }
       renderRequestNotificationCount();
+      renderProfileChat();
     });
   }
 
   window.openRequestNotifications = () => {
     window.location.href = "user-my-requests.html";
+  };
+
+  window.sendProfileChatReply = async (localId, requestId = "") => {
+    if(!currentUser){
+      alert("Login required.");
+      return;
+    }
+    const field = document.getElementById("profileChatReply_" + localId);
+    const userReply = field ? field.value.trim() : "";
+    const targetId = requestId || localId;
+    if(!userReply){
+      alert("Reply message likhein.");
+      return;
+    }
+    const now = Date.now();
+    try{
+      await update(ref(db, "userServiceRequests/" + currentUser.uid + "/" + localId), {
+        userReply,
+        userReplyAt:now,
+        adminUnread:true,
+        userUnread:false,
+        updatedAt:now
+      });
+      await update(ref(db, "serviceRequests/" + targetId), {
+        userReply,
+        userReplyAt:now,
+        adminUnread:true,
+        updatedAt:now
+      });
+      alert("Reply admin ko send ho gaya.");
+    } catch(error){
+      alert("Reply send nahi hua: " + error.message);
+    }
   };
 
   const normalizeMobile = (value = "") => {
