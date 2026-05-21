@@ -224,7 +224,7 @@
         if(filter === "process" && status !== "In Process"){ return false; }
         if(filter === "done" && status !== "Completed"){ return false; }
         if(filter === "rejected" && status !== "Rejected"){ return false; }
-        const text = [item.requestToken, item.name, item.mobile, item.service, item.message, item.userEmail, item.adminNote, status].join(" ").toLowerCase();
+        const text = [item.requestToken, item.name, item.mobile, item.service, item.message, item.userEmail, item.adminNote, item.userReply, status].join(" ").toLowerCase();
         return text.includes(query);
       });
       if(filter === "pending"){
@@ -254,6 +254,8 @@
             ${data.statusUpdatedAt || data.updatedAt ? `<small>Last Update: ${escapeHTML(formatDate(data.statusUpdatedAt || data.updatedAt))}</small>` : ""}
             ${data.userEmail ? `<small>User: ${escapeHTML(data.userEmail)}</small>` : ""}
             <p>${escapeHTML(data.message || "No message")}</p>
+            ${data.adminUnread === true ? '<span class="badge rejected">New User Reply</span>' : ""}
+            ${data.userReply ? `<small><b>User Reply:</b> ${escapeHTML(data.userReply)}</small><small>Reply Date: ${escapeHTML(formatDate(data.userReplyAt))}</small>` : ""}
             <div class="edit-grid">
               <select data-id="${escapeHTML(data.id)}" data-field="status">
                 <option value="Pending" ${status === "Pending" ? "selected" : ""}>Pending</option>
@@ -302,6 +304,7 @@
       const data = {
         status:normalizeStatus(getFieldValue(id, "status")),
         adminNote:getFieldValue(id, "adminNote"),
+        adminUnread:false,
         statusUpdatedAt:Date.now(),
         updatedAt:Date.now()
       };
@@ -324,6 +327,7 @@
       const data = {
         status:"In Process",
         adminNote,
+        adminUnread:false,
         repliedAt:Date.now(),
         statusUpdatedAt:Date.now(),
         updatedAt:Date.now()
@@ -338,6 +342,7 @@
       if(!adminAllowed){ alert("Admin verify nahi hua."); return; }
       const data = {
         status:"Completed",
+        adminUnread:false,
         statusUpdatedAt:Date.now(),
         updatedAt:Date.now()
       };

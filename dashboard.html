@@ -950,6 +950,7 @@ Cook | 1426 |"></textarea>
 
     const data = {
       status:"Completed",
+      adminUnread:false,
       statusUpdatedAt:Date.now(),
       updatedAt:Date.now()
     };
@@ -970,6 +971,7 @@ Cook | 1426 |"></textarea>
     const data = {
       status:"In Process",
       adminNote,
+      adminUnread:false,
       repliedAt:Date.now(),
       statusUpdatedAt:Date.now(),
       updatedAt:Date.now()
@@ -1019,6 +1021,8 @@ Cook | 1426 |"></textarea>
               <small>Mobile: ${escapeHTML(data.mobile || "")}</small>
               <small>Service: ${escapeHTML(data.service || "")}</small>
               <small>Message: ${escapeHTML(data.message || "")}</small>
+              ${data.adminUnread === true ? "<small><b>New User Reply</b></small>" : ""}
+              ${data.userReply ? `<small>User Reply: ${escapeHTML(data.userReply)}</small>` : ""}
             </div>
             <div>
               ${data.userUid ? `<button class="action-btn" onclick="replyServiceRequest('${data.id}','${escapeHTML(data.userUid || "")}')">Reply</button>` : ""}

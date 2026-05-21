@@ -144,6 +144,9 @@ nav button,.primary-btn{background:var(--yellow);border-color:var(--yellow);colo
 .request-badge.process{background:#6b46c1;color:white;}
 .request-badge.rejected{background:#a31515;color:white;}
 .request-new-badge{display:inline-block;background:#d10000;color:white;border-radius:999px;padding:3px 7px;font-size:10px;font-weight:900;margin-left:5px;}
+.request-reply-box{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px;margin-top:10px;}
+.request-reply-box textarea{width:100%;min-height:54px;border:1px solid var(--line);border-radius:7px;padding:8px 9px;font-size:12px;resize:vertical;background:white;}
+.request-reply-box button{border:0;border-radius:7px;background:var(--blue);color:white;font-weight:900;padding:8px 11px;cursor:pointer;font-size:12px;}
 .request-track{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
 .request-track span{border:1px solid var(--line);background:white;color:var(--muted);border-radius:999px;padding:4px 8px;font-size:10px;font-weight:900;}
 .request-track span.active{background:var(--blue);border-color:var(--blue);color:white;}
@@ -227,5 +230,6 @@ body.dark-mode p,body.dark-mode small,body.dark-mode .message{color:#cbd8ea !imp
   .container{padding:20px 4% 0;}
   .section{padding:14px;}
   .data-grid,.storage-tools,.file-row,.cloud-link{grid-template-columns:1fr;}
+  .request-reply-box{grid-template-columns:1fr;}
   .file-actions{justify-content:flex-start;}
 }

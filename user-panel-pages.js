@@ -405,6 +405,11 @@ function loadMyRequests(user){
           <small>Name: ${escapeHTML(item.name || "Not added")} | Mobile: ${escapeHTML(item.mobile || "Not added")}</small>
           <p>${escapeHTML(item.message || "No message")}</p>
           ${item.adminNote ? `<small><b>Admin Note:</b> ${escapeHTML(item.adminNote)}</small>` : ""}
+          ${item.userReply ? `<small><b>Your Reply:</b> ${escapeHTML(item.userReply)}</small>` : ""}
+          <div class="request-reply-box">
+            <textarea id="userReply_${escapeHTML(item.id)}" placeholder="Admin ko reply likhein...">${escapeHTML(item.userReply || "")}</textarea>
+            <button type="button" onclick="sendUserRequestReply('${escapeHTML(item.id)}','${escapeHTML(item.requestId || item.id)}')">Send Reply</button>
+          </div>
           <div class="request-track">
             <span class="active">Pending</span>
             <span class="${status === "In Process" || status === "Completed" ? "active" : ""}">In Process</span>
@@ -416,6 +421,39 @@ function loadMyRequests(user){
     }).join("");
   }, (error) => renderMessage(box, "Requests load nahi ho payi: " + error.message));
 }
+
+window.sendUserRequestReply = async (localId, requestId = "") => {
+  if(!currentUser){
+    alert("Login required.");
+    return;
+  }
+  const field = document.getElementById("userReply_" + localId);
+  const userReply = field ? field.value.trim() : "";
+  const targetId = requestId || localId;
+  if(!userReply){
+    alert("Reply message likhein.");
+    return;
+  }
+  const data = {
+    userReply,
+    userReplyAt:Date.now(),
+    adminUnread:true,
+    userUnread:false,
+    updatedAt:Date.now()
+  };
+  try{
+    await update(ref(db, "userServiceRequests/" + currentUser.uid + "/" + localId), data);
+    await update(ref(db, "serviceRequests/" + targetId), {
+      userReply,
+      userReplyAt:data.userReplyAt,
+      adminUnread:true,
+      updatedAt:data.updatedAt
+    });
+    alert("Reply admin ko send ho gaya.");
+  } catch(error){
+    alert("Reply send nahi hua: " + error.message);
+  }
+};
 
 function renderStorageInfo(){
   const used = Number(currentMember.storageUsedBytes || 0);
