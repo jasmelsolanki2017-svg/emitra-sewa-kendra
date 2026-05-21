@@ -435,6 +435,49 @@
     .panel-alert small{display:block;color:var(--muted);font-weight:700;line-height:1.35;}
     .panel-alert a{background:var(--blue);color:white;text-decoration:none;border-radius:6px;padding:7px 10px;font-weight:800;font-size:12px;white-space:nowrap;}
 
+    .service-request-panel{
+      background:#f9fbff;
+      border:1px solid var(--line);
+      border-left:5px solid var(--yellow);
+      border-radius:8px;
+      padding:11px 12px;
+      margin-bottom:12px;
+    }
+
+    .service-request-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:10px;
+    }
+
+    .service-request-head h3{color:var(--blue);font-size:15px;}
+    .service-request-head p{line-height:1.4;}
+    .service-request-form{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:8px;
+      align-items:start;
+    }
+
+    .service-request-form input,
+    .service-request-form select,
+    .service-request-form textarea{
+      width:100%;
+      min-width:0;
+      padding:8px 9px;
+      border:1px solid var(--line);
+      border-radius:7px;
+      font-size:12px;
+      background:white;
+    }
+
+    .service-request-form textarea{grid-column:1/-1;min-height:64px;resize:vertical;}
+    .service-request-form button{border:0;border-radius:7px;background:var(--blue);color:white;font-weight:900;padding:9px 11px;cursor:pointer;font-size:12px;}
+    .service-request-status{color:var(--blue);font-size:12px;font-weight:900;margin-top:8px;min-height:16px;}
+
     .profile-chat{
       background:#f9fbff;
       border:1px solid var(--line);
@@ -1006,6 +1049,8 @@
       .profile-summary{grid-template-columns:1fr;}
       .profile-form,.password-form{grid-template-columns:1fr;}
       .panel-alert{grid-template-columns:1fr;}
+      .service-request-form{grid-template-columns:1fr;}
+      .service-request-form textarea{grid-column:auto;}
       .chat-reply{grid-template-columns:1fr;}
       .stat-box small{text-align:left;}
       .section{padding:20px;}
@@ -1128,6 +1173,7 @@ body.dark-mode .special-card,
 body.dark-mode .account-side,
 body.dark-mode .account-main,
 body.dark-mode .account-tab,
+body.dark-mode .service-request-panel,
 body.dark-mode .profile-chat,
 body.dark-mode .chat-row,
 body.dark-mode .chat-empty,
@@ -1359,6 +1405,33 @@ body.dark-mode .nav-logo img {
         <small>Profile, password, documents aur admin-added data folder links ke liye ye main hub hai.</small>
       </div>
       <a href="user-data-folder.html">Open Folder</a>
+    </div>
+
+    <div class="service-request-panel">
+      <div class="service-request-head">
+        <div>
+          <h3><i class="fa-solid fa-headset"></i> Service Enquiry</h3>
+          <p>Logged-in users yahan se request bhej sakte hain. Request ka status My Requests me track hoga.</p>
+        </div>
+      </div>
+      <form class="service-request-form" id="serviceRequestForm">
+        <input type="text" id="requestName" placeholder="Aapka naam" required>
+        <input type="tel" id="requestMobile" placeholder="Mobile number" required>
+        <select id="requestService" required>
+          <option value="">Service select karein</option>
+          <option>Income Certificate</option>
+          <option>Caste Certificate</option>
+          <option>Domicile / Bonafide</option>
+          <option>Ration Card</option>
+          <option>Pension Form</option>
+          <option>Job Form</option>
+          <option>Printing / Stationery</option>
+          <option>Other Work</option>
+        </select>
+        <textarea id="requestMessage" placeholder="Kaam ke baare me short detail likhein"></textarea>
+        <button type="submit">Send Request</button>
+      </form>
+      <div class="service-request-status" id="requestStatus"></div>
     </div>
 
     <div class="profile-chat">
@@ -1624,7 +1697,7 @@ body.dark-mode .nav-logo img {
       .sort((a, b) => Number(b.updatedAt || b.createdAt || 0) - Number(a.updatedAt || a.createdAt || 0))
       .slice(0, 5);
     if(!rows.length){
-      list.innerHTML = '<div class="chat-empty">Abhi koi request chat nahi hai. Homepage se service request bhejne ke baad yahan chat dikhegi.</div>';
+      list.innerHTML = '<div class="chat-empty">Abhi koi request chat nahi hai. User Dashboard se service request bhejne ke baad yahan chat dikhegi.</div>';
       return;
     }
     list.innerHTML = rows.map((item) => {
@@ -1706,6 +1779,68 @@ body.dark-mode .nav-logo img {
       alert("Reply send nahi hua: " + error.message);
     }
   };
+
+  const createRequestToken = (id, time) => {
+    const datePart = new Date(time).toISOString().slice(2, 10).replace(/-/g, "");
+    const keyPart = String(id || "").replace(/[^a-zA-Z0-9]/g, "").slice(-5).toUpperCase();
+    return `EMW-${datePart}-${keyPart || "REQ"}`;
+  };
+
+  const serviceRequestForm = document.getElementById("serviceRequestForm");
+  if(serviceRequestForm){
+    serviceRequestForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if(!currentUser){
+        alert("Request bhejne ke liye login required hai.");
+        return;
+      }
+
+      const name = document.getElementById("requestName").value.trim();
+      const mobile = document.getElementById("requestMobile").value.trim();
+      const service = document.getElementById("requestService").value.trim();
+      const message = document.getElementById("requestMessage").value.trim();
+      const status = document.getElementById("requestStatus");
+
+      if(!name || !mobile || !service){
+        status.innerText = "Naam, mobile aur service zaroor bharen.";
+        return;
+      }
+
+      if(!/^[0-9+\-\s]{10,15}$/.test(mobile)){
+        status.innerText = "Valid mobile number bharen.";
+        return;
+      }
+
+      status.innerText = "Request sending...";
+      const requestRef = push(ref(db, "serviceRequests"));
+      const now = Date.now();
+      const requestData = {
+        name,
+        mobile,
+        service,
+        message:message || "No extra detail",
+        status:"Pending",
+        requestToken:createRequestToken(requestRef.key, now),
+        statusUpdatedAt:now,
+        userUid:currentUser.uid,
+        userEmail:currentUser.email || "",
+        createdAt:now
+      };
+
+      try{
+        await set(requestRef, requestData);
+        await set(ref(db, "userServiceRequests/" + currentUser.uid + "/" + requestRef.key), {
+          ...requestData,
+          requestId:requestRef.key
+        });
+        status.innerText = `Request sent! Tracking ID: ${requestData.requestToken}`;
+        document.getElementById("requestService").value = "";
+        document.getElementById("requestMessage").value = "";
+      }catch(error){
+        status.innerText = "Request send nahi hui: " + error.message;
+      }
+    });
+  }
 
   const normalizeMobile = (value = "") => {
     const digits = String(value || "").replace(/\D/g, "");
@@ -1887,6 +2022,10 @@ body.dark-mode .nav-logo img {
     document.getElementById("cardProfileMobile").innerText = "Mobile: " + (mobile || "Not added");
     document.getElementById("cardProfileEmail").innerText = "Email: " + (profileEmail || "Not added");
     document.getElementById("cardUploadAccess").innerText = "Upload: " + uploadStatus;
+    const requestName = document.getElementById("requestName");
+    const requestMobile = document.getElementById("requestMobile");
+    if(requestName && !requestName.value){ requestName.value = name || ""; }
+    if(requestMobile && !requestMobile.value){ requestMobile.value = mobile || ""; }
   };
 
   const renderCloudLinks = () => {

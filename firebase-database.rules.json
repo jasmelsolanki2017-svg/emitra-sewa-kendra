@@ -54,7 +54,9 @@
     },
     "serviceRequests": {
       ".read": "auth != null && auth.token.email === 'jasmelsolanki@gmail.com'",
-      ".write": true
+      "$requestId": {
+        ".write": "auth != null && (auth.token.email === 'jasmelsolanki@gmail.com' || (!data.exists() && newData.exists() && newData.child('userUid').val() === auth.uid) || (data.exists() && newData.exists() && data.child('userUid').val() === auth.uid && newData.child('userUid').val() === auth.uid))"
+      }
     },
     "userServiceRequests": {
       "$uid": {

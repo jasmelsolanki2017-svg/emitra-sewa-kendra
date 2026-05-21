@@ -1320,7 +1320,7 @@ background:white;
 max-width:1120px;
 margin:auto;
 display:grid;
-grid-template-columns:0.95fr 1.05fr;
+grid-template-columns:1fr;
 gap:26px;
 align-items:start;
 }
@@ -2517,7 +2517,7 @@ Important Links
     <div class="business-card"><i class="fa-solid fa-file-circle-check"></i><div><strong>Document Ready Help</strong><small>Required documents aur form details pehle clear.</small></div></div>
     <div class="business-card"><i class="fa-solid fa-clock"></i><div><strong>Fast Follow-up</strong><small>Request save hone ke baad admin panel me track hoti hai.</small></div></div>
     <div class="business-card"><i class="fa-solid fa-briefcase"></i><div><strong>Jobs + Forms</strong><small>Latest job, admit card, result aur PDF forms ek jagah.</small></div></div>
-    <div class="business-card"><i class="fa-solid fa-headset"></i><div><strong>WhatsApp Support</strong><small>Call, WhatsApp aur service enquiry direct available.</small></div></div>
+    <div class="business-card"><i class="fa-solid fa-headset"></i><div><strong>Login Request Support</strong><small>Registered user dashboard se request aur tracking available.</small></div></div>
   </div>
 </section>
 
@@ -2573,7 +2573,7 @@ Important Links
         <p>Service choose karein, documents ready karein, request bhejein. Admin panel me request track hogi aur aapko follow-up mil jayega.</p>
       </div>
       <div class="request-cta">
-        <a href="#documentHelp">Send Request</a>
+        <a href="user-dashboard.html">User Dashboard</a>
         <a class="alt" href="tel:9509403258">Call Now</a>
       </div>
     </div>
@@ -2630,30 +2630,6 @@ Certificates, documents, forms aur government services ke simple guides yahan av
       <div class="doc-list" id="documentChecklist"></div>
     </div>
 
-    <div class="enquiry-panel">
-      <h2>Service Enquiry</h2>
-      <p>Apna request bhejein. Hum aapse jaldi contact karenge.</p>
-
-      <form id="serviceRequestForm">
-        <input type="text" id="requestName" placeholder="Aapka naam" required>
-        <input type="tel" id="requestMobile" placeholder="Mobile number" required>
-        <select id="requestService" required>
-          <option value="">Service select karein</option>
-          <option>Income Certificate</option>
-          <option>Caste Certificate</option>
-          <option>Domicile / Bonafide</option>
-          <option>Ration Card</option>
-          <option>Pension Form</option>
-          <option>Job Form</option>
-          <option>Printing / Stationery</option>
-          <option>Other Work</option>
-        </select>
-        <textarea id="requestMessage" placeholder="Kaam ke baare me short detail likhein"></textarea>
-        <button type="submit">Send Request</button>
-      </form>
-
-      <div class="form-status" id="requestStatus"></div>
-    </div>
   </div>
 </section>
 
@@ -3324,8 +3300,6 @@ window.location.href = "user-dashboard.html";
 
 setPersistence(auth,browserLocalPersistence).catch(() => {});
 
-const requestsRef = ref(db,"serviceRequests");
-
 window.setAuthView = (view = "login", forceAdmin = currentLoginMode === "admin")=>{
 authPanelView = forceAdmin ? "login" : (view === "signup" ? "signup" : "login");
 const isAdmin = forceAdmin;
@@ -3391,64 +3365,6 @@ window.setAuthView("login", isAdmin);
 
 document.getElementById("loginModal").style.display = "flex";
 };
-
-document.getElementById("serviceRequestForm").addEventListener("submit",(event)=>{
-event.preventDefault();
-
-const name = document.getElementById("requestName").value.trim();
-const mobile = document.getElementById("requestMobile").value.trim();
-const service = document.getElementById("requestService").value.trim();
-const message = document.getElementById("requestMessage").value.trim();
-const status = document.getElementById("requestStatus");
-const loggedInUser = auth.currentUser;
-
-if(name === "" || mobile === "" || service === ""){
-status.innerText = "Naam, mobile aur service जरूर भरें।";
-return;
-}
-
-if(!/^[0-9+\-\s]{10,15}$/.test(mobile)){
-status.innerText = "Valid mobile number भरें।";
-return;
-}
-
-status.innerText = "Request sending...";
-
-const requestRef = push(requestsRef);
-const now = Date.now();
-const createRequestToken = (id, time) => {
-const datePart = new Date(time).toISOString().slice(2,10).replace(/-/g,"");
-const keyPart = String(id || "").replace(/[^a-zA-Z0-9]/g,"").slice(-5).toUpperCase();
-return `EMW-${datePart}-${keyPart || "REQ"}`;
-};
-const requestData = {
-name:name,
-mobile:mobile,
-service:service,
-message:message || "No extra detail",
-status:"Pending",
-requestToken:createRequestToken(requestRef.key, now),
-statusUpdatedAt:now,
-userUid:loggedInUser ? loggedInUser.uid : "",
-userEmail:loggedInUser ? (loggedInUser.email || "") : "",
-createdAt:now
-};
-
-set(requestRef, requestData).then(() => {
-if(loggedInUser){
-return set(ref(db, "userServiceRequests/" + loggedInUser.uid + "/" + requestRef.key), {
-...requestData,
-requestId:requestRef.key
-}).catch(() => {});
-}
-return null;
-}).then(()=>{
-status.innerText = `Request sent! Tracking ID: ${requestData.requestToken}`;
-document.getElementById("serviceRequestForm").reset();
-}).catch((error)=>{
-status.innerText = "Request send nahi hui: " + error.message;
-});
-});
 
 /* LOGIN */
 
