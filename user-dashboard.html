@@ -498,6 +498,29 @@
 
     .profile-chat-head h3{color:var(--blue);font-size:15px;}
     .profile-chat-head a{background:var(--blue);color:white;text-decoration:none;border-radius:6px;padding:7px 10px;font-weight:800;font-size:12px;}
+    .profile-chat-summary{
+      background:white;
+      border:1px solid var(--line);
+      border-radius:8px;
+      padding:10px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .profile-chat-summary strong{display:block;color:var(--blue);font-size:13px;overflow-wrap:anywhere;}
+    .profile-chat-summary small{display:block;color:var(--muted);font-size:11px;font-weight:800;margin-top:3px;}
+    .profile-chat-summary .open-chat-btn{
+      background:#ff7a00;
+      color:white;
+      text-decoration:none;
+      border-radius:6px;
+      padding:8px 10px;
+      font-size:12px;
+      font-weight:900;
+      white-space:nowrap;
+    }
     .chat-thread{display:grid;gap:8px;}
     .chat-row{background:white;border:1px solid var(--line);border-radius:8px;padding:9px;}
     .chat-row h4{color:var(--blue);font-size:13px;overflow-wrap:anywhere;}
@@ -1440,10 +1463,14 @@ body.dark-mode .nav-logo img {
           <h3><i class="fa-solid fa-comments"></i> Admin Chat</h3>
           <p>Request reply aur admin update ka jawab yahin se bhejein.</p>
         </div>
-        <a href="user-my-requests.html">Full History</a>
+        <a href="user-my-requests.html">Open Chat</a>
       </div>
-      <div class="chat-thread" id="profileChatList">
-        <div class="chat-empty">Request chat loading...</div>
+      <div class="profile-chat-summary" id="profileChatSummary">
+        <div>
+          <strong>Request chat loading...</strong>
+          <small>Latest admin reply aur request status yahan short me dikhega.</small>
+        </div>
+        <a class="open-chat-btn" href="user-my-requests.html">Full History</a>
       </div>
     </div>
 
@@ -1571,7 +1598,8 @@ body.dark-mode .nav-logo img {
     push,
     set,
     update,
-    remove
+    remove,
+    runTransaction
   } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
   import { createClient as createSupabaseClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
@@ -1603,6 +1631,7 @@ body.dark-mode .nav-logo img {
   let currentCloudLinks = [];
   let currentRequestNotifications = [];
   let currentAdminMessages = [];
+  let requestNotificationsLoaded = false;
 
   const escapeHTML = (value = "") => String(value)
     .replace(/&/g, "&amp;")
@@ -1690,38 +1719,61 @@ body.dark-mode .nav-logo img {
     return "Pending";
   };
 
+  const isRequestClosed = (status = "") => {
+    const value = normalizeRequestStatus(status);
+    return value === "Completed" || value === "Rejected";
+  };
+
+  const getActiveServiceRequest = () => currentRequestNotifications.find((item) => !isRequestClosed(item.status));
+
+  function renderServiceRequestLockNotice(){
+    const status = document.getElementById("requestStatus");
+    const submitButton = document.querySelector("#serviceRequestForm button[type='submit']");
+    if(!status || !submitButton){ return; }
+    const active = getActiveServiceRequest();
+    submitButton.disabled = Boolean(active);
+    submitButton.style.opacity = active ? "0.65" : "";
+    submitButton.style.cursor = active ? "not-allowed" : "";
+    if(active){
+      status.innerText = `Pehle wali request ${active.requestToken || active.requestId || active.id} ${normalizeRequestStatus(active.status)} me hai. Completed/Rejected hone ke baad new request bhej sakte hain.`;
+    }else if(requestNotificationsLoaded && status.innerText.includes("Pehle wali request")){
+      status.innerText = "";
+    }
+  }
+
   function renderProfileChat(){
-    const list = document.getElementById("profileChatList");
-    if(!list){ return; }
+    const summary = document.getElementById("profileChatSummary");
+    if(!summary){ return; }
     const rows = [...currentRequestNotifications]
       .sort((a, b) => Number(b.updatedAt || b.createdAt || 0) - Number(a.updatedAt || a.createdAt || 0))
       .slice(0, 5);
     if(!rows.length){
-      list.innerHTML = '<div class="chat-empty">Abhi koi request chat nahi hai. User Dashboard se service request bhejne ke baad yahan chat dikhegi.</div>';
+      summary.innerHTML = `
+        <div>
+          <strong>Abhi koi admin chat nahi hai.</strong>
+          <small>Request bhejne aur admin reply aane ke baad chat history open hogi.</small>
+        </div>
+        <a class="open-chat-btn" href="user-my-requests.html">Full History</a>
+      `;
       return;
     }
-    list.innerHTML = rows.map((item) => {
-      const id = item.id || item.requestId || "";
-      const requestId = item.requestId || item.id || "";
-      const status = normalizeRequestStatus(item.status);
-      return `
-        <div class="chat-row">
-          <h4>${escapeHTML(item.service || "Service Request")} ${item.userUnread === true ? '<span class="request-new-badge">New</span>' : ""}</h4>
-          <small>Tracking ID: ${escapeHTML(item.requestToken || requestId)} | Status: ${escapeHTML(status)}</small>
-          <small>Last Update: ${escapeHTML(formatRequestTime(item.statusUpdatedAt || item.updatedAt || item.createdAt))}</small>
-          ${item.adminNote ? `<div class="chat-bubble admin"><b>Admin:</b> ${escapeHTML(item.adminNote)}</div>` : '<div class="chat-bubble admin"><b>Admin:</b> Reply pending hai.</div>'}
-          ${item.userReply ? `<div class="chat-bubble user"><b>You:</b> ${escapeHTML(item.userReply)}</div>` : ""}
-          <div class="chat-reply">
-            <textarea id="profileChatReply_${escapeHTML(id)}" placeholder="Admin ko reply likhein...">${escapeHTML(item.userReply || "")}</textarea>
-            <button type="button" onclick="sendProfileChatReply('${escapeHTML(id)}','${escapeHTML(requestId)}')">Send</button>
-          </div>
-        </div>
-      `;
-    }).join("");
+    const latest = rows[0];
+    const latestStatus = normalizeRequestStatus(latest.status);
+    const unreadCount = currentRequestNotifications.filter((item) => item.userUnread === true).length;
+    const active = getActiveServiceRequest();
+    summary.innerHTML = `
+      <div>
+        <strong>${escapeHTML(latest.service || "Service Request")} ${unreadCount ? `<span class="request-new-badge">${unreadCount} New</span>` : ""}</strong>
+        <small>Tracking ID: ${escapeHTML(latest.requestToken || latest.requestId || latest.id || "")} | Status: ${escapeHTML(latestStatus)}</small>
+        <small>${latest.adminNote ? "Admin reply available hai." : "Admin reply pending hai."} ${active ? "New request pehle wali request close hone ke baad hi bhej sakte hain." : ""}</small>
+      </div>
+      <a class="open-chat-btn" href="user-my-requests.html">Open Chat</a>
+    `;
   }
 
   function loadRequestNotifications(user){
     onValue(ref(db, "userServiceRequests/" + user.uid), (snapshot) => {
+      requestNotificationsLoaded = true;
       currentRequestNotifications = [];
       if(snapshot.exists()){
         snapshot.forEach((child) => {
@@ -1730,6 +1782,7 @@ body.dark-mode .nav-logo img {
       }
       renderRequestNotificationCount();
       renderProfileChat();
+      renderServiceRequestLockNotice();
     });
   }
 
@@ -1755,6 +1808,11 @@ body.dark-mode .nav-logo img {
     const field = document.getElementById("profileChatReply_" + localId);
     const userReply = field ? field.value.trim() : "";
     const targetId = requestId || localId;
+    const requestData = currentRequestNotifications.find((item) => item.id === localId || item.requestId === targetId);
+    if(!requestData || !String(requestData.adminNote || "").trim()){
+      alert("Admin ka reply aane ke baad hi aap reply bhej sakte hain.");
+      return;
+    }
     if(!userReply){
       alert("Reply message likhein.");
       return;
@@ -1811,6 +1869,17 @@ body.dark-mode .nav-logo img {
         return;
       }
 
+      if(!requestNotificationsLoaded){
+        status.innerText = "Request history load ho rahi hai. Ek baar wait karke dobara try karein.";
+        return;
+      }
+
+      const activeRequest = getActiveServiceRequest();
+      if(activeRequest){
+        status.innerText = `Pehle wali request ${activeRequest.requestToken || activeRequest.requestId || activeRequest.id} ${normalizeRequestStatus(activeRequest.status)} me hai. Completed/Rejected hone ke baad hi new request bhej sakte hain.`;
+        return;
+      }
+
       status.innerText = "Request sending...";
       const requestRef = push(ref(db, "serviceRequests"));
       const now = Date.now();
@@ -1824,10 +1893,28 @@ body.dark-mode .nav-logo img {
         statusUpdatedAt:now,
         userUid:currentUser.uid,
         userEmail:currentUser.email || "",
+        activeLockId:requestRef.key,
         createdAt:now
       };
 
       try{
+        const lockResult = await runTransaction(ref(db, "activeServiceRequests/" + currentUser.uid), (current) => {
+          if(current && !isRequestClosed(current.status)){
+            return;
+          }
+          return {
+            requestId:requestRef.key,
+            requestToken:requestData.requestToken,
+            status:"Pending",
+            createdAt:now,
+            updatedAt:now
+          };
+        });
+        if(!lockResult.committed){
+          const active = lockResult.snapshot.val() || {};
+          status.innerText = `Pehle wali request ${active.requestToken || active.requestId || ""} complete hone ke baad hi new request bhej sakte hain.`;
+          return;
+        }
         await set(requestRef, requestData);
         await set(ref(db, "userServiceRequests/" + currentUser.uid + "/" + requestRef.key), {
           ...requestData,
@@ -1837,6 +1924,12 @@ body.dark-mode .nav-logo img {
         document.getElementById("requestService").value = "";
         document.getElementById("requestMessage").value = "";
       }catch(error){
+        await runTransaction(ref(db, "activeServiceRequests/" + currentUser.uid), (current) => {
+          if(current && current.requestId === requestRef.key){
+            return null;
+          }
+          return current;
+        }).catch(() => {});
         status.innerText = "Request send nahi hui: " + error.message;
       }
     });

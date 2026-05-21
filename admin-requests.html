@@ -124,7 +124,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-    import { getDatabase, ref, onValue, update, remove } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+    import { getDatabase, ref, onValue, update, remove, runTransaction } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",
@@ -188,17 +188,44 @@
 
     function syncUserRequest(id, userUid, data){
       if(!userUid){ return Promise.resolve(); }
-      return update(ref(db, "userServiceRequests/" + userUid + "/" + id), {
-        ...data,
-        userUnread:true,
-        notificationAt:Date.now(),
-        notificationText:`Request ${normalizeStatus(data.status)}${data.adminNote ? ": " + data.adminNote : ""}`
+      return Promise.all([
+        update(ref(db, "userServiceRequests/" + userUid + "/" + id), {
+          ...data,
+          userUnread:true,
+          notificationAt:Date.now(),
+          notificationText:`Request ${normalizeStatus(data.status)}${data.adminNote ? ": " + data.adminNote : ""}`
+        }).catch(() => {}),
+        syncActiveRequestLock(id, userUid, data)
+      ]);
+    }
+
+    function syncActiveRequestLock(id, userUid, data){
+      if(!userUid){ return Promise.resolve(); }
+      const status = normalizeStatus(data.status);
+      const now = Date.now();
+      return runTransaction(ref(db, "activeServiceRequests/" + userUid), (current) => {
+        if((status === "Completed" || status === "Rejected") && current?.requestId && current.requestId !== id){
+          return current;
+        }
+        return {
+          ...(current || {}),
+          requestId:id,
+          status,
+          statusUpdatedAt:data.statusUpdatedAt || now,
+          updatedAt:now
+        };
       }).catch(() => {});
     }
 
     function removeUserRequest(id, userUid){
       if(!userUid){ return Promise.resolve(); }
-      return remove(ref(db, "userServiceRequests/" + userUid + "/" + id)).catch(() => {});
+      return Promise.all([
+        remove(ref(db, "userServiceRequests/" + userUid + "/" + id)).catch(() => {}),
+        runTransaction(ref(db, "activeServiceRequests/" + userUid), (current) => {
+          if(current?.requestId === id){ return null; }
+          return current;
+        }).catch(() => {})
+      ]);
     }
 
     function renderRequests(){

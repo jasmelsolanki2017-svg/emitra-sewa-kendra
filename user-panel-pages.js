@@ -388,12 +388,14 @@ function loadMyRequests(user){
     }
     rows.sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
     if(!rows.length){
-      renderMessage(box, "Aapki logged-in request abhi save nahi hai. Homepage se service enquiry bhej sakte hain.");
+      renderMessage(box, "Aapki logged-in request abhi save nahi hai. User Dashboard se service enquiry bhej sakte hain.");
       return;
     }
     box.innerHTML = rows.map((item) => {
       const status = normalizeStatus(item.status);
       const statusClass = getStatusClass(status);
+      const adminReplyReady = Boolean(String(item.adminNote || "").trim());
+      const canUserReply = adminReplyReady && status !== "Completed" && status !== "Rejected";
       return `
         <article class="request-card ${statusClass}">
           <h3>${escapeHTML(item.service || "Service Request")}</h3>
@@ -406,10 +408,12 @@ function loadMyRequests(user){
           <p>${escapeHTML(item.message || "No message")}</p>
           ${item.adminNote ? `<small><b>Admin Note:</b> ${escapeHTML(item.adminNote)}</small>` : ""}
           ${item.userReply ? `<small><b>Your Reply:</b> ${escapeHTML(item.userReply)}</small>` : ""}
-          <div class="request-reply-box">
-            <textarea id="userReply_${escapeHTML(item.id)}" placeholder="Admin ko reply likhein...">${escapeHTML(item.userReply || "")}</textarea>
-            <button type="button" onclick="sendUserRequestReply('${escapeHTML(item.id)}','${escapeHTML(item.requestId || item.id)}')">Send Reply</button>
-          </div>
+          ${canUserReply ? `
+            <div class="request-reply-box">
+              <textarea id="userReply_${escapeHTML(item.id)}" placeholder="Admin ko reply likhein...">${escapeHTML(item.userReply || "")}</textarea>
+              <button type="button" onclick="sendUserRequestReply('${escapeHTML(item.id)}','${escapeHTML(item.requestId || item.id)}')">Send Reply</button>
+            </div>
+          ` : `<small><b>Reply:</b> ${adminReplyReady ? "Ye request close ho chuki hai." : "Admin reply ke baad reply box show hoga."}</small>`}
           <div class="request-track">
             <span class="active">Pending</span>
             <span class="${status === "In Process" || status === "Completed" ? "active" : ""}">In Process</span>
@@ -430,6 +434,11 @@ window.sendUserRequestReply = async (localId, requestId = "") => {
   const field = document.getElementById("userReply_" + localId);
   const userReply = field ? field.value.trim() : "";
   const targetId = requestId || localId;
+  const requestData = currentRequestNotifications.find((item) => item.id === localId || item.requestId === targetId);
+  if(!requestData || !String(requestData.adminNote || "").trim()){
+    alert("Admin ka reply aane ke baad hi aap reply bhej sakte hain.");
+    return;
+  }
   if(!userReply){
     alert("Reply message likhein.");
     return;
