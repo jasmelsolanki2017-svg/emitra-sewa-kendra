@@ -623,6 +623,12 @@ Cook | 1426 |"></textarea>
     }).catch(() => {});
   };
 
+  const removeJobPortalItems = (jobId) => {
+    return Promise.all(portalCategories.map((category) => {
+      return remove(ref(db, `portalItems/${category}/job_${jobId}`)).catch(() => {});
+    }));
+  };
+
   const applyDashboardDisplayOrderShift = (targetId, data) => {
     const desired = Number(cleanDisplayOrder(data.displayOrder) || 0);
     if(!desired){ return Promise.resolve({ data:data, shifted:0 }); }
@@ -656,6 +662,25 @@ Cook | 1426 |"></textarea>
         .then(() => syncDisplayOrderToPortal(row.id, nextData));
     }).filter(Boolean);
     return Promise.all(tasks).then(() => ({ data:orderedData, shifted:tasks.length }));
+  };
+
+  const compactDashboardDisplayOrdersAfterDelete = (deletedId, deletedData = {}) => {
+    const target = deletedData.postTarget || "latestJob";
+    const cache = window.latestJobsCache || {};
+    const rows = Object.entries(cache)
+      .filter(([id, job]) => id !== deletedId && (job.postTarget || "latestJob") === target)
+      .map(([id, job]) => ({ id, data:job }))
+      .sort((a, b) => getDisplayOrder(a.data.displayOrder) - getDisplayOrder(b.data.displayOrder) || Number(b.data.createdAt || 0) - Number(a.data.createdAt || 0));
+    const now = Date.now();
+    const tasks = rows.map((row, index) => {
+      const nextOrder = index + 1;
+      const currentOrder = Number(cleanDisplayOrder(row.data.displayOrder) || 0);
+      if(currentOrder === nextOrder){ return null; }
+      const nextData = { ...row.data, displayOrder:nextOrder, updatedAt:now };
+      return update(ref(db, "LatestJobs/" + row.id), { displayOrder:nextOrder, updatedAt:now })
+        .then(() => syncDisplayOrderToPortal(row.id, nextData));
+    }).filter(Boolean);
+    return Promise.all(tasks).then(() => tasks.length);
   };
 
   const normalizeJob = (value) => {
@@ -1264,10 +1289,17 @@ Cook | 1426 |"></textarea>
 
   window.deleteLatestJob = (id) => {
     if(!adminAllowed){ alert("Admin verify नहीं हुआ।"); return; }
+    const deletedJob = window.latestJobsCache && window.latestJobsCache[id] ? window.latestJobsCache[id] : {};
 
     if(confirm("क्या आप यह job delete करना चाहते हैं?")){
-      remove(ref(db, "LatestJobs/" + id))
-      .then(() => alert("Job Deleted Successfully!"))
+      Promise.all([
+        remove(ref(db, "LatestJobs/" + id)),
+        removeJobPortalItems(id)
+      ])
+      .then(() => compactDashboardDisplayOrdersAfterDelete(id, deletedJob))
+      .then((shifted) => {
+        alert(shifted ? "Job delete ho gayi. Baki jobs No. 1 se set ho gayi." : "Job Deleted Successfully!");
+      })
       .catch((error) => alert("Error: " + error.message));
     }
   };
