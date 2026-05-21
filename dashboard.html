@@ -45,6 +45,9 @@
     .stat-card small{display:block;color:#66748a;font-size:10px;font-weight:800;text-transform:uppercase;}
     .stat-card strong{display:block;color:#0057a8;font-size:22px;line-height:1.1;margin-top:3px;}
     .stat-card.hot strong{color:#d90000;}
+    .stat-card.visitor-card{display:grid;gap:5px;align-content:start;}
+    .stat-card.visitor-card img{max-width:150px;width:100%;height:auto;background:#fff;border:1px solid #d8e7f7;border-radius:5px;padding:4px;margin-top:2px;}
+    .stat-card.visitor-card em{font-style:normal;color:#66748a;font-size:10px;font-weight:700;}
 
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;}
     .card{background:white;border-radius:6px;padding:10px 8px;text-align:left;box-shadow:0 4px 12px rgba(0,0,0,.06);border-top:3px solid #ff7a00;min-height:126px;display:flex;flex-direction:column;}
@@ -335,6 +338,11 @@ body.dark-mode .nav-logo img {
     <div class="stat-card"><small>Links</small><strong id="linksCount">0</strong></div>
     <div class="stat-card"><small>Portal Items</small><strong id="portalItemsCount">0</strong></div>
     <div class="stat-card"><small>Service Pages</small><strong id="serviceGuidesCount">0</strong></div>
+    <div class="stat-card visitor-card">
+      <small>Website Visitors</small>
+      <img src="https://hitwebcounter.com/counter/counter.php?page=21421561&style=0006&nbdigits=6&type=page&initCount=0" alt="Website visitor counter">
+      <em>Admin only</em>
+    </div>
   </div>
 
   <div class="ops-strip">

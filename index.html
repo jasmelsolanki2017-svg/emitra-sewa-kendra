@@ -1507,6 +1507,22 @@ position:relative;
 z-index:1;
 }
 
+.visitor-tracker{
+position:absolute;
+width:1px;
+height:1px;
+overflow:hidden;
+clip:rect(0 0 0 0);
+clip-path:inset(50%);
+white-space:nowrap;
+}
+
+.visitor-tracker img{
+width:1px;
+height:1px;
+opacity:0;
+}
+
 /* CONTACT */
 
 .contact{
@@ -2660,23 +2676,9 @@ E-MITRA WALA E-Mitra Sewa Kendra ek trusted digital service center hai.
 
 </section>
 
-<!-- VISITOR COUNTER -->
-
-<section class="counter-section">
-
-<h2>Website Visitors</h2>
-
-<div class="counter-box">
-<div class="counter-icon"><i class="fa-solid fa-users"></i></div>
-
-<img src="https://hitwebcounter.com/counter/counter.php?page=21421561&style=0006&nbdigits=6&type=page&initCount=0">
-
-<p>Total Visitors</p>
-<small>Thank you for visiting E-MITRA WALA</small>
-
+<div class="visitor-tracker" aria-hidden="true">
+<img src="https://hitwebcounter.com/counter/counter.php?page=21421561&style=0006&nbdigits=6&type=page&initCount=0" alt="">
 </div>
-
-</section>
 
 <!-- CONTACT -->
 
