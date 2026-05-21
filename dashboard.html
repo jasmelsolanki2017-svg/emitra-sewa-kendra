@@ -469,7 +469,7 @@ body.dark-mode .nav-logo img {
     <div class="form-box job-form-box">
       <input type="text" id="jobTitle" placeholder="Job Title जैसे SSC Steno 2026 Apply Online">
       <input type="text" id="jobType" placeholder="Job Type जैसे Online Form">
-      <input type="number" id="jobDisplayOrder" min="1" placeholder="Display No. 1 = Top">
+      <input type="number" id="jobDisplayOrder" min="1" value="1" placeholder="Display No. 1 = Top">
       <input type="text" id="jobStartDate" placeholder="Start Date dd-mmm-yyyy" inputmode="numeric" maxlength="11">
       <input type="text" id="jobLastDate" placeholder="Last Date dd-mmm-yyyy" inputmode="numeric" maxlength="11">
       <input type="text" id="jobQualification" placeholder="Qualification जैसे 12th Pass">
@@ -758,7 +758,7 @@ Cook | 1426 |"></textarea>
   const clearJobForm = () => {
     document.getElementById("jobTitle").value = "";
     document.getElementById("jobType").value = "";
-    document.getElementById("jobDisplayOrder").value = "";
+    document.getElementById("jobDisplayOrder").value = "1";
     document.getElementById("jobStartDate").value = "";
     document.getElementById("jobLastDate").value = "";
     document.getElementById("jobQualification").value = "";
@@ -1204,7 +1204,7 @@ Cook | 1426 |"></textarea>
     const jobData = {
       title:form.title,
       type:form.type || "Online Form",
-      displayOrder:form.displayOrder,
+      displayOrder:form.displayOrder || (!editingJobId ? "1" : ""),
       startDate:form.startDate || "Update Soon",
       lastDate:form.lastDate || "Update Soon",
       qualification:form.qualification || "Update Soon",
