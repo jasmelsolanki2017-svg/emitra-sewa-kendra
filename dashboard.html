@@ -623,6 +623,41 @@ Cook | 1426 |"></textarea>
     }).catch(() => {});
   };
 
+  const applyDashboardDisplayOrderShift = (targetId, data) => {
+    const desired = Number(cleanDisplayOrder(data.displayOrder) || 0);
+    if(!desired){ return Promise.resolve({ data:data, shifted:0 }); }
+    const target = data.postTarget || "latestJob";
+    const cache = window.latestJobsCache || {};
+    const rows = Object.entries(cache)
+      .filter(([id, job]) => id !== targetId && (job.postTarget || "latestJob") === target && Number(cleanDisplayOrder(job.displayOrder) || 0) > 0)
+      .map(([id, job]) => ({ id, data:job }))
+      .sort((a, b) => Number(cleanDisplayOrder(a.data.displayOrder)) - Number(cleanDisplayOrder(b.data.displayOrder)) || Number(b.data.createdAt || 0) - Number(a.data.createdAt || 0));
+    const targetRow = { id:targetId, data:data, isTarget:true };
+    const ordered = [];
+    let inserted = false;
+    rows.forEach((row) => {
+      if(!inserted && ordered.length + 1 >= desired){
+        ordered.push(targetRow);
+        inserted = true;
+      }
+      ordered.push(row);
+    });
+    if(!inserted){ ordered.push(targetRow); }
+    const targetIndex = ordered.findIndex((row) => row.isTarget);
+    const orderedData = { ...data, displayOrder:targetIndex + 1 };
+    const now = Date.now();
+    const tasks = ordered.map((row, index) => {
+      if(row.isTarget){ return null; }
+      const nextOrder = index + 1;
+      const currentOrder = Number(cleanDisplayOrder(row.data.displayOrder) || 0);
+      if(currentOrder === nextOrder){ return null; }
+      const nextData = { ...row.data, displayOrder:nextOrder, updatedAt:now };
+      return update(ref(db, "LatestJobs/" + row.id), { displayOrder:nextOrder, updatedAt:now })
+        .then(() => syncDisplayOrderToPortal(row.id, nextData));
+    }).filter(Boolean);
+    return Promise.all(tasks).then(() => ({ data:orderedData, shifted:tasks.length }));
+  };
+
   const normalizeJob = (value) => {
     if(typeof value === "string"){
       return { title:value, type:"Online Form", createdAt:0 };
@@ -1156,12 +1191,16 @@ Cook | 1426 |"></textarea>
     const targetRef = editingJobId ? ref(db, "LatestJobs/" + editingJobId) : push(jobsRef);
     const targetId = editingJobId || targetRef.key;
     const existingJob = editingJobId && window.latestJobsCache ? (window.latestJobsCache[editingJobId] || {}) : {};
-    const saveTask = editingJobId
-      ? update(targetRef, jobData)
-      : set(targetRef, { ...jobData, createdAt:Date.now() });
-
-    saveTask.then(() => syncDisplayOrderToPortal(targetId, { ...existingJob, ...jobData })).then(() => {
-      document.getElementById("jobStatus").innerText = editingJobId ? "Job Updated Successfully!" : "Job Added Successfully!";
+    applyDashboardDisplayOrderShift(targetId, { ...existingJob, ...jobData }).then((orderResult) => {
+      const orderedJobData = orderResult.data;
+      const saveTask = editingJobId
+        ? update(targetRef, orderedJobData)
+        : set(targetRef, { ...orderedJobData, createdAt:Date.now() });
+      return saveTask
+        .then(() => syncDisplayOrderToPortal(targetId, { ...existingJob, ...orderedJobData }))
+        .then(() => orderResult);
+    }).then((orderResult) => {
+      document.getElementById("jobStatus").innerText = (editingJobId ? "Job Updated Successfully!" : "Job Added Successfully!") + (orderResult.data.displayOrder ? ` No ${orderResult.data.displayOrder} set hua.` : "") + (orderResult.shifted ? ` ${orderResult.shifted} post aage shift hui.` : "");
       window.cancelJobEdit();
 
     }).catch((error) => alert("Error: " + error.message));
