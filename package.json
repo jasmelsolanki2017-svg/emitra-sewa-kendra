@@ -1,7 +1,7 @@
 {
-  "name": "telegram-job-bot",
+  "name": "emitra-sewa-kendra-api",
   "version": "1.0.0",
-  "description": "Telegram webhook server that saves latest job posts to Firebase Realtime Database.",
+  "description": "Admin API for E-Mitra Sewa Kendra member workflows.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -10,7 +10,6 @@
   "dependencies": {
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.89.0",
-    "axios": "^1.6.8",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "firebase-admin": "^12.7.0"
