@@ -469,6 +469,7 @@ body.dark-mode .nav-logo img {
     <div class="form-box job-form-box">
       <input type="text" id="jobTitle" placeholder="Job Title जैसे SSC Steno 2026 Apply Online">
       <input type="text" id="jobType" placeholder="Job Type जैसे Online Form">
+      <input type="number" id="jobDisplayOrder" min="1" placeholder="Display No. 1 = Top">
       <input type="text" id="jobStartDate" placeholder="Start Date dd-mmm-yyyy" inputmode="numeric" maxlength="11">
       <input type="text" id="jobLastDate" placeholder="Last Date dd-mmm-yyyy" inputmode="numeric" maxlength="11">
       <input type="text" id="jobQualification" placeholder="Qualification जैसे 12th Pass">
@@ -597,6 +598,31 @@ Cook | 1426 |"></textarea>
     return /^https?:\/\//i.test(url) ? url : "#";
   };
 
+  const cleanDisplayOrder = (value) => {
+    const number = Number(String(value || "").replace(/[^\d]/g, ""));
+    return number > 0 ? number : "";
+  };
+
+  const getDisplayOrder = (value) => {
+    const number = Number(value || 0);
+    return number > 0 ? number : Number.POSITIVE_INFINITY;
+  };
+
+  const sortJobRows = (rows) => rows.sort((a,b) => {
+    const orderDiff = getDisplayOrder(a.data.displayOrder) - getDisplayOrder(b.data.displayOrder);
+    return orderDiff || Number(b.data.createdAt || 0) - Number(a.data.createdAt || 0);
+  });
+
+  const portalCategories = ["admitCard","result","syllabus","answerKey"];
+  const syncDisplayOrderToPortal = (jobId, data) => {
+    const target = data && data.postTarget;
+    if(!jobId || !portalCategories.includes(target)){ return Promise.resolve(); }
+    return update(ref(db, `portalItems/${target}/job_${jobId}`), {
+      displayOrder:cleanDisplayOrder(data.displayOrder),
+      updatedAt:Date.now()
+    }).catch(() => {});
+  };
+
   const normalizeJob = (value) => {
     if(typeof value === "string"){
       return { title:value, type:"Online Form", createdAt:0 };
@@ -684,6 +710,7 @@ Cook | 1426 |"></textarea>
   const getJobFormData = () => ({
     title:document.getElementById("jobTitle").value.trim(),
     type:document.getElementById("jobType").value.trim(),
+    displayOrder:cleanDisplayOrder(document.getElementById("jobDisplayOrder").value),
     startDate:document.getElementById("jobStartDate").value.trim(),
     lastDate:document.getElementById("jobLastDate").value.trim(),
     qualification:document.getElementById("jobQualification").value.trim(),
@@ -696,6 +723,7 @@ Cook | 1426 |"></textarea>
   const clearJobForm = () => {
     document.getElementById("jobTitle").value = "";
     document.getElementById("jobType").value = "";
+    document.getElementById("jobDisplayOrder").value = "";
     document.getElementById("jobStartDate").value = "";
     document.getElementById("jobLastDate").value = "";
     document.getElementById("jobQualification").value = "";
@@ -1088,6 +1116,7 @@ Cook | 1426 |"></textarea>
     const jobData = {
       title:form.title,
       type:form.type || "Online Form",
+      displayOrder:form.displayOrder,
       startDate:form.startDate || "Update Soon",
       lastDate:form.lastDate || "Update Soon",
       qualification:form.qualification || "Update Soon",
@@ -1098,11 +1127,14 @@ Cook | 1426 |"></textarea>
       updatedAt:Date.now()
     };
 
+    const targetRef = editingJobId ? ref(db, "LatestJobs/" + editingJobId) : push(jobsRef);
+    const targetId = editingJobId || targetRef.key;
+    const existingJob = editingJobId && window.latestJobsCache ? (window.latestJobsCache[editingJobId] || {}) : {};
     const saveTask = editingJobId
-      ? update(ref(db, "LatestJobs/" + editingJobId), jobData)
-      : set(push(jobsRef), { ...jobData, createdAt:Date.now() });
+      ? update(targetRef, jobData)
+      : set(targetRef, { ...jobData, createdAt:Date.now() });
 
-    saveTask.then(() => {
+    saveTask.then(() => syncDisplayOrderToPortal(targetId, { ...existingJob, ...jobData })).then(() => {
       document.getElementById("jobStatus").innerText = editingJobId ? "Job Updated Successfully!" : "Job Added Successfully!";
       window.cancelJobEdit();
 
@@ -1117,6 +1149,7 @@ Cook | 1426 |"></textarea>
     editingJobId = id;
     document.getElementById("jobTitle").value = data.title || "";
     document.getElementById("jobType").value = data.type || "";
+    document.getElementById("jobDisplayOrder").value = data.displayOrder || "";
     document.getElementById("jobStartDate").value = data.startDate || "";
     document.getElementById("jobLastDate").value = data.lastDate || "";
     document.getElementById("jobQualification").value = data.qualification || "";
@@ -1171,7 +1204,7 @@ Cook | 1426 |"></textarea>
         jobs.push({ id:child.key, data:data });
       });
 
-      jobs.sort((a,b) => Number(b.data.createdAt || 0) - Number(a.data.createdAt || 0));
+      sortJobRows(jobs);
       activeJobsCount = jobs.length;
 
       jobs.forEach(({ id, data }) => {
@@ -1183,6 +1216,7 @@ Cook | 1426 |"></textarea>
             <div>
               <strong>${escapeHTML(data.title)}</strong>
               <small>Status: ${isHidden ? "Hidden" : "Published"}</small>
+              <small>Display No: ${escapeHTML(data.displayOrder || "Auto")}</small>
               <small>Type: ${escapeHTML(data.type || "Online Form")}</small>
               <small>Start Date: ${escapeHTML(data.startDate || "Update Soon")}</small>
               <small>Last Date: <span class="danger-date">${lastDateText}</span></small>

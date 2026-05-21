@@ -3149,13 +3149,25 @@ return true;
 };
 
 const isFastLatestJobTarget = (job) => !job.postTarget || job.postTarget === "latestJob";
+const getFastDisplayOrder = (job) => {
+const number = Number(job && job.displayOrder || 0);
+return number > 0 ? number : Number.POSITIVE_INFINITY;
+};
+const sortFastJobRows = (rows) => rows.sort((a,b) => {
+const orderDiff = getFastDisplayOrder(a.job) - getFastDisplayOrder(b.job);
+return orderDiff || Number(b.job.createdAt || 0) - Number(a.job.createdAt || 0);
+});
+const sortFastPortalItems = (items) => items.sort((a,b) => {
+const orderDiff = getFastDisplayOrder(a) - getFastDisplayOrder(b);
+return orderDiff || Number(b.createdAt || 0) - Number(a.createdAt || 0);
+});
 
 const renderFastPortalItems = (category, values) => {
 const list = document.getElementById(portalCategoryMap[category]);
 if(!list){ return; }
 const items = Object.values(values || {})
-.filter((item)=>item && item.title)
-.sort((a,b)=>Number(b.createdAt || 0) - Number(a.createdAt || 0));
+.filter((item)=>item && item.title);
+sortFastPortalItems(items);
 list.innerHTML = items.length
 ? items.map((item)=>`<li><a href="${fastPortalHref(item)}">${escapeFastHTML(item.title || "Update")}</a></li>`).join("")
 : '<li class="home-portal-message">Abhi koi update nahi hai.</li>';
@@ -3166,8 +3178,8 @@ const portalJobList = document.getElementById("homePortalJobList");
 const box = document.getElementById("homeJobList");
 const jobs = Object.entries(values || {})
 .map(([id,value])=>({ id, job:normalizeFastJob(value) }))
-.filter(({ job })=>isFastJobVisible(job) && isFastLatestJobTarget(job))
-.sort((a,b)=>Number(b.job.createdAt || 0) - Number(a.job.createdAt || 0));
+.filter(({ job })=>isFastJobVisible(job) && isFastLatestJobTarget(job));
+sortFastJobRows(jobs);
 
 if(!jobs.length){
 if(portalJobList){ portalJobList.innerHTML = '<li class="home-portal-message">अभी कोई job available नहीं है।</li>'; }
@@ -3677,6 +3689,18 @@ return true;
 };
 
 const isLatestJobTarget = (job) => !job.postTarget || job.postTarget === "latestJob";
+const getJobDisplayOrder = (job) => {
+const number = Number(job && job.displayOrder || 0);
+return number > 0 ? number : Number.POSITIVE_INFINITY;
+};
+const sortJobRows = (rows) => rows.sort((a,b) => {
+const orderDiff = getJobDisplayOrder(a.job) - getJobDisplayOrder(b.job);
+return orderDiff || Number(b.job.createdAt || 0) - Number(a.job.createdAt || 0);
+});
+const sortPortalItems = (items) => items.sort((a,b) => {
+const orderDiff = getJobDisplayOrder(a) - getJobDisplayOrder(b);
+return orderDiff || Number(b.createdAt || 0) - Number(a.createdAt || 0);
+});
 
 const jobsRef = ref(db,"LatestJobs");
 const portalItemsRef = ref(db,"portalItems");
@@ -3749,7 +3773,7 @@ items.push(item);
 });
 }
 
-items.sort((a,b)=>Number(b.createdAt || 0) - Number(a.createdAt || 0));
+sortPortalItems(items);
 renderHomePortalItems(category, items);
 });
 },(error)=>{
@@ -3775,7 +3799,7 @@ jobs.push({ id:child.key, job:job });
 });
 }
 
-jobs.sort((a,b)=>Number(b.job.createdAt || 0) - Number(a.job.createdAt || 0));
+sortJobRows(jobs);
 
 if(jobs.length === 0){
 if(portalJobList){

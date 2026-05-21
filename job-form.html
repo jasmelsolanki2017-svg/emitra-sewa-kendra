@@ -409,6 +409,18 @@ const isJobVisible = (job) => {
 };
 
 const isLatestJobTarget = (job) => !job.postTarget || job.postTarget === "latestJob";
+const getJobDisplayOrder = (job) => {
+  const number = Number(job && job.displayOrder || 0);
+  return number > 0 ? number : Number.POSITIVE_INFINITY;
+};
+const sortJobRows = (rows) => rows.sort((a,b) => {
+  const orderDiff = getJobDisplayOrder(a.job) - getJobDisplayOrder(b.job);
+  return orderDiff || Number(b.job.createdAt || 0) - Number(a.job.createdAt || 0);
+});
+const sortPortalItems = (items) => items.sort((a,b) => {
+  const orderDiff = getJobDisplayOrder(a) - getJobDisplayOrder(b);
+  return orderDiff || Number(b.createdAt || 0) - Number(a.createdAt || 0);
+});
 
 const jobsRef = ref(db, "LatestJobs");
 const portalItemsRef = ref(db, "portalItems");
@@ -538,7 +550,7 @@ onValue(portalItemsRef, (snapshot) => {
       });
     }
 
-    items.sort((a,b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
+    sortPortalItems(items);
     renderPortalItems(category, items);
   });
 }, (error) => {
@@ -564,7 +576,7 @@ onValue(jobsRef, (snapshot) => {
       }
     });
 
-    jobs.sort((a, b) => Number(b.job.createdAt || 0) - Number(a.job.createdAt || 0));
+    sortJobRows(jobs);
     jobRowsCache = jobs;
   }else{
     jobRowsCache = [];
