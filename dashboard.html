@@ -298,7 +298,7 @@ body.dark-mode .nav-logo img {
 
 <div class="topbar">
   <div>Admin Panel</div>
-  <div>⏰ <span id="liveTime"></span></div>
+  <div><span id="liveGreeting">Good Day</span> | ⏰ <span id="liveTime"></span></div>
 </div>
 
 <header>
@@ -499,9 +499,18 @@ Cook | 1426 |"></textarea>
 </footer>
 
 <script>
+  function getTimeGreeting(date){
+    const hour = date.getHours();
+    if(hour >= 5 && hour < 12){ return "🌅 Good Morning"; }
+    if(hour >= 12 && hour < 17){ return "☀️ Good Afternoon"; }
+    if(hour >= 17 && hour < 21){ return "🌆 Good Evening"; }
+    return "🌙 Good Night";
+  }
+
   function updateLiveTime(){
     const now = new Date();
     document.getElementById("liveTime").innerText = now.toLocaleString("hi-IN");
+    document.getElementById("liveGreeting").innerText = getTimeGreeting(now);
   }
   updateLiveTime();
   setInterval(updateLiveTime,1000);

@@ -98,6 +98,11 @@ color:#ff7a00;
 font-weight:700;
 }
 
+#liveGreeting{
+color:#ff7a00;
+font-weight:700;
+}
+
 /* NAVBAR */
 
 nav{
@@ -2245,7 +2250,7 @@ body.dark-mode #importantLinksMenuList a:hover {
 <div class="topbar">
 
 <div>
-⏰ <span id="liveTime"></span> | <span id="weatherInfo">Weather loading...</span> | Rajasthan, India
+<span id="liveGreeting">Good Day</span> | ⏰ <span id="liveTime"></span> | <span id="weatherInfo">Weather loading...</span> | Rajasthan, India
 </div>
 
 <a class="topbar-admin" href="#" onclick="openLogin('admin')">
@@ -2759,12 +2764,26 @@ rel="noopener noreferrer">
 
 <script>
 
+function getTimeGreeting(date){
+
+const hour = date.getHours();
+
+if(hour >= 5 && hour < 12){ return "🌅 Good Morning"; }
+if(hour >= 12 && hour < 17){ return "☀️ Good Afternoon"; }
+if(hour >= 17 && hour < 21){ return "🌆 Good Evening"; }
+return "🌙 Good Night";
+
+}
+
 function updateLiveTime(){
 
 const now = new Date();
 
 document.getElementById("liveTime").innerText =
 now.toLocaleString("hi-IN");
+
+document.getElementById("liveGreeting").innerText =
+getTimeGreeting(now);
 
 }
 
