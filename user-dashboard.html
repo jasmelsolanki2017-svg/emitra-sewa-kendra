@@ -210,6 +210,82 @@
     .notify-pill.has-unread{background:#fff0f0;border-color:#ffb4b4;color:#a31515;}
     .notify-pill.has-unread i{color:#d10000;}
 
+    .account-layout{
+      display:grid;
+      grid-template-columns:minmax(230px,.32fr) minmax(0,1fr);
+      gap:12px;
+      align-items:start;
+      margin-bottom:12px;
+    }
+
+    .account-side,.account-main{
+      background:#f9fbff;
+      border:1px solid var(--line);
+      border-radius:8px;
+      padding:12px;
+    }
+
+    .account-side{
+      border-left:5px solid var(--yellow);
+      position:sticky;
+      top:78px;
+    }
+
+    .account-avatar{
+      width:46px;
+      height:46px;
+      border-radius:10px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:var(--blue);
+      color:white;
+      font-size:22px;
+      margin-bottom:9px;
+    }
+
+    .account-side h3{color:var(--blue);font-size:16px;margin-bottom:3px;}
+    .account-side p{font-size:12px;line-height:1.4;margin-bottom:10px;overflow-wrap:anywhere;}
+    .account-tabs{display:grid;gap:7px;margin-top:10px;}
+    .account-tab{
+      width:100%;
+      border:1px solid var(--line);
+      background:white;
+      color:var(--blue);
+      border-radius:7px;
+      padding:9px 10px;
+      display:flex;
+      align-items:center;
+      gap:9px;
+      font-weight:900;
+      font-size:12px;
+      cursor:pointer;
+      text-align:left;
+    }
+
+    .account-tab i{
+      width:26px;
+      height:26px;
+      border-radius:7px;
+      background:var(--soft);
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      color:var(--blue);
+    }
+
+    .account-tab.active{
+      background:var(--blue);
+      color:white;
+      border-color:var(--blue);
+    }
+
+    .account-tab.active i{background:rgba(255,255,255,.16);color:var(--yellow);}
+    .account-panel{display:none;}
+    .account-panel.active{display:block;}
+    .account-panel h3{color:var(--blue);font-size:16px;margin-bottom:3px;}
+    .account-panel > p{margin-bottom:10px;}
+
     .profile-form{
       display:grid;
       grid-template-columns:repeat(3,minmax(0,1fr)) auto;
@@ -299,6 +375,11 @@
       grid-template-columns:repeat(4,minmax(0,1fr));
       gap:7px;
       margin-bottom:10px;
+    }
+
+    .account-side .profile-summary{
+      grid-template-columns:1fr;
+      margin-bottom:0;
     }
 
     .action-strip{
@@ -893,6 +974,8 @@
       nav a,nav button{white-space:nowrap;}
       .container{padding:28px 4% 0;}
       .stats-grid{grid-template-columns:1fr;}
+      .account-layout{grid-template-columns:1fr;}
+      .account-side{position:static;}
       .profile-summary{grid-template-columns:1fr;}
       .profile-form,.password-form{grid-template-columns:1fr;}
       .panel-alert{grid-template-columns:1fr;}
@@ -1015,6 +1098,9 @@ body.dark-mode .masthead,
 body.dark-mode .contact-box,
 body.dark-mode .poster-caption,
 body.dark-mode .special-card,
+body.dark-mode .account-side,
+body.dark-mode .account-main,
+body.dark-mode .account-tab,
 body.dark-mode .profile-chat,
 body.dark-mode .chat-row,
 body.dark-mode .chat-empty,
@@ -1161,51 +1247,72 @@ body.dark-mode .nav-logo img {
       </button>
     </div>
 
-    <div class="profile-form">
-      <label>Name
-        <input type="text" id="profileName" placeholder="Your name">
-      </label>
-      <label>Mobile No.
-        <input type="tel" id="profileMobile" placeholder="Mobile number">
-      </label>
-      <label>Profile Email
-        <input type="email" id="profileEmail" placeholder="Contact email">
-      </label>
-      <button onclick="saveUserProfile()">Save Profile</button>
-    </div>
-    <div class="profile-status" id="profileStatus"></div>
+    <div class="account-layout">
+      <aside class="account-side">
+        <div class="account-avatar"><i class="fa-solid fa-user"></i></div>
+        <h3>Profile Section</h3>
+        <p>Account details aur password settings yahan se manage karein.</p>
+        <div class="profile-summary">
+          <div class="profile-chip">
+            <small>Name</small>
+            <strong id="summaryName">Not added</strong>
+          </div>
+          <div class="profile-chip">
+            <small>Mobile</small>
+            <strong id="summaryMobile">Not added</strong>
+          </div>
+          <div class="profile-chip">
+            <small>Profile Email</small>
+            <strong id="summaryProfileEmail">Not added</strong>
+          </div>
+          <div class="profile-chip">
+            <small>Upload Access</small>
+            <strong id="summaryUploadStatus">Pending</strong>
+          </div>
+        </div>
+        <div class="account-tabs">
+          <button class="account-tab active" type="button" data-account-tab="profile" onclick="showAccountPanel('profile')"><i class="fa-solid fa-id-card"></i><span>Profile Details</span></button>
+          <button class="account-tab" type="button" data-account-tab="password" onclick="showAccountPanel('password')"><i class="fa-solid fa-key"></i><span>Password</span></button>
+        </div>
+      </aside>
 
-    <div class="password-form">
-      <label>Current Password
-        <input type="password" id="currentPassword" placeholder="Current password">
-      </label>
-      <label>New Password
-        <input type="password" id="newUserPassword" placeholder="New password">
-      </label>
-      <label>Confirm Password
-        <input type="password" id="confirmUserPassword" placeholder="Confirm password">
-      </label>
-      <button onclick="changeUserPassword()">Update Password</button>
-    </div>
-    <div class="profile-status" id="passwordStatus"></div>
+      <section class="account-main">
+        <div class="account-panel active" id="accountProfilePanel">
+          <h3>Profile Details</h3>
+          <p>Name, mobile aur profile email update karein.</p>
+          <div class="profile-form">
+            <label>Name
+              <input type="text" id="profileName" placeholder="Your name">
+            </label>
+            <label>Mobile No.
+              <input type="tel" id="profileMobile" placeholder="Mobile number">
+            </label>
+            <label>Profile Email
+              <input type="email" id="profileEmail" placeholder="Contact email">
+            </label>
+            <button onclick="saveUserProfile()">Save Profile</button>
+          </div>
+          <div class="profile-status" id="profileStatus"></div>
+        </div>
 
-    <div class="profile-summary">
-      <div class="profile-chip">
-        <small>Name</small>
-        <strong id="summaryName">Not added</strong>
-      </div>
-      <div class="profile-chip">
-        <small>Mobile</small>
-        <strong id="summaryMobile">Not added</strong>
-      </div>
-      <div class="profile-chip">
-        <small>Profile Email</small>
-        <strong id="summaryProfileEmail">Not added</strong>
-      </div>
-      <div class="profile-chip">
-        <small>Upload Access</small>
-        <strong id="summaryUploadStatus">Pending</strong>
-      </div>
+        <div class="account-panel" id="accountPasswordPanel">
+          <h3>Password Settings</h3>
+          <p>Password update karne ke liye current password aur naya password fill karein.</p>
+          <div class="password-form">
+            <label>Current Password
+              <input type="password" id="currentPassword" placeholder="Current password">
+            </label>
+            <label>New Password
+              <input type="password" id="newUserPassword" placeholder="New password">
+            </label>
+            <label>Confirm Password
+              <input type="password" id="confirmUserPassword" placeholder="Confirm password">
+            </label>
+            <button onclick="changeUserPassword()">Update Password</button>
+          </div>
+          <div class="profile-status" id="passwordStatus"></div>
+        </div>
+      </section>
     </div>
 
     <div class="action-strip">
@@ -1462,6 +1569,16 @@ body.dark-mode .nav-logo img {
 
   window.openRequestNotifications = () => {
     window.location.href = "user-my-requests.html";
+  };
+
+  window.showAccountPanel = (panelName = "profile") => {
+    const target = panelName === "password" ? "password" : "profile";
+    document.querySelectorAll(".account-panel").forEach((panel) => {
+      panel.classList.toggle("active", panel.id === (target === "password" ? "accountPasswordPanel" : "accountProfilePanel"));
+    });
+    document.querySelectorAll("[data-account-tab]").forEach((tab) => {
+      tab.classList.toggle("active", tab.dataset.accountTab === target);
+    });
   };
 
   window.sendProfileChatReply = async (localId, requestId = "") => {
