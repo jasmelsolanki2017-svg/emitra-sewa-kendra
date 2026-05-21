@@ -3148,6 +3148,8 @@ if(String(job.postStatus || "published").toLowerCase() === "draft"){ return fals
 return true;
 };
 
+const isFastLatestJobTarget = (job) => !job.postTarget || job.postTarget === "latestJob";
+
 const renderFastPortalItems = (category, values) => {
 const list = document.getElementById(portalCategoryMap[category]);
 if(!list){ return; }
@@ -3164,7 +3166,7 @@ const portalJobList = document.getElementById("homePortalJobList");
 const box = document.getElementById("homeJobList");
 const jobs = Object.entries(values || {})
 .map(([id,value])=>({ id, job:normalizeFastJob(value) }))
-.filter(({ job })=>isFastJobVisible(job))
+.filter(({ job })=>isFastJobVisible(job) && isFastLatestJobTarget(job))
 .sort((a,b)=>Number(b.job.createdAt || 0) - Number(a.job.createdAt || 0));
 
 if(!jobs.length){
@@ -3674,6 +3676,8 @@ if(String(job.postStatus || "published").toLowerCase() === "draft"){ return fals
 return true;
 };
 
+const isLatestJobTarget = (job) => !job.postTarget || job.postTarget === "latestJob";
+
 const jobsRef = ref(db,"LatestJobs");
 const portalItemsRef = ref(db,"portalItems");
 
@@ -3765,7 +3769,7 @@ const jobs = [];
 if(snapshot.exists()){
 snapshot.forEach((child)=>{
 const job = normalizeJob(child.val());
-if(isJobVisible(job)){
+if(isJobVisible(job) && isLatestJobTarget(job)){
 jobs.push({ id:child.key, job:job });
 }
 });

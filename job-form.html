@@ -408,6 +408,8 @@ const isJobVisible = (job) => {
   return true;
 };
 
+const isLatestJobTarget = (job) => !job.postTarget || job.postTarget === "latestJob";
+
 const jobsRef = ref(db, "LatestJobs");
 const portalItemsRef = ref(db, "portalItems");
 const PORTAL_VISIBLE_LIMIT = 20;
@@ -554,7 +556,7 @@ onValue(jobsRef, (snapshot) => {
 
     snapshot.forEach((child) => {
       const job = normalizeJob(child.val());
-      if(isJobVisible(job)){
+      if(isJobVisible(job) && isLatestJobTarget(job)){
         jobs.push({
           id: child.key,
           job: job
