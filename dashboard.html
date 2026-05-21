@@ -469,8 +469,8 @@ body.dark-mode .nav-logo img {
     <div class="form-box job-form-box">
       <input type="text" id="jobTitle" placeholder="Job Title जैसे SSC Steno 2026 Apply Online">
       <input type="text" id="jobType" placeholder="Job Type जैसे Online Form">
-      <input type="text" id="jobStartDate" placeholder="Start Date जैसे 01 May 2026">
-      <input type="text" id="jobLastDate" placeholder="Last Date जैसे 30 May 2026">
+      <input type="text" id="jobStartDate" placeholder="Start Date dd-mmm-yyyy" inputmode="numeric" maxlength="11">
+      <input type="text" id="jobLastDate" placeholder="Last Date dd-mmm-yyyy" inputmode="numeric" maxlength="11">
       <input type="text" id="jobQualification" placeholder="Qualification जैसे 12th Pass">
       <input type="text" id="jobLocation" placeholder="Location जैसे All India">
       <input type="url" id="jobApplyLink" placeholder="Apply Link https://...">
@@ -512,6 +512,40 @@ Cook | 1426 |"></textarea>
     document.getElementById("liveTime").innerText = now.toLocaleString("hi-IN");
     document.getElementById("liveGreeting").innerText = getTimeGreeting(now);
   }
+
+  function formatDateInput(value = "", allowTrailing = true){
+    const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    const text = String(value || "").trim();
+    const iso = text.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})$/);
+    if(iso){
+      return `${iso[3].padStart(2,"0")}-${monthNames[Number(iso[2]) - 1] || iso[2].padStart(2,"0")}-${iso[1]}`;
+    }
+    const digits = text.replace(/\D/g, "").slice(0, 8);
+    if(!digits){ return ""; }
+    if(digits.length <= 2){ return allowTrailing && digits.length === 2 ? `${digits}-` : digits; }
+    const day = digits.slice(0, 2);
+    const monthDigits = digits.slice(2, 4);
+    const monthName = monthNames[Number(monthDigits) - 1];
+    if(digits.length < 4){ return `${day}-${monthDigits}`; }
+    if(digits.length <= 4){
+      return `${day}-${monthName || monthDigits}${allowTrailing ? "-" : ""}`;
+    }
+    return `${day}-${monthName || monthDigits}-${digits.slice(4)}`;
+  }
+
+  ["jobStartDate","jobLastDate"].forEach((id) => {
+    const input = document.getElementById(id);
+    if(!input){ return; }
+    input.addEventListener("input", (event) => {
+      input.value = formatDateInput(input.value, !String(event.inputType || "").includes("delete"));
+    });
+    input.addEventListener("paste", () => {
+      setTimeout(() => {
+        input.value = formatDateInput(input.value);
+      }, 0);
+    });
+  });
+
   updateLiveTime();
   setInterval(updateLiveTime,1000);
 </script>
@@ -625,7 +659,7 @@ Cook | 1426 |"></textarea>
     match = text.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/);
     if(match){ return new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1]), 23, 59, 59, 999); }
 
-    match = text.match(/^(\d{1,2})\s+([a-zA-Z]+)\s+(\d{4})$/);
+    match = text.match(/^(\d{1,2})[\s.-]+([a-zA-Z]+)[\s.-]+(\d{4})$/);
     if(match){
       const month = monthMap[match[2].toLowerCase()];
       if(month !== undefined){ return new Date(Number(match[3]), month, Number(match[1]), 23, 59, 59, 999); }

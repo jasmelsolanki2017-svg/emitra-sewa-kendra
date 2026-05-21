@@ -265,7 +265,7 @@ const parseJobLastDate = (value = "") => {
   if(match){ return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]), 23, 59, 59, 999); }
   match = text.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/);
   if(match){ return new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1]), 23, 59, 59, 999); }
-  match = text.match(/^(\d{1,2})\s+([a-zA-Z]+)\s+(\d{4})$/);
+  match = text.match(/^(\d{1,2})[\s.-]+([a-zA-Z]+)[\s.-]+(\d{4})$/);
   if(match){
     const month = monthMap[match[2].toLowerCase()];
     if(month !== undefined){ return new Date(Number(match[3]), month, Number(match[1]), 23, 59, 59, 999); }
