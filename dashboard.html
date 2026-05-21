@@ -625,6 +625,18 @@ Cook | 1426 |"></textarea>
   const whatsappChannelUrl = "https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q";
   const siteBaseUrl = () => location.origin && location.origin !== "null" ? location.origin.replace(/\/+$/, "") : "https://emitrawala.online";
   const jobDetailUrl = (id) => `${siteBaseUrl()}/job-detail.html?id=${encodeURIComponent(id)}`;
+  const portalSectionMap = { admitCard:"admitCard", result:"results", syllabus:"syllabus", answerKey:"answerKey" };
+  const jobPostPageUrl = (id, data = {}) => {
+    const target = data.postTarget || "latestJob";
+    if(portalSectionMap[target]){
+      const params = new URLSearchParams({
+        portal:target,
+        post:`job_${id}`
+      });
+      return `${siteBaseUrl()}/job-form.html?${params.toString()}#${portalSectionMap[target]}`;
+    }
+    return jobDetailUrl(id);
+  };
   const getSharePostUrl = (id, data = {}) => {
     const targetKey = portalTargetLinks[data.postTarget || "latestJob"];
     if(targetKey && hasRealLink(data[targetKey])){ return data[targetKey]; }
@@ -648,6 +660,7 @@ Cook | 1426 |"></textarea>
       data.qualification ? `Qualification: ${String(data.qualification).split(/\r?\n/)[0]}` : "",
       data.location ? `Location: ${data.location}` : "",
       `Details: ${getSharePostUrl(id, data)}`,
+      `Post Link: ${jobPostPageUrl(id, data)}`,
       `Join WhatsApp Channel: ${whatsappChannelUrl}`
     ];
     return lines.filter(Boolean).join("\n");

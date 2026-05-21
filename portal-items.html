@@ -165,6 +165,23 @@
     };
 
     const whatsappChannelUrl = "https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q";
+    const siteBaseUrl = () => location.origin && location.origin !== "null" ? location.origin.replace(/\/+$/, "") : "https://emitrawala.online";
+    const portalSectionMap = {
+      result:"results",
+      admitCard:"admitCard",
+      answerKey:"answerKey",
+      syllabus:"syllabus",
+      admission:"admission"
+    };
+    const buildPortalPostUrl = (item = {}) => {
+      const category = item.category || activeCategory;
+      const section = portalSectionMap[category] || "latestJobs";
+      const params = new URLSearchParams({
+        portal:category,
+        post:item.id || ""
+      });
+      return `${siteBaseUrl()}/job-form.html?${params.toString()}#${section}`;
+    };
 
     const buildPortalWhatsappText = (item) => {
       const category = categories[item.category] || "Update";
@@ -172,6 +189,7 @@
         `*${category} Update*`,
         item.title || "Update",
         `Details: ${safeUrl(item.url)}`,
+        `Post Link: ${buildPortalPostUrl(item)}`,
         `Join WhatsApp Channel: ${whatsappChannelUrl}`
       ].filter(Boolean).join("\n");
     };
