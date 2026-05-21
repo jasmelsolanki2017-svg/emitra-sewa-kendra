@@ -30,6 +30,10 @@
     .stat small{display:block;color:#55657a;font-size:10px;font-weight:800;text-transform:uppercase;}
     .stat strong{display:block;color:#0057a8;font-size:22px;line-height:1.1;margin-top:3px;}
     .stat.hot strong{color:#d90000;}
+    .stat.process{border-top-color:#805ad5;background:#fbf8ff;}
+    .stat.process strong{color:#6b46c1;}
+    .stat.rejected{border-top-color:#a31515;background:#fff5f5;}
+    .stat.rejected strong{color:#a31515;}
     .toolbar{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px;}
     .toolbar input,.toolbar select{padding:8px 10px;border:1px solid #bdd0e5;border-radius:6px;font-size:13px;background:white;}
     .toolbar input{min-width:240px;flex:1;max-width:460px;}
@@ -37,10 +41,14 @@
     .requests{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:10px;}
     .request{background:#eaf4ff;border:1px solid #d8e6f5;border-left:4px solid #0057a8;border-radius:7px;padding:10px;overflow:hidden;}
     .request.done{border-left-color:#138a36;background:#f2fbf5;}
+    .request.process{border-left-color:#6b46c1;background:#fbf8ff;}
+    .request.rejected{border-left-color:#a31515;background:#fff5f5;}
     .request h3{color:#0057a8;font-size:15px;line-height:1.3;overflow-wrap:anywhere;}
     .request small,.request p{display:block;color:#4d5d72;font-size:12px;line-height:1.45;margin-top:4px;overflow-wrap:anywhere;}
     .badge{display:inline-block;background:#ff7a00;color:#03224d;border-radius:999px;padding:3px 7px;font-size:10px;font-weight:900;margin-top:6px;}
     .badge.done{background:#138a36;color:white;}
+    .badge.process{background:#6b46c1;color:white;}
+    .badge.rejected{background:#a31515;color:white;}
     .edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px;}
     .edit-grid textarea{grid-column:1 / -1;min-height:58px;resize:vertical;}
     .edit-grid select,.edit-grid textarea{width:100%;min-width:0;padding:7px 8px;border:1px solid #bdd0e5;border-radius:6px;font-size:12px;background:white;}
@@ -80,17 +88,21 @@
     </section>
     <section class="stats">
       <div class="stat hot"><small>Pending</small><strong id="pendingCount">0</strong></div>
-      <div class="stat"><small>Done</small><strong id="doneCount">0</strong></div>
+      <div class="stat process"><small>In Process</small><strong id="processCount">0</strong></div>
+      <div class="stat"><small>Completed</small><strong id="doneCount">0</strong></div>
+      <div class="stat rejected"><small>Rejected</small><strong id="rejectedCount">0</strong></div>
       <div class="stat"><small>Total</small><strong id="totalCount">0</strong></div>
       <div class="stat"><small>Today</small><strong id="todayCount">0</strong></div>
     </section>
     <section class="panel">
       <div class="toolbar">
-        <input type="search" id="requestSearch" placeholder="Search name, mobile, service, message...">
+        <input type="search" id="requestSearch" placeholder="Search token, name, mobile, service, message...">
         <select id="requestFilter">
           <option value="pending">Pending First</option>
           <option value="new">Pending Only</option>
-          <option value="done">Done Only</option>
+          <option value="process">In Process</option>
+          <option value="done">Completed Only</option>
+          <option value="rejected">Rejected Only</option>
           <option value="all">All Requests</option>
         </select>
         <div class="count" id="requestCount">Requests: 0</div>
@@ -148,6 +160,27 @@
       if(el){ el.innerText = String(value); }
     };
 
+    const normalizeStatus = (status = "") => {
+      const value = String(status || "").trim().toLowerCase();
+      if(value === "done" || value === "completed"){ return "Completed"; }
+      if(value === "working" || value === "replied" || value === "in process" || value === "in-process"){ return "In Process"; }
+      if(value === "rejected" || value === "reject"){ return "Rejected"; }
+      return "Pending";
+    };
+
+    const getStatusClass = (status) => {
+      const value = normalizeStatus(status);
+      if(value === "Completed"){ return "done"; }
+      if(value === "In Process"){ return "process"; }
+      if(value === "Rejected"){ return "rejected"; }
+      return "";
+    };
+
+    const isActiveStatus = (status) => {
+      const value = normalizeStatus(status);
+      return value !== "Completed" && value !== "Rejected";
+    };
+
     function getFieldValue(id, field){
       const el = document.querySelector(`[data-id="${CSS.escape(id)}"][data-field="${field}"]`);
       return el ? el.value.trim() : "";
@@ -155,7 +188,12 @@
 
     function syncUserRequest(id, userUid, data){
       if(!userUid){ return Promise.resolve(); }
-      return update(ref(db, "userServiceRequests/" + userUid + "/" + id), data).catch(() => {});
+      return update(ref(db, "userServiceRequests/" + userUid + "/" + id), {
+        ...data,
+        userUnread:true,
+        notificationAt:Date.now(),
+        notificationText:`Request ${normalizeStatus(data.status)}${data.adminNote ? ": " + data.adminNote : ""}`
+      }).catch(() => {});
     }
 
     function removeUserRequest(id, userUid){
@@ -168,25 +206,31 @@
       const query = document.getElementById("requestSearch").value.trim().toLowerCase();
       const filter = document.getElementById("requestFilter").value;
       const today = new Date().toDateString();
-      const pending = allRequests.filter((item) => (item.status || "New") !== "Done").length;
-      const done = allRequests.filter((item) => (item.status || "New") === "Done").length;
+      const pending = allRequests.filter((item) => normalizeStatus(item.status) === "Pending").length;
+      const process = allRequests.filter((item) => normalizeStatus(item.status) === "In Process").length;
+      const done = allRequests.filter((item) => normalizeStatus(item.status) === "Completed").length;
+      const rejected = allRequests.filter((item) => normalizeStatus(item.status) === "Rejected").length;
       const todayRows = allRequests.filter((item) => item.createdAt && new Date(Number(item.createdAt)).toDateString() === today).length;
       setText("pendingCount", pending);
+      setText("processCount", process);
       setText("doneCount", done);
+      setText("rejectedCount", rejected);
       setText("totalCount", allRequests.length);
       setText("todayCount", todayRows);
 
       let rows = allRequests.filter((item) => {
-        const status = item.status || "New";
-        if(filter === "new" && status === "Done"){ return false; }
-        if(filter === "done" && status !== "Done"){ return false; }
-        const text = [item.name, item.mobile, item.service, item.message, item.userEmail, item.adminNote, status].join(" ").toLowerCase();
+        const status = normalizeStatus(item.status);
+        if(filter === "new" && status !== "Pending"){ return false; }
+        if(filter === "process" && status !== "In Process"){ return false; }
+        if(filter === "done" && status !== "Completed"){ return false; }
+        if(filter === "rejected" && status !== "Rejected"){ return false; }
+        const text = [item.requestToken, item.name, item.mobile, item.service, item.message, item.userEmail, item.adminNote, status].join(" ").toLowerCase();
         return text.includes(query);
       });
       if(filter === "pending"){
         rows = rows.sort((a, b) => {
-          const aDone = (a.status || "New") === "Done" ? 1 : 0;
-          const bDone = (b.status || "New") === "Done" ? 1 : 0;
+          const aDone = isActiveStatus(a.status) ? 0 : 1;
+          const bDone = isActiveStatus(b.status) ? 0 : 1;
           return aDone - bDone || Number(b.createdAt || 0) - Number(a.createdAt || 0);
         });
       }
@@ -197,30 +241,32 @@
       }
 
       list.innerHTML = rows.map((data) => {
-        const status = data.status || "New";
-        const doneClass = status === "Done" ? "done" : "";
+        const status = normalizeStatus(data.status);
+        const statusClass = getStatusClass(status);
         return `
-          <article class="request ${doneClass}">
+          <article class="request ${statusClass}">
             <h3>${escapeHTML(data.name || "Customer")}</h3>
-            <span class="badge ${doneClass}">${escapeHTML(status)}</span>
+            <span class="badge ${statusClass}">${escapeHTML(status)}</span>
+            <small><b>Tracking ID:</b> ${escapeHTML(data.requestToken || data.id)}</small>
             <small>Mobile: ${escapeHTML(data.mobile || "Not added")}</small>
             <small>Service: ${escapeHTML(data.service || "Not selected")}</small>
             <small>Date: ${escapeHTML(formatDate(data.createdAt))}</small>
+            ${data.statusUpdatedAt || data.updatedAt ? `<small>Last Update: ${escapeHTML(formatDate(data.statusUpdatedAt || data.updatedAt))}</small>` : ""}
             ${data.userEmail ? `<small>User: ${escapeHTML(data.userEmail)}</small>` : ""}
             <p>${escapeHTML(data.message || "No message")}</p>
             <div class="edit-grid">
               <select data-id="${escapeHTML(data.id)}" data-field="status">
-                <option value="New" ${status === "New" ? "selected" : ""}>New</option>
-                <option value="Replied" ${status === "Replied" ? "selected" : ""}>Replied</option>
-                <option value="Working" ${status === "Working" ? "selected" : ""}>Working</option>
-                <option value="Done" ${status === "Done" ? "selected" : ""}>Done</option>
+                <option value="Pending" ${status === "Pending" ? "selected" : ""}>Pending</option>
+                <option value="In Process" ${status === "In Process" ? "selected" : ""}>In Process</option>
+                <option value="Completed" ${status === "Completed" ? "selected" : ""}>Completed</option>
+                <option value="Rejected" ${status === "Rejected" ? "selected" : ""}>Rejected</option>
               </select>
               <textarea data-id="${escapeHTML(data.id)}" data-field="adminNote" placeholder="Admin note / status update">${escapeHTML(data.adminNote || "")}</textarea>
             </div>
             <div class="actions">
               ${data.userUid ? `<button onclick="replyRequest('${escapeHTML(data.id)}','${escapeHTML(data.userUid || "")}')">Reply</button>` : ""}
               <button onclick="saveRequest('${escapeHTML(data.id)}','${escapeHTML(data.userUid || "")}')">Save</button>
-              <button class="done" onclick="markDone('${escapeHTML(data.id)}','${escapeHTML(data.userUid || "")}')">Done</button>
+              <button class="done" onclick="markDone('${escapeHTML(data.id)}','${escapeHTML(data.userUid || "")}')">Completed</button>
               <button class="danger" onclick="deleteRequest('${escapeHTML(data.id)}','${escapeHTML(data.userUid || "")}')">Delete</button>
             </div>
           </article>
@@ -254,8 +300,9 @@
     window.saveRequest = (id, userUid = "") => {
       if(!adminAllowed){ alert("Admin verify nahi hua."); return; }
       const data = {
-        status:getFieldValue(id, "status") || "New",
+        status:normalizeStatus(getFieldValue(id, "status")),
         adminNote:getFieldValue(id, "adminNote"),
+        statusUpdatedAt:Date.now(),
         updatedAt:Date.now()
       };
       update(ref(db, "serviceRequests/" + id), data)
@@ -275,9 +322,10 @@
       }
       if(!adminNote){ alert("Reply message khali hai."); return; }
       const data = {
-        status:"Replied",
+        status:"In Process",
         adminNote,
         repliedAt:Date.now(),
+        statusUpdatedAt:Date.now(),
         updatedAt:Date.now()
       };
       update(ref(db, "serviceRequests/" + id), data)
@@ -289,7 +337,8 @@
     window.markDone = (id, userUid = "") => {
       if(!adminAllowed){ alert("Admin verify nahi hua."); return; }
       const data = {
-        status:"Done",
+        status:"Completed",
+        statusUpdatedAt:Date.now(),
         updatedAt:Date.now()
       };
       update(ref(db, "serviceRequests/" + id), data)

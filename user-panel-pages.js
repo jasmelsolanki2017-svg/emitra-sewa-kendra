@@ -28,6 +28,7 @@ let sessionIntervalId = null;
 let currentUser = null;
 let currentMember = {};
 let currentFiles = [];
+let currentRequestNotifications = [];
 
 const pageType = document.body.dataset.page || "";
 
@@ -143,6 +144,67 @@ const openFilePreview = (file = {}) => {
 const setText = (id, value) => {
   const el = document.getElementById(id);
   if(el){ el.innerText = value; }
+};
+
+function ensureNotificationBell(){
+  let bell = document.getElementById("requestNotificationBell");
+  if(bell){ return bell; }
+  bell = document.createElement("button");
+  bell.type = "button";
+  bell.id = "requestNotificationBell";
+  bell.className = "notify-bell";
+  bell.title = "Request notifications";
+  bell.innerHTML = '<i class="fa-solid fa-bell"></i><span id="requestNotifyCount">0</span>';
+  bell.addEventListener("click", () => {
+    if(pageType === "requests"){
+      window.markRequestNotificationsRead();
+    } else {
+      window.location.href = "user-my-requests.html";
+    }
+  });
+  document.body.appendChild(bell);
+  return bell;
+}
+
+function renderRequestNotificationCount(){
+  const bell = ensureNotificationBell();
+  const count = currentRequestNotifications.filter((item) => item.userUnread === true).length;
+  const countBox = document.getElementById("requestNotifyCount");
+  if(countBox){ countBox.innerText = String(count); }
+  bell.classList.toggle("has-unread", count > 0);
+  bell.setAttribute("aria-label", count > 0 ? `${count} new request update` : "No new request update");
+}
+
+function loadRequestNotifications(user){
+  ensureNotificationBell();
+  onValue(ref(db, "userServiceRequests/" + user.uid), (snapshot) => {
+    currentRequestNotifications = [];
+    if(snapshot.exists()){
+      snapshot.forEach((child) => {
+        currentRequestNotifications.push({ id:child.key, ...(child.val() || {}) });
+      });
+    }
+    renderRequestNotificationCount();
+  });
+}
+
+window.markRequestNotificationsRead = async () => {
+  if(!currentUser){ return; }
+  const unreadRows = currentRequestNotifications.filter((item) => item.userUnread === true);
+  if(!unreadRows.length){
+    alert("Koi new request notification nahi hai.");
+    return;
+  }
+  try{
+    const seenAt = Date.now();
+    await Promise.all(unreadRows.map((item) => update(ref(db, "userServiceRequests/" + currentUser.uid + "/" + item.id), {
+      userUnread:false,
+      userSeenAt:seenAt
+    })));
+    alert("Request notifications read mark ho gayi.");
+  } catch(error){
+    alert("Notification read mark nahi hui: " + error.message);
+  }
 };
 
 const renderMessage = (element, text) => {
@@ -298,6 +360,24 @@ function loadJobs(){
 function loadMyRequests(user){
   const box = document.getElementById("myRequestsList");
   if(!box){ return; }
+  const normalizeStatus = (status = "") => {
+    const value = String(status || "").trim().toLowerCase();
+    if(value === "done" || value === "completed"){ return "Completed"; }
+    if(value === "working" || value === "replied" || value === "in process" || value === "in-process"){ return "In Process"; }
+    if(value === "rejected" || value === "reject"){ return "Rejected"; }
+    return "Pending";
+  };
+  const getStatusClass = (status) => {
+    const value = normalizeStatus(status);
+    if(value === "Completed"){ return "done"; }
+    if(value === "In Process"){ return "process"; }
+    if(value === "Rejected"){ return "rejected"; }
+    return "";
+  };
+  const formatRequestTime = (value) => {
+    const time = Number(value || 0);
+    return time ? new Date(time).toLocaleString("hi-IN") : "Not available";
+  };
   onValue(ref(db, "userServiceRequests/" + user.uid), (snapshot) => {
     const rows = [];
     if(snapshot.exists()){
@@ -312,16 +392,25 @@ function loadMyRequests(user){
       return;
     }
     box.innerHTML = rows.map((item) => {
-      const status = item.status || "New";
-      const done = status === "Done";
+      const status = normalizeStatus(item.status);
+      const statusClass = getStatusClass(status);
       return `
-        <article class="request-card ${done ? "done" : ""}">
+        <article class="request-card ${statusClass}">
           <h3>${escapeHTML(item.service || "Service Request")}</h3>
-          <span class="request-badge ${done ? "done" : ""}">${escapeHTML(status)}</span>
-          <small>Date: ${item.createdAt ? new Date(Number(item.createdAt)).toLocaleString("hi-IN") : "Not available"}</small>
+          <span class="request-badge ${statusClass}">${escapeHTML(status)}</span>
+          ${item.userUnread === true ? '<span class="request-new-badge">New Update</span>' : ""}
+          <small><b>Tracking ID:</b> ${escapeHTML(item.requestToken || item.requestId || item.id)}</small>
+          <small>Date: ${formatRequestTime(item.createdAt)}</small>
+          <small>Last Update: ${formatRequestTime(item.statusUpdatedAt || item.updatedAt || item.createdAt)}</small>
           <small>Name: ${escapeHTML(item.name || "Not added")} | Mobile: ${escapeHTML(item.mobile || "Not added")}</small>
           <p>${escapeHTML(item.message || "No message")}</p>
           ${item.adminNote ? `<small><b>Admin Note:</b> ${escapeHTML(item.adminNote)}</small>` : ""}
+          <div class="request-track">
+            <span class="active">Pending</span>
+            <span class="${status === "In Process" || status === "Completed" ? "active" : ""}">In Process</span>
+            <span class="${status === "Completed" ? "active" : ""}">Completed</span>
+            ${status === "Rejected" ? '<span class="active rejected">Rejected</span>' : ""}
+          </div>
         </article>
       `;
     }).join("");
@@ -584,6 +673,7 @@ onAuthStateChanged(auth, (user) => {
 
   currentUser = user;
   setText("userEmail", user.email);
+  loadRequestNotifications(user);
   if(!localStorage.getItem(sessionKey)){
     localStorage.setItem(sessionKey, String(Date.now()));
   }

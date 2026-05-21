@@ -3415,15 +3415,23 @@ return;
 status.innerText = "Request sending...";
 
 const requestRef = push(requestsRef);
+const now = Date.now();
+const createRequestToken = (id, time) => {
+const datePart = new Date(time).toISOString().slice(2,10).replace(/-/g,"");
+const keyPart = String(id || "").replace(/[^a-zA-Z0-9]/g,"").slice(-5).toUpperCase();
+return `EMW-${datePart}-${keyPart || "REQ"}`;
+};
 const requestData = {
 name:name,
 mobile:mobile,
 service:service,
 message:message || "No extra detail",
-status:"New",
+status:"Pending",
+requestToken:createRequestToken(requestRef.key, now),
+statusUpdatedAt:now,
 userUid:loggedInUser ? loggedInUser.uid : "",
 userEmail:loggedInUser ? (loggedInUser.email || "") : "",
-createdAt:Date.now()
+createdAt:now
 };
 
 set(requestRef, requestData).then(() => {
@@ -3435,7 +3443,7 @@ requestId:requestRef.key
 }
 return null;
 }).then(()=>{
-status.innerText = "Request sent successfully! Hum jaldi contact karenge.";
+status.innerText = `Request sent! Tracking ID: ${requestData.requestToken}`;
 document.getElementById("serviceRequestForm").reset();
 }).catch((error)=>{
 status.innerText = "Request send nahi hui: " + error.message;

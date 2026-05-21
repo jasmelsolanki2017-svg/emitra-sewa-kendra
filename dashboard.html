@@ -919,7 +919,12 @@ Cook | 1426 |"></textarea>
 
   const syncUserRequestStatus = (id, userUid, data) => {
     if(!userUid){ return Promise.resolve(); }
-    return update(ref(db, "userServiceRequests/" + userUid + "/" + id), data).catch(() => {});
+    return update(ref(db, "userServiceRequests/" + userUid + "/" + id), {
+      ...data,
+      userUnread:true,
+      notificationAt:Date.now(),
+      notificationText:`Request ${normalizeRequestStatus(data.status)}${data.adminNote ? ": " + data.adminNote : ""}`
+    }).catch(() => {});
   };
 
   const removeUserRequestMirror = (id, userUid) => {
@@ -927,11 +932,25 @@ Cook | 1426 |"></textarea>
     return remove(ref(db, "userServiceRequests/" + userUid + "/" + id)).catch(() => {});
   };
 
+  const normalizeRequestStatus = (status = "") => {
+    const value = String(status || "").trim().toLowerCase();
+    if(value === "done" || value === "completed"){ return "Completed"; }
+    if(value === "working" || value === "replied" || value === "in process" || value === "in-process"){ return "In Process"; }
+    if(value === "rejected" || value === "reject"){ return "Rejected"; }
+    return "Pending";
+  };
+
+  const isRequestActive = (status) => {
+    const value = normalizeRequestStatus(status);
+    return value !== "Completed" && value !== "Rejected";
+  };
+
   window.markRequestDone = (id, userUid = "") => {
     if(!adminAllowed){ alert("Admin verify नहीं हुआ।"); return; }
 
     const data = {
-      status:"Done",
+      status:"Completed",
+      statusUpdatedAt:Date.now(),
       updatedAt:Date.now()
     };
     update(ref(db, "serviceRequests/" + id), data)
@@ -949,9 +968,10 @@ Cook | 1426 |"></textarea>
     if(!adminNote){ alert("Reply message खाली है।"); return; }
 
     const data = {
-      status:"Replied",
+      status:"In Process",
       adminNote,
       repliedAt:Date.now(),
+      statusUpdatedAt:Date.now(),
       updatedAt:Date.now()
     };
     update(ref(db, "serviceRequests/" + id), data)
@@ -986,21 +1006,23 @@ Cook | 1426 |"></textarea>
       requests.sort((a,b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
 
       requests.forEach((data) => {
-        if((data.status || "New") !== "Done"){ pendingCount += 1; }
-        const statusClass = data.status === "Done" ? "status-badge done" : "status-badge";
+        const normalizedStatus = normalizeRequestStatus(data.status);
+        if(isRequestActive(data.status)){ pendingCount += 1; }
+        const statusClass = normalizedStatus === "Completed" ? "status-badge done" : "status-badge";
 
         list.innerHTML += `
           <div class="row">
             <div>
               <strong>${escapeHTML(data.name || "Customer")}</strong>
-              <span class="${statusClass}">${escapeHTML(data.status || "New")}</span>
+              <span class="${statusClass}">${escapeHTML(normalizedStatus)}</span>
+              <small>Tracking ID: ${escapeHTML(data.requestToken || data.id)}</small>
               <small>Mobile: ${escapeHTML(data.mobile || "")}</small>
               <small>Service: ${escapeHTML(data.service || "")}</small>
               <small>Message: ${escapeHTML(data.message || "")}</small>
             </div>
             <div>
               ${data.userUid ? `<button class="action-btn" onclick="replyServiceRequest('${data.id}','${escapeHTML(data.userUid || "")}')">Reply</button>` : ""}
-              <button class="action-btn done-btn" onclick="markRequestDone('${data.id}','${escapeHTML(data.userUid || "")}')">Done</button>
+              <button class="action-btn done-btn" onclick="markRequestDone('${data.id}','${escapeHTML(data.userUid || "")}')">Completed</button>
               <button class="delete-btn" onclick="deleteServiceRequest('${data.id}','${escapeHTML(data.userUid || "")}')">Delete</button>
             </div>
           </div>
