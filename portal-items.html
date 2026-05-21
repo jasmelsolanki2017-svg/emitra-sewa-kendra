@@ -176,13 +176,33 @@
       ].filter(Boolean).join("\n");
     };
 
-    window.sharePortalItemToWhatsapp = (category, id) => {
+    const copyTextToClipboard = async (text) => {
+      if(navigator.clipboard && window.isSecureContext){
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.setAttribute("readonly", "");
+      textarea.style.position = "fixed";
+      textarea.style.left = "-9999px";
+      document.body.appendChild(textarea);
+      textarea.select();
+      const copied = document.execCommand("copy");
+      textarea.remove();
+      return copied;
+    };
+
+    window.sharePortalItemToWhatsapp = async (category, id) => {
       const item = allItems.find((row) => row.category === category && row.id === id);
       if(!item){ alert("Post data nahi mila."); return; }
       const text = buildPortalWhatsappText(item);
-      if(navigator.clipboard){ navigator.clipboard.writeText(text).catch(() => {}); }
-      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
-      document.getElementById("itemStatus").innerText = "WhatsApp post text copy ho gaya. WhatsApp me apna channel select karke send kar dein.";
+      try{
+        const copied = await copyTextToClipboard(text);
+        document.getElementById("itemStatus").innerText = copied ? "Post data copy ho gaya." : "Copy nahi ho paya. Kripya dobara try karein.";
+      }catch(error){
+        document.getElementById("itemStatus").innerText = "Copy nahi ho paya. Kripya dobara try karein.";
+      }
     };
 
     const normalizePortalUrl = (value = "") => {

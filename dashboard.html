@@ -652,12 +652,32 @@ Cook | 1426 |"></textarea>
     ];
     return lines.filter(Boolean).join("\n");
   };
-  window.shareLatestJobToWhatsapp = (id) => {
+  const copyTextToClipboard = async (text) => {
+    if(navigator.clipboard && window.isSecureContext){
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.setAttribute("readonly", "");
+    textarea.style.position = "fixed";
+    textarea.style.left = "-9999px";
+    document.body.appendChild(textarea);
+    textarea.select();
+    const copied = document.execCommand("copy");
+    textarea.remove();
+    return copied;
+  };
+  window.shareLatestJobToWhatsapp = async (id) => {
     const data = window.latestJobsCache && window.latestJobsCache[id];
     if(!data){ alert("Post data load nahi hua. Page refresh karke try karein."); return; }
     const text = buildWhatsappPostText(id, data);
-    if(navigator.clipboard){ navigator.clipboard.writeText(text).catch(() => {}); }
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
+    try{
+      const copied = await copyTextToClipboard(text);
+      document.getElementById("jobStatus").innerText = copied ? "Post data copy ho gaya." : "Copy nahi ho paya. Kripya dobara try karein.";
+    }catch(error){
+      document.getElementById("jobStatus").innerText = "Copy nahi ho paya. Kripya dobara try karein.";
+    }
   };
   const syncDisplayOrderToPortal = (jobId, data) => {
     const target = data && data.postTarget;
