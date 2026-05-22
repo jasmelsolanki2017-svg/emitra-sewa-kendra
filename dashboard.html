@@ -623,7 +623,7 @@ Cook | 1426 |"></textarea>
   const portalTargetLabels = { latestJob:"Latest Job", admitCard:"Admit Card", result:"Result", syllabus:"Syllabus", answerKey:"Answer Key" };
   const portalTargetLinks = { admitCard:"admitCardLink", result:"resultLink", syllabus:"syllabusLink", answerKey:"answerKeyLink" };
   const whatsappChannelUrl = "https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q";
-  const siteBaseUrl = () => location.origin && location.origin !== "null" ? location.origin.replace(/\/+$/, "") : "https://emitrawala.online";
+  const siteBaseUrl = () => /^https?:\/\//i.test(location.origin || "") ? location.origin.replace(/\/+$/, "") : "https://emitrawala.online";
   const jobDetailUrl = (id) => `${siteBaseUrl()}/job-detail.html?id=${encodeURIComponent(id)}`;
   const portalSectionMap = { admitCard:"admitCard", result:"results", syllabus:"syllabus", answerKey:"answerKey" };
   const jobPostPageUrl = (id, data = {}) => {

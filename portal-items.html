@@ -165,7 +165,7 @@
     };
 
     const whatsappChannelUrl = "https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q";
-    const siteBaseUrl = () => location.origin && location.origin !== "null" ? location.origin.replace(/\/+$/, "") : "https://emitrawala.online";
+    const siteBaseUrl = () => /^https?:\/\//i.test(location.origin || "") ? location.origin.replace(/\/+$/, "") : "https://emitrawala.online";
     const portalSectionMap = {
       result:"results",
       admitCard:"admitCard",
