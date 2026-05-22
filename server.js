@@ -19,6 +19,7 @@ try {
 }
 
 const app = express();
+app.use(express.static(__dirname));
 
 const PORT = process.env.PORT || 3000;
 const DEFAULT_FIREBASE_URL = "https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app";
