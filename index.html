@@ -924,6 +924,43 @@ text-decoration:none;
 color:#b30000;
 }
 
+.home-source-special{
+margin-top:16px;
+}
+
+.home-source-title{
+background:#03224d;
+color:white;
+text-align:center;
+font-size:18px;
+font-weight:900;
+padding:8px 10px;
+border:1px solid #03224d;
+}
+
+.home-source-grid{
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:12px;
+align-items:stretch;
+}
+
+.home-source-grid .home-portal-box{
+min-height:220px;
+}
+
+.home-source-grid .home-portal-title{
+background:#0057a8;
+}
+
+.home-source-meta{
+display:block;
+color:#5c6678;
+font-size:12px;
+font-weight:800;
+margin-top:2px;
+}
+
 .home-portal-job-card .badge,
 .home-portal-job-card p,
 .home-portal-job-card .job-actions{
@@ -1918,6 +1955,10 @@ grid-template-columns:repeat(2,1fr);
 grid-template-columns:1fr;
 }
 
+.home-source-grid{
+grid-template-columns:1fr;
+}
+
 .home-portal-title{
 font-size:20px;
 }
@@ -2203,6 +2244,12 @@ body.dark-mode .home-portal-title {
   color: #ffffff !important;
 }
 
+body.dark-mode .home-source-title {
+  background: #06101f !important;
+  color: #ffffff !important;
+  border-color: #24405f !important;
+}
+
 body.dark-mode .logo img,
 body.dark-mode .nav-logo img {
   box-shadow: 0 0 0 1px rgba(255,255,255,.18);
@@ -2480,6 +2527,21 @@ Important Links
         <div class="home-portal-box" id="homePortalAdmission">
           <h3 class="home-portal-title">Admission Form</h3>
           <ul class="home-portal-list" id="homePortalAdmissionList"><li class="home-portal-message">Loading...</li></ul>
+        </div>
+      </div>
+
+      <div class="home-source-special" aria-label="Special source updates">
+        <div class="home-source-title">Special Source Updates</div>
+        <div class="home-source-grid">
+          <div class="home-portal-box" id="homeSarkariResultSource">
+            <h3 class="home-portal-title">SarkariResult Special</h3>
+            <ul class="home-portal-list" id="homeSarkariResultList"><li class="home-portal-message">Source updates load ho rahe hain...</li></ul>
+          </div>
+
+          <div class="home-portal-box" id="homeSarkariExamSource">
+            <h3 class="home-portal-title">SarkariExam Special</h3>
+            <ul class="home-portal-list" id="homeSarkariExamList"><li class="home-portal-message">Source updates load ho rahe hain...</li></ul>
+          </div>
         </div>
       </div>
     </div>
@@ -3071,6 +3133,10 @@ answerKey:"homePortalAnswerKeyList",
 syllabus:"homePortalSyllabusList",
 admission:"homePortalAdmissionList"
 };
+const specialSourceMap = {
+sarkariResult:"homeSarkariResultList",
+sarkariExam:"homeSarkariExamList"
+};
 
 const escapeFastHTML = (value = "") => String(value)
 .replace(/&/g,"&amp;")
@@ -3109,6 +3175,17 @@ return true;
 };
 
 const isFastLatestJobTarget = (job) => !job.postTarget || job.postTarget === "latestJob";
+const getFastSpecialSourceKey = (job = {}) => {
+const haystack = [job.sourceName, job.sourceLink, job.detailLink, job.officialWebsite]
+.filter(Boolean)
+.join(" ")
+.toLowerCase()
+.replace(/\s+/g,"");
+if(haystack.includes("sarkariresult")){ return "sarkariResult"; }
+if(haystack.includes("sarkariexam")){ return "sarkariExam"; }
+return "";
+};
+const fastSpecialSourceLabel = (key) => key === "sarkariResult" ? "SarkariResult" : "SarkariExam";
 const getFastDisplayOrder = (job) => {
 const number = Number(job && job.displayOrder || 0);
 return number > 0 ? number : Number.POSITIVE_INFINITY;
@@ -3133,12 +3210,34 @@ list.innerHTML = items.length
 : '<li class="home-portal-message">Abhi koi update nahi hai.</li>';
 };
 
+const renderFastSpecialSourceJobs = (rows) => {
+Object.entries(specialSourceMap).forEach(([sourceKey, listId])=>{
+const list = document.getElementById(listId);
+if(!list){ return; }
+const sourceRows = rows.filter((row)=>row.sourceKey === sourceKey).slice(0,8);
+list.innerHTML = sourceRows.length
+? sourceRows.map(({ id, job })=>`
+  <li>
+    <a href="job-detail.html?id=${encodeURIComponent(id)}">${escapeFastHTML(job.title || job.text || "Job Update")}</a>
+    <span class="home-source-meta">${escapeFastHTML(job.type || "Update")} | Last: ${escapeFastHTML(job.lastDate || job.lastApplyDate || "Update Soon")}</span>
+  </li>
+`).join("")
+: `<li class="home-portal-message">${fastSpecialSourceLabel(sourceKey)} se abhi koi special update nahi hai.</li>`;
+});
+};
+
 const renderFastJobs = (values) => {
 const portalJobList = document.getElementById("homePortalJobList");
 const box = document.getElementById("homeJobList");
-const jobs = Object.entries(values || {})
+const rows = Object.entries(values || {})
 .map(([id,value])=>({ id, job:normalizeFastJob(value) }))
-.filter(({ job })=>isFastJobVisible(job) && isFastLatestJobTarget(job));
+.filter(({ job })=>isFastJobVisible(job));
+const specialRows = rows
+.map((row)=>({ ...row, sourceKey:getFastSpecialSourceKey(row.job) }))
+.filter((row)=>row.sourceKey);
+sortFastJobRows(specialRows);
+renderFastSpecialSourceJobs(specialRows);
+const jobs = rows.filter(({ job })=>isFastLatestJobTarget(job));
 sortFastJobRows(jobs);
 
 if(!jobs.length){
@@ -3620,6 +3719,23 @@ answerKey:"homePortalAnswerKeyList",
 syllabus:"homePortalSyllabusList",
 admission:"homePortalAdmissionList"
 };
+const homeSpecialSourceMap = {
+sarkariResult:"homeSarkariResultList",
+sarkariExam:"homeSarkariExamList"
+};
+
+const getHomeSpecialSourceKey = (job = {}) => {
+const haystack = [job.sourceName, job.sourceLink, job.detailLink, job.officialWebsite]
+.filter(Boolean)
+.join(" ")
+.toLowerCase()
+.replace(/\s+/g,"");
+if(haystack.includes("sarkariresult")){ return "sarkariResult"; }
+if(haystack.includes("sarkariexam")){ return "sarkariExam"; }
+return "";
+};
+
+const homeSpecialSourceLabel = (key) => key === "sarkariResult" ? "SarkariResult" : "SarkariExam";
 
 const filterHomePortalJobs = () => {
 const input = document.getElementById("homePortalJobSearch");
@@ -3693,21 +3809,47 @@ list.innerHTML = `<li class="home-portal-message">Data load nahi hua: ${escapeHT
 });
 });
 
+const renderHomeSpecialSourceJobs = (rows) => {
+Object.entries(homeSpecialSourceMap).forEach(([sourceKey, listId])=>{
+const list = document.getElementById(listId);
+if(!list){ return; }
+const sourceRows = rows.filter((row)=>row.sourceKey === sourceKey).slice(0,8);
+list.innerHTML = sourceRows.length
+? sourceRows.map(({ id, job })=>`
+  <li>
+    <a href="job-detail.html?id=${encodeURIComponent(id)}">${escapeHTML(job.title || job.text || "Job Update")}</a>
+    <span class="home-source-meta">${escapeHTML(job.type || "Update")} | Last: ${escapeHTML(job.lastDate || job.lastApplyDate || "Update Soon")}</span>
+  </li>
+`).join("")
+: `<li class="home-portal-message">${homeSpecialSourceLabel(sourceKey)} se abhi koi special update nahi hai.</li>`;
+});
+};
+
 onValue(jobsRef,(snapshot)=>{
 const box = document.getElementById("homeJobList");
 const portalJobList = document.getElementById("homePortalJobList");
 const jobs = [];
+const specialRows = [];
 
 if(snapshot.exists()){
 snapshot.forEach((child)=>{
 const job = normalizeJob(child.val());
-if(isJobVisible(job) && isLatestJobTarget(job)){
-jobs.push({ id:child.key, job:job });
+if(isJobVisible(job)){
+const row = { id:child.key, job:job };
+const sourceKey = getHomeSpecialSourceKey(job);
+if(sourceKey){
+specialRows.push({ ...row, sourceKey });
+}
+if(isLatestJobTarget(job)){
+jobs.push(row);
+}
 }
 });
 }
 
 sortJobRows(jobs);
+sortJobRows(specialRows);
+renderHomeSpecialSourceJobs(specialRows);
 
 if(jobs.length === 0){
 if(portalJobList){
@@ -3758,6 +3900,12 @@ box.innerHTML = `<p class="home-job-message">Latest jobs load nahi ho payi: ${es
 if(portalJobList){
 portalJobList.innerHTML = `<li class="home-portal-message">Jobs load nahi ho payi: ${escapeHTML(error.message)}</li>`;
 }
+Object.values(homeSpecialSourceMap).forEach((listId)=>{
+const list = document.getElementById(listId);
+if(list){
+list.innerHTML = `<li class="home-portal-message">Source updates load nahi ho payi: ${escapeHTML(error.message)}</li>`;
+}
+});
 });
 
 /* ADVERTISEMENT */

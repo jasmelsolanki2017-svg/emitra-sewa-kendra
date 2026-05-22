@@ -58,6 +58,11 @@
       ".write": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'"
     },
 
+    "autoJobUrlCache": {
+      ".read": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'",
+      ".write": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'"
+    },
+
     "members": {
       ".read": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'",
       "$uid": {

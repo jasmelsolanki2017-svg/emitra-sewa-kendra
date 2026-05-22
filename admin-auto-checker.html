@@ -72,6 +72,9 @@
     .checklist{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:6px;margin-top:8px}
     .check-item{display:flex;gap:7px;align-items:flex-start;border:1px solid #d8e6f5;border-radius:7px;padding:8px;background:#fbfdff;font-size:12px;font-weight:800;color:#172033}
     .check-item input{width:auto;margin-top:2px}
+    .category-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:6px}
+    .bulk-bar{display:flex;gap:7px;align-items:center;flex-wrap:wrap;background:#eef6ff;border:1px solid #d8e6f5;border-radius:7px;padding:8px;margin:8px 0}
+    .draft-check{width:auto;margin-top:3px;flex-shrink:0}
     .result-box{margin-top:8px;border:1px dashed #bdd0e5;border-radius:7px;background:#fbfdff;padding:8px;font-size:12px;font-weight:700;white-space:pre-wrap;overflow-wrap:anywhere;color:#172033}
     .mini-btn{padding:6px 8px;font-size:11px}
     @media(max-width:820px){.grid,.form-grid{grid-template-columns:1fr}.wide{grid-column:auto}.row{display:block}.row .actions{justify-content:flex-start;margin-top:8px}nav{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap}nav a,nav button{white-space:nowrap}}
@@ -107,6 +110,8 @@
       <h2>Checker Server</h2>
       <div class="form-grid">
         <input class="wide" type="url" id="adminServerUrl" placeholder="Render Server URL jaise https://your-app.onrender.com">
+        <input type="number" id="checkerFetchLimit" min="1" max="120" value="30" placeholder="Max new drafts per run">
+        <input type="number" id="checkerPageLimit" min="1" max="80" value="20" placeholder="Max pages fetch per run">
       </div>
       <div class="buttons">
         <button type="button" onclick="saveAdminServerUrl()">Save Server URL</button>
@@ -139,10 +144,21 @@
           <input id="sourceDepartment" placeholder="Department / Board">
           <input class="wide" id="sourceUrl" type="url" placeholder="Official website URL https://...">
           <input class="wide" id="sourceKeywords" placeholder="Keywords comma se: recruitment, admit card, result">
+          <input id="sourceMaxFetch" type="number" min="1" max="40" value="8" placeholder="Max drafts/source">
           <select id="sourceEnabled">
             <option value="true">Enabled</option>
             <option value="false">Disabled</option>
           </select>
+          <div class="wide category-grid" aria-label="Category filters">
+            <label class="check-item"><input type="checkbox" class="source-category" value="latestJob" checked> Latest Jobs</label>
+            <label class="check-item"><input type="checkbox" class="source-category" value="admitCard" checked> Admit Card</label>
+            <label class="check-item"><input type="checkbox" class="source-category" value="result" checked> Result</label>
+            <label class="check-item"><input type="checkbox" class="source-category" value="answerKey" checked> Answer Key</label>
+          </div>
+          <input id="sourceLatestJobUrl" type="url" placeholder="Latest Jobs category URL optional">
+          <input id="sourceAdmitCardUrl" type="url" placeholder="Admit Card category URL optional">
+          <input id="sourceResultUrl" type="url" placeholder="Result category URL optional">
+          <input id="sourceAnswerKeyUrl" type="url" placeholder="Answer Key category URL optional">
         </div>
         <div class="buttons">
           <button type="button" id="sourceSaveBtn" onclick="saveSource()">Add Source</button>
@@ -200,6 +216,12 @@
         <button type="button" class="delete" onclick="deleteDraft()">Delete Draft</button>
       </div>
       <div class="status" id="draftStatus">Draft select karein ya checker run karein.</div>
+      <div class="bulk-bar">
+        <button type="button" onclick="selectVisibleDrafts(true)">Select Visible</button>
+        <button type="button" onclick="selectVisibleDrafts(false)">Clear Selection</button>
+        <button type="button" class="publish" onclick="bulkApproveDrafts()">Bulk Approve Selected</button>
+        <span class="muted" id="bulkSelectedCount">0 selected</span>
+      </div>
       <div class="draft-list" id="draftList"><div class="empty">Loading...</div></div>
     </section>
   </main>
@@ -214,7 +236,7 @@
     const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getDatabase(app),adminEmail="jasmelsolanki@gmail.com";
     const adminServerStorageKey="emitraAdminServerUrl";
     let adminAllowed=false,editingSourceId="",activeDraftId="",sourcesCache={},draftsCache={},dataSyncStarted=false;
-    const sourceFields=["sourceName","sourceDepartment","sourceUrl","sourceKeywords","sourceEnabled"];
+    const sourceFields=["sourceName","sourceDepartment","sourceUrl","sourceKeywords","sourceMaxFetch","sourceEnabled","sourceLatestJobUrl","sourceAdmitCardUrl","sourceResultUrl","sourceAnswerKeyUrl"];
     const draftFields=["draftTitle","draftDepartment","draftPostDate","draftTotalPosts","draftImportantDates","draftQualification","draftOfficialLink","draftSourceLink","draftPostTarget","draftLastDate","draftSlug","draftSeoTitle","draftMetaDescription","draftNotificationSummary","draftWhatsappPostText","draftPageContent","draftGeneratedJson"];
     const $=(id)=>document.getElementById(id);
     const sourceList=$("sourceList"),draftList=$("draftList"),logList=$("logList");
@@ -226,6 +248,28 @@
     const shortTime=(value)=>value?new Date(Number(value)).toLocaleTimeString("hi-IN"):"--";
     const getValue=(id)=>$(id).value.trim();
     const setValue=(id,value="")=>{$(id).value=value||""};
+    const categoryKeys=["latestJob","admitCard","result","answerKey"];
+    const sourceCategoryCheckboxes=()=>Array.from(document.querySelectorAll(".source-category"));
+    const getSourceCategories=()=>sourceCategoryCheckboxes().filter((item)=>item.checked).map((item)=>item.value);
+    const setSourceCategories=(categories=categoryKeys)=>{
+      const active=new Set(Array.isArray(categories)&&categories.length?categories:categoryKeys);
+      sourceCategoryCheckboxes().forEach((item)=>{item.checked=active.has(item.value)});
+    };
+    const getSourceCategoryPages=()=>({
+      latestJob:getValue("sourceLatestJobUrl"),
+      admitCard:getValue("sourceAdmitCardUrl"),
+      result:getValue("sourceResultUrl"),
+      answerKey:getValue("sourceAnswerKeyUrl")
+    });
+    const setSourceCategoryPages=(pages={})=>{
+      setValue("sourceLatestJobUrl",pages.latestJob||"");
+      setValue("sourceAdmitCardUrl",pages.admitCard||"");
+      setValue("sourceResultUrl",pages.result||"");
+      setValue("sourceAnswerKeyUrl",pages.answerKey||"");
+    };
+    const selectedDraftIds=()=>Array.from(document.querySelectorAll(".draft-select:checked")).map((item)=>item.value);
+    const updateBulkSelectedCount=()=>{$("bulkSelectedCount").innerText=`${selectedDraftIds().length} selected`};
+    window.updateBulkSelectedCount=updateBulkSelectedCount;
     const getAdminServerUrl=()=>String(getValue("adminServerUrl")||localStorage.getItem(adminServerStorageKey)||"").trim().replace(/\/+$/,"");
     const hasAdminServerUrl=()=>Boolean(getAdminServerUrl());
     const isStaticHosted=()=>/^emitrawala\.online$|github\.io$/i.test(location.hostname);
@@ -366,6 +410,9 @@
       department:getValue("sourceDepartment"),
       url:getValue("sourceUrl"),
       keywords:getValue("sourceKeywords"),
+      maxFetch:Number(getValue("sourceMaxFetch")||8),
+      categories:getSourceCategories(),
+      categoryPages:getSourceCategoryPages(),
       enabled:getValue("sourceEnabled")!=="false",
       updatedAt:Date.now()
     });
@@ -380,12 +427,14 @@
       {id:"default_nta",name:"NTA",department:"National Testing Agency",url:"https://nta.ac.in",keywords:"notification, public notice, admit card, result, exam city, recruitment",enabled:true},
       {id:"default_rrb_apply",name:"RRB Apply",department:"Railway Recruitment Boards",url:"https://www.rrbapply.gov.in",keywords:"CEN, recruitment, apply online, admit card, result, notice, railway",enabled:true},
       {id:"default_rajasthan_police",name:"Rajasthan Police",department:"Rajasthan Police",url:"https://police.rajasthan.gov.in",keywords:"recruitment, constable, admit card, result, selection list, important notice",enabled:true}
-    ];
+    ].map((source)=>({...source,categories:categoryKeys,categoryPages:{},maxFetch:8}));
     const normalizeSourceUrl=(value="")=>String(value||"").trim().replace(/\/+$/,"").toLowerCase();
 
     window.clearSourceForm=()=>{
       editingSourceId="";
-      sourceFields.forEach((id)=>setValue(id,id==="sourceEnabled"?"true":""));
+      sourceFields.forEach((id)=>setValue(id,id==="sourceEnabled"?"true":id==="sourceMaxFetch"?"8":""));
+      setSourceCategories();
+      setSourceCategoryPages();
       $("sourceSaveBtn").innerText="Add Source";
       $("sourceStatus").innerText="";
     };
@@ -422,7 +471,10 @@
       setValue("sourceDepartment",data.department);
       setValue("sourceUrl",data.url);
       setValue("sourceKeywords",data.keywords);
+      setValue("sourceMaxFetch",data.maxFetch||8);
       setValue("sourceEnabled",data.enabled===false?"false":"true");
+      setSourceCategories(data.categories);
+      setSourceCategoryPages(data.categoryPages||{});
       $("sourceSaveBtn").innerText="Update Source";
       $("sourceStatus").innerText="Edit mode active.";
       scrollTo({top:0,behavior:"smooth"});
@@ -744,6 +796,34 @@
       }
     };
 
+    window.selectVisibleDrafts=(checked)=>{
+      document.querySelectorAll(".draft-select").forEach((item)=>{item.checked=Boolean(checked)});
+      updateBulkSelectedCount();
+    };
+
+    window.bulkApproveDrafts=async()=>{
+      if(!adminAllowed){alert("Admin verify nahi hua.");return}
+      if(!hasAdminServerUrl()){alert("Bulk approve ke liye Server URL save karein.");return}
+      const ids=selectedDraftIds();
+      if(!ids.length){$("draftStatus").innerText="Bulk approve ke liye drafts select karein.";return}
+      if(!confirm(`${ids.length} selected drafts live publish karne hain?`))return;
+      try{
+        $("draftStatus").innerText=`${ids.length} drafts bulk approve ho rahe hain...`;
+        const result=await callAdminApi("/admin/auto-job-checker/bulk-publish",{
+          draftIds:ids,
+          autoSendChannels:[
+            $("draftAutoSendTelegram").checked?"telegram":"",
+            $("draftAutoSendWhatsapp").checked?"whatsapp":""
+          ].filter(Boolean)
+        });
+        await loadServerState().catch(()=>{});
+        const failedRows=(result.results||[]).filter((item)=>!item.ok);
+        $("draftStatus").innerText=`Bulk approve complete: ${result.published||0} published, ${result.failed||0} failed.`+(failedRows.length?` Failed: ${failedRows.map((item)=>item.error).join(" | ")}`:"");
+      }catch(error){
+        $("draftStatus").innerText="Bulk approve error: "+error.message;
+      }
+    };
+
     window.ignoreDraft=async(id)=>{
       if(!adminAllowed){alert("Admin verify nahi hua.");return}
       if(!confirm("Is draft ko ignore karna hai? Ye pending list se hat jayega."))return;
@@ -765,9 +845,12 @@
       if(!adminAllowed){alert("Admin verify nahi hua.");return}
       try{
         $("checkerStatus").innerText="Checker run ho raha hai...";
-        const result=await callAdminApi("/admin/auto-job-checker/run",{});
+        const result=await callAdminApi("/admin/auto-job-checker/run",{
+          limit:Number(getValue("checkerFetchLimit")||30),
+          pageLimit:Number(getValue("checkerPageLimit")||20)
+        });
         await loadServerState().catch(()=>{});
-        $("checkerStatus").innerText=result.skipped?result.message:`Done: ${result.checkedCount||0} sources, ${result.newDraftCount||0} new drafts, ${result.errorCount||0} errors.`;
+        $("checkerStatus").innerText=result.skipped?result.message:`Done: ${result.checkedCount||0} sources, ${result.pageFetchCount||0} pages, ${result.newDraftCount||0} new drafts, ${result.skippedDuplicateCount||0} duplicates skipped, ${result.errorCount||0} errors.`;
       }catch(error){
         $("checkerStatus").innerText="Checker error: "+error.message;
       }
@@ -777,7 +860,7 @@
       const rows=Object.entries(sourcesCache).sort((a,b)=>String(a[1].name||"").localeCompare(String(b[1].name||"")));
       $("sourceCount").innerText=rows.length;
       if(!rows.length){sourceList.innerHTML='<div class="empty">Abhi koi source add nahi hai.</div>';return}
-      sourceList.innerHTML=rows.map(([id,data])=>`<div class="row ${data.lastStatus==="error"||data.lastTestStatus==="error"?"error":data.lastStatus==="success"?"success":""}"><div><strong>${escapeHTML(data.name||"Official Source")}</strong><small>${escapeHTML(data.url||"")}</small><small>Last checked: ${formatTime(data.lastCheckedAt)} | Status: ${escapeHTML(data.lastStatus||"new")} | New: ${escapeHTML(data.lastNewCount||0)} | Found: ${escapeHTML(data.lastFoundCount||0)}</small>${friendlyErrorText(data)?`<small style="color:#d90000;">${escapeHTML(friendlyErrorText(data))}</small>`:""}${data.lastTestedAt?`<small>Last test: ${shortTime(data.lastTestedAt)} | ${escapeHTML(data.lastTestMessage||"")}</small>`:""}<span class="badge">${data.enabled===false?"Disabled":"Enabled"}</span></div><div class="actions"><button class="mini-btn" onclick="testSource('${id}')">Test URL</button><button class="mini-btn" onclick="editSource('${id}')">Edit</button><button class="delete mini-btn" onclick="deleteSource('${id}')">Delete</button></div></div>`).join("");
+      sourceList.innerHTML=rows.map(([id,data])=>`<div class="row ${data.lastStatus==="error"||data.lastTestStatus==="error"?"error":data.lastStatus==="success"?"success":""}"><div><strong>${escapeHTML(data.name||"Official Source")}</strong><small>${escapeHTML(data.url||"")}</small><small>Categories: ${escapeHTML((data.categories||categoryKeys).join(", "))} | Max/source: ${escapeHTML(data.maxFetch||8)}</small><small>Last checked: ${formatTime(data.lastCheckedAt)} | Status: ${escapeHTML(data.lastStatus||"new")} | Pages: ${escapeHTML(data.lastPageFetches||0)} | New: ${escapeHTML(data.lastNewCount||0)} | Found: ${escapeHTML(data.lastFoundCount||0)} | Duplicate: ${escapeHTML(data.lastSkippedDuplicates||0)}</small>${friendlyErrorText(data)?`<small style="color:#d90000;">${escapeHTML(friendlyErrorText(data))}</small>`:""}${data.lastTestedAt?`<small>Last test: ${shortTime(data.lastTestedAt)} | ${escapeHTML(data.lastTestMessage||"")}</small>`:""}<span class="badge">${data.enabled===false?"Disabled":"Enabled"}</span></div><div class="actions"><button class="mini-btn" onclick="testSource('${id}')">Test URL</button><button class="mini-btn" onclick="editSource('${id}')">Edit</button><button class="delete mini-btn" onclick="deleteSource('${id}')">Delete</button></div></div>`).join("");
     };
 
     const draftTypeGroup=(data={})=>{
@@ -796,7 +879,7 @@
       const rows=Object.entries(draftsCache).sort((a,b)=>Number(b[1].updatedAt||b[1].createdAt||0)-Number(a[1].updatedAt||a[1].createdAt||0));
       const draftRows=rows.filter(([,data])=>!["published","ignored"].includes(String(data.checkerStatus||"draft")));
       $("draftCount").innerText=draftRows.length;
-      if(!draftRows.length){draftList.innerHTML='<div class="empty">Pending draft nahi hai.</div>';return}
+      if(!draftRows.length){draftList.innerHTML='<div class="empty">Pending draft nahi hai.</div>';updateBulkSelectedCount();return}
       const sourceGroups=new Map();
       draftRows.forEach(([id,data])=>{
         const source=sourcesCache[data.sourceId]||{};
@@ -832,11 +915,12 @@
           ].filter((type)=>group.types[type.key].length).map((type)=>`
             <details class="draft-type-section">
               <summary class="draft-type-head"><span>${type.label}</span><small>${group.types[type.key].length} draft${group.types[type.key].length>1?"s":""}</small></summary>
-            ${group.types[type.key].map(([id,data])=>`<div class="row ${activeDraftId===id?"success":""}"><div><strong>${escapeHTML(data.title||"Untitled Draft")}</strong><small>${escapeHTML(data.department||"Department not set")} | ${escapeHTML(data.postTarget||"latestJob")} | ${formatTime(data.createdAt)}</small><small>PDF text: ${data.pdfTextExtracted?"Yes":"No"}</small><small>${escapeHTML(data.sourceLink||data.detailLink||"")}</small><span class="badge">Draft</span></div><div class="actions"><button class="mini-btn" onclick="selectDraft('${id}')">Review</button><button class="publish mini-btn" onclick="quickPublishDraft('${id}','latestJob')">Job</button><button class="publish mini-btn" onclick="quickPublishDraft('${id}','admitCard')">Admit</button><button class="publish mini-btn" onclick="quickPublishDraft('${id}','result')">Result</button><button class="delete mini-btn" onclick="ignoreDraft('${id}')">Ignore</button></div></div>`).join("")}
+            ${group.types[type.key].map(([id,data])=>`<div class="row ${activeDraftId===id?"success":""}"><input class="draft-check draft-select" type="checkbox" value="${escapeHTML(id)}" onchange="updateBulkSelectedCount()"><div><strong>${escapeHTML(data.title||"Untitled Draft")}</strong><small>${escapeHTML(data.department||"Department not set")} | ${escapeHTML(data.postTarget||"latestJob")} | ${formatTime(data.createdAt)}</small><small>${data.lightweightDraft?"Light draft":"Full draft"} | PDF text: ${data.pdfTextExtracted?"Yes":"No"}</small><small>${escapeHTML(data.sourceLink||data.detailLink||"")}</small><span class="badge">Draft</span></div><div class="actions"><button class="mini-btn" onclick="selectDraft('${id}')">Review</button><button class="publish mini-btn" onclick="quickPublishDraft('${id}','latestJob')">Job</button><button class="publish mini-btn" onclick="quickPublishDraft('${id}','admitCard')">Admit</button><button class="publish mini-btn" onclick="quickPublishDraft('${id}','result')">Result</button><button class="delete mini-btn" onclick="ignoreDraft('${id}')">Ignore</button></div></div>`).join("")}
             </details>
           `).join("")}
         </div>
       `).join("");
+      updateBulkSelectedCount();
     };
 
     const renderLogs=(logs={})=>{

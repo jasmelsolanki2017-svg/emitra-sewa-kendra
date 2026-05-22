@@ -181,6 +181,128 @@ const autoJobKeywords = [
   "परिणाम", "उत्तर कुंजी", "परीक्षा", "रिक्ति"
 ];
 
+const AUTO_JOB_CATEGORY_CONFIG = {
+  latestJob: {
+    label: "Latest Jobs",
+    keywords: ["recruitment", "vacancy", "notification", "advertisement", "apply online", "online form", "भर्ती", "विज्ञप्ति", "रिक्ति"]
+  },
+  admitCard: {
+    label: "Admit Card",
+    keywords: ["admit card", "hall ticket", "exam city", "call letter", "प्रवेश पत्र", "परीक्षा शहर"]
+  },
+  result: {
+    label: "Result",
+    keywords: ["result", "merit list", "marks", "score card", "परिणाम", "मेरिट"]
+  },
+  answerKey: {
+    label: "Answer Key",
+    keywords: ["answer key", "response sheet", "objection", "उत्तर कुंजी", "आपत्ति"]
+  }
+};
+
+const AUTO_JOB_CATEGORY_KEYS = Object.keys(AUTO_JOB_CATEGORY_CONFIG);
+const AUTO_JOB_DEFAULT_DRAFT_LIMIT = 30;
+const AUTO_JOB_DEFAULT_PAGE_LIMIT = 20;
+const AUTO_JOB_DEFAULT_PER_SOURCE_LIMIT = 8;
+const AUTO_JOB_MAX_DRAFT_LIMIT = 120;
+const AUTO_JOB_MAX_PAGE_LIMIT = 80;
+const AUTO_JOB_MAX_PER_SOURCE_LIMIT = 40;
+
+const readPositiveInt = (value, fallback, max) => {
+  const number = Number(value);
+  if (!Number.isFinite(number) || number <= 0) return fallback;
+  return Math.min(Math.floor(number), max);
+};
+
+const normalizeAutoJobCategory = (value = "") => {
+  const key = String(value || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  const map = {
+    latestjob: "latestJob",
+    latestjobs: "latestJob",
+    job: "latestJob",
+    jobs: "latestJob",
+    onlineform: "latestJob",
+    admitcard: "admitCard",
+    admitcards: "admitCard",
+    hallticket: "admitCard",
+    result: "result",
+    results: "result",
+    answerkey: "answerKey",
+    answerkeys: "answerKey"
+  };
+  return map[key] || "";
+};
+
+const parseAutoJobCategories = (value) => {
+  if (Array.isArray(value)) {
+    const parsed = value.map(normalizeAutoJobCategory).filter(Boolean);
+    return parsed.length ? Array.from(new Set(parsed)) : AUTO_JOB_CATEGORY_KEYS;
+  }
+  if (value && typeof value === "object") {
+    const parsed = Object.entries(value)
+      .filter(([, enabled]) => enabled !== false)
+      .map(([key]) => normalizeAutoJobCategory(key))
+      .filter(Boolean);
+    return parsed.length ? Array.from(new Set(parsed)) : AUTO_JOB_CATEGORY_KEYS;
+  }
+  if (typeof value === "string" && value.trim()) {
+    const parsed = value.split(/[,\n|]+/).map(normalizeAutoJobCategory).filter(Boolean);
+    return parsed.length ? Array.from(new Set(parsed)) : AUTO_JOB_CATEGORY_KEYS;
+  }
+  return AUTO_JOB_CATEGORY_KEYS;
+};
+
+const parseAutoJobCategoryPages = (source = {}) => {
+  const pages = {};
+  if (source.categoryPages && typeof source.categoryPages === "object") {
+    AUTO_JOB_CATEGORY_KEYS.forEach((key) => {
+      const url = extractHttpUrl(source.categoryPages[key] || "");
+      if (url) pages[key] = url;
+    });
+  }
+  const aliases = {
+    latestJob: ["latestJobUrl", "latestJobsUrl", "jobsUrl"],
+    admitCard: ["admitCardUrl", "admitCardsUrl"],
+    result: ["resultUrl", "resultsUrl"],
+    answerKey: ["answerKeyUrl", "answerKeysUrl"]
+  };
+  Object.entries(aliases).forEach(([key, fields]) => {
+    fields.forEach((field) => {
+      const url = extractHttpUrl(source[field] || "");
+      if (url) pages[key] = url;
+    });
+  });
+  const raw = String(source.categoryUrls || "").trim();
+  if (raw) {
+    raw.split(/\r?\n/).map((line) => line.trim()).filter(Boolean).forEach((line) => {
+      const match = line.match(/^([^=:]+)\s*(?:=|:)\s*(https?:\/\/.+)$/i);
+      if (!match) return;
+      const key = normalizeAutoJobCategory(match[1]);
+      const url = extractHttpUrl(match[2] || "");
+      if (key && url) pages[key] = url;
+    });
+  }
+  return pages;
+};
+
+const normalizeProcessedUrl = (value = "") => {
+  try {
+    const url = new URL(String(value || "").trim());
+    url.hash = "";
+    url.hostname = url.hostname.toLowerCase();
+    const params = Array.from(url.searchParams.entries())
+      .filter(([key]) => !/^utm_|^(fbclid|gclid)$/i.test(key))
+      .sort(([a], [b]) => a.localeCompare(b));
+    url.search = "";
+    params.forEach(([key, val]) => url.searchParams.append(key, val));
+    return url.href.replace(/\/+$/, "");
+  } catch (err) {
+    return String(value || "").trim().replace(/#.*$/, "").replace(/\/+$/, "").toLowerCase();
+  }
+};
+
+const autoJobUrlCacheKey = (url = "") => `url_${safeKey(normalizeProcessedUrl(url))}`;
+
 const findFirstMatchLine = (text = "", patterns = []) => {
   const lines = String(text || "").split(/\r?\n|[।]/).map((line) => line.trim()).filter(Boolean);
   return lines.find((line) => patterns.some((pattern) => pattern.test(line))) || "";
@@ -643,7 +765,10 @@ const normalizeSource = (id, value = {}) => ({
   url: extractHttpUrl(value.url || ""),
   department: toText(value.department || value.name || ""),
   enabled: value.enabled !== false,
-  keywords: toText(value.keywords || "")
+  keywords: toText(value.keywords || ""),
+  categories: parseAutoJobCategories(value.categories || value.enabledCategories),
+  categoryPages: parseAutoJobCategoryPages(value),
+  maxFetch: readPositiveInt(value.maxFetch, AUTO_JOB_DEFAULT_PER_SOURCE_LIMIT, AUTO_JOB_MAX_PER_SOURCE_LIMIT)
 });
 
 const DEFAULT_AUTO_JOB_SOURCES = [
@@ -710,7 +835,13 @@ const DEFAULT_AUTO_JOB_SOURCES = [
     url: "https://police.rajasthan.gov.in",
     keywords: "recruitment, constable, admit card, result, selection list, important notice"
   }
-].map((source) => ({ ...source, enabled: true }));
+].map((source) => ({
+  ...source,
+  enabled: true,
+  categories: AUTO_JOB_CATEGORY_KEYS,
+  categoryPages: {},
+  maxFetch: AUTO_JOB_DEFAULT_PER_SOURCE_LIMIT
+}));
 
 const sourcePayloadFromRequest = (value = {}) => {
   const source = value && typeof value === "object" ? value : {};
@@ -726,6 +857,9 @@ const sourcePayloadFromRequest = (value = {}) => {
     department: toText(source.department || name),
     url,
     keywords: toText(source.keywords),
+    categories: parseAutoJobCategories(source.categories || source.enabledCategories),
+    categoryPages: parseAutoJobCategoryPages(source),
+    maxFetch: readPositiveInt(source.maxFetch, AUTO_JOB_DEFAULT_PER_SOURCE_LIMIT, AUTO_JOB_MAX_PER_SOURCE_LIMIT),
     enabled: source.enabled !== false,
     updatedAt: nowStamp()
   };
@@ -857,11 +991,14 @@ const explainFetchError = (err) => {
 const testAutoJobSource = async (source) => {
   const startedAt = nowStamp();
   try {
-    const keywordList = source.keywords
-      ? source.keywords.split(",").map((item) => item.trim()).filter(Boolean)
-      : autoJobKeywords;
-    const page = await fetchText(source.url, 20000);
-    const notices = extractLinks(page.text, source.url, keywordList);
+    const targets = sourcePageTargets(source).slice(0, 4);
+    const notices = [];
+    for (const target of targets) {
+      const page = await fetchText(target.url, 20000);
+      extractLinks(page.text, target.url, target.keywords, { limit: 10 }).forEach((notice) => {
+        notices.push({ ...notice, sourcePage: target.url, pageLabel: target.label });
+      });
+    }
     return {
       ok: true,
       sourceId: source.id || "",
@@ -869,8 +1006,8 @@ const testAutoJobSource = async (source) => {
       url: source.url,
       status: notices.length ? "ready" : "no_links",
       message: notices.length
-        ? `Page open ho raha hai. ${notices.length} matching links mile.`
-        : "Page open ho raha hai, par matching job links nahi mile. Keywords/URL check karein.",
+        ? `${targets.length} page open ho rahe hain. ${notices.length} matching links mile.`
+        : "Page open ho raha hai, par matching job links nahi mile. Keywords/category URL check karein.",
       foundCount: notices.length,
       sampleLinks: notices.slice(0, 5),
       checkedAt: nowStamp(),
@@ -909,7 +1046,9 @@ const backupPaths = [
   "autoJobSources",
   "autoJobDrafts",
   "autoJobLogs",
-  "autoJobCheckerStatus"
+  "autoJobCheckerStatus",
+  "autoJobSeen",
+  "autoJobUrlCache"
 ];
 
 const createBackupPayload = async (db) => {
@@ -971,9 +1110,10 @@ const fetchPdfText = async (url, timeoutMs = 30000) => {
   }
 };
 
-const extractLinks = (html = "", baseUrl = "", keywords = []) => {
+const extractLinks = (html = "", baseUrl = "", keywords = [], options = {}) => {
   const linkRegex = /<a\b[^>]*href\s*=\s*["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
   const sourceKeywords = keywords.length ? keywords : autoJobKeywords;
+  const limit = readPositiveInt(options.limit, 80, 200);
   const rows = [];
   const seen = new Set();
   let match;
@@ -995,14 +1135,14 @@ const extractLinks = (html = "", baseUrl = "", keywords = []) => {
     if (seen.has(key)) continue;
     seen.add(key);
     rows.push({ title: title || link, link });
+    if (rows.length >= limit) break;
   }
-  return rows.slice(0, 80);
+  return rows;
 };
 
-const buildDraftFromNotice = async (source, notice) => {
-  const pdfText = /\.pdf(?:[?#].*)?$/i.test(notice.link) ? await fetchPdfText(notice.link) : "";
-  const bodyText = pdfText || `${notice.title}\n${notice.link}`;
-  const target = detectPostTarget(notice.title, notice.link, bodyText);
+const buildDraftFromNotice = (source, notice, options = {}) => {
+  const bodyText = `${notice.title}\n${notice.link}`;
+  const target = options.postTarget || detectPostTarget(notice.title, notice.link, bodyText);
   const linkField = pickJobLinkField(target);
   const qualification = findFirstMatchLine(bodyText, [
     /qualification/i, /eligibility/i, /education/i, /योग्यता/i, /पात्रता/i, /शैक्षणिक/i
@@ -1026,13 +1166,17 @@ const buildDraftFromNotice = async (source, notice) => {
     postStatus: "draft",
     displayOrder: "1",
     detailLayout: "table",
-    pageContent: pdfText ? `Auto PDF Text:\n${pdfText.slice(0, 5000)}` : "",
-    rawText: pdfText.slice(0, 8000),
-    pdfTextExtracted: Boolean(pdfText),
+    pageContent: "",
+    rawText: bodyText,
+    pdfTextExtracted: false,
+    lightweightDraft: true,
+    reviewRequired: true,
     checkerStatus: "draft",
     sourceId: source.id,
     sourceName: source.name,
     detectedLink: notice.link,
+    scanSourcePage: options.scanSourcePage || source.url,
+    scanCategory: target,
     createdAt: nowStamp(),
     updatedAt: nowStamp()
   };
@@ -1040,56 +1184,193 @@ const buildDraftFromNotice = async (source, notice) => {
   return enrichJobAutomation(draft, hashKey(notice.link).slice(0, 8));
 };
 
-async function checkOneAutoJobSource(db, source) {
+const sourceKeywordList = (source = {}, category = "") => {
+  const sourceKeywords = source.keywords
+    ? source.keywords.split(",").map((item) => item.trim()).filter(Boolean)
+    : [];
+  const categoryKeywords = AUTO_JOB_CATEGORY_CONFIG[category]?.keywords || [];
+  return Array.from(new Set([...(categoryKeywords.length ? categoryKeywords : autoJobKeywords), ...sourceKeywords]));
+};
+
+const sourcePageTargets = (source = {}) => {
+  const categories = parseAutoJobCategories(source.categories);
+  const categoryPages = parseAutoJobCategoryPages(source);
+  const targets = [];
+  if (source.url) {
+    targets.push({
+      url: source.url,
+      label: "Homepage",
+      postTarget: "",
+      categories,
+      keywords: sourceKeywordList(source)
+    });
+  }
+  categories.forEach((category) => {
+    const url = categoryPages[category];
+    if (!url) return;
+    targets.push({
+      url,
+      label: AUTO_JOB_CATEGORY_CONFIG[category]?.label || category,
+      postTarget: category,
+      categories: [category],
+      keywords: sourceKeywordList(source, category)
+    });
+  });
+  const seen = new Set();
+  return targets.filter((target) => {
+    const key = normalizeProcessedUrl(target.url);
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+};
+
+const draftDuplicateCacheKeys = (draft = {}) => {
+  const keys = new Set(duplicateKeysForJob(draft));
+  [draft.sourceLink, draft.detailLink, draft.applyLink, draft.officialWebsite]
+    .filter(Boolean)
+    .forEach((url) => keys.add(autoJobUrlCacheKey(url)));
+  return Array.from(keys);
+};
+
+const noticeAlreadyProcessed = async (db, draftSeed = {}) => {
+  const keys = draftDuplicateCacheKeys(draftSeed);
+  if (!keys.length) return false;
+  const snapshots = await Promise.all(keys.map((key) => db.ref(`autoJobSeen/${key}`).get()));
+  if (snapshots.some((item) => item.exists())) return true;
+  const urlKeys = [draftSeed.sourceLink, draftSeed.detailLink, draftSeed.applyLink, draftSeed.officialWebsite]
+    .filter(Boolean)
+    .map(autoJobUrlCacheKey);
+  if (!urlKeys.length) return false;
+  const urlSnapshots = await Promise.all(urlKeys.map((key) => db.ref(`autoJobUrlCache/${key}`).get()));
+  return urlSnapshots.some((item) => item.exists());
+};
+
+const existingPublishedDuplicate = async (db, draft = {}, draftId = "") => {
+  const keys = draftDuplicateCacheKeys(draft);
+  if (keys.length) {
+    const snapshots = await Promise.all(keys.map((key) => db.ref(`autoJobSeen/${key}`).get()));
+    const duplicate = snapshots
+      .map((snapshot) => snapshot.exists() ? snapshot.val() : null)
+      .find((value) => value && value.publishedJobId && value.draftId !== draftId);
+    if (duplicate) {
+      return { reason: "cache", jobId: duplicate.publishedJobId, title: duplicate.title || "" };
+    }
+  }
+
+  const draftUrls = [draft.sourceLink, draft.detailLink, draft.applyLink, draft.officialWebsite]
+    .map(normalizeProcessedUrl)
+    .filter(Boolean);
+  const titleKey = toText(`${draft.title || ""}|${draft.department || ""}`).toLowerCase();
+  const jobsSnapshot = await db.ref("LatestJobs").get();
+  if (!jobsSnapshot.exists()) return null;
+  let duplicate = null;
+  jobsSnapshot.forEach((child) => {
+    if (duplicate) return;
+    const job = child.val() || {};
+    const jobUrls = [job.sourceLink, job.detailLink, job.applyLink, job.officialWebsite]
+      .map(normalizeProcessedUrl)
+      .filter(Boolean);
+    if (draftUrls.length && jobUrls.some((url) => draftUrls.includes(url))) {
+      duplicate = { reason: "url", jobId: child.key, title: job.title || "" };
+      return;
+    }
+    const jobTitleKey = toText(`${job.title || ""}|${job.department || ""}`).toLowerCase();
+    if (titleKey && jobTitleKey && titleKey === jobTitleKey) {
+      duplicate = { reason: "title", jobId: child.key, title: job.title || "" };
+    }
+  });
+  return duplicate;
+};
+
+async function checkOneAutoJobSource(db, source, limits = {}) {
   const startedAt = nowStamp();
   let found = 0;
   let newDrafts = 0;
-  const keywordList = source.keywords
-    ? source.keywords.split(",").map((item) => item.trim()).filter(Boolean)
-    : autoJobKeywords;
+  let skippedDuplicates = 0;
+  let pageFetches = 0;
   try {
-    const page = await fetchText(source.url);
-    const notices = extractLinks(page.text, source.url, keywordList);
-    found = notices.length;
-    for (const notice of notices) {
-      const draftSeed = {
-        title: notice.title,
-        department: source.department || source.name,
-        sourceLink: notice.link,
-        detailLink: notice.link,
-        postTarget: detectPostTarget(notice.title, notice.link, "")
-      };
-      const duplicateKeys = duplicateKeysForJob(draftSeed);
-      const seenSnapshots = await Promise.all(duplicateKeys.map((key) => db.ref(`autoJobSeen/${key}`).get()));
-      if (seenSnapshots.some((item) => item.exists())) continue;
-      const duplicateId = duplicateKeys[0] || `link_${hashKey(`${notice.link}`)}`;
-      const draft = await buildDraftFromNotice(source, notice);
-      const updates = {};
-      duplicateKeys.forEach((key) => {
-        updates[`autoJobSeen/${key}`] = {
+    const enabledCategories = parseAutoJobCategories(source.categories);
+    const pageTargets = sourcePageTargets(source);
+    const perSourceLimit = Math.min(
+      readPositiveInt(source.maxFetch, limits.perSourceLimit || AUTO_JOB_DEFAULT_PER_SOURCE_LIMIT, AUTO_JOB_MAX_PER_SOURCE_LIMIT),
+      limits.remainingDrafts || AUTO_JOB_MAX_DRAFT_LIMIT
+    );
+    const seenThisSource = new Set();
+
+    for (const target of pageTargets) {
+      if (newDrafts >= perSourceLimit || (limits.remainingDrafts || 0) <= 0 || (limits.remainingPages || 0) <= 0) break;
+      limits.remainingPages -= 1;
+      pageFetches++;
+      const page = await fetchText(target.url, limits.fetchTimeoutMs || 18000);
+      const notices = extractLinks(page.text, target.url, target.keywords, {
+        limit: Math.max(perSourceLimit * 4, 20)
+      });
+      found += notices.length;
+
+      for (const notice of notices) {
+        if (newDrafts >= perSourceLimit || (limits.remainingDrafts || 0) <= 0) break;
+        const normalizedLink = normalizeProcessedUrl(notice.link);
+        if (!normalizedLink || seenThisSource.has(normalizedLink)) continue;
+        seenThisSource.add(normalizedLink);
+
+        const detectedTarget = target.postTarget || detectPostTarget(notice.title, notice.link, "");
+        if (!enabledCategories.includes(detectedTarget)) continue;
+
+        const draftSeed = {
+          title: notice.title,
+          department: source.department || source.name,
+          sourceLink: notice.link,
+          detailLink: notice.link,
+          postTarget: detectedTarget,
+          sourceId: source.id,
+          sourceName: source.name
+        };
+        if (await noticeAlreadyProcessed(db, draftSeed)) {
+          skippedDuplicates++;
+          continue;
+        }
+
+        const duplicateKeys = draftDuplicateCacheKeys(draftSeed);
+        const duplicateId = autoJobUrlCacheKey(notice.link);
+        const draft = buildDraftFromNotice(source, notice, {
+          postTarget: detectedTarget,
+          scanSourcePage: target.url
+        });
+        const now = nowStamp();
+        const updates = {};
+        duplicateKeys.forEach((key) => {
+          updates[`autoJobSeen/${key}`] = {
+            title: notice.title,
+            link: notice.link,
+            sourceId: source.id,
+            sourceName: source.name,
+            category: detectedTarget,
+            status: "draft",
+            firstSeenAt: now,
+            draftId: duplicateId
+          };
+        });
+        updates[`autoJobUrlCache/${duplicateId}`] = {
           title: notice.title,
           link: notice.link,
+          normalizedLink,
           sourceId: source.id,
           sourceName: source.name,
-          firstSeenAt: nowStamp(),
+          category: detectedTarget,
+          status: "draft",
+          firstSeenAt: now,
           draftId: duplicateId
         };
-      });
-      updates[`autoJobSeen/${duplicateId}`] = {
-        title: notice.title,
-        link: notice.link,
-        sourceId: source.id,
-        sourceName: source.name,
-        firstSeenAt: nowStamp(),
-        draftId: duplicateId
-      };
-      updates[`autoJobDrafts/${duplicateId}`] = {
-        ...draft,
-        duplicateKey: duplicateId,
-        duplicateKeys
-      };
-      await db.ref().update(updates);
-      newDrafts++;
+        updates[`autoJobDrafts/${duplicateId}`] = {
+          ...draft,
+          duplicateKey: duplicateId,
+          duplicateKeys
+        };
+        await db.ref().update(updates);
+        newDrafts++;
+        limits.remainingDrafts -= 1;
+      }
     }
     await db.ref(`autoJobSources/${source.id}`).update({
       lastCheckedAt: nowStamp(),
@@ -1098,15 +1379,17 @@ async function checkOneAutoJobSource(db, source) {
       lastErrorHelp: "",
       lastFoundCount: found,
       lastNewCount: newDrafts,
+      lastSkippedDuplicates: skippedDuplicates,
+      lastPageFetches: pageFetches,
       updatedAt: nowStamp()
     });
     await logAutoJob(db, {
       level: "success",
       sourceId: source.id,
       sourceName: source.name,
-      message: `${source.name}: ${found} links checked, ${newDrafts} new drafts`
+      message: `${source.name}: ${pageFetches} pages, ${found} links, ${newDrafts} drafts, ${skippedDuplicates} duplicate skipped`
     });
-    return { sourceId: source.id, found, newDrafts, ok: true };
+    return { sourceId: source.id, found, newDrafts, skippedDuplicates, pageFetches, ok: true };
   } catch (err) {
     const friendly = explainFetchError(err);
     await db.ref(`autoJobSources/${source.id}`).update({
@@ -1123,7 +1406,7 @@ async function checkOneAutoJobSource(db, source) {
       sourceName: source.name,
       message: `${source.name}: ${friendly.message}`
     });
-    return { sourceId: source.id, found, newDrafts, ok: false, error: err.message, errorHelp: friendly.message, errorCode: friendly.code, startedAt };
+    return { sourceId: source.id, found, newDrafts, skippedDuplicates, pageFetches, ok: false, error: err.message, errorHelp: friendly.message, errorCode: friendly.code, startedAt };
   }
 }
 
@@ -1138,6 +1421,13 @@ async function runAutoJobChecker(options = {}) {
   autoCheckerRunning = true;
   const startedAt = nowStamp();
   try {
+    const limits = {
+      remainingDrafts: readPositiveInt(options.limit || options.fetchLimit || process.env.AUTO_JOB_FETCH_LIMIT, AUTO_JOB_DEFAULT_DRAFT_LIMIT, AUTO_JOB_MAX_DRAFT_LIMIT),
+      remainingPages: readPositiveInt(options.pageLimit || process.env.AUTO_JOB_PAGE_LIMIT, AUTO_JOB_DEFAULT_PAGE_LIMIT, AUTO_JOB_MAX_PAGE_LIMIT),
+      perSourceLimit: readPositiveInt(options.perSourceLimit || process.env.AUTO_JOB_PER_SOURCE_LIMIT, AUTO_JOB_DEFAULT_PER_SOURCE_LIMIT, AUTO_JOB_MAX_PER_SOURCE_LIMIT),
+      sourceLimit: readPositiveInt(options.sourceLimit || process.env.AUTO_JOB_SOURCE_LIMIT, 100, 500),
+      fetchTimeoutMs: readPositiveInt(options.fetchTimeoutMs || process.env.AUTO_JOB_FETCH_TIMEOUT_MS, 18000, 30000)
+    };
     const snapshot = await db.ref("autoJobSources").get();
     const sources = [];
     if (snapshot.exists()) {
@@ -1147,8 +1437,9 @@ async function runAutoJobChecker(options = {}) {
       });
     }
     const results = [];
-    for (const source of sources) {
-      results.push(await checkOneAutoJobSource(db, source));
+    for (const source of sources.slice(0, limits.sourceLimit)) {
+      if (limits.remainingDrafts <= 0 || limits.remainingPages <= 0) break;
+      results.push(await checkOneAutoJobSource(db, source, limits));
     }
     const summary = {
       ok: true,
@@ -1159,12 +1450,19 @@ async function runAutoJobChecker(options = {}) {
       checkedCount: results.length,
       foundCount: results.reduce((sum, item) => sum + Number(item.found || 0), 0),
       newDraftCount: results.reduce((sum, item) => sum + Number(item.newDrafts || 0), 0),
+      skippedDuplicateCount: results.reduce((sum, item) => sum + Number(item.skippedDuplicates || 0), 0),
+      pageFetchCount: results.reduce((sum, item) => sum + Number(item.pageFetches || 0), 0),
+      limits: {
+        draftLimit: readPositiveInt(options.limit || options.fetchLimit || process.env.AUTO_JOB_FETCH_LIMIT, AUTO_JOB_DEFAULT_DRAFT_LIMIT, AUTO_JOB_MAX_DRAFT_LIMIT),
+        pageLimit: readPositiveInt(options.pageLimit || process.env.AUTO_JOB_PAGE_LIMIT, AUTO_JOB_DEFAULT_PAGE_LIMIT, AUTO_JOB_MAX_PAGE_LIMIT),
+        perSourceLimit: limits.perSourceLimit
+      },
       errorCount: results.filter((item) => !item.ok).length
     };
     await db.ref("autoJobCheckerStatus").set(summary);
     await logAutoJob(db, {
       level: summary.errorCount ? "warning" : "success",
-      message: `Checker finished: ${summary.checkedCount} sources, ${summary.newDraftCount} new drafts`
+      message: `Checker finished: ${summary.checkedCount} sources, ${summary.pageFetchCount} pages, ${summary.newDraftCount} new drafts, ${summary.skippedDuplicateCount} duplicates skipped`
     });
     return { ...summary, results };
   } finally {
@@ -1195,6 +1493,17 @@ async function publishAutoJobDraft(db, draftId, payload = {}) {
     error.statusCode = 400;
     throw error;
   }
+  if (String(currentDraft.checkerStatus || "").toLowerCase() === "published" && currentDraft.publishedJobId) {
+    const error = new Error(`Draft already published: ${currentDraft.publishedJobId}`);
+    error.statusCode = 409;
+    throw error;
+  }
+  const duplicate = await existingPublishedDuplicate(db, draft, draftId);
+  if (duplicate) {
+    const error = new Error(`Duplicate live post found: ${duplicate.title || duplicate.jobId}`);
+    error.statusCode = 409;
+    throw error;
+  }
   const target = draft.postTarget || "latestJob";
   const now = nowStamp();
   const jobRef = db.ref("LatestJobs").push();
@@ -1214,6 +1523,7 @@ async function publishAutoJobDraft(db, draftId, payload = {}) {
     applyLink: toText(draft.applyLink || "#"),
     detailLink: toText(draft.detailLink || draft.sourceLink || "#"),
     officialWebsite: toText(draft.officialWebsite || draft.officialLink),
+    sourceName: toText(draft.sourceName),
     sourceLink: toText(draft.sourceLink),
     type: toText(draft.type || "Online Form"),
     postTarget: target,
@@ -1261,6 +1571,8 @@ async function publishAutoJobDraft(db, draftId, payload = {}) {
       source: "LatestJobs",
       sourceJobId: jobId,
       jobTitle: job.title,
+      sourceName: job.sourceName,
+      sourceLink: job.sourceLink,
       title: `${job.title} ${target === "admitCard" ? "Admit Card" : target === "result" ? "Result" : target === "syllabus" ? "Syllabus" : "Answer Key"}`.trim(),
       url: getPortalTargetUrl(job),
       displayOrder: "1",
@@ -1272,13 +1584,31 @@ async function publishAutoJobDraft(db, draftId, payload = {}) {
   updates[`autoJobDrafts/${draftId}/publishedJobId`] = jobId;
   updates[`autoJobDrafts/${draftId}/publishedAt`] = now;
   updates[`autoJobDrafts/${draftId}/updatedAt`] = now;
-  duplicateKeysForJob(job).forEach((key) => {
+  draftDuplicateCacheKeys(job).forEach((key) => {
     updates[`autoJobSeen/${key}`] = {
       title: job.title,
       link: job.sourceLink || job.detailLink || "",
       sourceId: draft.sourceId || "",
       sourceName: draft.sourceName || "",
+      category: target,
+      status: "published",
       firstSeenAt: now,
+      draftId,
+      publishedJobId: jobId
+    };
+  });
+  [job.sourceLink, job.detailLink, job.applyLink, job.officialWebsite].filter(Boolean).forEach((url) => {
+    const key = autoJobUrlCacheKey(url);
+    updates[`autoJobUrlCache/${key}`] = {
+      title: job.title,
+      link: url,
+      normalizedLink: normalizeProcessedUrl(url),
+      sourceId: draft.sourceId || "",
+      sourceName: draft.sourceName || "",
+      category: target,
+      status: "published",
+      firstSeenAt: currentDraft.createdAt || now,
+      publishedAt: now,
       draftId,
       publishedJobId: jobId
     };
@@ -1518,7 +1848,7 @@ app.post("/admin/delete-member", async (req, res) => {
 app.post("/admin/auto-job-checker/run", async (req, res) => {
   try {
     await requireAdmin(req);
-    const result = await runAutoJobChecker({ manual: true });
+    const result = await runAutoJobChecker({ ...(req.body || {}), manual: true });
     return res.json(result);
   } catch (err) {
     return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
@@ -1724,6 +2054,18 @@ app.post("/admin/auto-job-checker/draft/delete", async (req, res) => {
     if (!draftId) {
       return res.status(400).json({ ok: false, error: "Draft ID required" });
     }
+    const snapshot = await db.ref(`autoJobDrafts/${draftId}`).get();
+    const draft = snapshot.exists() ? (snapshot.val() || {}) : {};
+    const updates = {};
+    draftDuplicateCacheKeys({ ...draft, sourceLink: draft.sourceLink || draft.detailLink }).forEach((key) => {
+      updates[`autoJobSeen/${key}/status`] = "deleted";
+      updates[`autoJobSeen/${key}/deletedAt`] = nowStamp();
+    });
+    updates[`autoJobUrlCache/${draftId}/status`] = "deleted";
+    updates[`autoJobUrlCache/${draftId}/deletedAt`] = nowStamp();
+    if (Object.keys(updates).length) {
+      await db.ref().update(updates);
+    }
     await db.ref(`autoJobDrafts/${draftId}`).remove();
     return res.json({ ok: true });
   } catch (err) {
@@ -1738,10 +2080,25 @@ app.post("/admin/auto-job-checker/draft/ignore", async (req, res) => {
     if (!draftId) {
       return res.status(400).json({ ok: false, error: "Draft ID required" });
     }
+    const snapshot = await db.ref(`autoJobDrafts/${draftId}`).get();
+    const draft = snapshot.exists() ? (snapshot.val() || {}) : {};
+    const now = nowStamp();
+    const updates = {
+      [`autoJobDrafts/${draftId}/checkerStatus`]: "ignored",
+      [`autoJobDrafts/${draftId}/ignoredAt`]: now,
+      [`autoJobDrafts/${draftId}/updatedAt`]: now,
+      [`autoJobUrlCache/${draftId}/status`]: "ignored",
+      [`autoJobUrlCache/${draftId}/ignoredAt`]: now
+    };
+    draftDuplicateCacheKeys({ ...draft, sourceLink: draft.sourceLink || draft.detailLink }).forEach((key) => {
+      updates[`autoJobSeen/${key}/status`] = "ignored";
+      updates[`autoJobSeen/${key}/ignoredAt`] = now;
+    });
+    await db.ref().update(updates);
     await db.ref(`autoJobDrafts/${draftId}`).update({
       checkerStatus: "ignored",
-      ignoredAt: nowStamp(),
-      updatedAt: nowStamp()
+      ignoredAt: now,
+      updatedAt: now
     });
     await logAutoJob(db, {
       level: "info",
@@ -1854,6 +2211,47 @@ app.post("/admin/auto-job-checker/publish", async (req, res) => {
     }
     const result = await publishAutoJobDraft(db, draftId, req.body || {});
     return res.json(result);
+  } catch (err) {
+    return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
+  }
+});
+
+app.post("/admin/auto-job-checker/bulk-publish", async (req, res) => {
+  try {
+    const { db } = await requireAdmin(req);
+    const draftIds = Array.isArray(req.body?.draftIds)
+      ? req.body.draftIds.map((id) => String(id || "").trim()).filter(Boolean)
+      : [];
+    if (!draftIds.length) {
+      return res.status(400).json({ ok: false, error: "Draft IDs required" });
+    }
+    const autoSendChannels = Array.isArray(req.body?.autoSendChannels) ? req.body.autoSendChannels : [];
+    const forcedTarget = normalizeAutoJobCategory(req.body?.postTarget || "");
+    const results = [];
+    for (const draftId of draftIds.slice(0, 40)) {
+      try {
+        const draft = {};
+        if (forcedTarget) draft.postTarget = forcedTarget;
+        const result = await publishAutoJobDraft(db, draftId, {
+          draft,
+          autoSendChannels
+        });
+        results.push({ draftId, ok: true, jobId: result.jobId, sent: result.sent || [] });
+      } catch (err) {
+        results.push({ draftId, ok: false, error: err.message, statusCode: err.statusCode || 500 });
+      }
+    }
+    const published = results.filter((item) => item.ok).length;
+    await logAutoJob(db, {
+      level: published === results.length ? "success" : "warning",
+      message: `Bulk approve: ${published}/${results.length} drafts published`
+    });
+    return res.json({
+      ok: true,
+      published,
+      failed: results.length - published,
+      results
+    });
   } catch (err) {
     return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
   }
