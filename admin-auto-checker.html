@@ -66,6 +66,7 @@
     .health-card{border:1px solid #d8e6f5;border-radius:7px;padding:9px;background:#f8fbff}
     .health-card.good{border-left:4px solid #138a36;background:#f2fff6}
     .health-card.bad{border-left:4px solid #d90000;background:#fff7f7}
+    .health-card.warn{border-left:4px solid #ff7a00;background:#fffaf0}
     .health-card small{display:block;color:#56677c;font-size:11px;font-weight:800}
     .health-card strong{display:block;color:#0057a8;font-size:14px;margin-top:2px}
     .checklist{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:6px;margin-top:8px}
@@ -261,7 +262,10 @@
       if(input){input.checked=true}
     };
     const setWorkflowResult=(message)=>{$("workflowResult").innerText=message||""};
-    const healthCard=(label,ok,value)=>`<div class="health-card ${ok?"good":"bad"}"><small>${escapeHTML(label)}</small><strong>${escapeHTML(value)}</strong></div>`;
+    const healthCard=(label,state,value)=>{
+      const cardClass=state==="warn"?"warn":(state?"good":"bad");
+      return `<div class="health-card ${cardClass}"><small>${escapeHTML(label)}</small><strong>${escapeHTML(value)}</strong></div>`;
+    };
     const renderServerHealth=(data={})=>{
       $("serverHealth").innerHTML=[
         healthCard("Server",data.serverOnline!==false,data.serverOnline!==false?"Online":"Offline"),
@@ -269,7 +273,7 @@
         healthCard("Admin SDK",Boolean(data.adminSdkConfigured),data.adminSdkConfigured?"Ready":"Missing"),
         healthCard("Database",Boolean(data.databaseConnected),data.databaseConnected?"Connected":"Error"),
         healthCard("Cron Secret",Boolean(data.cronSecretConfigured),data.cronSecretConfigured?"Set":"Missing"),
-        healthCard("AI",Boolean(data.aiConfigured),data.aiConfigured?`${data.aiProvider||"AI"} Ready`:"Local Summary"),
+        healthCard("AI",data.aiProvider==="Local"?"warn":Boolean(data.aiConfigured),data.aiProvider==="Local"?"Local Summary - server restart/env check":`${data.aiProvider||"AI"} Ready`),
         healthCard("Telegram",Boolean(data.telegramConfigured),data.telegramConfigured?"Ready":"Env Missing"),
         healthCard("WhatsApp API",Boolean(data.whatsappConfigured),data.whatsappConfigured?"Ready":"Env Missing")
       ].join("");
