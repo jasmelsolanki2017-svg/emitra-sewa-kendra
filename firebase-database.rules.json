@@ -1,0 +1,139 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "importantLinks": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'"
+    },
+
+    "latestUpdates": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'"
+    },
+
+    "LatestJobs": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'"
+    },
+
+    "portalItems": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'"
+    },
+
+    "advertisements": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'"
+    },
+
+    "serviceGuides": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'"
+    },
+
+    "autoJobSources": {
+      ".read": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'",
+      ".write": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'"
+    },
+
+    "autoJobDrafts": {
+      ".read": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'",
+      ".write": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'"
+    },
+
+    "autoJobLogs": {
+      ".read": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'",
+      ".write": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'"
+    },
+
+    "autoJobCheckerStatus": {
+      ".read": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'",
+      ".write": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'"
+    },
+
+    "autoJobSeen": {
+      ".read": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'",
+      ".write": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'"
+    },
+
+    "members": {
+      ".read": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'",
+      "$uid": {
+        ".read": "auth != null && (auth.uid == $uid || auth.token.email == 'jasmelsolanki@gmail.com')",
+        ".write": "auth != null && (auth.token.email == 'jasmelsolanki@gmail.com' || (auth.uid == $uid && !data.exists() && newData.exists() && newData.child('uid').val() == auth.uid && newData.child('uploadApproved').val() == false && newData.child('storageUsedBytes').val() == 0) || (auth.uid == $uid && data.exists() && newData.exists() && newData.child('status').val() == data.child('status').val() && newData.child('uploadApproved').val() == data.child('uploadApproved').val() && newData.child('freeStorageLimitMb').val() == data.child('freeStorageLimitMb').val() && newData.child('storageLimitBytes').val() == data.child('storageLimitBytes').val()))"
+      }
+    },
+
+    "mobileIndex": {
+      "$mobile": {
+        ".read": "auth != null && (auth.token.email == 'jasmelsolanki@gmail.com' || data.child('uid').val() == auth.uid)",
+        ".write": "auth != null && (auth.token.email == 'jasmelsolanki@gmail.com' || (!data.exists() && newData.exists() && newData.child('uid').val() == auth.uid) || (data.exists() && newData.exists() && data.child('uid').val() == auth.uid && newData.child('uid').val() == auth.uid) || (data.exists() && !newData.exists() && data.child('uid').val() == auth.uid))"
+      }
+    },
+
+    "memberFiles": {
+      ".read": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'",
+      "$uid": {
+        ".read": "auth != null && (auth.uid == $uid || auth.token.email == 'jasmelsolanki@gmail.com')",
+        ".write": "auth != null && (auth.uid == $uid || auth.token.email == 'jasmelsolanki@gmail.com')"
+      }
+    },
+
+    "memberCloudLinks": {
+      ".read": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'",
+      "$uid": {
+        ".read": "auth != null && (auth.uid == $uid || auth.token.email == 'jasmelsolanki@gmail.com')",
+        ".write": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'"
+      }
+    },
+
+    "userMessages": {
+      ".read": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'",
+      "$uid": {
+        ".read": "auth != null && (auth.uid == $uid || auth.token.email == 'jasmelsolanki@gmail.com')",
+        "$messageId": {
+          ".write": "auth != null && (auth.token.email == 'jasmelsolanki@gmail.com' || (auth.uid == $uid && data.exists() && newData.exists() && newData.child('title').val() == data.child('title').val() && newData.child('message').val() == data.child('message').val() && newData.child('from').val() == data.child('from').val() && newData.child('createdAt').val() == data.child('createdAt').val() && newData.child('type').val() == data.child('type').val()))"
+        }
+      }
+    },
+
+    "serviceRequests": {
+      ".read": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'",
+      "$requestId": {
+        ".write": "auth != null && (auth.token.email == 'jasmelsolanki@gmail.com' || (!data.exists() && newData.exists() && newData.child('userUid').val() == auth.uid && newData.child('activeLockId').val() == $requestId && root.child('activeServiceRequests').child(auth.uid).child('requestId').val() == $requestId && root.child('activeServiceRequests').child(auth.uid).child('status').val() == 'Pending' && newData.child('name').isString() && newData.child('mobile').isString() && newData.child('service').isString() && newData.child('createdAt').isNumber()) || (data.exists() && newData.exists() && data.child('userUid').val() == auth.uid && data.child('adminNote').isString() && data.child('adminNote').val() != '' && data.child('status').val() != 'Completed' && data.child('status').val() != 'Rejected' && newData.child('userUid').val() == auth.uid && newData.child('name').val() == data.child('name').val() && newData.child('mobile').val() == data.child('mobile').val() && newData.child('service').val() == data.child('service').val() && newData.child('message').val() == data.child('message').val() && newData.child('status').val() == data.child('status').val() && newData.child('adminNote').val() == data.child('adminNote').val() && newData.child('requestToken').val() == data.child('requestToken').val() && newData.child('activeLockId').val() == data.child('activeLockId').val() && newData.child('createdAt').val() == data.child('createdAt').val()))"
+      }
+    },
+
+    "activeServiceRequests": {
+      ".read": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'",
+      "$uid": {
+        ".read": "auth != null && (auth.uid == $uid || auth.token.email == 'jasmelsolanki@gmail.com')",
+        ".write": "auth != null && (auth.token.email == 'jasmelsolanki@gmail.com' || (auth.uid == $uid && !data.exists() && newData.exists() && newData.child('requestId').isString() && newData.child('status').val() == 'Pending' && newData.child('createdAt').isNumber()) || (auth.uid == $uid && data.exists() && (data.child('status').val() == 'Completed' || data.child('status').val() == 'Rejected') && newData.exists() && newData.child('requestId').isString() && newData.child('status').val() == 'Pending' && newData.child('createdAt').isNumber()) || (auth.uid == $uid && data.exists() && !newData.exists() && !root.child('serviceRequests').child(data.child('requestId').val()).exists()))"
+      }
+    },
+
+    "userServiceRequests": {
+      ".read": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'",
+      "$uid": {
+        ".read": "auth != null && (auth.uid == $uid || auth.token.email == 'jasmelsolanki@gmail.com')",
+        ".write": "auth != null && (auth.uid == $uid || auth.token.email == 'jasmelsolanki@gmail.com')"
+      }
+    },
+
+    "users": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid == $uid || auth.token.email == 'jasmelsolanki@gmail.com')",
+        ".write": "auth != null && (auth.uid == $uid || auth.token.email == 'jasmelsolanki@gmail.com')"
+      }
+    },
+
+    "userUploads": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid == $uid || auth.token.email == 'jasmelsolanki@gmail.com')",
+        ".write": "auth != null && (auth.uid == $uid || auth.token.email == 'jasmelsolanki@gmail.com')"
+      }
+    }
+  }
+}
