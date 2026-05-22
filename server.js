@@ -187,6 +187,72 @@ const normalizeSource = (id, value = {}) => ({
   keywords: toText(value.keywords || "")
 });
 
+const DEFAULT_AUTO_JOB_SOURCES = [
+  {
+    id: "default_ssc",
+    name: "SSC",
+    department: "Staff Selection Commission",
+    url: "https://ssc.gov.in",
+    keywords: "recruitment, admit card, result, vacancy, notification, notice"
+  },
+  {
+    id: "default_upsc",
+    name: "UPSC",
+    department: "Union Public Service Commission",
+    url: "https://upsc.gov.in/recruitment/recruitment-test",
+    keywords: "recruitment, examination, notification, admit card, result, vacancy"
+  },
+  {
+    id: "default_rpsc",
+    name: "RPSC",
+    department: "Rajasthan Public Service Commission",
+    url: "https://rpsc.rajasthan.gov.in",
+    keywords: "recruitment, advertisement, result, admit card, answer key, press note"
+  },
+  {
+    id: "default_rssb",
+    name: "RSSB",
+    department: "Rajasthan Staff Selection Board",
+    url: "https://rssb.rajasthan.gov.in",
+    keywords: "recruitment, advertisement, result, admit card, answer key, notification"
+  },
+  {
+    id: "default_rajasthan_recruitment",
+    name: "Rajasthan Recruitment Portal",
+    department: "Government of Rajasthan",
+    url: "https://www.recruitment.rajasthan.gov.in",
+    keywords: "notification, recruitment, vacancy, admit card, result, apply online"
+  },
+  {
+    id: "default_ibps",
+    name: "IBPS",
+    department: "Institute of Banking Personnel Selection",
+    url: "https://www.ibps.in/index.php/recruitment",
+    keywords: "recruitment, CRP, notification, admit card, result, provisional allotment"
+  },
+  {
+    id: "default_nta",
+    name: "NTA",
+    department: "National Testing Agency",
+    url: "https://nta.ac.in",
+    keywords: "notification, public notice, admit card, result, exam city, recruitment"
+  },
+  {
+    id: "default_rrb_apply",
+    name: "RRB Apply",
+    department: "Railway Recruitment Boards",
+    url: "https://www.rrbapply.gov.in",
+    keywords: "CEN, recruitment, apply online, admit card, result, notice, railway"
+  },
+  {
+    id: "default_rajasthan_police",
+    name: "Rajasthan Police",
+    department: "Rajasthan Police",
+    url: "https://police.rajasthan.gov.in",
+    keywords: "recruitment, constable, admit card, result, selection list, important notice"
+  }
+].map((source) => ({ ...source, enabled: true }));
+
 const sourcePayloadFromRequest = (value = {}) => {
   const source = value && typeof value === "object" ? value : {};
   const name = toText(source.name);
@@ -797,6 +863,41 @@ app.post("/admin/auto-job-checker/source/delete", async (req, res) => {
     }
     await db.ref(`autoJobSources/${sourceId}`).remove();
     return res.json({ ok: true });
+  } catch (err) {
+    return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
+  }
+});
+
+app.post("/admin/auto-job-checker/sources/seed", async (req, res) => {
+  try {
+    const { db } = await requireAdmin(req);
+    const snapshot = await db.ref("autoJobSources").get();
+    const existingByUrl = new Map();
+    if (snapshot.exists()) {
+      snapshot.forEach((child) => {
+        const source = child.val() || {};
+        const url = extractHttpUrl(source.url || "").replace(/\/+$/, "").toLowerCase();
+        if (url) existingByUrl.set(url, child.key);
+      });
+    }
+
+    let added = 0;
+    let updated = 0;
+    const now = nowStamp();
+    for (const source of DEFAULT_AUTO_JOB_SOURCES) {
+      const key = source.url.replace(/\/+$/, "").toLowerCase();
+      const existingId = existingByUrl.get(key);
+      const { id, ...payload } = source;
+      if (existingId) {
+        await db.ref(`autoJobSources/${existingId}`).update({ ...payload, updatedAt:now });
+        updated++;
+      } else {
+        await db.ref(`autoJobSources/${id}`).set({ ...payload, createdAt:now, updatedAt:now });
+        added++;
+      }
+    }
+
+    return res.json({ ok: true, added, updated, total: DEFAULT_AUTO_JOB_SOURCES.length });
   } catch (err) {
     return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
   }

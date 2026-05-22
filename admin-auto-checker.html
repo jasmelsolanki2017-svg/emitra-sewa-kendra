@@ -105,6 +105,7 @@
         </div>
         <div class="buttons">
           <button type="button" id="sourceSaveBtn" onclick="saveSource()">Add Source</button>
+          <button type="button" class="publish" onclick="seedDefaultSources()">Add Default Sources</button>
           <button type="button" class="cancel" onclick="clearSourceForm()">Clear</button>
         </div>
         <div class="status" id="sourceStatus"></div>
@@ -201,6 +202,19 @@
       updatedAt:Date.now()
     });
 
+    const defaultSources=[
+      {id:"default_ssc",name:"SSC",department:"Staff Selection Commission",url:"https://ssc.gov.in",keywords:"recruitment, admit card, result, vacancy, notification, notice",enabled:true},
+      {id:"default_upsc",name:"UPSC",department:"Union Public Service Commission",url:"https://upsc.gov.in/recruitment/recruitment-test",keywords:"recruitment, examination, notification, admit card, result, vacancy",enabled:true},
+      {id:"default_rpsc",name:"RPSC",department:"Rajasthan Public Service Commission",url:"https://rpsc.rajasthan.gov.in",keywords:"recruitment, advertisement, result, admit card, answer key, press note",enabled:true},
+      {id:"default_rssb",name:"RSSB",department:"Rajasthan Staff Selection Board",url:"https://rssb.rajasthan.gov.in",keywords:"recruitment, advertisement, result, admit card, answer key, notification",enabled:true},
+      {id:"default_rajasthan_recruitment",name:"Rajasthan Recruitment Portal",department:"Government of Rajasthan",url:"https://www.recruitment.rajasthan.gov.in",keywords:"notification, recruitment, vacancy, admit card, result, apply online",enabled:true},
+      {id:"default_ibps",name:"IBPS",department:"Institute of Banking Personnel Selection",url:"https://www.ibps.in/index.php/recruitment",keywords:"recruitment, CRP, notification, admit card, result, provisional allotment",enabled:true},
+      {id:"default_nta",name:"NTA",department:"National Testing Agency",url:"https://nta.ac.in",keywords:"notification, public notice, admit card, result, exam city, recruitment",enabled:true},
+      {id:"default_rrb_apply",name:"RRB Apply",department:"Railway Recruitment Boards",url:"https://www.rrbapply.gov.in",keywords:"CEN, recruitment, apply online, admit card, result, notice, railway",enabled:true},
+      {id:"default_rajasthan_police",name:"Rajasthan Police",department:"Rajasthan Police",url:"https://police.rajasthan.gov.in",keywords:"recruitment, constable, admit card, result, selection list, important notice",enabled:true}
+    ];
+    const normalizeSourceUrl=(value="")=>String(value||"").trim().replace(/\/+$/,"").toLowerCase();
+
     window.clearSourceForm=()=>{
       editingSourceId="";
       sourceFields.forEach((id)=>setValue(id,id==="sourceEnabled"?"true":""));
@@ -258,6 +272,37 @@
         }
       }catch(error){
         alert(error.message);
+      }
+    };
+
+    window.seedDefaultSources=async()=>{
+      if(!adminAllowed){alert("Admin verify nahi hua.");return}
+      $("sourceStatus").innerText="Default sources add ho rahe hain...";
+      try{
+        if(hasAdminServerUrl()){
+          const result=await callAdminApi("/admin/auto-job-checker/sources/seed",{});
+          await loadServerState();
+          $("sourceStatus").innerText=`Default sources ready: ${result.added||0} new, ${result.updated||0} update.`;
+          return;
+        }
+
+        const existingByUrl=new Map(Object.entries(sourcesCache).map(([id,data])=>[normalizeSourceUrl(data.url),id]).filter(([url])=>url));
+        let added=0,updated=0;
+        const now=Date.now();
+        for(const source of defaultSources){
+          const existingId=existingByUrl.get(normalizeSourceUrl(source.url));
+          const {id,...payload}=source;
+          if(existingId){
+            await update(ref(db,"autoJobSources/"+existingId),{...payload,updatedAt:now});
+            updated++;
+          }else{
+            await set(ref(db,"autoJobSources/"+id),{...payload,createdAt:now,updatedAt:now});
+            added++;
+          }
+        }
+        $("sourceStatus").innerText=`Default sources ready: ${added} new, ${updated} update.`;
+      }catch(error){
+        $("sourceStatus").innerText=error.message+" | Render Server URL save hai to server redeploy ke baad dobara try karein.";
       }
     };
 
