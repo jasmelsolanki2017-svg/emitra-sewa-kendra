@@ -5,7 +5,9 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "safety": "node scripts/check-git-safety.js",
+    "backup": "node scripts/backup-firebase.js"
   },
   "dependencies": {
     "@supabase/ssr": "^0.8.0",

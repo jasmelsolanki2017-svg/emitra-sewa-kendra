@@ -7,6 +7,7 @@ exclude:
   - package.json
   - package-lock.json
   - server.js
+  - scripts/
   - utils/
   - node_modules/
   - supabase-storage-policies.sql

@@ -3,6 +3,8 @@ require("dotenv").config();
 
 const express = require("express");
 const crypto = require("crypto");
+const fs = require("fs");
+const path = require("path");
 const { execFile } = require("child_process");
 const { promisify } = require("util");
 let admin = null;
@@ -39,6 +41,7 @@ const FIREBASE_URL = extractUrl(process.env.FIREBASE_URL, DEFAULT_FIREBASE_URL);
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "jasmelsolanki@gmail.com";
 const DEFAULT_MEMBER_PASSWORD = "User@123";
 const CHECKER_INTERVAL_MS = Number(process.env.AUTO_JOB_CHECKER_INTERVAL_MS || 2 * 60 * 60 * 1000);
+const BACKUP_INTERVAL_MS = Number(process.env.AUTO_BACKUP_INTERVAL_MS || 24 * 60 * 60 * 1000);
 const execFileAsync = promisify(execFile);
 let adminDb = null;
 let autoCheckerRunning = false;
@@ -306,13 +309,18 @@ const fetchText = async (url, timeoutMs = 25000) => {
       }
     });
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
+      const error = new Error(`HTTP ${response.status}`);
+      error.httpStatus = response.status;
+      throw error;
     }
     return {
       contentType: response.headers.get("content-type") || "",
       text: await response.text()
     };
   } catch (err) {
+    if (err?.httpStatus) {
+      throw err;
+    }
     const fallback = await fetchTextWithCurl(url, timeoutMs).catch(() => null);
     if (fallback) {
       return fallback;
@@ -329,6 +337,7 @@ const fetchTextWithCurl = async (url, timeoutMs = 25000) => {
     "-L",
     "--silent",
     "--show-error",
+    "--fail",
     "--max-time",
     String(Math.max(5, Math.ceil(timeoutMs / 1000))),
     "-A",
@@ -345,6 +354,141 @@ const fetchTextWithCurl = async (url, timeoutMs = 25000) => {
     contentType: "",
     text: stdout
   };
+};
+
+const explainFetchError = (err) => {
+  const raw = String(err?.message || err || "fetch failed");
+  const cause = String(err?.cause?.code || err?.cause?.reason || err?.cause?.message || "");
+  const combined = `${raw} ${cause}`.toLowerCase();
+  if (/http 404/.test(combined)) {
+    return {
+      code: "HTTP_404",
+      message: "URL par page nahi mila. Source URL update karein.",
+      detail: raw
+    };
+  }
+  if (/http 403|forbidden/.test(combined)) {
+    return {
+      code: "HTTP_403",
+      message: "Official site server scan ko block kar rahi hai.",
+      detail: raw
+    };
+  }
+  if (/unsafe legacy renegotiation|ssl|certificate|tls/.test(combined)) {
+    return {
+      code: "SSL_OLD_SITE",
+      message: "Official site old SSL use kar rahi hai. Browser me khul sakti hai, server scan me fallback chahiye.",
+      detail: raw
+    };
+  }
+  if (/aborted|timeout|timed out/.test(combined)) {
+    return {
+      code: "TIMEOUT",
+      message: "Official site time par response nahi de rahi. Baad me dobara test karein.",
+      detail: raw
+    };
+  }
+  if (/fetch failed|econnreset|enotfound|eai_again|network/.test(combined)) {
+    return {
+      code: "NETWORK",
+      message: "Server se official site tak network/fetch issue aa raha hai.",
+      detail: raw
+    };
+  }
+  return {
+    code: "UNKNOWN",
+    message: "Source scan nahi ho paya. URL aur official site status check karein.",
+    detail: raw
+  };
+};
+
+const testAutoJobSource = async (source) => {
+  const startedAt = nowStamp();
+  try {
+    const keywordList = source.keywords
+      ? source.keywords.split(",").map((item) => item.trim()).filter(Boolean)
+      : autoJobKeywords;
+    const page = await fetchText(source.url, 20000);
+    const notices = extractLinks(page.text, source.url, keywordList);
+    return {
+      ok: true,
+      sourceId: source.id || "",
+      sourceName: source.name || "",
+      url: source.url,
+      status: notices.length ? "ready" : "no_links",
+      message: notices.length
+        ? `Page open ho raha hai. ${notices.length} matching links mile.`
+        : "Page open ho raha hai, par matching job links nahi mile. Keywords/URL check karein.",
+      foundCount: notices.length,
+      sampleLinks: notices.slice(0, 5),
+      checkedAt: nowStamp(),
+      durationMs: nowStamp() - startedAt
+    };
+  } catch (err) {
+    const friendly = explainFetchError(err);
+    return {
+      ok: false,
+      sourceId: source.id || "",
+      sourceName: source.name || "",
+      url: source.url,
+      status: friendly.code,
+      message: friendly.message,
+      error: friendly.detail,
+      checkedAt: nowStamp(),
+      durationMs: nowStamp() - startedAt
+    };
+  }
+};
+
+const backupPaths = [
+  "LatestJobs",
+  "portalItems",
+  "latestUpdates",
+  "importantLinks",
+  "advertisements",
+  "serviceGuides",
+  "members",
+  "memberFiles",
+  "memberCloudLinks",
+  "serviceRequests",
+  "userServiceRequests",
+  "activeServiceRequests",
+  "userMessages",
+  "autoJobSources",
+  "autoJobDrafts",
+  "autoJobLogs",
+  "autoJobCheckerStatus"
+];
+
+const createBackupPayload = async (db) => {
+  const createdAt = new Date().toISOString();
+  const entries = await Promise.all(
+    backupPaths.map(async (path) => {
+      const snapshot = await db.ref(path).get();
+      return [path, snapshotValue(snapshot, null)];
+    })
+  );
+  return {
+    meta: {
+      site: "E-MITRA WALA",
+      createdAt,
+      databaseURL: FIREBASE_URL,
+      paths: backupPaths
+    },
+    data: Object.fromEntries(entries)
+  };
+};
+
+const backupFileName = (payload) => `emitra-backup-${payload.meta.createdAt.slice(0, 10)}-${payload.meta.createdAt.slice(11, 19).replace(/:/g, "")}.json`;
+
+const writeBackupFile = async (db) => {
+  const payload = await createBackupPayload(db);
+  const backupDir = path.join(__dirname, "backups");
+  fs.mkdirSync(backupDir, { recursive: true });
+  const fileName = backupFileName(payload);
+  const fullPath = path.join(backupDir, fileName);
+  fs.writeFileSync(fullPath, JSON.stringify(payload, null, 2));
+  return { fileName, fullPath, payload };
 };
 
 const fetchPdfText = async (url, timeoutMs = 30000) => {
@@ -480,6 +624,7 @@ async function checkOneAutoJobSource(db, source) {
       lastCheckedAt: nowStamp(),
       lastStatus: "success",
       lastError: "",
+      lastErrorHelp: "",
       lastFoundCount: found,
       lastNewCount: newDrafts,
       updatedAt: nowStamp()
@@ -492,19 +637,22 @@ async function checkOneAutoJobSource(db, source) {
     });
     return { sourceId: source.id, found, newDrafts, ok: true };
   } catch (err) {
+    const friendly = explainFetchError(err);
     await db.ref(`autoJobSources/${source.id}`).update({
       lastCheckedAt: nowStamp(),
       lastStatus: "error",
       lastError: err.message,
+      lastErrorHelp: friendly.message,
+      lastErrorCode: friendly.code,
       updatedAt: nowStamp()
     });
     await logAutoJob(db, {
       level: "error",
       sourceId: source.id,
       sourceName: source.name,
-      message: `${source.name}: ${err.message}`
+      message: `${source.name}: ${friendly.message}`
     });
-    return { sourceId: source.id, found, newDrafts, ok: false, error: err.message, startedAt };
+    return { sourceId: source.id, found, newDrafts, ok: false, error: err.message, errorHelp: friendly.message, errorCode: friendly.code, startedAt };
   }
 }
 
@@ -700,6 +848,34 @@ app.get("/", (req, res) => {
     firebaseConfigured: Boolean(FIREBASE_URL),
     adminSdkConfigured: isAdminSdkConfigured()
   });
+});
+
+app.post("/admin/status", async (req, res) => {
+  try {
+    const { db, decoded } = await requireAdmin(req);
+    await db.ref("autoJobCheckerStatus").get();
+    return res.json({
+      ok: true,
+      serverOnline: true,
+      firebaseConfigured: Boolean(FIREBASE_URL),
+      adminSdkConfigured: isAdminSdkConfigured(),
+      databaseConnected: true,
+      cronSecretConfigured: Boolean(String(process.env.CRON_SECRET || "").trim()),
+      autoCheckerRunning,
+      adminEmail: decoded.email || "",
+      checkedAt: nowStamp()
+    });
+  } catch (err) {
+    return res.status(err.statusCode || 500).json({
+      ok: false,
+      serverOnline: true,
+      firebaseConfigured: Boolean(FIREBASE_URL),
+      adminSdkConfigured: isAdminSdkConfigured(),
+      databaseConnected: false,
+      cronSecretConfigured: Boolean(String(process.env.CRON_SECRET || "").trim()),
+      error: err.message
+    });
+  }
 });
 
 app.post("/admin/update-member-password", async (req, res) => {
@@ -902,6 +1078,44 @@ app.post("/admin/auto-job-checker/source/delete", async (req, res) => {
   }
 });
 
+app.post("/admin/auto-job-checker/source/test", async (req, res) => {
+  try {
+    const { db } = await requireAdmin(req);
+    const sourceId = String(req.body?.sourceId || "").trim();
+    let source = null;
+    if (sourceId) {
+      const snapshot = await db.ref(`autoJobSources/${sourceId}`).get();
+      if (!snapshot.exists()) {
+        return res.status(404).json({ ok: false, error: "Source not found" });
+      }
+      source = normalizeSource(sourceId, snapshot.val() || {});
+    } else {
+      source = sourcePayloadFromRequest(req.body?.source || {});
+    }
+    const result = await testAutoJobSource(source);
+    const updateData = {
+      lastTestedAt: result.checkedAt,
+      lastTestStatus: result.ok ? "success" : "error",
+      lastTestMessage: result.message,
+      lastTestError: result.error || "",
+      lastTestFoundCount: result.foundCount || 0,
+      updatedAt: nowStamp()
+    };
+    if (sourceId) {
+      await db.ref(`autoJobSources/${sourceId}`).update(updateData);
+    }
+    await logAutoJob(db, {
+      level: result.ok ? "success" : "error",
+      sourceId: sourceId || "",
+      sourceName: source.name || "",
+      message: `${source.name || "Source"} test: ${result.message}`
+    });
+    return res.json({ ok: true, test: result });
+  } catch (err) {
+    return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
+  }
+});
+
 app.post("/admin/auto-job-checker/sources/seed", async (req, res) => {
   try {
     const { db } = await requireAdmin(req);
@@ -969,6 +1183,28 @@ app.post("/admin/auto-job-checker/draft/delete", async (req, res) => {
   }
 });
 
+app.post("/admin/auto-job-checker/draft/ignore", async (req, res) => {
+  try {
+    const { db } = await requireAdmin(req);
+    const draftId = String(req.body?.draftId || "").trim();
+    if (!draftId) {
+      return res.status(400).json({ ok: false, error: "Draft ID required" });
+    }
+    await db.ref(`autoJobDrafts/${draftId}`).update({
+      checkerStatus: "ignored",
+      ignoredAt: nowStamp(),
+      updatedAt: nowStamp()
+    });
+    await logAutoJob(db, {
+      level: "info",
+      message: `Draft ignored: ${draftId}`
+    });
+    return res.json({ ok: true });
+  } catch (err) {
+    return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
+  }
+});
+
 app.post("/admin/auto-job-checker/publish", async (req, res) => {
   try {
     const { db } = await requireAdmin(req);
@@ -980,6 +1216,37 @@ app.post("/admin/auto-job-checker/publish", async (req, res) => {
     return res.json(result);
   } catch (err) {
     return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
+  }
+});
+
+app.post("/admin/backup", async (req, res) => {
+  try {
+    const { db } = await requireAdmin(req);
+    const payload = await createBackupPayload(db);
+    const fileName = backupFileName(payload);
+    return res.json({ ok: true, fileName, backup: payload });
+  } catch (err) {
+    return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
+  }
+});
+
+app.post("/admin/git-safety", async (req, res) => {
+  try {
+    await requireAdmin(req);
+    const { stdout } = await execFileAsync(process.execPath, ["scripts/check-git-safety.js", "--json"], {
+      cwd: __dirname,
+      encoding: "utf8",
+      maxBuffer: 1024 * 1024
+    });
+    const result = JSON.parse(stdout || "{}");
+    return res.json({ ok: true, ...result });
+  } catch (err) {
+    return res.status(err.statusCode || 500).json({
+      ok: false,
+      error: err.message,
+      safe: false,
+      findings: ["Git safety script nahi chal paya. Local command try karein: npm run safety"]
+    });
   }
 });
 
@@ -1004,5 +1271,16 @@ app.listen(PORT, () => {
         console.error("Auto job checker failed:", err.message);
       });
     }, CHECKER_INTERVAL_MS);
+  }
+  if (BACKUP_INTERVAL_MS > 0 && isAdminSdkConfigured()) {
+    setInterval(() => {
+      const db = getAdminDb();
+      if (!db) {
+        return;
+      }
+      writeBackupFile(db)
+        .then((result) => console.log(`Firebase backup saved: ${result.fileName}`))
+        .catch((err) => console.error("Firebase backup failed:", err.message));
+    }, BACKUP_INTERVAL_MS);
   }
 });
