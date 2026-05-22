@@ -49,6 +49,12 @@
     .empty{padding:16px;text-align:center;color:#56677c;font-weight:800}
     .logs{max-height:360px;overflow:auto}
     .source-list,.draft-list{max-height:620px;overflow:auto;padding-right:2px}
+    .draft-group{border:1px solid #d8e6f5;border-radius:7px;margin-bottom:10px;overflow:hidden;background:#fbfdff}
+    .draft-group-head{background:#0057a8;color:#fff;padding:8px 10px;display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
+    .draft-group-head strong{font-size:13px;overflow-wrap:anywhere}
+    .draft-group-head small{font-size:11px;font-weight:800;color:#d9ecff;overflow-wrap:anywhere}
+    .draft-group .row{border-radius:0;margin:0;border-left-width:4px;border-bottom:1px solid #d8e6f5}
+    .draft-group .row:last-child{border-bottom:0}
     @media(max-width:820px){.grid,.form-grid{grid-template-columns:1fr}.wide{grid-column:auto}.row{display:block}.row .actions{justify-content:flex-start;margin-top:8px}nav{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap}nav a,nav button{white-space:nowrap}}
   </style>
 </head>
@@ -433,7 +439,33 @@
       const draftRows=rows.filter(([,data])=>String(data.checkerStatus||"draft")!=="published");
       $("draftCount").innerText=draftRows.length;
       if(!draftRows.length){draftList.innerHTML='<div class="empty">Pending draft nahi hai.</div>';return}
-      draftList.innerHTML=draftRows.map(([id,data])=>`<div class="row ${activeDraftId===id?"success":""}"><div><strong>${escapeHTML(data.title||"Untitled Draft")}</strong><small>${escapeHTML(data.department||"Department not set")} | ${escapeHTML(data.postTarget||"latestJob")} | ${formatTime(data.createdAt)}</small><small>Source: ${escapeHTML(data.sourceName||"")} | PDF text: ${data.pdfTextExtracted?"Yes":"No"}</small><small>${escapeHTML(data.sourceLink||data.detailLink||"")}</small><span class="badge">Draft</span></div><div class="actions"><button onclick="selectDraft('${id}')">Review</button></div></div>`).join("");
+      const sourceGroups=new Map();
+      draftRows.forEach(([id,data])=>{
+        const source=sourcesCache[data.sourceId]||{};
+        const sourceName=data.sourceName||source.name||"Manual / Unknown Source";
+        const sourceUrl=source.url||data.officialWebsite||data.officialLink||"";
+        const groupKey=String(data.sourceId||sourceName).trim()||"unknown";
+        if(!sourceGroups.has(groupKey)){
+          sourceGroups.set(groupKey,{name:sourceName,url:sourceUrl,rows:[]});
+        }
+        const group=sourceGroups.get(groupKey);
+        if(!group.url&&sourceUrl){group.url=sourceUrl}
+        group.rows.push([id,data]);
+      });
+      const groups=Array.from(sourceGroups.values()).sort((a,b)=>{
+        const latestA=Math.max(...a.rows.map(([,data])=>Number(data.updatedAt||data.createdAt||0)));
+        const latestB=Math.max(...b.rows.map(([,data])=>Number(data.updatedAt||data.createdAt||0)));
+        return latestB-latestA || String(a.name||"").localeCompare(String(b.name||""));
+      });
+      draftList.innerHTML=groups.map((group)=>`
+        <div class="draft-group">
+          <div class="draft-group-head">
+            <strong>${escapeHTML(group.name)}</strong>
+            <small>${group.rows.length} draft${group.rows.length>1?"s":""}${group.url?` | ${escapeHTML(group.url)}`:""}</small>
+          </div>
+          ${group.rows.map(([id,data])=>`<div class="row ${activeDraftId===id?"success":""}"><div><strong>${escapeHTML(data.title||"Untitled Draft")}</strong><small>${escapeHTML(data.department||"Department not set")} | ${escapeHTML(data.postTarget||"latestJob")} | ${formatTime(data.createdAt)}</small><small>PDF text: ${data.pdfTextExtracted?"Yes":"No"}</small><small>${escapeHTML(data.sourceLink||data.detailLink||"")}</small><span class="badge">Draft</span></div><div class="actions"><button onclick="selectDraft('${id}')">Review</button></div></div>`).join("")}
+        </div>
+      `).join("");
     };
 
     const renderLogs=(logs={})=>{
