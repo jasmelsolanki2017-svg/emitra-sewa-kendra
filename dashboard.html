@@ -633,7 +633,7 @@ Cook | 1426 |"></textarea>
   const portalTargetLinks = { admitCard:"admitCardLink", result:"resultLink", syllabus:"syllabusLink", answerKey:"answerKeyLink" };
   const whatsappChannelUrl = "https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q";
   const siteBaseUrl = () => /^https?:\/\//i.test(location.origin || "") ? location.origin.replace(/\/+$/, "") : "https://emitrawala.online";
-  const jobDetailUrl = (id) => `${siteBaseUrl()}/job-detail.html?id=${encodeURIComponent(id)}`;
+  const jobDetailUrl = (id, data = {}) => `${siteBaseUrl()}/job-detail.html?id=${encodeURIComponent(id)}${data.slug ? `&slug=${encodeURIComponent(data.slug)}` : ""}`;
   const portalSectionMap = { admitCard:"admitCard", result:"results", syllabus:"syllabus", answerKey:"answerKey" };
   const jobPostPageUrl = (id, data = {}) => {
     const target = data.postTarget || "latestJob";
@@ -644,14 +644,14 @@ Cook | 1426 |"></textarea>
       });
       return `${siteBaseUrl()}/job-form.html?${params.toString()}#${portalSectionMap[target]}`;
     }
-    return jobDetailUrl(id);
+    return jobDetailUrl(id, data);
   };
   const getSharePostUrl = (id, data = {}) => {
     const targetKey = portalTargetLinks[data.postTarget || "latestJob"];
     if(targetKey && hasRealLink(data[targetKey])){ return data[targetKey]; }
     if(hasRealLink(data.detailLink)){ return data.detailLink; }
     if(hasRealLink(data.applyLink)){ return data.applyLink; }
-    return jobDetailUrl(id);
+    return jobDetailUrl(id, data);
   };
   const buildWhatsappPostText = (id, data = {}) => {
     const target = data.postTarget || "latestJob";

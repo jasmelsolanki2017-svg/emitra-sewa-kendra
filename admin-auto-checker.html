@@ -177,9 +177,22 @@
           <option value="syllabus">Syllabus</option>
         </select>
         <input id="draftLastDate" placeholder="Last Date optional">
+        <input id="draftSlug" placeholder="Auto Slug URL">
+        <input id="draftSeoTitle" placeholder="Auto SEO Title">
+        <textarea id="draftMetaDescription" placeholder="Auto SEO Meta Description"></textarea>
+        <textarea id="draftNotificationSummary" placeholder="AI Notification Summary"></textarea>
+        <textarea class="wide" id="draftWhatsappPostText" placeholder="Auto WhatsApp post text"></textarea>
         <textarea class="wide" id="draftPageContent" placeholder="Extra page content / PDF extracted text"></textarea>
+        <textarea class="wide" id="draftGeneratedJson" placeholder="Auto generated JSON preview"></textarea>
+        <label class="check-item"><input type="checkbox" id="draftAutoSendTelegram"> Publish ke baad Telegram auto send</label>
+        <label class="check-item"><input type="checkbox" id="draftAutoSendWhatsapp"> Publish ke baad WhatsApp API auto send</label>
       </div>
       <div class="buttons">
+        <button type="button" onclick="generateDraftAutomation()">Auto Summary / SEO / Slug</button>
+        <button type="button" onclick="generateDraftJson()">Auto JSON Generate</button>
+        <button type="button" onclick="copyDraftWhatsappPost()">Copy WhatsApp Post</button>
+        <button type="button" onclick="sendDraftShare('telegram')">Send Telegram</button>
+        <button type="button" onclick="sendDraftShare('whatsapp')">Send WhatsApp</button>
         <button type="button" onclick="saveDraft()">Save Draft</button>
         <button type="button" class="publish" onclick="publishDraft()">Publish Live</button>
         <button type="button" class="cancel" onclick="clearDraftForm()">Clear Form</button>
@@ -201,7 +214,7 @@
     const adminServerStorageKey="emitraAdminServerUrl";
     let adminAllowed=false,editingSourceId="",activeDraftId="",sourcesCache={},draftsCache={},dataSyncStarted=false;
     const sourceFields=["sourceName","sourceDepartment","sourceUrl","sourceKeywords","sourceEnabled"];
-    const draftFields=["draftTitle","draftDepartment","draftPostDate","draftTotalPosts","draftImportantDates","draftQualification","draftOfficialLink","draftSourceLink","draftPostTarget","draftLastDate","draftPageContent"];
+    const draftFields=["draftTitle","draftDepartment","draftPostDate","draftTotalPosts","draftImportantDates","draftQualification","draftOfficialLink","draftSourceLink","draftPostTarget","draftLastDate","draftSlug","draftSeoTitle","draftMetaDescription","draftNotificationSummary","draftWhatsappPostText","draftPageContent","draftGeneratedJson"];
     const $=(id)=>document.getElementById(id);
     const sourceList=$("sourceList"),draftList=$("draftList"),logList=$("logList");
 
@@ -255,7 +268,10 @@
         healthCard("Firebase",Boolean(data.firebaseConfigured),data.firebaseConfigured?"Configured":"Missing"),
         healthCard("Admin SDK",Boolean(data.adminSdkConfigured),data.adminSdkConfigured?"Ready":"Missing"),
         healthCard("Database",Boolean(data.databaseConnected),data.databaseConnected?"Connected":"Error"),
-        healthCard("Cron Secret",Boolean(data.cronSecretConfigured),data.cronSecretConfigured?"Set":"Missing")
+        healthCard("Cron Secret",Boolean(data.cronSecretConfigured),data.cronSecretConfigured?"Set":"Missing"),
+        healthCard("AI",Boolean(data.aiConfigured),data.aiConfigured?"OpenAI Ready":"Local Summary"),
+        healthCard("Telegram",Boolean(data.telegramConfigured),data.telegramConfigured?"Ready":"Env Missing"),
+        healthCard("WhatsApp API",Boolean(data.whatsappConfigured),data.whatsappConfigured?"Ready":"Env Missing")
       ].join("");
     };
     const friendlyErrorText=(data={})=>{
@@ -464,7 +480,13 @@
       postTarget:getValue("draftPostTarget")||"latestJob",
       lastDate:getValue("draftLastDate"),
       lastApplyDate:getValue("draftLastDate"),
+      slug:getValue("draftSlug"),
+      seoTitle:getValue("draftSeoTitle"),
+      metaDescription:getValue("draftMetaDescription"),
+      notificationSummary:getValue("draftNotificationSummary"),
+      whatsappPostText:getValue("draftWhatsappPostText"),
       pageContent:getValue("draftPageContent"),
+      generatedJson:getValue("draftGeneratedJson"),
       postStatus:"draft",
       checkerStatus:"draft",
       updatedAt:Date.now()
@@ -482,7 +504,13 @@
       setValue("draftSourceLink",data.sourceLink||data.detailLink);
       setValue("draftPostTarget",data.postTarget||"latestJob");
       setValue("draftLastDate",data.lastDate||data.lastApplyDate);
+      setValue("draftSlug",data.slug);
+      setValue("draftSeoTitle",data.seoTitle);
+      setValue("draftMetaDescription",data.metaDescription);
+      setValue("draftNotificationSummary",data.notificationSummary);
+      setValue("draftWhatsappPostText",data.whatsappPostText);
       setValue("draftPageContent",data.pageContent);
+      setValue("draftGeneratedJson",data.generatedJson||"");
       $("draftStatus").innerText="Draft selected: "+(data.title||id);
     };
 
@@ -518,6 +546,90 @@
       }
     };
 
+    const applyDraftAutomation=(data={})=>{
+      if(data.title)setValue("draftTitle",data.title);
+      if(data.department)setValue("draftDepartment",data.department);
+      if(data.totalPosts)setValue("draftTotalPosts",data.totalPosts);
+      if(data.importantDates)setValue("draftImportantDates",data.importantDates);
+      if(data.qualification)setValue("draftQualification",data.qualification);
+      if(data.officialWebsite||data.officialLink)setValue("draftOfficialLink",data.officialWebsite||data.officialLink);
+      if(data.sourceLink||data.detailLink)setValue("draftSourceLink",data.sourceLink||data.detailLink);
+      if(data.postTarget)setValue("draftPostTarget",data.postTarget);
+      if(data.lastDate||data.lastApplyDate)setValue("draftLastDate",data.lastDate||data.lastApplyDate);
+      if(data.slug)setValue("draftSlug",data.slug);
+      if(data.seoTitle)setValue("draftSeoTitle",data.seoTitle);
+      if(data.metaDescription)setValue("draftMetaDescription",data.metaDescription);
+      if(data.notificationSummary)setValue("draftNotificationSummary",data.notificationSummary);
+      if(data.whatsappPostText)setValue("draftWhatsappPostText",data.whatsappPostText);
+      if(data.pageContent)setValue("draftPageContent",data.pageContent);
+      setValue("draftGeneratedJson",JSON.stringify(data,null,2));
+    };
+
+    window.generateDraftAutomation=async()=>{
+      if(!adminAllowed){alert("Admin verify nahi hua.");return}
+      try{
+        $("draftStatus").innerText="AI summary, SEO aur slug generate ho raha hai...";
+        const result=await callAdminApi("/admin/auto-job-checker/draft/enrich",{draftId:activeDraftId,draft:draftForm()});
+        applyDraftAutomation(result.draft||{});
+        if(result.draft&&activeDraftId){draftsCache[activeDraftId]={...(draftsCache[activeDraftId]||{}),...result.draft};renderDrafts()}
+        $("draftStatus").innerText=`Automation ready. Summary: ${(result.ai&&result.ai.provider)||"local"}`;
+      }catch(error){
+        $("draftStatus").innerText="Automation error: "+error.message;
+      }
+    };
+
+    window.generateDraftJson=async()=>{
+      if(!adminAllowed){alert("Admin verify nahi hua.");return}
+      try{
+        $("draftStatus").innerText="JSON generate ho raha hai...";
+        const text=[getValue("draftTitle"),getValue("draftImportantDates"),getValue("draftQualification"),getValue("draftPageContent")].filter(Boolean).join("\n\n");
+        const result=await callAdminApi("/admin/auto-job-checker/json/generate",{text,draft:draftForm()});
+        applyDraftAutomation(result.json||{});
+        $("draftStatus").innerText="Auto JSON ready. Review karke Save/Publish karein.";
+      }catch(error){
+        $("draftStatus").innerText="JSON generate error: "+error.message;
+      }
+    };
+
+    const copyTextToClipboard=async(text)=>{
+      if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(text);return true}
+      const textarea=document.createElement("textarea");
+      textarea.value=text;
+      textarea.setAttribute("readonly","");
+      textarea.style.position="fixed";
+      textarea.style.left="-9999px";
+      document.body.appendChild(textarea);
+      textarea.select();
+      const copied=document.execCommand("copy");
+      textarea.remove();
+      return copied;
+    };
+
+    window.copyDraftWhatsappPost=async()=>{
+      const text=getValue("draftWhatsappPostText");
+      if(!text){$("draftStatus").innerText="Pehle Auto Summary / SEO / Slug generate karein.";return}
+      try{
+        await copyTextToClipboard(text);
+        $("draftStatus").innerText="WhatsApp post text copy ho gaya.";
+      }catch(error){
+        $("draftStatus").innerText="Copy nahi hua: "+error.message;
+      }
+    };
+
+    window.sendDraftShare=async(channel)=>{
+      if(!adminAllowed){alert("Admin verify nahi hua.");return}
+      const text=getValue("draftWhatsappPostText");
+      if(!text){$("draftStatus").innerText="Pehle WhatsApp post text generate karein.";return}
+      if(!confirm(`${channel} par ye post send karni hai?`))return;
+      try{
+        $("draftStatus").innerText=`${channel} send ho raha hai...`;
+        await callAdminApi("/admin/auto-job-checker/share/send",{channel,draftId:activeDraftId,draft:draftForm(),text});
+        $("draftStatus").innerText=`${channel} send ho gaya.`;
+      }catch(error){
+        $("draftStatus").innerText=`${channel} send error: ${error.message}`;
+      }
+    };
+
     window.publishDraft=async()=>{
       if(!adminAllowed){alert("Admin verify nahi hua.");return}
       if(!activeDraftId){alert("Pehle draft select karein.");return}
@@ -527,9 +639,16 @@
       try{
         $("draftStatus").innerText="Publishing...";
         if(!hasAdminServerUrl()){await update(ref(db,"autoJobDrafts/"+activeDraftId),data)}
-        const result=await callAdminApi("/admin/auto-job-checker/publish",{draftId:activeDraftId,draft:data});
+        const result=await callAdminApi("/admin/auto-job-checker/publish",{
+          draftId:activeDraftId,
+          draft:data,
+          autoSendChannels:[
+            $("draftAutoSendTelegram").checked?"telegram":"",
+            $("draftAutoSendWhatsapp").checked?"whatsapp":""
+          ].filter(Boolean)
+        });
         await loadServerState().catch(()=>{});
-        $("draftStatus").innerText="Live publish ho gaya. Job ID: "+result.jobId;
+        $("draftStatus").innerText="Live publish ho gaya. Job ID: "+result.jobId+(result.sent&&result.sent.length?` | Sent: ${result.sent.map((item)=>item.channel).join(", ")}`:"");
       }catch(error){
         $("draftStatus").innerText="Publish error: "+error.message;
       }
@@ -562,9 +681,16 @@
       if(!confirm(`${label} me live post karna hai?`))return;
       try{
         $("draftStatus").innerText=`${label} publish ho raha hai...`;
-        const result=await callAdminApi("/admin/auto-job-checker/publish",{draftId:id,draft:{...data,postTarget:target}});
+        const result=await callAdminApi("/admin/auto-job-checker/publish",{
+          draftId:id,
+          draft:{...data,postTarget:target},
+          autoSendChannels:[
+            $("draftAutoSendTelegram").checked?"telegram":"",
+            $("draftAutoSendWhatsapp").checked?"whatsapp":""
+          ].filter(Boolean)
+        });
         await loadServerState().catch(()=>{});
-        $("draftStatus").innerText=`${label} publish ho gaya. Job ID: ${result.jobId}`;
+        $("draftStatus").innerText=`${label} publish ho gaya. Job ID: ${result.jobId}`+(result.sent&&result.sent.length?` | Sent: ${result.sent.map((item)=>item.channel).join(", ")}`:"");
       }catch(error){
         $("draftStatus").innerText="Quick publish error: "+error.message;
       }

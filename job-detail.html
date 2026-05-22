@@ -236,6 +236,34 @@ const safeUrl = (value = "#") => {
   return /^https?:\/\//i.test(url) ? url : "#";
 };
 
+const setMeta = (selector, attr, value) => {
+  const text = String(value || "").trim();
+  if(!text){ return; }
+  let tag = document.querySelector(selector);
+  if(!tag){
+    tag = document.createElement("meta");
+    if(selector.includes("property=")){
+      tag.setAttribute("property", selector.match(/property="([^"]+)"/)?.[1] || "");
+    }else{
+      tag.setAttribute("name", selector.match(/name="([^"]+)"/)?.[1] || "");
+    }
+    document.head.appendChild(tag);
+  }
+  tag.setAttribute(attr, text);
+};
+
+const setCanonical = (url) => {
+  const text = String(url || "").trim();
+  if(!text){ return; }
+  let link = document.querySelector('link[rel="canonical"]');
+  if(!link){
+    link = document.createElement("link");
+    link.rel = "canonical";
+    document.head.appendChild(link);
+  }
+  link.href = text;
+};
+
 const normalizeJob = (value) => {
   if(typeof value === "string"){
     return { title:value, type:"Online Form" };
@@ -432,6 +460,7 @@ const renderPageContent = (content, title) => {
 };
 
 const id = new URLSearchParams(window.location.search).get("id");
+const slugParam = new URLSearchParams(window.location.search).get("slug");
 const message = document.getElementById("jobMessage");
 const wrap = document.getElementById("jobDetailWrap");
 
@@ -459,6 +488,13 @@ if(!id){
     document.title = `${job.seoTitle || title} | E-MITRA WALA`;
     const metaDescription = document.querySelector('meta[name="description"]');
     if(metaDescription && job.metaDescription){ metaDescription.setAttribute("content", job.metaDescription); }
+    const canonicalUrl = `${location.origin}${location.pathname}?id=${encodeURIComponent(id)}${job.slug ? `&slug=${encodeURIComponent(job.slug)}` : (slugParam ? `&slug=${encodeURIComponent(slugParam)}` : "")}`;
+    setCanonical(canonicalUrl);
+    setMeta('meta[property="og:title"]', "content", job.seoTitle || title);
+    setMeta('meta[property="og:description"]', "content", job.metaDescription || job.notificationSummary || `${title} important dates, qualification and apply link.`);
+    setMeta('meta[property="og:url"]', "content", canonicalUrl);
+    setMeta('meta[name="twitter:title"]', "content", job.seoTitle || title);
+    setMeta('meta[name="twitter:description"]', "content", job.metaDescription || job.notificationSummary || `${title} important dates, qualification and apply link.`);
     document.getElementById("jobType").textContent = type;
     document.getElementById("jobTitle").textContent = title;
     document.getElementById("jobIntro").textContent = `${type} - dates, qualification, apply link aur important details.`;

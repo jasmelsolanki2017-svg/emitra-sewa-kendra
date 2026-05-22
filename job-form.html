@@ -445,6 +445,7 @@ if(sharedPortalCategory && sharedPortalPost){
   portalExpanded[sharedPortalCategory] = true;
 }
 const portalItemHref = (item) => item && item.sourceJobId ? `job-detail.html?id=${encodeURIComponent(item.sourceJobId)}` : safeUrl(item && item.url);
+const jobDetailHref = (id, job = {}) => `job-detail.html?id=${encodeURIComponent(id)}${job.slug ? `&slug=${encodeURIComponent(job.slug)}` : ""}`;
 let jobRowsCache = [];
 let jobsExpanded = false;
 
@@ -529,13 +530,13 @@ const renderJobs = () => {
   jobList.innerHTML = visibleRows.map(({ id, job }) => `
     <li class="job-card">
       <span class="badge">${escapeHTML(job.type || "Online Form")}</span>
-      <h3><a href="job-detail.html?id=${encodeURIComponent(id)}">${escapeHTML(job.title || job.text || "Job Update")}</a></h3>
+      <h3><a href="${jobDetailHref(id, job)}">${escapeHTML(job.title || job.text || "Job Update")}</a></h3>
       <p>Start: ${escapeHTML(job.startDate || "Update Soon")} | Last: <span class="last-date">${escapeHTML(job.lastDate || job.lastApplyDate || "Update Soon")}</span></p>
       <p>Qualification: ${escapeHTML(job.qualification || "Update Soon")}</p>
       <p>Location: ${escapeHTML(job.location || "All India")}</p>
       <div class="job-actions">
         <a href="${safeUrl(job.applyLink)}" target="_blank" rel="noopener noreferrer">Apply</a>
-        <a class="detail" href="job-detail.html?id=${encodeURIComponent(id)}">Details</a>
+        <a class="detail" href="${jobDetailHref(id, job)}">Details</a>
       </div>
     </li>
   `).join("") + (searchValue ? "" : renderViewMoreButton("jobs", "jobs", filteredRows.length, expanded));

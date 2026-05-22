@@ -35,6 +35,9 @@ const patterns = [
   { re: /FIREBASE_SERVICE_ACCOUNT(?:_BASE64)?\s*=\s*(?!your_|change_|$)[A-Za-z0-9+/=._-]{40,}/i, label: "Firebase service account real value" },
   { re: /-----BEGIN (?:RSA |EC |OPENSSH |)PRIVATE KEY-----/i, label: "Private key" },
   { re: /CRON_SECRET\s*=\s*(?!change_this_secret|your_|$)[^\s#]{12,}/i, label: "Real cron secret" },
+  { re: /OPENAI_API_KEY\s*=\s*(?!your_|$)sk-[A-Za-z0-9_-]{20,}/i, label: "OpenAI API key" },
+  { re: /TELEGRAM_BOT_TOKEN\s*=\s*(?!your_|$)\d+:[A-Za-z0-9_-]{20,}/i, label: "Telegram bot token" },
+  { re: /WHATSAPP_ACCESS_TOKEN\s*=\s*(?!your_|$)[A-Za-z0-9._-]{40,}/i, label: "WhatsApp access token" },
   { re: /(SUPABASE_SERVICE_ROLE_KEY|SERVICE_ROLE_KEY)\s*=\s*[^\s#]{20,}/i, label: "Supabase service role key" },
   { re: /sb_secret_[A-Za-z0-9._-]{20,}/i, label: "Supabase secret key" }
 ];

@@ -39,8 +39,17 @@ const extractHttpUrl = (value, fallback = "") => {
 };
 const FIREBASE_URL = extractUrl(process.env.FIREBASE_URL, DEFAULT_FIREBASE_URL);
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "jasmelsolanki@gmail.com";
+const SITE_BASE_URL = extractUrl(process.env.SITE_BASE_URL, "https://emitrawala.online");
+const WHATSAPP_CHANNEL_URL = extractHttpUrl(process.env.WHATSAPP_CHANNEL_URL, "https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q");
+const TELEGRAM_BOT_TOKEN = String(process.env.TELEGRAM_BOT_TOKEN || "").trim();
+const TELEGRAM_CHAT_ID = String(process.env.TELEGRAM_CHAT_ID || "").trim();
+const WHATSAPP_ACCESS_TOKEN = String(process.env.WHATSAPP_ACCESS_TOKEN || "").trim();
+const WHATSAPP_PHONE_NUMBER_ID = String(process.env.WHATSAPP_PHONE_NUMBER_ID || "").trim();
+const WHATSAPP_TO_NUMBER = String(process.env.WHATSAPP_TO_NUMBER || "").replace(/\D/g, "");
+const OPENAI_API_KEY = String(process.env.OPENAI_API_KEY || "").trim();
+const OPENAI_MODEL = String(process.env.OPENAI_MODEL || "").trim();
 const DEFAULT_MEMBER_PASSWORD = "User@123";
-const CHECKER_INTERVAL_MS = Number(process.env.AUTO_JOB_CHECKER_INTERVAL_MS || 2 * 60 * 60 * 1000);
+const CHECKER_INTERVAL_MS = Number(process.env.AUTO_JOB_CHECKER_INTERVAL_MS || 60 * 60 * 1000);
 const BACKUP_INTERVAL_MS = Number(process.env.AUTO_BACKUP_INTERVAL_MS || 24 * 60 * 60 * 1000);
 const execFileAsync = promisify(execFile);
 let adminDb = null;
@@ -184,6 +193,229 @@ const pickJobLinkField = (target) => ({
   syllabus: "syllabusLink",
   answerKey: "answerKeyLink"
 }[target] || "detailLink");
+
+const cleanSlug = (value = "") => String(value || "")
+  .normalize("NFKD")
+  .replace(/[\u0300-\u036f]/g, "")
+  .toLowerCase()
+  .replace(/[^a-z0-9]+/g, "-")
+  .replace(/^-+|-+$/g, "")
+  .slice(0, 90);
+
+const buildSlug = (title = "", id = "") => {
+  const base = cleanSlug(title) || "job-update";
+  const suffix = String(id || "").replace(/[^a-zA-Z0-9]/g, "").slice(-6).toLowerCase();
+  return suffix ? `${base}-${suffix}` : base;
+};
+
+const getPublicJobUrl = (id = "", job = {}) => {
+  const params = new URLSearchParams();
+  params.set("id", id);
+  if (job.slug) {
+    params.set("slug", job.slug);
+  }
+  return `${SITE_BASE_URL}/job-detail.html?${params.toString()}`;
+};
+
+const compactLine = (label, value) => {
+  const text = toText(value);
+  return text ? `${label}: ${text}` : "";
+};
+
+const buildNotificationSummary = (job = {}) => {
+  const title = toText(job.title || "Job Update");
+  const lines = [
+    title,
+    compactLine("Department", job.department),
+    compactLine("Total Posts", job.totalPosts || job.totalVacancy),
+    compactLine("Last Date", job.lastApplyDate || job.lastDate),
+    compactLine("Qualification", String(job.qualification || "").split(/\r?\n/)[0]),
+    compactLine("Category", job.postTarget && job.postTarget !== "latestJob" ? job.postTarget : "")
+  ].filter(Boolean);
+  return lines.slice(0, 6).join("\n");
+};
+
+const buildSeoFields = (job = {}, id = "") => {
+  const title = toText(job.title || "Job Update");
+  const department = toText(job.department);
+  const suffix = job.postTarget && job.postTarget !== "latestJob" ? ` ${job.postTarget}` : "";
+  const seoTitle = toText(job.seoTitle || `${title}${suffix} | E-MITRA WALA`).slice(0, 70);
+  const descParts = [
+    title,
+    department,
+    job.totalPosts ? `${job.totalPosts} posts` : "",
+    job.lastApplyDate || job.lastDate ? `Last date ${job.lastApplyDate || job.lastDate}` : "",
+    "apply link, qualification and important dates"
+  ].filter(Boolean);
+  const metaDescription = toText(job.metaDescription || descParts.join(", ")).slice(0, 160);
+  return {
+    slug: toText(job.slug) || buildSlug(title, id),
+    seoTitle,
+    metaDescription
+  };
+};
+
+const buildWhatsappPostText = (id = "", job = {}) => {
+  const targetLabels = {
+    latestJob: "Latest Job",
+    admitCard: "Admit Card",
+    result: "Result",
+    answerKey: "Answer Key",
+    syllabus: "Syllabus"
+  };
+  const label = targetLabels[job.postTarget || "latestJob"] || "Update";
+  const lines = [
+    `*${label} Update*`,
+    toText(job.title || "Job Update"),
+    compactLine("Department", job.department),
+    compactLine("Total Posts", job.totalPosts || job.totalVacancy),
+    compactLine("Post Date", job.postDate),
+    compactLine("Last Date", job.lastApplyDate || job.lastDate),
+    compactLine("Qualification", String(job.qualification || "").split(/\r?\n/)[0]),
+    compactLine("Details", getPublicJobUrl(id, job)),
+    compactLine("Official Link", job.sourceLink || job.detailLink || job.applyLink),
+    compactLine("Join WhatsApp Channel", WHATSAPP_CHANNEL_URL)
+  ];
+  return lines.filter(Boolean).join("\n");
+};
+
+const generateJobJsonFromText = (text = "", base = {}) => {
+  const body = String(text || "");
+  const title = toText(base.title) || findFirstMatchLine(body, [
+    /recruitment/i, /vacancy/i, /notification/i, /advertisement/i, /भर्ती/i, /विज्ञप्ति/i
+  ]) || body.split(/\r?\n/).map((line) => toText(line)).find(Boolean) || "Job Update";
+  const postTarget = base.postTarget || detectPostTarget(title, base.sourceLink || base.detailLink || "", body);
+  return {
+    title,
+    department: toText(base.department) || findFirstMatchLine(body, [/department/i, /board/i, /commission/i, /विभाग/i]) || "",
+    totalPosts: toText(base.totalPosts) || extractTotalPosts(body),
+    importantDates: toText(base.importantDates) || extractDatesBlock(body),
+    qualification: toText(base.qualification) || findFirstMatchLine(body, [/qualification/i, /eligibility/i, /education/i, /योग्यता/i, /पात्रता/i]),
+    postTarget,
+    type: postTarget === "latestJob" ? "Online Form" : "Update",
+    postStatus: "draft",
+    detailLayout: "table",
+    pageContent: toText(base.pageContent) || body.slice(0, 5000)
+  };
+};
+
+const enrichJobAutomation = (job = {}, id = "") => {
+  const normalized = { ...generateJobJsonFromText(job.rawText || job.pageContent || job.title || "", job), ...job };
+  const seo = buildSeoFields(normalized, id || normalized.duplicateKey || normalized.sourceLink || normalized.title);
+  const enriched = {
+    ...normalized,
+    ...seo,
+    notificationSummary: String(normalized.notificationSummary || "").trim() || buildNotificationSummary(normalized),
+    updatedAt: nowStamp()
+  };
+  enriched.whatsappPostText = String(enriched.whatsappPostText || "").trim() || buildWhatsappPostText(id || enriched.duplicateKey || "", enriched);
+  return enriched;
+};
+
+const duplicateKeysForJob = (job = {}) => {
+  const keys = new Set();
+  [job.sourceLink, job.detailLink, job.applyLink, job.officialWebsite].filter(Boolean).forEach((value) => {
+    keys.add(`link_${hashKey(value)}`);
+  });
+  if (job.title) {
+    keys.add(`title_${hashKey(`${job.title}|${job.department || ""}|${job.totalPosts || ""}`)}`);
+    keys.add(`slug_${hashKey(buildSlug(job.title))}`);
+  }
+  return Array.from(keys);
+};
+
+const generateAiSummary = async (job = {}) => {
+  const fallback = buildNotificationSummary(job);
+  if (!OPENAI_API_KEY || !OPENAI_MODEL || typeof fetch !== "function") {
+    return { summary: fallback, provider: "local" };
+  }
+  const prompt = [
+    "Write a short Hindi notification summary for a government job/update.",
+    "Keep it factual, 4 bullet lines max, no extra claims.",
+    JSON.stringify({
+      title: job.title,
+      department: job.department,
+      totalPosts: job.totalPosts,
+      lastDate: job.lastApplyDate || job.lastDate,
+      qualification: job.qualification,
+      sourceLink: job.sourceLink || job.detailLink
+    })
+  ].join("\n");
+  try {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${OPENAI_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: OPENAI_MODEL,
+        messages: [
+          { role: "system", content: "You summarize job notifications for an Indian Hindi audience." },
+          { role: "user", content: prompt }
+        ],
+        temperature: 0.2,
+        max_tokens: 180
+      })
+    });
+    if (!response.ok) {
+      throw new Error(`AI HTTP ${response.status}`);
+    }
+    const data = await response.json();
+    const summary = toText(data?.choices?.[0]?.message?.content || "");
+    return { summary: summary || fallback, provider: summary ? "openai" : "local" };
+  } catch (err) {
+    return { summary: fallback, provider: "local", error: err.message };
+  }
+};
+
+const sendTelegramMessage = async (text) => {
+  if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
+    const error = new Error("TELEGRAM_BOT_TOKEN aur TELEGRAM_CHAT_ID env me set nahi hain");
+    error.statusCode = 400;
+    throw error;
+  }
+  const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      chat_id: TELEGRAM_CHAT_ID,
+      text,
+      disable_web_page_preview: false
+    })
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || data.ok === false) {
+    throw new Error(data.description || `Telegram HTTP ${response.status}`);
+  }
+  return data;
+};
+
+const sendWhatsappMessage = async (text) => {
+  if (!WHATSAPP_ACCESS_TOKEN || !WHATSAPP_PHONE_NUMBER_ID || !WHATSAPP_TO_NUMBER) {
+    const error = new Error("WhatsApp auto send ke liye WHATSAPP_ACCESS_TOKEN, WHATSAPP_PHONE_NUMBER_ID, WHATSAPP_TO_NUMBER env me set karein");
+    error.statusCode = 400;
+    throw error;
+  }
+  const response = await fetch(`https://graph.facebook.com/v20.0/${WHATSAPP_PHONE_NUMBER_ID}/messages`, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${WHATSAPP_ACCESS_TOKEN}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      messaging_product: "whatsapp",
+      to: WHATSAPP_TO_NUMBER,
+      type: "text",
+      text: { preview_url: true, body: text }
+    })
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || data.error) {
+    throw new Error(data?.error?.message || `WhatsApp HTTP ${response.status}`);
+  }
+  return data;
+};
 
 const normalizeSource = (id, value = {}) => ({
   id,
@@ -585,7 +817,7 @@ const buildDraftFromNotice = async (source, notice) => {
     updatedAt: nowStamp()
   };
   draft[linkField] = notice.link;
-  return draft;
+  return enrichJobAutomation(draft, hashKey(notice.link).slice(0, 8));
 };
 
 async function checkOneAutoJobSource(db, source) {
@@ -600,11 +832,29 @@ async function checkOneAutoJobSource(db, source) {
     const notices = extractLinks(page.text, source.url, keywordList);
     found = notices.length;
     for (const notice of notices) {
-      const duplicateId = hashKey(`${notice.link}`);
-      const seenSnapshot = await db.ref(`autoJobSeen/${duplicateId}`).get();
-      if (seenSnapshot.exists()) continue;
+      const draftSeed = {
+        title: notice.title,
+        department: source.department || source.name,
+        sourceLink: notice.link,
+        detailLink: notice.link,
+        postTarget: detectPostTarget(notice.title, notice.link, "")
+      };
+      const duplicateKeys = duplicateKeysForJob(draftSeed);
+      const seenSnapshots = await Promise.all(duplicateKeys.map((key) => db.ref(`autoJobSeen/${key}`).get()));
+      if (seenSnapshots.some((item) => item.exists())) continue;
+      const duplicateId = duplicateKeys[0] || `link_${hashKey(`${notice.link}`)}`;
       const draft = await buildDraftFromNotice(source, notice);
       const updates = {};
+      duplicateKeys.forEach((key) => {
+        updates[`autoJobSeen/${key}`] = {
+          title: notice.title,
+          link: notice.link,
+          sourceId: source.id,
+          sourceName: source.name,
+          firstSeenAt: nowStamp(),
+          draftId: duplicateId
+        };
+      });
       updates[`autoJobSeen/${duplicateId}`] = {
         title: notice.title,
         link: notice.link,
@@ -615,7 +865,8 @@ async function checkOneAutoJobSource(db, source) {
       };
       updates[`autoJobDrafts/${duplicateId}`] = {
         ...draft,
-        duplicateKey: duplicateId
+        duplicateKey: duplicateId,
+        duplicateKeys
       };
       await db.ref().update(updates);
       newDrafts++;
@@ -718,7 +969,7 @@ async function publishAutoJobDraft(db, draftId, payload = {}) {
     throw error;
   }
   const currentDraft = draftSnapshot.val() || {};
-  const draft = { ...currentDraft, ...(payload.draft || {}) };
+  const draft = enrichJobAutomation({ ...currentDraft, ...(payload.draft || {}) }, draftId);
   if (!toText(draft.title)) {
     const error = new Error("Draft title required");
     error.statusCode = 400;
@@ -728,6 +979,7 @@ async function publishAutoJobDraft(db, draftId, payload = {}) {
   const now = nowStamp();
   const jobRef = db.ref("LatestJobs").push();
   const jobId = jobRef.key;
+  const seo = buildSeoFields(draft, jobId);
   const job = {
     title: toText(draft.title),
     department: toText(draft.department),
@@ -746,12 +998,18 @@ async function publishAutoJobDraft(db, draftId, payload = {}) {
     postTarget: target,
     postStatus: "published",
     displayOrder: "1",
+    slug: seo.slug,
+    seoTitle: seo.seoTitle,
+    metaDescription: seo.metaDescription,
+    notificationSummary: String(draft.notificationSummary || "").trim() || buildNotificationSummary(draft),
+    whatsappPostText: String(draft.whatsappPostText || "").trim(),
     detailLayout: toText(draft.detailLayout || "table"),
     pageContent: toText(draft.pageContent),
     autoCheckerDraftId: draftId,
     createdAt: now,
     updatedAt: now
   };
+  job.whatsappPostText = job.whatsappPostText || buildWhatsappPostText(jobId, job);
   ["admitCardLink", "resultLink", "syllabusLink", "answerKeyLink"].forEach((key) => {
     if (draft[key]) job[key] = toText(draft[key]);
   });
@@ -789,14 +1047,40 @@ async function publishAutoJobDraft(db, draftId, payload = {}) {
   updates[`autoJobDrafts/${draftId}/publishedJobId`] = jobId;
   updates[`autoJobDrafts/${draftId}/publishedAt`] = now;
   updates[`autoJobDrafts/${draftId}/updatedAt`] = now;
+  duplicateKeysForJob(job).forEach((key) => {
+    updates[`autoJobSeen/${key}`] = {
+      title: job.title,
+      link: job.sourceLink || job.detailLink || "",
+      sourceId: draft.sourceId || "",
+      sourceName: draft.sourceName || "",
+      firstSeenAt: now,
+      draftId,
+      publishedJobId: jobId
+    };
+  });
   await db.ref().update(updates);
+  const sent = [];
+  const autoSendChannels = Array.isArray(payload.autoSendChannels) ? payload.autoSendChannels : [];
+  for (const channel of autoSendChannels.map((item) => String(item || "").toLowerCase())) {
+    try {
+      if (channel === "telegram") {
+        await sendTelegramMessage(job.whatsappPostText);
+        sent.push({ channel, ok: true });
+      } else if (channel === "whatsapp") {
+        await sendWhatsappMessage(job.whatsappPostText);
+        sent.push({ channel, ok: true });
+      }
+    } catch (err) {
+      sent.push({ channel, ok: false, error: err.message });
+    }
+  }
   await logAutoJob(db, {
     level: "success",
     sourceId: draft.sourceId || "",
     sourceName: draft.sourceName || "",
     message: `Draft published: ${job.title}`
   });
-  return { ok: true, jobId };
+  return { ok: true, jobId, slug: job.slug, shareText: job.whatsappPostText, sent };
 }
 
 function requireCronSecret(req) {
@@ -861,6 +1145,9 @@ app.post("/admin/status", async (req, res) => {
       adminSdkConfigured: isAdminSdkConfigured(),
       databaseConnected: true,
       cronSecretConfigured: Boolean(String(process.env.CRON_SECRET || "").trim()),
+      telegramConfigured: Boolean(TELEGRAM_BOT_TOKEN && TELEGRAM_CHAT_ID),
+      whatsappConfigured: Boolean(WHATSAPP_ACCESS_TOKEN && WHATSAPP_PHONE_NUMBER_ID && WHATSAPP_TO_NUMBER),
+      aiConfigured: Boolean(OPENAI_API_KEY && OPENAI_MODEL),
       autoCheckerRunning,
       adminEmail: decoded.email || "",
       checkedAt: nowStamp()
@@ -873,6 +1160,9 @@ app.post("/admin/status", async (req, res) => {
       adminSdkConfigured: isAdminSdkConfigured(),
       databaseConnected: false,
       cronSecretConfigured: Boolean(String(process.env.CRON_SECRET || "").trim()),
+      telegramConfigured: Boolean(TELEGRAM_BOT_TOKEN && TELEGRAM_CHAT_ID),
+      whatsappConfigured: Boolean(WHATSAPP_ACCESS_TOKEN && WHATSAPP_PHONE_NUMBER_ID && WHATSAPP_TO_NUMBER),
+      aiConfigured: Boolean(OPENAI_API_KEY && OPENAI_MODEL),
       error: err.message
     });
   }
@@ -1169,6 +1459,42 @@ app.post("/admin/auto-job-checker/draft/save", async (req, res) => {
   }
 });
 
+app.post("/admin/auto-job-checker/json/generate", async (req, res) => {
+  try {
+    await requireAdmin(req);
+    const text = String(req.body?.text || "").trim();
+    const draft = req.body?.draft && typeof req.body.draft === "object" ? req.body.draft : {};
+    const generated = enrichJobAutomation(generateJobJsonFromText(text || draft.pageContent || draft.rawText || draft.title || "", draft), safeKey(draft.sourceLink || draft.title || text));
+    return res.json({ ok: true, json: generated });
+  } catch (err) {
+    return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
+  }
+});
+
+app.post("/admin/auto-job-checker/draft/enrich", async (req, res) => {
+  try {
+    const { db } = await requireAdmin(req);
+    const draftId = String(req.body?.draftId || "").trim();
+    const incoming = req.body?.draft && typeof req.body.draft === "object" ? req.body.draft : {};
+    let current = {};
+    if (draftId) {
+      const snapshot = await db.ref(`autoJobDrafts/${draftId}`).get();
+      current = snapshot.exists() ? (snapshot.val() || {}) : {};
+    }
+    const enriched = enrichJobAutomation({ ...current, ...incoming }, draftId);
+    const ai = await generateAiSummary(enriched);
+    enriched.notificationSummary = ai.summary;
+    enriched.summaryProvider = ai.provider;
+    enriched.whatsappPostText = buildWhatsappPostText(draftId, enriched);
+    if (draftId) {
+      await db.ref(`autoJobDrafts/${draftId}`).update(enriched);
+    }
+    return res.json({ ok: true, draft: enriched, ai });
+  } catch (err) {
+    return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
+  }
+});
+
 app.post("/admin/auto-job-checker/draft/delete", async (req, res) => {
   try {
     const { db } = await requireAdmin(req);
@@ -1200,6 +1526,49 @@ app.post("/admin/auto-job-checker/draft/ignore", async (req, res) => {
       message: `Draft ignored: ${draftId}`
     });
     return res.json({ ok: true });
+  } catch (err) {
+    return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
+  }
+});
+
+app.post("/admin/auto-job-checker/share/send", async (req, res) => {
+  try {
+    const { db } = await requireAdmin(req);
+    const channel = String(req.body?.channel || "").trim().toLowerCase();
+    const draftId = String(req.body?.draftId || "").trim();
+    const jobId = String(req.body?.jobId || "").trim();
+    let item = req.body?.draft && typeof req.body.draft === "object" ? req.body.draft : {};
+    if (draftId) {
+      const snapshot = await db.ref(`autoJobDrafts/${draftId}`).get();
+      if (snapshot.exists()) {
+        item = { ...(snapshot.val() || {}), ...item };
+      }
+    } else if (jobId) {
+      const snapshot = await db.ref(`LatestJobs/${jobId}`).get();
+      if (snapshot.exists()) {
+        item = { ...(snapshot.val() || {}), ...item };
+      }
+    }
+    const shareId = jobId || draftId || safeKey(item.sourceLink || item.title || "");
+    const text = String(req.body?.text || "").trim() || item.whatsappPostText || buildWhatsappPostText(shareId, enrichJobAutomation(item, shareId));
+    if (!text) {
+      return res.status(400).json({ ok: false, error: "Share text missing" });
+    }
+    let result = null;
+    if (channel === "telegram") {
+      result = await sendTelegramMessage(text);
+    } else if (channel === "whatsapp") {
+      result = await sendWhatsappMessage(text);
+    } else {
+      return res.status(400).json({ ok: false, error: "Channel telegram ya whatsapp hona chahiye" });
+    }
+    await logAutoJob(db, {
+      level: "success",
+      sourceId: item.sourceId || "",
+      sourceName: item.sourceName || "",
+      message: `${channel} send ho gaya: ${item.title || shareId}`
+    });
+    return res.json({ ok: true, channel, result });
   } catch (err) {
     return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
   }
