@@ -285,26 +285,44 @@ const buildSeoFields = (job = {}, id = "") => {
 
 const buildWhatsappPostText = (id = "", job = {}) => {
   const targetLabels = {
-    latestJob: "Latest Job",
-    admitCard: "Admit Card",
-    result: "Result",
-    answerKey: "Answer Key",
-    syllabus: "Syllabus"
+    latestJob: "लेटेस्ट जॉब अपडेट",
+    admitCard: "एडमिट कार्ड अपडेट",
+    result: "रिजल्ट अपडेट",
+    answerKey: "आंसर की अपडेट",
+    syllabus: "सिलेबस अपडेट"
   };
-  const label = targetLabels[job.postTarget || "latestJob"] || "Update";
-  const summary = cleanMultiline(job.notificationSummary, 5);
+  const label = targetLabels[job.postTarget || "latestJob"] || "लेटेस्ट अपडेट";
+  const qualificationLines = cleanMultiline(job.qualification, 7)
+    .split("\n")
+    .map((line) => line.replace(/^[-*•✅\s]+/, "").trim())
+    .filter(Boolean)
+    .map((line) => `✅ ${line}`);
+  const detailsLink = getPublicJobUrl(id, job);
+  const officialLink = toText(job[pickJobLinkField(job.postTarget)] || job.sourceLink || job.detailLink || job.applyLink || job.officialWebsite);
   const lines = [
-    `*${label} Update*`,
-    toText(job.title || "Job Update"),
-    summary ? `*Summary*\n${summary}` : "",
-    compactLine("Department", job.department),
-    compactLine("Total Posts", job.totalPosts || job.totalVacancy),
-    compactLine("Post Date", job.postDate),
-    compactLine("Last Date", job.lastApplyDate || job.lastDate),
-    compactLine("Qualification", String(job.qualification || "").split(/\r?\n/)[0]),
-    compactLine("Details", getPublicJobUrl(id, job)),
-    compactLine("Official Link", job.sourceLink || job.detailLink || job.applyLink),
-    compactLine("Join WhatsApp Channel", WHATSAPP_CHANNEL_URL)
+    `📢 *${label} - EmitraWala.online*`,
+    "",
+    `📚 *${toText(job.title || "Job Update")}*`,
+    toText(job.department) ? `*${toText(job.department)}*` : "",
+    "",
+    compactLine("🗓️ आवेदन शुरू", job.startDate || job.postDate),
+    compactLine("⏳ अंतिम तिथि", job.lastApplyDate || job.lastDate),
+    compactLine("📌 कुल पद", job.totalPosts || job.totalVacancy),
+    compactLine("📍 स्थान", job.location || job.jobLocation),
+    qualificationLines.length ? ["", "🎓 *योग्यता:*", ...qualificationLines].join("\n") : "",
+    "",
+    "📌 *नोट:* पूरी पात्रता जानकारी के लिए ऑफिशियल नोटिफिकेशन जरूर पढ़ें।",
+    "",
+    "🔗 *Apply / Official Details:*",
+    officialLink || detailsLink,
+    "",
+    "🌐 *वेबसाइट:*",
+    SITE_BASE_URL,
+    "",
+    "📲 *WhatsApp Channel Join करें:*",
+    WHATSAPP_CHANNEL_URL,
+    "",
+    "⚠️ *नोट:* इच्छुक उम्मीदवार अंतिम तिथि से पहले ऑनलाइन आवेदन जरूर करें।"
   ];
   return lines.filter(Boolean).join("\n");
 };
@@ -444,14 +462,120 @@ const generateAiSummary = async (job = {}) => {
   }
 };
 
+const generateAiWhatsappPostText = async (job = {}, id = "") => {
+  const fallback = buildWhatsappPostText(id, job);
+  const primaryLink = toText(job[pickJobLinkField(job.postTarget)] || job.sourceLink || job.detailLink || job.applyLink || job.officialWebsite || getPublicJobUrl(id, job));
+  const targetLabel = {
+    latestJob: "लेटेस्ट जॉब अपडेट",
+    admitCard: "एडमिट कार्ड अपडेट",
+    result: "रिजल्ट अपडेट",
+    answerKey: "आंसर की अपडेट",
+    syllabus: "सिलेबस अपडेट"
+  }[job.postTarget || "latestJob"] || "लेटेस्ट अपडेट";
+  const prompt = [
+    "Aap EmitraWala.online ke WhatsApp channel ke liye ready-to-send Hindi post likhte hain.",
+    "Style bilkul is template jaisa rakho:",
+    "📢 *लेटेस्ट जॉब अपडेट - EmitraWala.online*",
+    "📚 *Title*",
+    "*Department / Exam name*",
+    "🗓️ *आवेदन शुरू:* date",
+    "⏳ *अंतिम तिथि:* date",
+    "📍 *स्थान:* location",
+    "🎓 *योग्यता:*",
+    "✅ qualification point",
+    "📌 *नोट:* पूरी पात्रता जानकारी के लिए ऑफिशियल नोटिफिकेशन जरूर पढ़ें।",
+    "🔗 *Apply / Official Details:*",
+    "URL",
+    "🌐 *वेबसाइट:*",
+    SITE_BASE_URL,
+    "📲 *WhatsApp Channel Join करें:*",
+    WHATSAPP_CHANNEL_URL,
+    "⚠️ *नोट:* इच्छुक उम्मीदवार अंतिम तिथि से पहले ऑनलाइन आवेदन जरूर करें।",
+    "",
+    "Rules:",
+    "- Sirf final WhatsApp message do, explanation nahi.",
+    "- WhatsApp bold ke liye *text* use karo, markdown link [text](url) mat banao.",
+    "- Missing date/location/posts ko invent mat karo; missing line omit kar do.",
+    "- Qualification ko simple Hindi bullet points me likho, max 6 bullets.",
+    "- Official/apply URL exactly wahi rakho jo data me hai.",
+    "- 900-1400 characters ke andar rakho.",
+    JSON.stringify({
+      updateType: targetLabel,
+      title: job.title,
+      department: job.department,
+      examName: job.examName || job.subTitle,
+      totalPosts: job.totalPosts || job.totalVacancy,
+      postDate: job.postDate,
+      startDate: job.startDate,
+      lastDate: job.lastApplyDate || job.lastDate,
+      location: job.location || job.jobLocation,
+      qualification: job.qualification,
+      importantDates: job.importantDates,
+      summary: job.notificationSummary,
+      officialLink: primaryLink,
+      website: SITE_BASE_URL,
+      whatsappChannel: WHATSAPP_CHANNEL_URL
+    })
+  ].join("\n");
+
+  if (GEMINI_API_KEY && GEMINI_MODEL && typeof fetch === "function") {
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(GEMINI_MODEL)}:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`;
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [
+            {
+              role: "user",
+              parts: [{ text: prompt }]
+            }
+          ],
+          generationConfig: {
+            temperature: 0.25,
+            maxOutputTokens: 700
+          }
+        })
+      });
+      if (!response.ok) {
+        throw new Error(`Gemini HTTP ${response.status}`);
+      }
+      const data = await response.json();
+      const text = (data?.candidates?.[0]?.content?.parts || [])
+        .map((part) => part.text || "")
+        .join("\n")
+        .replace(/```(?:text|markdown)?/gi, "")
+        .replace(/```/g, "")
+        .trim();
+      return { text: text || fallback, provider: text ? "gemini" : "local" };
+    } catch (err) {
+      return { text: fallback, provider: "local", error: err.message };
+    }
+  }
+
+  return { text: fallback, provider: "local" };
+};
+
 const prepareWhatsappShare = async (item = {}, id = "") => {
   const enriched = enrichJobAutomation(item, id);
   const ai = await generateAiSummary(enriched);
   enriched.notificationSummary = ai.summary;
+  const whatsappAi = await generateAiWhatsappPostText(enriched, id);
   enriched.summaryProvider = ai.provider;
-  enriched.whatsappPostText = buildWhatsappPostText(id, enriched);
+  enriched.whatsappProvider = whatsappAi.provider;
+  enriched.whatsappPostText = whatsappAi.text;
   enriched.updatedAt = nowStamp();
-  return { item: enriched, text: enriched.whatsappPostText, ai };
+  return {
+    item: enriched,
+    text: enriched.whatsappPostText,
+    ai: {
+      provider: whatsappAi.provider,
+      summaryProvider: ai.provider,
+      whatsappProvider: whatsappAi.provider,
+      summaryError: ai.error || "",
+      whatsappError: whatsappAi.error || ""
+    }
+  };
 };
 
 const pickShareAutomationFields = (item = {}) => ({
@@ -460,6 +584,7 @@ const pickShareAutomationFields = (item = {}) => ({
   metaDescription: item.metaDescription || "",
   notificationSummary: item.notificationSummary || "",
   summaryProvider: item.summaryProvider || "",
+  whatsappProvider: item.whatsappProvider || "",
   whatsappPostText: item.whatsappPostText || "",
   updatedAt: nowStamp()
 });
@@ -1570,11 +1695,23 @@ app.post("/admin/auto-job-checker/draft/enrich", async (req, res) => {
     const ai = await generateAiSummary(enriched);
     enriched.notificationSummary = ai.summary;
     enriched.summaryProvider = ai.provider;
-    enriched.whatsappPostText = buildWhatsappPostText(draftId, enriched);
+    const whatsappAi = await generateAiWhatsappPostText(enriched, draftId);
+    enriched.whatsappProvider = whatsappAi.provider;
+    enriched.whatsappPostText = whatsappAi.text;
     if (draftId) {
       await db.ref(`autoJobDrafts/${draftId}`).update(enriched);
     }
-    return res.json({ ok: true, draft: enriched, ai });
+    return res.json({
+      ok: true,
+      draft: enriched,
+      ai: {
+        provider: whatsappAi.provider,
+        summaryProvider: ai.provider,
+        whatsappProvider: whatsappAi.provider,
+        summaryError: ai.error || "",
+        whatsappError: whatsappAi.error || ""
+      }
+    });
   } catch (err) {
     return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
   }
