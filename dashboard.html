@@ -314,6 +314,7 @@ body.dark-mode .nav-logo img {
   <a href="admin-requests.html">Requests</a>
   <a href="admin-ads.html">Advertisements</a>
   <a href="admin-jobs.html">Latest Jobs Manage</a>
+  <a href="admin-auto-checker.html">Auto Job Checker</a>
   <a href="portal-items.html">Portal Items</a>
   <a href="admin-services.html">Services</a>
   <a href="all-members.html">All Members</a>
@@ -338,6 +339,7 @@ body.dark-mode .nav-logo img {
     <div class="stat-card"><small>Advertisements</small><strong id="adsCount">0</strong></div>
     <div class="stat-card"><small>Links</small><strong id="linksCount">0</strong></div>
     <div class="stat-card"><small>Portal Items</small><strong id="portalItemsCount">0</strong></div>
+    <div class="stat-card"><small>Auto Drafts</small><strong id="autoDraftsCount">0</strong></div>
     <div class="stat-card"><small>Service Pages</small><strong id="serviceGuidesCount">0</strong></div>
     <div class="stat-card visitor-card">
       <small>Website Visitors</small>
@@ -388,6 +390,13 @@ body.dark-mode .nav-logo img {
       <h3>Latest Jobs</h3>
       <p>Job forms add/delete करें।</p>
       <a href="admin-jobs.html">Open</a>
+    </div>
+
+    <div class="card">
+      <i class="fa-solid fa-rotate"></i>
+      <h3>Auto Job Checker</h3>
+      <p>Official sources check karke naye notice draft me laayein.</p>
+      <a href="admin-auto-checker.html">Open</a>
     </div>
 
     <div class="card">
@@ -900,6 +909,7 @@ Cook | 1426 |"></textarea>
   const membersRef = ref(db, "members");
   const portalItemsRef = ref(db, "portalItems");
   const serviceGuidesRef = ref(db, "serviceGuides");
+  const autoJobDraftsRef = ref(db, "autoJobDrafts");
 
   const setCount = (id, value) => {
     const element = document.getElementById(id);
@@ -943,6 +953,17 @@ Cook | 1426 |"></textarea>
 
   onValue(serviceGuidesRef, (snapshot) => {
     setCount("serviceGuidesCount", countSnapshotChildren(snapshot));
+  });
+
+  onValue(autoJobDraftsRef, (snapshot) => {
+    let count = 0;
+    if(snapshot.exists()){
+      snapshot.forEach((child) => {
+        const draft = child.val() || {};
+        if(String(draft.checkerStatus || "draft").toLowerCase() !== "published"){ count += 1; }
+      });
+    }
+    setCount("autoDraftsCount", count);
   });
 
   window.addImportantLink = () => {

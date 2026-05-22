@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auto Job Checker | E-MITRA WALA</title>
+  <link rel="icon" type="image/png" sizes="512x512" href="favicon.png">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="shortcut icon" href="favicon.ico">
+  <link rel="apple-touch-icon" href="favicon.png">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,'Nirmala UI','Segoe UI',sans-serif}
+    body{background:#f7fbff;color:#172033;line-height:1.45}
+    .topbar{background:#043a76;color:#fff;padding:6px 3%;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:12px}
+    header{background:linear-gradient(135deg,#0057a8,#03224d);color:#fff;text-align:center;padding:16px 3%;border-bottom:3px solid #ff7a00}
+    header h1{color:#ff7a00;font-size:clamp(22px,4vw,32px)}
+    header p{font-size:13px;margin-top:4px}
+    nav{background:#fff;padding:8px 3%;display:flex;gap:7px;flex-wrap:wrap;justify-content:center;box-shadow:0 3px 12px rgba(0,0,0,.08);position:sticky;top:0;z-index:10}
+    nav a,nav button{background:#0057a8;color:#fff;border:0;text-decoration:none;padding:8px 11px;border-radius:6px;font-weight:800;font-size:12px;cursor:pointer}
+    nav a:hover,nav button:hover{background:#ff7a00;color:#03224d}
+    main{max-width:1180px;margin:auto;padding:16px 3% 34px}
+    .panel{background:#fff;border:1px solid #d8e6f5;border-top:3px solid #ff7a00;border-radius:7px;padding:12px;margin-bottom:14px;box-shadow:0 4px 14px rgba(0,0,0,.07)}
+    .panel h2{color:#0057a8;font-size:18px;margin-bottom:8px}
+    .admin-info{text-align:center;background:#eaf4ff;border-left:4px solid #ff7a00;border-top:0}
+    .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:14px}
+    .stat{background:#fff;border:1px solid #d8e6f5;border-top:3px solid #0057a8;border-radius:7px;padding:10px}
+    .stat small{display:block;color:#56677c;font-size:11px;font-weight:800;text-transform:uppercase}
+    .stat strong{display:block;color:#0057a8;font-size:22px;line-height:1.1;margin-top:3px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    input,textarea,select{width:100%;min-width:0;padding:8px 9px;border:1px solid #bdd0e5;border-radius:6px;font-size:13px;background:#fff;color:#172033}
+    textarea{min-height:80px;resize:vertical}
+    .wide{grid-column:1/-1}
+    .buttons{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}
+    button{border:0;border-radius:6px;padding:8px 11px;font-size:12px;font-weight:800;cursor:pointer;background:#0057a8;color:#fff}
+    button:hover{background:#ff7a00;color:#03224d}
+    .cancel{background:#555}
+    .delete{background:#d90000}
+    .publish{background:#138a36}
+    .muted{color:#56677c;font-size:12px;font-weight:700}
+    .status{color:#0057a8;font-size:12px;font-weight:800;margin-top:7px}
+    .row{background:#eaf4ff;border-left:3px solid #0057a8;border-radius:7px;padding:9px;margin-bottom:8px;display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+    .row.error{border-left-color:#d90000;background:#fff7f7}
+    .row.success{border-left-color:#138a36;background:#f2fff6}
+    .row strong{color:#0057a8;font-size:14px;overflow-wrap:anywhere}
+    .row small{display:block;color:#56677c;font-weight:700;font-size:11px;margin-top:2px;overflow-wrap:anywhere}
+    .row .actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;flex-shrink:0}
+    .badge{display:inline-block;background:#fff;border:1px solid #bdd0e5;color:#0057a8;border-radius:999px;padding:2px 7px;font-size:10px;font-weight:900;margin:3px 4px 0 0}
+    .empty{padding:16px;text-align:center;color:#56677c;font-weight:800}
+    .logs{max-height:360px;overflow:auto}
+    .source-list,.draft-list{max-height:620px;overflow:auto;padding-right:2px}
+    @media(max-width:820px){.grid,.form-grid{grid-template-columns:1fr}.wide{grid-column:auto}.row{display:block}.row .actions{justify-content:flex-start;margin-top:8px}nav{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap}nav a,nav button{white-space:nowrap}}
+  </style>
+</head>
+<body>
+  <div class="topbar"><div>Auto Job Checker</div><div id="liveTime">Loading...</div></div>
+  <header>
+    <h1>Auto Job Checker</h1>
+    <p>Official websites check karke naye notice ko draft me ready karein.</p>
+  </header>
+  <nav>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="admin-jobs.html">Latest Jobs</a>
+    <a href="portal-items.html">Portal Items</a>
+    <a href="job-form.html">Public Jobs Page</a>
+    <button onclick="logoutUser()">Logout</button>
+  </nav>
+  <main>
+    <section class="panel admin-info">
+      <h2 id="accessTitle">Admin Access Checking...</h2>
+      <p id="adminEmailText">Please wait...</p>
+    </section>
+
+    <section class="stats">
+      <div class="stat"><small>Sources</small><strong id="sourceCount">0</strong></div>
+      <div class="stat"><small>Drafts</small><strong id="draftCount">0</strong></div>
+      <div class="stat"><small>Last Checked</small><strong id="lastChecked">--</strong></div>
+      <div class="stat"><small>Last New Drafts</small><strong id="lastNewCount">0</strong></div>
+    </section>
+
+    <section class="panel">
+      <h2>Checker Server</h2>
+      <div class="form-grid">
+        <input class="wide" type="url" id="adminServerUrl" placeholder="Render Server URL jaise https://your-app.onrender.com">
+      </div>
+      <div class="buttons">
+        <button type="button" onclick="saveAdminServerUrl()">Save Server URL</button>
+        <button type="button" class="publish" onclick="runCheckerNow()">Run Checker Now</button>
+      </div>
+      <div class="status" id="checkerStatus">Server URL blank ho to local server route use hoga.</div>
+    </section>
+
+    <div class="grid">
+      <section class="panel">
+        <h2>Official Sources</h2>
+        <div class="form-grid">
+          <input id="sourceName" placeholder="Source Name jaise RPSC">
+          <input id="sourceDepartment" placeholder="Department / Board">
+          <input class="wide" id="sourceUrl" type="url" placeholder="Official website URL https://...">
+          <input class="wide" id="sourceKeywords" placeholder="Keywords comma se: recruitment, admit card, result">
+          <select id="sourceEnabled">
+            <option value="true">Enabled</option>
+            <option value="false">Disabled</option>
+          </select>
+        </div>
+        <div class="buttons">
+          <button type="button" id="sourceSaveBtn" onclick="saveSource()">Add Source</button>
+          <button type="button" class="cancel" onclick="clearSourceForm()">Clear</button>
+        </div>
+        <div class="status" id="sourceStatus"></div>
+        <div class="source-list" id="sourceList"><div class="empty">Loading...</div></div>
+      </section>
+
+      <section class="panel">
+        <h2>Error Log / Activity</h2>
+        <div class="logs" id="logList"><div class="empty">Loading...</div></div>
+      </section>
+    </div>
+
+    <section class="panel">
+      <h2>Detected Draft Review</h2>
+      <div class="form-grid">
+        <input id="draftTitle" placeholder="Title">
+        <input id="draftDepartment" placeholder="Department">
+        <input id="draftPostDate" placeholder="Post Date">
+        <input id="draftTotalPosts" placeholder="Total Posts">
+        <textarea id="draftImportantDates" placeholder="Important Dates"></textarea>
+        <textarea id="draftQualification" placeholder="Qualification"></textarea>
+        <input id="draftOfficialLink" type="url" placeholder="Official Link">
+        <input id="draftSourceLink" type="url" placeholder="Source / Notice Link">
+        <select id="draftPostTarget">
+          <option value="latestJob">Latest Job</option>
+          <option value="admitCard">Admit Card</option>
+          <option value="result">Result</option>
+          <option value="answerKey">Answer Key</option>
+          <option value="syllabus">Syllabus</option>
+        </select>
+        <input id="draftLastDate" placeholder="Last Date optional">
+        <textarea class="wide" id="draftPageContent" placeholder="Extra page content / PDF extracted text"></textarea>
+      </div>
+      <div class="buttons">
+        <button type="button" onclick="saveDraft()">Save Draft</button>
+        <button type="button" class="publish" onclick="publishDraft()">Publish Live</button>
+        <button type="button" class="cancel" onclick="clearDraftForm()">Clear Form</button>
+        <button type="button" class="delete" onclick="deleteDraft()">Delete Draft</button>
+      </div>
+      <div class="status" id="draftStatus">Draft select karein ya checker run karein.</div>
+      <div class="draft-list" id="draftList"><div class="empty">Loading...</div></div>
+    </section>
+  </main>
+
+  <script>function updateLiveTime(){document.getElementById("liveTime").innerText=new Date().toLocaleString("hi-IN")}updateLiveTime();setInterval(updateLiveTime,1000)</script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+    import { getAuth,onAuthStateChanged,signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+    import { getDatabase,ref,push,set,update,remove,onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+
+    const firebaseConfig={apiKey:"AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",authDomain:"my-website-73785.firebaseapp.com",databaseURL:"https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app/",projectId:"my-website-73785",storageBucket:"my-website-73785.firebasestorage.app",messagingSenderId:"854088341990",appId:"1:854088341990:web:3211d4ef9fe4b78d025e27"};
+    const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getDatabase(app),adminEmail="jasmelsolanki@gmail.com";
+    const adminServerStorageKey="emitraAdminServerUrl";
+    let adminAllowed=false,editingSourceId="",activeDraftId="",sourcesCache={},draftsCache={};
+    const sourceFields=["sourceName","sourceDepartment","sourceUrl","sourceKeywords","sourceEnabled"];
+    const draftFields=["draftTitle","draftDepartment","draftPostDate","draftTotalPosts","draftImportantDates","draftQualification","draftOfficialLink","draftSourceLink","draftPostTarget","draftLastDate","draftPageContent"];
+    const $=(id)=>document.getElementById(id);
+    const sourceList=$("sourceList"),draftList=$("draftList"),logList=$("logList");
+
+    $("adminServerUrl").value=localStorage.getItem(adminServerStorageKey)||"";
+
+    const escapeHTML=(value="")=>String(value||"").replace(/[&<>"']/g,(char)=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[char]));
+    const formatTime=(value)=>value?new Date(Number(value)).toLocaleString("hi-IN"):"--";
+    const getValue=(id)=>$(id).value.trim();
+    const setValue=(id,value="")=>{$(id).value=value||""};
+    const getAdminServerUrl=()=>String(localStorage.getItem(adminServerStorageKey)||"").trim().replace(/\/+$/,"");
+    const isStaticHosted=()=>/^emitrawala\.online$|github\.io$/i.test(location.hostname);
+    const adminApiUrl=(path)=>{const base=getAdminServerUrl();if(base)return base+path;if(isStaticHosted())throw new Error("Render Server URL save karein, phir dobara try karein.");return path};
+    const callAdminApi=async(path,body={})=>{
+      const user=auth.currentUser;
+      if(!user)throw new Error("Admin login missing");
+      const token=await user.getIdToken();
+      const response=await fetch(adminApiUrl(path),{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},body:JSON.stringify(body)});
+      const data=await response.json().catch(()=>({}));
+      if(!response.ok||data.ok===false)throw new Error(data.error||`Server action failed (${response.status})`);
+      return data;
+    };
+
+    window.saveAdminServerUrl=()=>{
+      const value=getValue("adminServerUrl").replace(/\/+$/,"");
+      if(value&&!/^https?:\/\/[^/]+/i.test(value)){$("checkerStatus").innerText="Server URL https:// se start hona chahiye.";return}
+      localStorage.setItem(adminServerStorageKey,value);
+      $("checkerStatus").innerText=value?"Server URL save ho gaya.":"Server URL clear ho gaya.";
+    };
+
+    const sourceForm=()=>({
+      name:getValue("sourceName"),
+      department:getValue("sourceDepartment"),
+      url:getValue("sourceUrl"),
+      keywords:getValue("sourceKeywords"),
+      enabled:getValue("sourceEnabled")!=="false",
+      updatedAt:Date.now()
+    });
+
+    window.clearSourceForm=()=>{
+      editingSourceId="";
+      sourceFields.forEach((id)=>setValue(id,id==="sourceEnabled"?"true":""));
+      $("sourceSaveBtn").innerText="Add Source";
+      $("sourceStatus").innerText="";
+    };
+
+    window.saveSource=()=>{
+      if(!adminAllowed){alert("Admin verify nahi hua.");return}
+      const data=sourceForm();
+      if(!data.name||!/^https?:\/\//i.test(data.url)){alert("Source name aur valid URL zaroor bharen.");return}
+      const target=editingSourceId?ref(db,"autoJobSources/"+editingSourceId):push(ref(db,"autoJobSources"));
+      const task=editingSourceId?update(target,data):set(target,{...data,createdAt:Date.now()});
+      task.then(()=>{ $("sourceStatus").innerText=editingSourceId?"Source update ho gaya.":"Source add ho gaya."; clearSourceForm(); }).catch((e)=>$("sourceStatus").innerText=e.message);
+    };
+
+    window.editSource=(id)=>{
+      const data=sourcesCache[id]||{};
+      editingSourceId=id;
+      setValue("sourceName",data.name);
+      setValue("sourceDepartment",data.department);
+      setValue("sourceUrl",data.url);
+      setValue("sourceKeywords",data.keywords);
+      setValue("sourceEnabled",data.enabled===false?"false":"true");
+      $("sourceSaveBtn").innerText="Update Source";
+      $("sourceStatus").innerText="Edit mode active.";
+      scrollTo({top:0,behavior:"smooth"});
+    };
+
+    window.deleteSource=(id)=>{
+      if(!adminAllowed){alert("Admin verify nahi hua.");return}
+      if(confirm("Ye source delete karna hai?"))remove(ref(db,"autoJobSources/"+id)).catch((e)=>alert(e.message));
+    };
+
+    const draftForm=()=>({
+      title:getValue("draftTitle"),
+      department:getValue("draftDepartment"),
+      postDate:getValue("draftPostDate"),
+      totalPosts:getValue("draftTotalPosts"),
+      importantDates:getValue("draftImportantDates"),
+      qualification:getValue("draftQualification"),
+      officialLink:getValue("draftOfficialLink"),
+      officialWebsite:getValue("draftOfficialLink"),
+      sourceLink:getValue("draftSourceLink"),
+      detailLink:getValue("draftSourceLink"),
+      postTarget:getValue("draftPostTarget")||"latestJob",
+      lastDate:getValue("draftLastDate"),
+      lastApplyDate:getValue("draftLastDate"),
+      pageContent:getValue("draftPageContent"),
+      postStatus:"draft",
+      checkerStatus:"draft",
+      updatedAt:Date.now()
+    });
+
+    const fillDraftForm=(id,data={})=>{
+      activeDraftId=id;
+      setValue("draftTitle",data.title);
+      setValue("draftDepartment",data.department);
+      setValue("draftPostDate",data.postDate);
+      setValue("draftTotalPosts",data.totalPosts);
+      setValue("draftImportantDates",data.importantDates);
+      setValue("draftQualification",data.qualification);
+      setValue("draftOfficialLink",data.officialLink||data.officialWebsite);
+      setValue("draftSourceLink",data.sourceLink||data.detailLink);
+      setValue("draftPostTarget",data.postTarget||"latestJob");
+      setValue("draftLastDate",data.lastDate||data.lastApplyDate);
+      setValue("draftPageContent",data.pageContent);
+      $("draftStatus").innerText="Draft selected: "+(data.title||id);
+    };
+
+    window.selectDraft=(id)=>{
+      const data=draftsCache[id];
+      if(!data){alert("Draft data nahi mila.");return}
+      fillDraftForm(id,data);
+      $("draftTitle").focus();
+    };
+
+    window.clearDraftForm=()=>{
+      activeDraftId="";
+      draftFields.forEach((id)=>setValue(id,id==="draftPostTarget"?"latestJob":""));
+      $("draftStatus").innerText="Draft select karein ya checker run karein.";
+    };
+
+    window.saveDraft=()=>{
+      if(!adminAllowed){alert("Admin verify nahi hua.");return}
+      if(!activeDraftId){alert("Pehle draft select karein.");return}
+      const data=draftForm();
+      if(!data.title){alert("Title zaroor bharen.");return}
+      update(ref(db,"autoJobDrafts/"+activeDraftId),data).then(()=>$("draftStatus").innerText="Draft save ho gaya.").catch((e)=>$("draftStatus").innerText=e.message);
+    };
+
+    window.publishDraft=async()=>{
+      if(!adminAllowed){alert("Admin verify nahi hua.");return}
+      if(!activeDraftId){alert("Pehle draft select karein.");return}
+      const data=draftForm();
+      if(!data.title){alert("Title zaroor bharen.");return}
+      if(!confirm("Review complete hai? Is draft ko live publish karna hai?"))return;
+      try{
+        $("draftStatus").innerText="Publishing...";
+        await update(ref(db,"autoJobDrafts/"+activeDraftId),data);
+        const result=await callAdminApi("/admin/auto-job-checker/publish",{draftId:activeDraftId,draft:data});
+        $("draftStatus").innerText="Live publish ho gaya. Job ID: "+result.jobId;
+      }catch(error){
+        $("draftStatus").innerText="Publish error: "+error.message;
+      }
+    };
+
+    window.deleteDraft=()=>{
+      if(!adminAllowed){alert("Admin verify nahi hua.");return}
+      if(!activeDraftId){alert("Pehle draft select karein.");return}
+      if(confirm("Ye draft delete karna hai? Duplicate record saved rahega taki dobara na aaye.")){
+        remove(ref(db,"autoJobDrafts/"+activeDraftId)).then(()=>clearDraftForm()).catch((e)=>$("draftStatus").innerText=e.message);
+      }
+    };
+
+    window.runCheckerNow=async()=>{
+      if(!adminAllowed){alert("Admin verify nahi hua.");return}
+      try{
+        $("checkerStatus").innerText="Checker run ho raha hai...";
+        const result=await callAdminApi("/admin/auto-job-checker/run",{});
+        $("checkerStatus").innerText=result.skipped?result.message:`Done: ${result.checkedCount||0} sources, ${result.newDraftCount||0} new drafts, ${result.errorCount||0} errors.`;
+      }catch(error){
+        $("checkerStatus").innerText="Checker error: "+error.message;
+      }
+    };
+
+    const renderSources=()=>{
+      const rows=Object.entries(sourcesCache).sort((a,b)=>String(a[1].name||"").localeCompare(String(b[1].name||"")));
+      $("sourceCount").innerText=rows.length;
+      if(!rows.length){sourceList.innerHTML='<div class="empty">Abhi koi source add nahi hai.</div>';return}
+      sourceList.innerHTML=rows.map(([id,data])=>`<div class="row ${data.lastStatus==="error"?"error":data.lastStatus==="success"?"success":""}"><div><strong>${escapeHTML(data.name||"Official Source")}</strong><small>${escapeHTML(data.url||"")}</small><small>Last checked: ${formatTime(data.lastCheckedAt)} | Status: ${escapeHTML(data.lastStatus||"new")} | New: ${escapeHTML(data.lastNewCount||0)} | Found: ${escapeHTML(data.lastFoundCount||0)}</small>${data.lastError?`<small style="color:#d90000;">${escapeHTML(data.lastError)}</small>`:""}<span class="badge">${data.enabled===false?"Disabled":"Enabled"}</span></div><div class="actions"><button onclick="editSource('${id}')">Edit</button><button class="delete" onclick="deleteSource('${id}')">Delete</button></div></div>`).join("");
+    };
+
+    const renderDrafts=()=>{
+      const rows=Object.entries(draftsCache).sort((a,b)=>Number(b[1].updatedAt||b[1].createdAt||0)-Number(a[1].updatedAt||a[1].createdAt||0));
+      const draftRows=rows.filter(([,data])=>String(data.checkerStatus||"draft")!=="published");
+      $("draftCount").innerText=draftRows.length;
+      if(!draftRows.length){draftList.innerHTML='<div class="empty">Pending draft nahi hai.</div>';return}
+      draftList.innerHTML=draftRows.map(([id,data])=>`<div class="row ${activeDraftId===id?"success":""}"><div><strong>${escapeHTML(data.title||"Untitled Draft")}</strong><small>${escapeHTML(data.department||"Department not set")} | ${escapeHTML(data.postTarget||"latestJob")} | ${formatTime(data.createdAt)}</small><small>Source: ${escapeHTML(data.sourceName||"")} | PDF text: ${data.pdfTextExtracted?"Yes":"No"}</small><small>${escapeHTML(data.sourceLink||data.detailLink||"")}</small><span class="badge">Draft</span></div><div class="actions"><button onclick="selectDraft('${id}')">Review</button></div></div>`).join("");
+    };
+
+    const renderLogs=(logs={})=>{
+      const rows=Object.entries(logs).sort((a,b)=>Number(b[1].createdAt||0)-Number(a[1].createdAt||0)).slice(0,80);
+      if(!rows.length){logList.innerHTML='<div class="empty">Abhi log nahi hai.</div>';return}
+      logList.innerHTML=rows.map(([,data])=>`<div class="row ${data.level==="error"?"error":data.level==="success"?"success":""}"><div><strong>${escapeHTML(data.level||"info")}</strong><small>${formatTime(data.createdAt)} | ${escapeHTML(data.sourceName||"System")}</small><small>${escapeHTML(data.message||"")}</small></div></div>`).join("");
+    };
+
+    onAuthStateChanged(auth,(user)=>{
+      if(user&&user.email===adminEmail){
+        adminAllowed=true;
+        $("accessTitle").innerText="Admin Access Verified";
+        $("adminEmailText").innerText=user.email;
+      }else{
+        adminAllowed=false;
+        location.href="index.html";
+      }
+    });
+    onValue(ref(db,"autoJobSources"),(snapshot)=>{sourcesCache=snapshot.val()||{};renderSources()});
+    onValue(ref(db,"autoJobDrafts"),(snapshot)=>{draftsCache=snapshot.val()||{};renderDrafts()});
+    onValue(ref(db,"autoJobLogs"),(snapshot)=>renderLogs(snapshot.val()||{}));
+    onValue(ref(db,"autoJobCheckerStatus"),(snapshot)=>{
+      const data=snapshot.val()||{};
+      $("lastChecked").innerText=data.finishedAt?new Date(Number(data.finishedAt)).toLocaleTimeString("hi-IN"):"--";
+      $("lastNewCount").innerText=data.newDraftCount||0;
+    });
+    window.logoutUser=()=>signOut(auth).then(()=>location.href="index.html");
+  </script>
+</body>
+</html>
