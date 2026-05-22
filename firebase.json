@@ -7,6 +7,8 @@
       ".git/**",
       ".env",
       ".env.*",
+      "firebase-*.rules",
+      "firebase-database.rules.json",
       "node_modules/**",
       "package*.json",
       "server.js",

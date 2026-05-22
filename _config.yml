@@ -1,0 +1,14 @@
+exclude:
+  - .env
+  - .env.*
+  - firebase.json
+  - firebase-*.rules
+  - firebase-database.rules.json
+  - package.json
+  - package-lock.json
+  - server.js
+  - utils/
+  - node_modules/
+  - supabase-storage-policies.sql
+  - SUPABASE_SETUP.md
+  - telegram-bot-setup.md
