@@ -40,7 +40,7 @@
     .topbar{
       background:var(--blue-deep);
       color:white;
-      padding:7px 5%;
+      padding:7px clamp(18px,5vw,92px);
       display:flex;
       justify-content:space-between;
       align-items:center;
@@ -49,16 +49,20 @@
       font-size:12px;
     }
 
+    .topbar > div:last-child{
+      padding-right:10px;
+    }
+
     .topbar span,
     .topbar i{color:var(--yellow);font-weight:800;}
 
     .session-timer{
       background:var(--yellow);
       color:var(--blue);
-      padding:7px 5%;
+      padding:5px 5%;
       text-align:center;
       font-weight:800;
-      font-size:13px;
+      font-size:12px;
       box-shadow:0 3px 12px rgba(0,0,0,.10);
     }
 
@@ -288,8 +292,8 @@
 
     .profile-form{
       display:grid;
-      grid-template-columns:repeat(3,minmax(0,1fr)) auto;
-      gap:7px;
+      grid-template-columns:repeat(2,minmax(220px,1fr));
+      gap:9px;
       align-items:end;
       margin:10px 0 10px;
     }
@@ -300,7 +304,9 @@
       font-weight:800;
     }
 
-    .profile-form input{
+    .profile-form input,
+    .profile-form select,
+    .profile-form textarea{
       width:100%;
       min-width:0;
       margin-top:4px;
@@ -309,6 +315,23 @@
       border-radius:8px;
       font-size:12px;
       background:#f9fbff;
+    }
+
+    .profile-form input[type="email"]{
+      font-size:11px;
+    }
+
+    .profile-form textarea{
+      min-height:62px;
+      resize:vertical;
+    }
+
+    .profile-form .full{
+      grid-column:1/-1;
+    }
+
+    .profile-form .wide{
+      grid-column:span 2;
     }
 
     .profile-form button{
@@ -320,6 +343,7 @@
       padding:8px 11px;
       cursor:pointer;
       font-size:12px;
+      width:fit-content;
     }
 
     .profile-status{
@@ -384,25 +408,52 @@
 
     .action-strip{
       display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
-      gap:8px;
-      margin-bottom:12px;
+      grid-template-columns:1fr;
+      gap:7px;
+      position:fixed;
+      top:290px;
+      left:12px;
+      width:232px;
+      max-height:calc(100vh - 310px);
+      overflow:auto;
+      background:white;
+      border:1px solid var(--line);
+      border-left:5px solid var(--blue);
+      border-radius:12px;
+      padding:10px 10px 11px;
+      box-shadow:0 14px 34px rgba(8,31,74,.16);
+      z-index:850;
+    }
+
+    .action-strip::before{
+      content:"Quick Actions";
+      color:var(--blue);
+      font-size:12px;
+      font-weight:900;
+      letter-spacing:0;
+      padding:0 2px 3px;
     }
 
     .action-tile{
       display:flex;
       align-items:center;
       gap:9px;
-      background:#f9fbff;
+      background:#ffffff;
       color:var(--blue);
       border:1px solid var(--line);
-      border-left:4px solid var(--yellow);
       border-radius:8px;
-      padding:9px 10px;
+      padding:9px;
       text-decoration:none;
       font-weight:800;
       font-size:12px;
-      min-height:52px;
+      min-height:46px;
+      transition:.2s ease;
+    }
+
+    .action-tile:hover{
+      transform:translateX(3px);
+      border-color:rgba(0,87,168,.35);
+      box-shadow:0 6px 16px rgba(8,31,74,.10);
     }
 
     .action-tile i{
@@ -415,6 +466,12 @@
       border-radius:7px;
       color:var(--blue);
       flex:0 0 auto;
+    }
+
+    @media(min-width:1120px){
+      .container{
+        padding-left:284px;
+      }
     }
 
     .panel-alert{
@@ -1059,19 +1116,34 @@
     }
 
     @media(max-width:768px){
-      .topbar{justify-content:center;text-align:center;}
+      .topbar{justify-content:center;text-align:center;padding-left:18px;padding-right:18px;}
+      .topbar > div:last-child{padding-right:0;}
       header{padding:28px 5% 76px;}
       .hero-wrap{align-items:flex-start;flex-direction:column;}
       .hero-badge{width:100%;text-align:left;}
       nav{width:92%;justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap;}
       nav a,nav button{white-space:nowrap;}
-      .container{padding:28px 4% 0;}
+      .container{padding:28px 4% 0 84px;}
       .stats-grid{grid-template-columns:1fr;}
       .account-layout{grid-template-columns:1fr;}
       .account-side{position:static;}
       .profile-summary{grid-template-columns:1fr;}
-      .profile-form,.password-form{grid-template-columns:1fr;}
+      .profile-form,.password-form{grid-template-columns:minmax(0,1fr);}
+      .profile-form .wide{grid-column:1/-1;}
       .panel-alert{grid-template-columns:1fr;}
+      .action-strip{
+        top:250px;
+        left:8px;
+        width:64px;
+        max-height:calc(100vh - 270px);
+        padding:8px 7px;
+        border-left:0;
+        border-top:4px solid var(--blue);
+      }
+      .action-strip::before{content:"";display:none;}
+      .action-tile{justify-content:center;padding:8px;min-height:44px;}
+      .action-tile span{display:none;}
+      .action-tile i{width:30px;height:30px;}
       .service-request-form{grid-template-columns:1fr;}
       .service-request-form textarea{grid-column:auto;}
       .chat-reply{grid-template-columns:1fr;}
@@ -1193,6 +1265,8 @@ body.dark-mode .special-card,
 body.dark-mode .account-side,
 body.dark-mode .account-main,
 body.dark-mode .account-tab,
+body.dark-mode .action-strip,
+body.dark-mode .action-tile,
 body.dark-mode .service-request-panel,
 body.dark-mode .profile-chat,
 body.dark-mode .chat-row,
@@ -1374,18 +1448,36 @@ body.dark-mode .nav-logo img {
       <section class="account-main">
         <div class="account-panel active" id="accountProfilePanel">
           <h3>Profile Details</h3>
-          <p>Name, mobile aur profile email update karein.</p>
+          <p>Name, mobile, profile email aur resume ke liye required details update karein.</p>
           <div class="profile-form">
             <label>Name
               <input type="text" id="profileName" placeholder="Your name">
             </label>
+            <label>Father's Name
+              <input type="text" id="profileFatherName" placeholder="Father name">
+            </label>
             <label>Mobile No.
               <input type="tel" id="profileMobile" placeholder="Mobile number">
             </label>
-            <label>Profile Email
+            <label class="wide">Profile Email
               <input type="email" id="profileEmail" placeholder="Contact email">
             </label>
-            <button onclick="saveUserProfile()">Save Profile</button>
+            <label>Date of Birth
+              <input type="text" id="profileDob" placeholder="DD-MM-YYYY" maxlength="10">
+            </label>
+            <label>Gender
+              <select id="profileGender"><option value="">Select Gender</option><option>Male</option><option>Female</option><option>Other</option></select>
+            </label>
+            <label>Marital Status
+              <select id="profileMaritalStatus"><option value="">Select Status</option><option>Unmarried</option><option>Married</option><option>Divorced</option><option>Widowed</option></select>
+            </label>
+            <label>Nationality
+              <input type="text" id="profileNationality" placeholder="Indian">
+            </label>
+            <label class="full">Address
+              <textarea id="profileAddress" placeholder="Village / City, District, State"></textarea>
+            </label>
+            <button class="full" onclick="saveUserProfile()">Save Profile</button>
           </div>
           <div class="profile-status" id="profileStatus"></div>
         </div>
@@ -1413,6 +1505,7 @@ body.dark-mode .nav-logo img {
     <div class="action-strip">
       <a class="action-tile" href="user-data-folder.html"><i class="fa-solid fa-cloud-arrow-up"></i><span>Upload / View Documents</span></a>
       <a class="action-tile" href="user-latest-jobs.html"><i class="fa-solid fa-magnifying-glass"></i><span>Search Latest Jobs</span></a>
+      <a class="action-tile" href="resume-format.html"><i class="fa-solid fa-file-lines"></i><span>Resume Builder</span></a>
       <a class="action-tile" href="user-download-center.html"><i class="fa-solid fa-file-arrow-down"></i><span>Download Forms</span></a>
       <a class="action-tile" href="user-my-requests.html"><i class="fa-solid fa-clipboard-list"></i><span>Track Requests</span></a>
       <a class="action-tile" href="contact.html"><i class="fa-solid fa-headset"></i><span>Need Help</span></a>
@@ -1950,6 +2043,22 @@ body.dark-mode .nav-logo img {
     };
   };
 
+  const formatDateText = (value = "") => {
+    const digits = String(value || "").replace(/\D/g, "").slice(0, 8);
+    const parts = [];
+    if(digits.slice(0, 2)){ parts.push(digits.slice(0, 2)); }
+    if(digits.slice(2, 4)){ parts.push(digits.slice(2, 4)); }
+    if(digits.slice(4, 8)){ parts.push(digits.slice(4, 8)); }
+    return parts.join("-");
+  };
+
+  const profileDobInput = document.getElementById("profileDob");
+  if(profileDobInput){
+    profileDobInput.addEventListener("input", () => {
+      profileDobInput.value = formatDateText(profileDobInput.value);
+    });
+  }
+
   const formatBytes = (bytes = 0) => {
     const size = Number(bytes || 0);
     if(size >= 1024 * 1024){
@@ -2096,14 +2205,30 @@ body.dark-mode .nav-logo img {
   };
 
   const renderUserProfile = () => {
+    const normalizeOption = (value = "", options = []) => {
+      const text = String(value || "").trim().toLowerCase();
+      return options.find((item) => item.toLowerCase() === text) || "";
+    };
     const name = currentMember.name || "";
+    const fatherName = currentMember.fatherName || currentMember.father || "";
     const mobile = currentMember.mobile || "";
     const profileEmail = currentMember.profileEmail || currentMember.email || currentUser?.email || "";
+    const dob = currentMember.dob || currentMember.dateOfBirth || "";
+    const gender = normalizeOption(currentMember.gender, ["Male","Female","Other"]);
+    const maritalStatus = normalizeOption(currentMember.maritalStatus || currentMember.marital, ["Unmarried","Married","Divorced","Widowed"]);
+    const nationality = currentMember.nationality || "Indian";
+    const address = currentMember.address || currentMember.fullAddress || currentMember.location || "";
     const uploadStatus = currentMember.uploadApproved === true ? "Approved" : "Pending";
 
     document.getElementById("profileName").value = name;
+    document.getElementById("profileFatherName").value = fatherName;
     document.getElementById("profileMobile").value = mobile;
     document.getElementById("profileEmail").value = profileEmail;
+    document.getElementById("profileDob").value = dob;
+    document.getElementById("profileGender").value = gender;
+    document.getElementById("profileMaritalStatus").value = maritalStatus;
+    document.getElementById("profileNationality").value = nationality;
+    document.getElementById("profileAddress").value = address;
     document.getElementById("summaryName").innerText = name || "Not added";
     document.getElementById("summaryMobile").innerText = mobile || "Not added";
     document.getElementById("summaryProfileEmail").innerText = profileEmail || "Not added";
@@ -2258,8 +2383,14 @@ body.dark-mode .nav-logo img {
     }
 
     const name = document.getElementById("profileName").value.trim();
+    const fatherName = document.getElementById("profileFatherName").value.trim();
     const mobile = document.getElementById("profileMobile").value.trim();
     const profileEmail = document.getElementById("profileEmail").value.trim();
+    const dob = document.getElementById("profileDob").value.trim();
+    const gender = document.getElementById("profileGender").value.trim();
+    const maritalStatus = document.getElementById("profileMaritalStatus").value.trim();
+    const nationality = document.getElementById("profileNationality").value.trim();
+    const address = document.getElementById("profileAddress").value.trim();
     const status = document.getElementById("profileStatus");
     const oldMobile = normalizeMobile(currentMember.mobile || currentMember.phoneNumber || "");
     const newMobile = mobile ? normalizeMobile(mobile) : null;
@@ -2278,10 +2409,18 @@ body.dark-mode .nav-logo img {
     const memberData = {
       ...currentMember,
       name:name || (currentUser.email || "").split("@")[0],
+      fatherName,
       mobile:newMobile ? newMobile.display : "",
       mobileKey:newMobile ? newMobile.key : "",
       phoneNumber:newMobile ? newMobile.e164 : "",
       profileEmail:profileEmail || currentUser.email || "",
+      dob,
+      dateOfBirth:dob,
+      gender,
+      maritalStatus,
+      nationality:nationality || "Indian",
+      address,
+      fullAddress:address,
       updatedAt:Date.now()
     };
 

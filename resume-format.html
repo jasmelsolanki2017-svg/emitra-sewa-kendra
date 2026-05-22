@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resume Format Builder | E-MITRA WALA</title>
+<link rel="icon" type="image/png" sizes="512x512" href="favicon.png">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="shortcut icon" href="favicon.ico">
+<link rel="apple-touch-icon" href="favicon.png">
+<meta name="description" content="Free resume format builder. Details fill karke print-ready resume banaye aur PDF save karein.">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://emitrawala.online/resume-format.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root{--blue:#0057a8;--deep:#03224d;--yellow:#ff7a00;--bg:#f7fbff;--line:#d8e0f0;--text:#1f2633;--muted:#586174;--green:#25d366;}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins','Noto Sans Devanagari',sans-serif;}
+html{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+body{background:var(--bg);color:var(--text);line-height:1.55;}
+a{color:inherit;}
+nav{background:var(--blue);padding:14px 6%;display:flex;justify-content:space-between;align-items:center;gap:18px;position:sticky;top:0;z-index:10;box-shadow:0 4px 15px rgba(0,0,0,.14);}
+.logo{display:inline-flex;align-items:center;line-height:0;text-decoration:none;flex-shrink:0;}
+.logo img{width:min(246px,54vw);max-height:62px;height:auto;display:block;border-radius:8px;}
+nav ul{display:flex;list-style:none;gap:18px;flex-wrap:wrap;justify-content:flex-end;}
+nav a{color:white;text-decoration:none;font-weight:700;}
+nav a:hover{color:var(--yellow);}
+.hero{background:linear-gradient(135deg,var(--blue),var(--deep));color:white;padding:42px 6%;}
+.hero-inner{max-width:1180px;margin:auto;}
+.hero h1{font-size:clamp(28px,5vw,44px);line-height:1.15;color:var(--yellow);margin-bottom:8px;}
+.hero p{max-width:780px;color:#fff1df;font-weight:600;}
+main{max-width:1180px;margin:auto;padding:24px 4%;display:grid;grid-template-columns:minmax(300px,430px) minmax(0,1fr);gap:18px;align-items:start;}
+.panel,.resume-sheet{background:white;border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 24px rgba(8,31,74,.08);}
+.panel{padding:16px;position:sticky;top:92px;}
+.panel h2{color:var(--blue);font-size:22px;margin-bottom:10px;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.field{display:flex;flex-direction:column;gap:5px;}
+.field.full{grid-column:1/-1;}
+label{font-size:12px;font-weight:800;color:#344158;}
+input,textarea,select{width:100%;border:1px solid #bdd0e5;border-radius:6px;padding:9px 10px;font-size:13px;outline:none;background:white;color:var(--text);}
+textarea{min-height:76px;resize:vertical;}
+input:focus,textarea:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,87,168,.12);}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+button{border:0;border-radius:6px;padding:10px 12px;font-size:13px;font-weight:900;cursor:pointer;background:var(--blue);color:white;}
+button:hover{background:var(--yellow);color:var(--deep);}
+.secondary{background:#4d5d72;}
+.danger{background:#c62828;}
+.profile-status{margin-top:10px;font-size:12px;font-weight:800;color:#0057a8;background:#eef6ff;border:1px solid #d8e6f5;border-radius:6px;padding:8px 10px;}
+.preview-wrap{overflow:auto;}
+.resume-sheet{width:min(100%,794px);min-height:1123px;margin:auto;padding:36px 42px;color:#111;}
+.resume-head{display:grid;grid-template-columns:1fr 112px;gap:18px;border-bottom:3px solid #111;padding-bottom:14px;margin-bottom:14px;align-items:start;}
+.resume-name{font-size:30px;line-height:1.12;font-weight:800;text-transform:uppercase;color:#111;overflow-wrap:anywhere;}
+.resume-title{font-size:14px;font-weight:700;color:#3d4a5c;margin-top:4px;}
+.contact-line{display:flex;flex-wrap:wrap;gap:7px 14px;margin-top:10px;font-size:11px;color:#333;}
+.photo-box{width:104px;height:124px;border:1px solid #888;display:flex;align-items:center;justify-content:center;font-size:11px;color:#666;text-align:center;overflow:hidden;justify-self:end;}
+.photo-box img{width:100%;height:100%;object-fit:cover;}
+.resume-section{margin-top:13px;}
+.resume-section h3{font-size:14px;text-transform:uppercase;letter-spacing:0;color:#0057a8;border-bottom:1px solid #c7d3e4;padding-bottom:3px;margin-bottom:7px;}
+.resume-section p,.resume-section li{font-size:12px;color:#202020;line-height:1.5;}
+.resume-section ul{padding-left:18px;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.info-table{width:100%;border-collapse:collapse;font-size:12px;}
+.info-table td{padding:3px 0;vertical-align:top;}
+.info-table td:first-child{font-weight:800;width:112px;color:#2f3d50;}
+.declaration{margin-top:22px;display:flex;justify-content:space-between;gap:20px;font-size:12px;}
+.signature{text-align:right;min-width:160px;}
+.resume-modern{border-top:12px solid #0057a8;padding-top:28px;}
+.resume-modern .resume-head{border-bottom:0;background:#eef6ff;padding:18px;border-radius:6px;grid-template-columns:1fr 104px;}
+.resume-modern .resume-name{color:#0057a8;}
+.resume-modern .resume-section h3{background:#0057a8;color:white;border:0;border-radius:4px;padding:5px 8px;}
+.resume-professional{border-left:12px solid #2f3d50;}
+.resume-professional .resume-head{border-bottom:2px solid #2f3d50;}
+.resume-professional .resume-name{color:#2f3d50;letter-spacing:0;}
+.resume-professional .resume-section h3{color:#2f3d50;border-bottom:2px solid #2f3d50;}
+.resume-biodata .resume-head{grid-template-columns:1fr;text-align:center;border-bottom:3px double #111;}
+.resume-biodata .resume-head>div:first-child{order:2;}
+.resume-biodata .photo-box{order:1;justify-self:center;margin-bottom:8px;}
+.resume-biodata .contact-line{justify-content:center;}
+.resume-biodata .resume-section h3{text-align:center;color:#111;border-bottom:1px solid #111;}
+.resume-biodata .two-col{grid-template-columns:1fr;}
+.resume-compact{padding:28px 34px;}
+.resume-compact .resume-head{grid-template-columns:1fr 92px;margin-bottom:10px;padding-bottom:10px;}
+.resume-compact .resume-name{font-size:25px;}
+.resume-compact .photo-box{width:88px;height:104px;}
+.resume-compact .resume-section{margin-top:9px;}
+.resume-compact .resume-section h3{font-size:12px;margin-bottom:4px;}
+.resume-compact .resume-section p,.resume-compact .resume-section li,.resume-compact .info-table,.resume-compact .declaration{font-size:11px;}
+.resume-classicdoc{font-family:'Poppins','Noto Sans Devanagari',sans-serif;padding:32px 50px;min-height:2246px;border-top:12px solid #0057a8;background:linear-gradient(180deg,#ffffff 0%,#f8fbff 100%);}
+.resume-classicdoc .resume-head{display:block;border-bottom:0;text-align:left;margin-bottom:18px;padding:18px 20px;background:linear-gradient(135deg,#0057a8,#043a76);border-radius:8px;color:white;box-shadow:0 8px 20px rgba(0,87,168,.16);}
+.resume-classicdoc .resume-head::before{content:"RESUME";display:block;text-align:center;font-size:26px;font-weight:800;text-decoration:none;margin-bottom:18px;color:#ffb15c;letter-spacing:0;border-bottom:1px solid rgba(255,255,255,.35);padding-bottom:8px;}
+.resume-classicdoc .resume-name{font-size:22px;text-transform:uppercase;color:white;margin-bottom:4px;}
+.resume-classicdoc .resume-title{display:none;}
+.resume-classicdoc .contact-line{display:block;font-size:13px;line-height:1.65;margin-top:6px;color:#eef6ff;}
+.resume-classicdoc .contact-line span{display:block;}
+.resume-classicdoc .photo-box{float:right;margin-top:-6px;width:98px;height:116px;background:white;border:3px solid #ffb15c;color:#0057a8;border-radius:6px;}
+.resume-classicdoc .resume-section{clear:both;margin-top:13px;}
+.resume-classicdoc .resume-section h3{font-size:14px;color:white;background:#0057a8;border-bottom:0;text-decoration:none;padding:6px 10px;margin-bottom:8px;border-radius:5px;border-left:5px solid #ff7a00;}
+.resume-classicdoc .resume-section p,.resume-classicdoc .resume-section li,.resume-classicdoc .info-table,.resume-classicdoc .declaration{font-family:'Poppins','Noto Sans Devanagari',sans-serif;font-size:12.5px;color:#172033;}
+.resume-classicdoc .resume-section p,.resume-classicdoc .resume-section ul,.resume-classicdoc .info-table{background:#ffffff;border:1px solid #d8e6f5;border-radius:6px;padding:9px 12px;}
+.resume-classicdoc .resume-section ul{padding-left:28px;}
+.resume-classicdoc .two-col{display:block;}
+.resume-classicdoc .info-table td:first-child{width:138px;color:#0057a8;}
+.resume-classicdoc .doc-page-two{margin-top:620px;}
+.resume-classicdoc .declaration{margin-top:28px;}
+.resume-classicdoc .signature{font-weight:800;color:#0057a8;}
+.whatsapp{position:fixed;right:22px;bottom:22px;width:56px;height:56px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:28px;box-shadow:0 8px 22px rgba(37,211,102,.35);z-index:20;}
+footer{background:var(--blue);color:white;text-align:center;padding:22px 6%;margin-top:20px;}
+footer a{color:var(--yellow);text-decoration:none;font-weight:800;margin:0 7px;display:inline-block;}
+@media(max-width:980px){main{grid-template-columns:1fr}.panel{position:static}.resume-sheet{min-height:auto}.resume-head{grid-template-columns:1fr 100px}.two-col{grid-template-columns:1fr;}.form-grid{grid-template-columns:1fr;}}
+@media(max-width:560px){nav{flex-direction:column;align-items:flex-start}nav ul{gap:12px}.hero{padding:34px 4%}main{padding:16px 3%}.resume-sheet{padding:24px 18px}.resume-head{grid-template-columns:1fr}.photo-box{justify-self:start}.resume-name{font-size:24px}.whatsapp{right:15px;bottom:15px;width:52px;height:52px;font-size:25px}}
+@media print{
+  body{background:white;}
+  nav,.hero,.panel,.whatsapp,footer{display:none!important;}
+  main{display:block;padding:0;max-width:none;}
+  .preview-wrap{overflow:visible;}
+  .resume-sheet{width:210mm;min-height:297mm;border:0;box-shadow:none;border-radius:0;margin:0;padding:14mm 16mm;}
+  .resume-classicdoc{min-height:auto;}
+  .resume-classicdoc .doc-page-two{break-before:page;page-break-before:always;margin-top:0;}
+  @page{size:A4;margin:0;}
+}
+</style>
+</head>
+<body>
+<nav>
+  <a class="logo" href="index.html"><img src="site-logo.svg" alt="E-MITRA WALA"></a>
+  <ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="OFFLINEFORM.HTML">PDF Forms</a></li>
+    <li><a href="job-form.html">Latest Jobs</a></li>
+    <li><a href="useful-pages.html">Useful Pages</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <h1>Resume Format Builder</h1>
+    <p>Details fill karein, resume preview turant dekhein, aur Print button se PDF save kar lein.</p>
+  </div>
+</section>
+
+<main>
+  <section class="panel">
+    <h2>Resume Details</h2>
+    <div class="form-grid">
+      <div class="field full"><label>Resume Format</label><select id="resumeFormat"><option value="simple">Simple Format</option><option value="modern">Modern Format</option><option value="professional">Professional Format</option><option value="biodata">Biodata Format</option><option value="compact">Compact Format</option><option value="classicdoc">Classic 2 Page Format</option></select></div>
+      <div class="field"><label>Full Name</label><input id="fullName" value="Your Name" placeholder="Full name"></div>
+      <div class="field"><label>Father's Name</label><input id="fatherName" value="Father Name" placeholder="Father name"></div>
+      <div class="field"><label>Job Title</label><input id="jobTitle" value="Computer Operator" placeholder="Computer Operator"></div>
+      <div class="field"><label>Mobile</label><input id="mobile" value="+91 00000 00000" placeholder="+91..."></div>
+      <div class="field"><label>Email</label><input id="email" value="yourmail@example.com" placeholder="email"></div>
+      <div class="field full"><label>Address</label><input id="address" value="Village / City, District, Rajasthan" placeholder="Address"></div>
+      <div class="field"><label>Date of Birth</label><input id="dob" value="01-01-2000" placeholder="DD-MM-YYYY"></div>
+      <div class="field"><label>Gender</label><select id="gender"><option value="">Select Gender</option><option value="Male" selected>Male</option><option value="Female">Female</option><option value="Other">Other</option></select></div>
+      <div class="field"><label>Marital Status</label><select id="marital"><option value="">Select Status</option><option value="Unmarried" selected>Unmarried</option><option value="Married">Married</option><option value="Divorced">Divorced</option><option value="Widowed">Widowed</option></select></div>
+      <div class="field"><label>Nationality</label><input id="nationality" value="Indian" placeholder="Indian"></div>
+      <div class="field full"><label>Photo</label><input id="photoInput" type="file" accept="image/*"></div>
+      <div class="field full"><label>Career Objective</label><textarea id="objective">To work in a professional environment where I can use my skills, learn new things, and contribute honestly to the organization.</textarea></div>
+      <div class="field full"><label>Education (one line each)</label><textarea id="education">10th Pass - RBSE Board
+12th Pass - RBSE Board
+Computer Course - RS-CIT</textarea></div>
+      <div class="field full"><label>Skills (one line each)</label><textarea id="skills">Computer Basic Knowledge
+Hindi and English Typing
+MS Word, Excel, Internet
+Online Form Filling</textarea></div>
+      <div class="field full"><label>Experience (one line each)</label><textarea id="experience">Fresher
+Basic knowledge of e-Mitra and online form work</textarea></div>
+      <div class="field full"><label>Hobbies (one line each)</label><textarea id="hobbies">Punctuality
+Reading
+Sports</textarea></div>
+      <div class="field full"><label>Strengths (one line each)</label><textarea id="strengths">Quick learner
+Friendly nature
+Easily adaptable to changes</textarea></div>
+      <div class="field full"><label>Languages (one line each)</label><textarea id="languages">Hindi
+English</textarea></div>
+      <div class="field"><label>Place</label><input id="place" value="Rajasthan" placeholder="Place"></div>
+      <div class="field"><label>Date</label><input id="resumeDate" placeholder="Date"></div>
+    </div>
+    <div class="actions">
+      <button type="button" onclick="updateResume()"><i class="fa-solid fa-rotate"></i> Update</button>
+      <button type="button" onclick="window.print()"><i class="fa-solid fa-print"></i> Print / Save PDF</button>
+      <button class="secondary" type="button" onclick="fillFresher()"><i class="fa-solid fa-user-graduate"></i> Fresher</button>
+      <button class="danger" type="button" onclick="clearResume()"><i class="fa-solid fa-trash"></i> Clear</button>
+    </div>
+    <div class="profile-status" id="userAutoFillStatus">Login hone par profile details auto fill ho jayengi.</div>
+  </section>
+
+  <section class="preview-wrap" aria-label="Resume preview">
+    <article class="resume-sheet resume-simple" id="resumeSheet">
+      <header class="resume-head">
+        <div>
+          <div class="resume-name" id="previewName"></div>
+          <div class="resume-title" id="previewTitle"></div>
+          <div class="contact-line" id="previewContact"></div>
+        </div>
+        <div class="photo-box" id="previewPhoto">Photo</div>
+      </header>
+
+      <section class="resume-section" id="objectiveSection">
+        <h3 id="objectiveHeading">Career Objective</h3>
+        <p id="previewObjective"></p>
+      </section>
+
+      <section class="resume-section" id="educationSection">
+        <h3 id="educationHeading">Education</h3>
+        <ul id="previewEducation"></ul>
+      </section>
+
+      <div class="two-col">
+        <section class="resume-section" id="skillsSection">
+          <h3 id="skillsHeading">Skills</h3>
+          <ul id="previewSkills"></ul>
+        </section>
+        <section class="resume-section" id="languagesSection">
+          <h3>Languages</h3>
+          <ul id="previewLanguages"></ul>
+        </section>
+      </div>
+
+      <section class="resume-section" id="experienceSection">
+        <h3 id="experienceHeading">Experience</h3>
+        <ul id="previewExperience"></ul>
+      </section>
+
+      <div class="two-col">
+        <section class="resume-section" id="hobbiesSection">
+          <h3>Hobbies</h3>
+          <ul id="previewHobbies"></ul>
+        </section>
+        <section class="resume-section" id="strengthsSection">
+          <h3>Strengths</h3>
+          <ul id="previewStrengths"></ul>
+        </section>
+      </div>
+
+      <section class="resume-section doc-page-two" id="personalSection">
+        <h3>Personal Details</h3>
+        <table class="info-table">
+          <tr><td>Father's Name</td><td id="previewFather"></td></tr>
+          <tr><td>Date of Birth</td><td id="previewDob"></td></tr>
+          <tr><td>Gender</td><td id="previewGender"></td></tr>
+          <tr><td>Marital Status</td><td id="previewMarital"></td></tr>
+          <tr><td>Nationality</td><td id="previewNationality"></td></tr>
+        </table>
+      </section>
+
+      <section class="resume-section">
+        <h3>Declaration</h3>
+        <p>I hereby declare that the above information is true and correct to the best of my knowledge.</p>
+      </section>
+
+      <div class="declaration">
+        <div>
+          <p>Place: <span id="previewPlace"></span></p>
+          <p>Date: <span id="previewDate"></span></p>
+        </div>
+        <div class="signature">
+          <p>Signature</p>
+          <p id="previewSignature"></p>
+        </div>
+      </div>
+    </article>
+  </section>
+</main>
+
+<a class="whatsapp" target="_blank" rel="noopener noreferrer" href="https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q"><i class="fa-brands fa-whatsapp"></i></a>
+<footer><p>© 2026 E-MITRA WALA | Resume Format Builder</p><p><a href="privacy-policy.html">Privacy Policy</a><a href="about.html">About</a><a href="contact.html">Contact</a></p></footer>
+
+<script>
+const fields = ["fullName","fatherName","jobTitle","mobile","email","address","dob","gender","marital","nationality","objective","education","skills","experience","hobbies","strengths","languages","place","resumeDate"];
+
+const escapeHTML = (value = "") => String(value)
+  .replace(/&/g, "&amp;")
+  .replace(/</g, "&lt;")
+  .replace(/>/g, "&gt;")
+  .replace(/"/g, "&quot;")
+  .replace(/'/g, "&#039;");
+
+const valueOf = (id) => document.getElementById(id).value.trim();
+const linesOf = (id) => valueOf(id).split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+const setText = (id, value) => { document.getElementById(id).innerText = value; };
+const formatDateText = (value = "") => {
+  const digits = String(value || "").replace(/\D/g, "").slice(0, 8);
+  const parts = [];
+  if(digits.slice(0, 2)){ parts.push(digits.slice(0, 2)); }
+  if(digits.slice(2, 4)){ parts.push(digits.slice(2, 4)); }
+  if(digits.slice(4, 8)){ parts.push(digits.slice(4, 8)); }
+  return parts.join("-");
+};
+const setList = (id, rows) => {
+  document.getElementById(id).innerHTML = rows.map((line) => `<li>${escapeHTML(line)}</li>`).join("");
+};
+const toggleSection = (id, show) => {
+  const section = document.getElementById(id);
+  if(section){ section.style.display = show ? "" : "none"; }
+};
+
+function updateResume(){
+  const selectedFormat = valueOf("resumeFormat") || "simple";
+  document.getElementById("resumeSheet").className = `resume-sheet resume-${selectedFormat}`;
+  setText("previewName", valueOf("fullName") || "Your Name");
+  setText("previewTitle", valueOf("jobTitle") || "Resume");
+  setText("previewFather", valueOf("fatherName"));
+  setText("previewObjective", valueOf("objective"));
+  setText("previewDob", valueOf("dob"));
+  setText("previewGender", valueOf("gender"));
+  setText("previewMarital", valueOf("marital"));
+  setText("previewNationality", valueOf("nationality"));
+  setText("previewPlace", valueOf("place"));
+  setText("previewDate", valueOf("resumeDate"));
+  setText("previewSignature", valueOf("fullName") || "Your Name");
+
+  const contact = [
+    valueOf("mobile") ? `<span><i class="fa-solid fa-phone"></i> ${escapeHTML(valueOf("mobile"))}</span>` : "",
+    valueOf("email") ? `<span><i class="fa-solid fa-envelope"></i> ${escapeHTML(valueOf("email"))}</span>` : "",
+    valueOf("address") ? `<span><i class="fa-solid fa-location-dot"></i> ${escapeHTML(valueOf("address"))}</span>` : ""
+  ].filter(Boolean).join("");
+  document.getElementById("previewContact").innerHTML = contact;
+
+  const education = linesOf("education");
+  const skills = linesOf("skills");
+  const experience = linesOf("experience");
+  const hobbies = linesOf("hobbies");
+  const strengths = linesOf("strengths");
+  const languages = linesOf("languages");
+  setText("objectiveHeading", selectedFormat === "classicdoc" ? "CAREER OBJECTIVE:" : "Career Objective");
+  setText("educationHeading", selectedFormat === "classicdoc" ? "ACADEMIC QUALIFICATION:" : "Education");
+  setText("skillsHeading", selectedFormat === "classicdoc" ? "OTHER QUALIFICATION:" : "Skills");
+  setText("experienceHeading", selectedFormat === "classicdoc" ? "EXPERIENCE:" : "Experience");
+  setList("previewEducation", education);
+  setList("previewSkills", skills);
+  setList("previewExperience", experience);
+  setList("previewHobbies", hobbies);
+  setList("previewStrengths", strengths);
+  setList("previewLanguages", languages);
+  toggleSection("objectiveSection", Boolean(valueOf("objective")));
+  toggleSection("educationSection", education.length > 0);
+  toggleSection("skillsSection", skills.length > 0);
+  toggleSection("experienceSection", experience.length > 0);
+  toggleSection("hobbiesSection", hobbies.length > 0);
+  toggleSection("strengthsSection", strengths.length > 0);
+  toggleSection("languagesSection", languages.length > 0);
+}
+
+function fillFresher(){
+  document.getElementById("jobTitle").value = "Fresher";
+  document.getElementById("objective").value = "To start my career in a good organization where I can improve my skills and work with honesty and dedication.";
+  document.getElementById("experience").value = "Fresher";
+  updateResume();
+}
+
+function clearResume(){
+  if(!confirm("Resume form clear karna hai?")){ return; }
+  fields.forEach((id) => { document.getElementById(id).value = ""; });
+  document.getElementById("previewPhoto").innerHTML = "Photo";
+  updateResume();
+}
+
+document.getElementById("photoInput").addEventListener("change", (event) => {
+  const file = event.target.files && event.target.files[0];
+  if(!file){ return; }
+  const reader = new FileReader();
+  reader.onload = () => {
+    document.getElementById("previewPhoto").innerHTML = `<img src="${reader.result}" alt="Resume photo">`;
+  };
+  reader.readAsDataURL(file);
+});
+
+fields.forEach((id) => {
+  const field = document.getElementById(id);
+  field.addEventListener("input", updateResume);
+  field.addEventListener("change", updateResume);
+});
+document.getElementById("resumeFormat").addEventListener("change", updateResume);
+
+["dob","resumeDate"].forEach((id) => {
+  const field = document.getElementById(id);
+  field.addEventListener("input", () => {
+    field.value = formatDateText(field.value);
+    updateResume();
+  });
+});
+
+const today = new Date();
+document.getElementById("resumeDate").value = formatDateText(`${String(today.getDate()).padStart(2,"0")}${String(today.getMonth() + 1).padStart(2,"0")}${today.getFullYear()}`);
+updateResume();
+</script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",
+  authDomain: "my-website-73785.firebaseapp.com",
+  databaseURL: "https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app/",
+  projectId: "my-website-73785",
+  storageBucket: "my-website-73785.firebasestorage.app",
+  messagingSenderId: "854088341990",
+  appId: "1:854088341990:web:3211d4ef9fe4b78d025e27"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+const autoFillStatus = document.getElementById("userAutoFillStatus");
+
+const defaultValues = {
+  fullName:"Your Name",
+  fatherName:"Father Name",
+  mobile:"+91 00000 00000",
+  email:"yourmail@example.com",
+  address:"Village / City, District, Rajasthan",
+  dob:"01-01-2000",
+  gender:"Male",
+  marital:"Unmarried",
+  nationality:"Indian"
+};
+
+const canAutoFill = (id) => {
+  const field = document.getElementById(id);
+  if(!field){ return false; }
+  const value = field.value.trim();
+  return !value || value === defaultValues[id];
+};
+
+const setProfileField = (id, value) => {
+  const field = document.getElementById(id);
+  const text = String(value || "").trim();
+  if(!field || !text || !canAutoFill(id)){ return false; }
+  field.value = text;
+  return true;
+};
+
+const pickFirst = (...values) => values.map((value) => String(value || "").trim()).find(Boolean) || "";
+const buildAddress = (member = {}) => pickFirst(
+  member.address,
+  member.fullAddress,
+  member.location,
+  [member.village, member.city, member.district, member.state].filter(Boolean).join(", ")
+);
+const normalizeSelectValue = (value = "", allowed = []) => {
+  const text = String(value || "").trim().toLowerCase();
+  return allowed.find((item) => item.toLowerCase() === text) || "";
+};
+
+onAuthStateChanged(auth, async (user) => {
+  if(!user){
+    autoFillStatus.innerText = "Login nahi hai. Resume details manually fill kar sakte hain.";
+    return;
+  }
+
+  autoFillStatus.innerText = "Profile details fetch ho rahi hain...";
+  try{
+    const snapshot = await get(ref(db, "members/" + user.uid));
+    const member = snapshot.exists() ? snapshot.val() || {} : {};
+    let filled = 0;
+
+    filled += setProfileField("fullName", pickFirst(member.name, member.fullName, user.displayName, user.email?.split("@")[0])) ? 1 : 0;
+    filled += setProfileField("fatherName", pickFirst(member.fatherName, member.father, member.fathersName)) ? 1 : 0;
+    filled += setProfileField("mobile", pickFirst(member.mobile, member.phoneNumber, member.phone)) ? 1 : 0;
+    filled += setProfileField("email", pickFirst(member.profileEmail, member.email, user.email)) ? 1 : 0;
+    filled += setProfileField("address", buildAddress(member)) ? 1 : 0;
+    filled += setProfileField("dob", pickFirst(member.dob, member.dateOfBirth, member.birthDate)) ? 1 : 0;
+    filled += setProfileField("gender", normalizeSelectValue(member.gender, ["Male","Female","Other"])) ? 1 : 0;
+    filled += setProfileField("marital", normalizeSelectValue(member.maritalStatus || member.marital, ["Unmarried","Married","Divorced","Widowed"])) ? 1 : 0;
+    filled += setProfileField("nationality", pickFirst(member.nationality)) ? 1 : 0;
+
+    window.updateResume();
+    autoFillStatus.innerText = filled
+      ? `${filled} profile detail auto fill ho gayi. Baaki details aap edit kar sakte hain.`
+      : "Login profile mila, par resume me fill karne layak extra detail nahi mili.";
+  }catch(error){
+    autoFillStatus.innerText = "Profile details fetch nahi ho payi. Details manually fill karein.";
+  }
+});
+</script>
+</body>
+</html>
