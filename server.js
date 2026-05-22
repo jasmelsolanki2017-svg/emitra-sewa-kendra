@@ -187,6 +187,27 @@ const normalizeSource = (id, value = {}) => ({
   keywords: toText(value.keywords || "")
 });
 
+const sourcePayloadFromRequest = (value = {}) => {
+  const source = value && typeof value === "object" ? value : {};
+  const name = toText(source.name);
+  const url = extractHttpUrl(source.url || "");
+  if (!name || !/^https?:\/\//i.test(url)) {
+    const error = new Error("Source name and valid URL required");
+    error.statusCode = 400;
+    throw error;
+  }
+  return {
+    name,
+    department: toText(source.department || name),
+    url,
+    keywords: toText(source.keywords),
+    enabled: source.enabled !== false,
+    updatedAt: nowStamp()
+  };
+};
+
+const snapshotValue = (snapshot, fallback = {}) => (snapshot.exists() ? snapshot.val() : fallback);
+
 const logAutoJob = async (db, payload = {}) => {
   const createdAt = nowStamp();
   const ref = db.ref("autoJobLogs").push();
@@ -723,6 +744,91 @@ app.post("/admin/auto-job-checker/run", async (req, res) => {
     await requireAdmin(req);
     const result = await runAutoJobChecker({ manual: true });
     return res.json(result);
+  } catch (err) {
+    return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
+  }
+});
+
+app.post("/admin/auto-job-checker/state", async (req, res) => {
+  try {
+    const { db } = await requireAdmin(req);
+    const [sources, drafts, logs, status] = await Promise.all([
+      db.ref("autoJobSources").get(),
+      db.ref("autoJobDrafts").get(),
+      db.ref("autoJobLogs").get(),
+      db.ref("autoJobCheckerStatus").get()
+    ]);
+    return res.json({
+      ok: true,
+      sources: snapshotValue(sources),
+      drafts: snapshotValue(drafts),
+      logs: snapshotValue(logs),
+      checkerStatus: snapshotValue(status)
+    });
+  } catch (err) {
+    return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
+  }
+});
+
+app.post("/admin/auto-job-checker/source/save", async (req, res) => {
+  try {
+    const { db } = await requireAdmin(req);
+    const sourceId = String(req.body?.sourceId || "").trim();
+    const source = sourcePayloadFromRequest(req.body?.source || {});
+    const targetRef = sourceId ? db.ref(`autoJobSources/${sourceId}`) : db.ref("autoJobSources").push();
+    const id = sourceId || targetRef.key;
+    if (sourceId) {
+      await targetRef.update(source);
+    } else {
+      await targetRef.set({ ...source, createdAt: nowStamp() });
+    }
+    return res.json({ ok: true, sourceId: id });
+  } catch (err) {
+    return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
+  }
+});
+
+app.post("/admin/auto-job-checker/source/delete", async (req, res) => {
+  try {
+    const { db } = await requireAdmin(req);
+    const sourceId = String(req.body?.sourceId || "").trim();
+    if (!sourceId) {
+      return res.status(400).json({ ok: false, error: "Source ID required" });
+    }
+    await db.ref(`autoJobSources/${sourceId}`).remove();
+    return res.json({ ok: true });
+  } catch (err) {
+    return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
+  }
+});
+
+app.post("/admin/auto-job-checker/draft/save", async (req, res) => {
+  try {
+    const { db } = await requireAdmin(req);
+    const draftId = String(req.body?.draftId || "").trim();
+    const draft = req.body?.draft && typeof req.body.draft === "object" ? req.body.draft : {};
+    if (!draftId) {
+      return res.status(400).json({ ok: false, error: "Draft ID required" });
+    }
+    if (!toText(draft.title)) {
+      return res.status(400).json({ ok: false, error: "Draft title required" });
+    }
+    await db.ref(`autoJobDrafts/${draftId}`).update({ ...draft, updatedAt: nowStamp() });
+    return res.json({ ok: true });
+  } catch (err) {
+    return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
+  }
+});
+
+app.post("/admin/auto-job-checker/draft/delete", async (req, res) => {
+  try {
+    const { db } = await requireAdmin(req);
+    const draftId = String(req.body?.draftId || "").trim();
+    if (!draftId) {
+      return res.status(400).json({ ok: false, error: "Draft ID required" });
+    }
+    await db.ref(`autoJobDrafts/${draftId}`).remove();
+    return res.json({ ok: true });
   } catch (err) {
     return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
   }

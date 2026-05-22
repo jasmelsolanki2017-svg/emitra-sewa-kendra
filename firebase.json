@@ -1,0 +1,45 @@
+{
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      ".firebaserc",
+      ".git/**",
+      ".env",
+      ".env.*",
+      "node_modules/**",
+      "package*.json",
+      "server.js",
+      "utils/**",
+      "supabase-storage-policies.sql",
+      "SUPABASE_SETUP.md",
+      "telegram-bot-setup.md"
+    ],
+    "headers": [
+      {
+        "source": "**/*.@(html|js|css)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          }
+        ]
+      },
+      {
+        "source": "**/*.@(png|jpg|jpeg|svg|ico)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=86400"
+          }
+        ]
+      }
+    ]
+  },
+  "database": {
+    "rules": "firebase-database.rules.json"
+  },
+  "storage": {
+    "rules": "firebase-storage.rules"
+  }
+}

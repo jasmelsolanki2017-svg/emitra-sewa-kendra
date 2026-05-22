@@ -158,7 +158,7 @@
     const firebaseConfig={apiKey:"AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",authDomain:"my-website-73785.firebaseapp.com",databaseURL:"https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app/",projectId:"my-website-73785",storageBucket:"my-website-73785.firebasestorage.app",messagingSenderId:"854088341990",appId:"1:854088341990:web:3211d4ef9fe4b78d025e27"};
     const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getDatabase(app),adminEmail="jasmelsolanki@gmail.com";
     const adminServerStorageKey="emitraAdminServerUrl";
-    let adminAllowed=false,editingSourceId="",activeDraftId="",sourcesCache={},draftsCache={};
+    let adminAllowed=false,editingSourceId="",activeDraftId="",sourcesCache={},draftsCache={},dataSyncStarted=false;
     const sourceFields=["sourceName","sourceDepartment","sourceUrl","sourceKeywords","sourceEnabled"];
     const draftFields=["draftTitle","draftDepartment","draftPostDate","draftTotalPosts","draftImportantDates","draftQualification","draftOfficialLink","draftSourceLink","draftPostTarget","draftLastDate","draftPageContent"];
     const $=(id)=>document.getElementById(id);
@@ -170,7 +170,8 @@
     const formatTime=(value)=>value?new Date(Number(value)).toLocaleString("hi-IN"):"--";
     const getValue=(id)=>$(id).value.trim();
     const setValue=(id,value="")=>{$(id).value=value||""};
-    const getAdminServerUrl=()=>String(localStorage.getItem(adminServerStorageKey)||"").trim().replace(/\/+$/,"");
+    const getAdminServerUrl=()=>String(getValue("adminServerUrl")||localStorage.getItem(adminServerStorageKey)||"").trim().replace(/\/+$/,"");
+    const hasAdminServerUrl=()=>Boolean(getAdminServerUrl());
     const isStaticHosted=()=>/^emitrawala\.online$|github\.io$/i.test(location.hostname);
     const adminApiUrl=(path)=>{const base=getAdminServerUrl();if(base)return base+path;if(isStaticHosted())throw new Error("Render Server URL save karein, phir dobara try karein.");return path};
     const callAdminApi=async(path,body={})=>{
@@ -188,6 +189,7 @@
       if(value&&!/^https?:\/\/[^/]+/i.test(value)){$("checkerStatus").innerText="Server URL https:// se start hona chahiye.";return}
       localStorage.setItem(adminServerStorageKey,value);
       $("checkerStatus").innerText=value?"Server URL save ho gaya.":"Server URL clear ho gaya.";
+      if(value&&adminAllowed){loadServerState().catch((error)=>$("checkerStatus").innerText="Server load error: "+error.message)}
     };
 
     const sourceForm=()=>({
@@ -206,13 +208,29 @@
       $("sourceStatus").innerText="";
     };
 
-    window.saveSource=()=>{
+    window.saveSource=async()=>{
       if(!adminAllowed){alert("Admin verify nahi hua.");return}
       const data=sourceForm();
       if(!data.name||!/^https?:\/\//i.test(data.url)){alert("Source name aur valid URL zaroor bharen.");return}
-      const target=editingSourceId?ref(db,"autoJobSources/"+editingSourceId):push(ref(db,"autoJobSources"));
-      const task=editingSourceId?update(target,data):set(target,{...data,createdAt:Date.now()});
-      task.then(()=>{ $("sourceStatus").innerText=editingSourceId?"Source update ho gaya.":"Source add ho gaya."; clearSourceForm(); }).catch((e)=>$("sourceStatus").innerText=e.message);
+      $("sourceStatus").innerText=editingSourceId?"Source update ho raha hai...":"Source add ho raha hai...";
+      try{
+        if(hasAdminServerUrl()){
+          await callAdminApi("/admin/auto-job-checker/source/save",{sourceId:editingSourceId,source:data});
+          await loadServerState();
+        }else{
+          const target=editingSourceId?ref(db,"autoJobSources/"+editingSourceId):push(ref(db,"autoJobSources"));
+          if(editingSourceId){await update(target,data)}else{await set(target,{...data,createdAt:Date.now()})}
+        }
+        const statusText=editingSourceId?"Source update ho gaya.":"Source add ho gaya.";
+        clearSourceForm();
+        $("sourceStatus").innerText=statusText;
+      }catch(error){
+        if(!hasAdminServerUrl()){
+          $("sourceStatus").innerText=error.message+" | Render Server URL save karke dobara try karein.";
+          return;
+        }
+        $("sourceStatus").innerText=error.message;
+      }
     };
 
     window.editSource=(id)=>{
@@ -228,9 +246,19 @@
       scrollTo({top:0,behavior:"smooth"});
     };
 
-    window.deleteSource=(id)=>{
+    window.deleteSource=async(id)=>{
       if(!adminAllowed){alert("Admin verify nahi hua.");return}
-      if(confirm("Ye source delete karna hai?"))remove(ref(db,"autoJobSources/"+id)).catch((e)=>alert(e.message));
+      if(!confirm("Ye source delete karna hai?"))return;
+      try{
+        if(hasAdminServerUrl()){
+          await callAdminApi("/admin/auto-job-checker/source/delete",{sourceId:id});
+          await loadServerState();
+        }else{
+          await remove(ref(db,"autoJobSources/"+id));
+        }
+      }catch(error){
+        alert(error.message);
+      }
     };
 
     const draftForm=()=>({
@@ -282,12 +310,23 @@
       $("draftStatus").innerText="Draft select karein ya checker run karein.";
     };
 
-    window.saveDraft=()=>{
+    window.saveDraft=async()=>{
       if(!adminAllowed){alert("Admin verify nahi hua.");return}
       if(!activeDraftId){alert("Pehle draft select karein.");return}
       const data=draftForm();
       if(!data.title){alert("Title zaroor bharen.");return}
-      update(ref(db,"autoJobDrafts/"+activeDraftId),data).then(()=>$("draftStatus").innerText="Draft save ho gaya.").catch((e)=>$("draftStatus").innerText=e.message);
+      try{
+        $("draftStatus").innerText="Draft save ho raha hai...";
+        if(hasAdminServerUrl()){
+          await callAdminApi("/admin/auto-job-checker/draft/save",{draftId:activeDraftId,draft:data});
+          await loadServerState();
+        }else{
+          await update(ref(db,"autoJobDrafts/"+activeDraftId),data);
+        }
+        $("draftStatus").innerText="Draft save ho gaya.";
+      }catch(error){
+        $("draftStatus").innerText=error.message;
+      }
     };
 
     window.publishDraft=async()=>{
@@ -298,19 +337,30 @@
       if(!confirm("Review complete hai? Is draft ko live publish karna hai?"))return;
       try{
         $("draftStatus").innerText="Publishing...";
-        await update(ref(db,"autoJobDrafts/"+activeDraftId),data);
+        if(!hasAdminServerUrl()){await update(ref(db,"autoJobDrafts/"+activeDraftId),data)}
         const result=await callAdminApi("/admin/auto-job-checker/publish",{draftId:activeDraftId,draft:data});
+        await loadServerState().catch(()=>{});
         $("draftStatus").innerText="Live publish ho gaya. Job ID: "+result.jobId;
       }catch(error){
         $("draftStatus").innerText="Publish error: "+error.message;
       }
     };
 
-    window.deleteDraft=()=>{
+    window.deleteDraft=async()=>{
       if(!adminAllowed){alert("Admin verify nahi hua.");return}
       if(!activeDraftId){alert("Pehle draft select karein.");return}
       if(confirm("Ye draft delete karna hai? Duplicate record saved rahega taki dobara na aaye.")){
-        remove(ref(db,"autoJobDrafts/"+activeDraftId)).then(()=>clearDraftForm()).catch((e)=>$("draftStatus").innerText=e.message);
+        try{
+          if(hasAdminServerUrl()){
+            await callAdminApi("/admin/auto-job-checker/draft/delete",{draftId:activeDraftId});
+            await loadServerState();
+          }else{
+            await remove(ref(db,"autoJobDrafts/"+activeDraftId));
+          }
+          clearDraftForm();
+        }catch(error){
+          $("draftStatus").innerText=error.message;
+        }
       }
     };
 
@@ -319,6 +369,7 @@
       try{
         $("checkerStatus").innerText="Checker run ho raha hai...";
         const result=await callAdminApi("/admin/auto-job-checker/run",{});
+        await loadServerState().catch(()=>{});
         $("checkerStatus").innerText=result.skipped?result.message:`Done: ${result.checkedCount||0} sources, ${result.newDraftCount||0} new drafts, ${result.errorCount||0} errors.`;
       }catch(error){
         $("checkerStatus").innerText="Checker error: "+error.message;
@@ -346,23 +397,68 @@
       logList.innerHTML=rows.map(([,data])=>`<div class="row ${data.level==="error"?"error":data.level==="success"?"success":""}"><div><strong>${escapeHTML(data.level||"info")}</strong><small>${formatTime(data.createdAt)} | ${escapeHTML(data.sourceName||"System")}</small><small>${escapeHTML(data.message||"")}</small></div></div>`).join("");
     };
 
+    const renderCheckerSummary=(data={})=>{
+      $("lastChecked").innerText=data.finishedAt?new Date(Number(data.finishedAt)).toLocaleTimeString("hi-IN"):"--";
+      $("lastNewCount").innerText=data.newDraftCount||0;
+    };
+
+    const applyState=(state={})=>{
+      sourcesCache=state.sources||{};
+      draftsCache=state.drafts||{};
+      renderSources();
+      renderDrafts();
+      renderLogs(state.logs||{});
+      renderCheckerSummary(state.checkerStatus||{});
+    };
+
+    const loadServerState=async()=>{
+      const state=await callAdminApi("/admin/auto-job-checker/state",{});
+      applyState(state);
+      return state;
+    };
+
+    const showPermissionHelp=(area,error)=>{
+      const message=(error&&error.message)||"Permission denied";
+      if(hasAdminServerUrl()){
+        loadServerState().catch((serverError)=>{
+          const text=`${message} | Server load error: ${serverError.message}`;
+          if(area==="sources"){sourceList.innerHTML=`<div class="empty">${escapeHTML(text)}</div>`}
+          if(area==="drafts"){draftList.innerHTML=`<div class="empty">${escapeHTML(text)}</div>`}
+          if(area==="logs"){logList.innerHTML=`<div class="empty">${escapeHTML(text)}</div>`}
+          $("sourceStatus").innerText=text;
+        });
+        return;
+      }
+      const text=`${message} | Render Server URL save karein, phir dobara try karein.`;
+      if(area==="sources"){sourceList.innerHTML=`<div class="empty">${escapeHTML(text)}</div>`}
+      if(area==="drafts"){draftList.innerHTML=`<div class="empty">${escapeHTML(text)}</div>`}
+      if(area==="logs"){logList.innerHTML=`<div class="empty">${escapeHTML(text)}</div>`}
+      $("sourceStatus").innerText=text;
+    };
+
+    const startDataSync=()=>{
+      if(dataSyncStarted)return;
+      dataSyncStarted=true;
+      if(hasAdminServerUrl()){
+        loadServerState().catch((error)=>showPermissionHelp("sources",error));
+        return;
+      }
+      onValue(ref(db,"autoJobSources"),(snapshot)=>{sourcesCache=snapshot.val()||{};renderSources()},(error)=>showPermissionHelp("sources",error));
+      onValue(ref(db,"autoJobDrafts"),(snapshot)=>{draftsCache=snapshot.val()||{};renderDrafts()},(error)=>showPermissionHelp("drafts",error));
+      onValue(ref(db,"autoJobLogs"),(snapshot)=>renderLogs(snapshot.val()||{}),(error)=>showPermissionHelp("logs",error));
+      onValue(ref(db,"autoJobCheckerStatus"),(snapshot)=>renderCheckerSummary(snapshot.val()||{}),(error)=>showPermissionHelp("logs",error));
+    };
+
     onAuthStateChanged(auth,(user)=>{
       if(user&&user.email===adminEmail){
         adminAllowed=true;
         $("accessTitle").innerText="Admin Access Verified";
         $("adminEmailText").innerText=user.email;
+        startDataSync();
       }else{
         adminAllowed=false;
         location.href="index.html";
       }
-    });
-    onValue(ref(db,"autoJobSources"),(snapshot)=>{sourcesCache=snapshot.val()||{};renderSources()});
-    onValue(ref(db,"autoJobDrafts"),(snapshot)=>{draftsCache=snapshot.val()||{};renderDrafts()});
-    onValue(ref(db,"autoJobLogs"),(snapshot)=>renderLogs(snapshot.val()||{}));
-    onValue(ref(db,"autoJobCheckerStatus"),(snapshot)=>{
-      const data=snapshot.val()||{};
-      $("lastChecked").innerText=data.finishedAt?new Date(Number(data.finishedAt)).toLocaleTimeString("hi-IN"):"--";
-      $("lastNewCount").innerText=data.newDraftCount||0;
     });
     window.logoutUser=()=>signOut(auth).then(()=>location.href="index.html");
   </script>
