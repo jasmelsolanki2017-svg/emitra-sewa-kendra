@@ -3,6 +3,8 @@ require("dotenv").config();
 
 const express = require("express");
 const crypto = require("crypto");
+const { execFile } = require("child_process");
+const { promisify } = require("util");
 let admin = null;
 let pdfParse = null;
 
@@ -37,6 +39,7 @@ const FIREBASE_URL = extractUrl(process.env.FIREBASE_URL, DEFAULT_FIREBASE_URL);
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "jasmelsolanki@gmail.com";
 const DEFAULT_MEMBER_PASSWORD = "User@123";
 const CHECKER_INTERVAL_MS = Number(process.env.AUTO_JOB_CHECKER_INTERVAL_MS || 2 * 60 * 60 * 1000);
+const execFileAsync = promisify(execFile);
 let adminDb = null;
 let autoCheckerRunning = false;
 
@@ -124,6 +127,7 @@ const nowStamp = () => Date.now();
 const escapeRegex = (value = "") => String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const hashKey = (value = "") => crypto.createHash("sha256").update(String(value || "").trim().toLowerCase()).digest("hex");
 const safeKey = (value = "") => hashKey(value).slice(0, 32);
+const browserUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36";
 const decodeHtml = (value = "") => String(value || "")
   .replace(/<script[\s\S]*?<\/script>/gi, " ")
   .replace(/<style[\s\S]*?<\/style>/gi, " ")
@@ -297,7 +301,7 @@ const fetchText = async (url, timeoutMs = 25000) => {
     const response = await fetch(url, {
       signal: controller.signal,
       headers: {
-        "User-Agent": "E-MITRA-WALA-AutoJobChecker/1.0",
+        "User-Agent": browserUserAgent,
         "Accept": "text/html,application/xhtml+xml,application/pdf;q=0.9,*/*;q=0.8"
       }
     });
@@ -308,9 +312,39 @@ const fetchText = async (url, timeoutMs = 25000) => {
       contentType: response.headers.get("content-type") || "",
       text: await response.text()
     };
+  } catch (err) {
+    const fallback = await fetchTextWithCurl(url, timeoutMs).catch(() => null);
+    if (fallback) {
+      return fallback;
+    }
+    throw err;
   } finally {
     clearTimeout(timer);
   }
+};
+
+const fetchTextWithCurl = async (url, timeoutMs = 25000) => {
+  const curlBin = process.platform === "win32" ? "curl.exe" : "curl";
+  const args = [
+    "-L",
+    "--silent",
+    "--show-error",
+    "--max-time",
+    String(Math.max(5, Math.ceil(timeoutMs / 1000))),
+    "-A",
+    browserUserAgent,
+    "-H",
+    "Accept: text/html,application/xhtml+xml,application/pdf;q=0.9,*/*;q=0.8",
+    url
+  ];
+  const { stdout } = await execFileAsync(curlBin, args, {
+    encoding: "utf8",
+    maxBuffer: 8 * 1024 * 1024
+  });
+  return {
+    contentType: "",
+    text: stdout
+  };
 };
 
 const fetchPdfText = async (url, timeoutMs = 30000) => {
@@ -322,7 +356,7 @@ const fetchPdfText = async (url, timeoutMs = 30000) => {
   try {
     const response = await fetch(url, {
       signal: controller.signal,
-      headers: { "User-Agent": "E-MITRA-WALA-AutoJobChecker/1.0" }
+      headers: { "User-Agent": browserUserAgent }
     });
     if (!response.ok) {
       return "";
