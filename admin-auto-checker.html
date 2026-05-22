@@ -55,9 +55,13 @@
     .draft-group-head small{font-size:11px;font-weight:800;color:#d9ecff;overflow-wrap:anywhere}
     .draft-group .row{border-radius:0;margin:0;border-left-width:4px;border-bottom:1px solid #d8e6f5}
     .draft-group .row:last-child{border-bottom:0}
-    .draft-type-head{background:#eef6ff;color:#0057a8;border-top:1px solid #d8e6f5;border-bottom:1px solid #d8e6f5;padding:6px 10px;display:flex;justify-content:space-between;gap:8px;font-size:12px;font-weight:900}
+    .draft-type-section{border-top:1px solid #d8e6f5}
+    .draft-type-section:first-of-type{border-top:0}
+    .draft-type-head{background:#eef6ff;color:#0057a8;border:0;border-bottom:1px solid #d8e6f5;padding:8px 10px;display:flex;justify-content:space-between;gap:8px;font-size:12px;font-weight:900;cursor:pointer;list-style:none}
+    .draft-type-head::-webkit-details-marker{display:none}
+    .draft-type-head::after{content:"+";background:#0057a8;color:#fff;border-radius:999px;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+    .draft-type-section[open] .draft-type-head::after{content:"-";background:#ff7a00;color:#03224d}
     .draft-type-head small{color:#56677c;font-size:11px;font-weight:800}
-    .draft-type-head:first-child{border-top:0}
     @media(max-width:820px){.grid,.form-grid{grid-template-columns:1fr}.wide{grid-column:auto}.row{display:block}.row .actions{justify-content:flex-start;margin-top:8px}nav{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap}nav a,nav button{white-space:nowrap}}
   </style>
 </head>
@@ -487,8 +491,10 @@
             {key:"syllabus",label:"Syllabus"},
             {key:"notifications",label:"Other Notifications"}
           ].filter((type)=>group.types[type.key].length).map((type)=>`
-            <div class="draft-type-head"><span>${type.label}</span><small>${group.types[type.key].length} draft${group.types[type.key].length>1?"s":""}</small></div>
+            <details class="draft-type-section">
+              <summary class="draft-type-head"><span>${type.label}</span><small>${group.types[type.key].length} draft${group.types[type.key].length>1?"s":""}</small></summary>
             ${group.types[type.key].map(([id,data])=>`<div class="row ${activeDraftId===id?"success":""}"><div><strong>${escapeHTML(data.title||"Untitled Draft")}</strong><small>${escapeHTML(data.department||"Department not set")} | ${escapeHTML(data.postTarget||"latestJob")} | ${formatTime(data.createdAt)}</small><small>PDF text: ${data.pdfTextExtracted?"Yes":"No"}</small><small>${escapeHTML(data.sourceLink||data.detailLink||"")}</small><span class="badge">Draft</span></div><div class="actions"><button onclick="selectDraft('${id}')">Review</button></div></div>`).join("")}
+            </details>
           `).join("")}
         </div>
       `).join("");
