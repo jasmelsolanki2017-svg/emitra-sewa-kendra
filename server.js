@@ -136,6 +136,25 @@ function isAdminSdkConfigured() {
   );
 }
 
+function buildServerStatus(overrides = {}) {
+  const aiProvider = GEMINI_API_KEY && GEMINI_MODEL ? "Gemini" : (OPENAI_API_KEY && OPENAI_MODEL ? "OpenAI" : "Local");
+  return {
+    ok: true,
+    serverOnline: true,
+    firebaseConfigured: Boolean(FIREBASE_URL),
+    adminSdkConfigured: isAdminSdkConfigured(),
+    databaseConnected: false,
+    cronSecretConfigured: Boolean(String(process.env.CRON_SECRET || "").trim()),
+    telegramConfigured: Boolean(TELEGRAM_BOT_TOKEN && TELEGRAM_CHAT_ID),
+    whatsappConfigured: Boolean(WHATSAPP_ACCESS_TOKEN && WHATSAPP_PHONE_NUMBER_ID && WHATSAPP_TO_NUMBER),
+    aiConfigured: Boolean((GEMINI_API_KEY && GEMINI_MODEL) || (OPENAI_API_KEY && OPENAI_MODEL)),
+    aiProvider,
+    autoCheckerRunning,
+    checkedAt: nowStamp(),
+    ...overrides
+  };
+}
+
 const toText = (value = "") => String(value || "").replace(/\s+/g, " ").trim();
 const nowStamp = () => Date.now();
 const escapeRegex = (value = "") => String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -224,6 +243,13 @@ const compactLine = (label, value) => {
   return text ? `${label}: ${text}` : "";
 };
 
+const cleanMultiline = (value = "", limit = 6) => String(value || "")
+  .split(/\r?\n/)
+  .map((line) => toText(line))
+  .filter(Boolean)
+  .slice(0, limit)
+  .join("\n");
+
 const buildNotificationSummary = (job = {}) => {
   const title = toText(job.title || "Job Update");
   const lines = [
@@ -266,9 +292,11 @@ const buildWhatsappPostText = (id = "", job = {}) => {
     syllabus: "Syllabus"
   };
   const label = targetLabels[job.postTarget || "latestJob"] || "Update";
+  const summary = cleanMultiline(job.notificationSummary, 5);
   const lines = [
     `*${label} Update*`,
     toText(job.title || "Job Update"),
+    summary ? `*Summary*\n${summary}` : "",
     compactLine("Department", job.department),
     compactLine("Total Posts", job.totalPosts || job.totalVacancy),
     compactLine("Post Date", job.postDate),
@@ -415,6 +443,26 @@ const generateAiSummary = async (job = {}) => {
     return { summary: fallback, provider: "local", error: err.message };
   }
 };
+
+const prepareWhatsappShare = async (item = {}, id = "") => {
+  const enriched = enrichJobAutomation(item, id);
+  const ai = await generateAiSummary(enriched);
+  enriched.notificationSummary = ai.summary;
+  enriched.summaryProvider = ai.provider;
+  enriched.whatsappPostText = buildWhatsappPostText(id, enriched);
+  enriched.updatedAt = nowStamp();
+  return { item: enriched, text: enriched.whatsappPostText, ai };
+};
+
+const pickShareAutomationFields = (item = {}) => ({
+  slug: item.slug || "",
+  seoTitle: item.seoTitle || "",
+  metaDescription: item.metaDescription || "",
+  notificationSummary: item.notificationSummary || "",
+  summaryProvider: item.summaryProvider || "",
+  whatsappPostText: item.whatsappPostText || "",
+  updatedAt: nowStamp()
+});
 
 const sendTelegramMessage = async (text) => {
   if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
@@ -1027,6 +1075,7 @@ async function publishAutoJobDraft(db, draftId, payload = {}) {
   const jobRef = db.ref("LatestJobs").push();
   const jobId = jobRef.key;
   const seo = buildSeoFields(draft, jobId);
+  const autoSendChannels = Array.isArray(payload.autoSendChannels) ? payload.autoSendChannels.map((item) => String(item || "").toLowerCase()) : [];
   const job = {
     title: toText(draft.title),
     department: toText(draft.department),
@@ -1060,6 +1109,10 @@ async function publishAutoJobDraft(db, draftId, payload = {}) {
   ["admitCardLink", "resultLink", "syllabusLink", "answerKeyLink"].forEach((key) => {
     if (draft[key]) job[key] = toText(draft[key]);
   });
+  if (autoSendChannels.includes("whatsapp")) {
+    const prepared = await prepareWhatsappShare(job, jobId);
+    Object.assign(job, pickShareAutomationFields(prepared.item));
+  }
 
   const jobsSnapshot = await db.ref("LatestJobs").get();
   const updates = {};
@@ -1107,8 +1160,7 @@ async function publishAutoJobDraft(db, draftId, payload = {}) {
   });
   await db.ref().update(updates);
   const sent = [];
-  const autoSendChannels = Array.isArray(payload.autoSendChannels) ? payload.autoSendChannels : [];
-  for (const channel of autoSendChannels.map((item) => String(item || "").toLowerCase())) {
+  for (const channel of autoSendChannels) {
     try {
       if (channel === "telegram") {
         await sendTelegramMessage(job.whatsappPostText);
@@ -1172,48 +1224,32 @@ async function requireAdmin(req) {
   return { decoded, db };
 }
 
+app.get("/api/health", (req, res) => {
+  res.json(buildServerStatus({ message: "Admin API is running" }));
+});
+
+app.post("/api/health", (req, res) => {
+  res.json(buildServerStatus({ message: "Admin API is running" }));
+});
+
 app.get("/", (req, res) => {
-  res.json({
-    ok: true,
-    message: "Admin API is running",
-    firebaseConfigured: Boolean(FIREBASE_URL),
-    adminSdkConfigured: isAdminSdkConfigured()
-  });
+  res.json(buildServerStatus({ message: "Admin API is running" }));
 });
 
 app.post("/admin/status", async (req, res) => {
   try {
     const { db, decoded } = await requireAdmin(req);
     await db.ref("autoJobCheckerStatus").get();
-    return res.json({
-      ok: true,
-      serverOnline: true,
-      firebaseConfigured: Boolean(FIREBASE_URL),
-      adminSdkConfigured: isAdminSdkConfigured(),
+    return res.json(buildServerStatus({
       databaseConnected: true,
-      cronSecretConfigured: Boolean(String(process.env.CRON_SECRET || "").trim()),
-      telegramConfigured: Boolean(TELEGRAM_BOT_TOKEN && TELEGRAM_CHAT_ID),
-      whatsappConfigured: Boolean(WHATSAPP_ACCESS_TOKEN && WHATSAPP_PHONE_NUMBER_ID && WHATSAPP_TO_NUMBER),
-      aiConfigured: Boolean((GEMINI_API_KEY && GEMINI_MODEL) || (OPENAI_API_KEY && OPENAI_MODEL)),
-      aiProvider: GEMINI_API_KEY && GEMINI_MODEL ? "Gemini" : (OPENAI_API_KEY && OPENAI_MODEL ? "OpenAI" : "Local"),
-      autoCheckerRunning,
-      adminEmail: decoded.email || "",
-      checkedAt: nowStamp()
-    });
+      adminEmail: decoded.email || ""
+    }));
   } catch (err) {
-    return res.status(err.statusCode || 500).json({
+    return res.status(err.statusCode || 500).json(buildServerStatus({
       ok: false,
-      serverOnline: true,
-      firebaseConfigured: Boolean(FIREBASE_URL),
-      adminSdkConfigured: isAdminSdkConfigured(),
       databaseConnected: false,
-      cronSecretConfigured: Boolean(String(process.env.CRON_SECRET || "").trim()),
-      telegramConfigured: Boolean(TELEGRAM_BOT_TOKEN && TELEGRAM_CHAT_ID),
-      whatsappConfigured: Boolean(WHATSAPP_ACCESS_TOKEN && WHATSAPP_PHONE_NUMBER_ID && WHATSAPP_TO_NUMBER),
-      aiConfigured: Boolean((GEMINI_API_KEY && GEMINI_MODEL) || (OPENAI_API_KEY && OPENAI_MODEL)),
-      aiProvider: GEMINI_API_KEY && GEMINI_MODEL ? "Gemini" : (OPENAI_API_KEY && OPENAI_MODEL ? "OpenAI" : "Local"),
       error: err.message
-    });
+    }));
   }
 });
 
@@ -1580,6 +1616,42 @@ app.post("/admin/auto-job-checker/draft/ignore", async (req, res) => {
   }
 });
 
+app.post("/admin/auto-job-checker/whatsapp/prepare", async (req, res) => {
+  try {
+    const { db } = await requireAdmin(req);
+    const draftId = String(req.body?.draftId || "").trim();
+    const jobId = String(req.body?.jobId || "").trim();
+    let item = req.body?.draft && typeof req.body.draft === "object" ? req.body.draft : {};
+    if (draftId) {
+      const snapshot = await db.ref(`autoJobDrafts/${draftId}`).get();
+      if (snapshot.exists()) {
+        item = { ...(snapshot.val() || {}), ...item };
+      }
+    } else if (jobId) {
+      const snapshot = await db.ref(`LatestJobs/${jobId}`).get();
+      if (snapshot.exists()) {
+        item = { ...(snapshot.val() || {}), ...item };
+      }
+    }
+    const shareId = jobId || draftId || safeKey(item.sourceLink || item.title || "");
+    const prepared = await prepareWhatsappShare(item, shareId);
+    const updateFields = pickShareAutomationFields(prepared.item);
+    if (draftId) {
+      await db.ref(`autoJobDrafts/${draftId}`).update(updateFields);
+    } else if (jobId) {
+      await db.ref(`LatestJobs/${jobId}`).update(updateFields);
+    }
+    return res.json({
+      ok: true,
+      text: prepared.text,
+      draft: prepared.item,
+      ai: prepared.ai
+    });
+  } catch (err) {
+    return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
+  }
+});
+
 app.post("/admin/auto-job-checker/share/send", async (req, res) => {
   try {
     const { db } = await requireAdmin(req);
@@ -1599,7 +1671,20 @@ app.post("/admin/auto-job-checker/share/send", async (req, res) => {
       }
     }
     const shareId = jobId || draftId || safeKey(item.sourceLink || item.title || "");
-    const text = String(req.body?.text || "").trim() || item.whatsappPostText || buildWhatsappPostText(shareId, enrichJobAutomation(item, shareId));
+    let prepared = null;
+    let text = String(req.body?.text || "").trim();
+    if (channel === "whatsapp" && !req.body?.aiPrepared) {
+      prepared = await prepareWhatsappShare(item, shareId);
+      item = prepared.item;
+      text = prepared.text;
+      const updateFields = pickShareAutomationFields(item);
+      if (draftId) {
+        await db.ref(`autoJobDrafts/${draftId}`).update(updateFields);
+      } else if (jobId) {
+        await db.ref(`LatestJobs/${jobId}`).update(updateFields);
+      }
+    }
+    text = text || item.whatsappPostText || buildWhatsappPostText(shareId, enrichJobAutomation(item, shareId));
     if (!text) {
       return res.status(400).json({ ok: false, error: "Share text missing" });
     }
@@ -1617,7 +1702,7 @@ app.post("/admin/auto-job-checker/share/send", async (req, res) => {
       sourceName: item.sourceName || "",
       message: `${channel} send ho gaya: ${item.title || shareId}`
     });
-    return res.json({ ok: true, channel, result });
+    return res.json({ ok: true, channel, result, text, draft: prepared ? prepared.item : item, ai: prepared ? prepared.ai : null });
   } catch (err) {
     return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
   }

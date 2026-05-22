@@ -239,6 +239,15 @@
       if(!response.ok||data.ok===false)throw new Error(data.error||`Server action failed (${response.status})`);
       return data;
     };
+    const callPublicHealth=async()=>{
+      const response=await fetch(adminApiUrl("/api/health"),{method:"GET",cache:"no-store"});
+      const data=await response.json().catch(()=>({}));
+      if(!response.ok||data.ok===false)throw new Error(data.error||`Health check failed (${response.status})`);
+      return data;
+    };
+    const fetchHelpText=(error)=>String(error?.message||error||"").toLowerCase().includes("failed to fetch")
+      ? "Browser admin API tak nahi pahunch pa raha. Server URL, redeploy, CORS ya network block check karein."
+      : String(error?.message||error||"");
     const checklistKey="emitraAutoCheckerDeployChecklist";
     const readChecklist=()=>{try{return JSON.parse(localStorage.getItem(checklistKey)||"{}")}catch{return {}}};
     const writeChecklist=(state)=>localStorage.setItem(checklistKey,JSON.stringify(state||{}));
@@ -295,8 +304,18 @@
         if(data.databaseConnected){markChecklist("server")}
         setWorkflowResult(`Server OK | Admin: ${data.adminEmail||""} | Checked: ${formatTime(data.checkedAt)}`);
       }catch(error){
-        $("serverHealth").innerHTML=healthCard("Server",false,"Error");
-        setWorkflowResult("Server status error: "+error.message);
+        try{
+          const health=await callPublicHealth();
+          renderServerHealth(health);
+          setWorkflowResult([
+            "Server online hai, lekin admin status call complete nahi hua.",
+            "Latest server.js redeploy/restart karein, phir page hard refresh karke Check Server dabayein.",
+            "Detail: "+fetchHelpText(error)
+          ].join("\n"));
+        }catch(healthError){
+          $("serverHealth").innerHTML=healthCard("Server",false,"Error");
+          setWorkflowResult("Server status error: "+fetchHelpText(healthError)+"\nAdmin detail: "+fetchHelpText(error));
+        }
       }
     };
 
@@ -609,12 +628,25 @@
       return copied;
     };
 
+    const prepareWhatsappPost=async()=>{
+      if(!adminAllowed){throw new Error("Admin verify nahi hua.")}
+      $("draftStatus").innerText="Gemini se WhatsApp summary ban rahi hai...";
+      const result=await callAdminApi("/admin/auto-job-checker/whatsapp/prepare",{draftId:activeDraftId,draft:draftForm()});
+      applyDraftAutomation(result.draft||{});
+      if(result.draft&&activeDraftId){
+        draftsCache[activeDraftId]={...(draftsCache[activeDraftId]||{}),...result.draft};
+        renderDrafts();
+      }
+      return result;
+    };
+
     window.copyDraftWhatsappPost=async()=>{
-      const text=getValue("draftWhatsappPostText");
-      if(!text){$("draftStatus").innerText="Pehle Auto Summary / SEO / Slug generate karein.";return}
       try{
+        const result=await prepareWhatsappPost();
+        const text=String(result.text||getValue("draftWhatsappPostText")||"").trim();
+        if(!text){$("draftStatus").innerText="WhatsApp post text generate nahi hua.";return}
         await copyTextToClipboard(text);
-        $("draftStatus").innerText="WhatsApp post text copy ho gaya.";
+        $("draftStatus").innerText=`WhatsApp post text copy ho gaya. Summary: ${(result.ai&&result.ai.provider)||"local"}`;
       }catch(error){
         $("draftStatus").innerText="Copy nahi hua: "+error.message;
       }
@@ -622,13 +654,25 @@
 
     window.sendDraftShare=async(channel)=>{
       if(!adminAllowed){alert("Admin verify nahi hua.");return}
-      const text=getValue("draftWhatsappPostText");
+      let text=getValue("draftWhatsappPostText");
+      let aiPrepared=false;
+      if(channel==="whatsapp"){
+        try{
+          const prepared=await prepareWhatsappPost();
+          text=String(prepared.text||getValue("draftWhatsappPostText")||"").trim();
+          aiPrepared=true;
+        }catch(error){
+          $("draftStatus").innerText="WhatsApp summary error: "+error.message;
+          return;
+        }
+      }
       if(!text){$("draftStatus").innerText="Pehle WhatsApp post text generate karein.";return}
       if(!confirm(`${channel} par ye post send karni hai?`))return;
       try{
         $("draftStatus").innerText=`${channel} send ho raha hai...`;
-        await callAdminApi("/admin/auto-job-checker/share/send",{channel,draftId:activeDraftId,draft:draftForm(),text});
-        $("draftStatus").innerText=`${channel} send ho gaya.`;
+        const result=await callAdminApi("/admin/auto-job-checker/share/send",{channel,draftId:activeDraftId,draft:draftForm(),text,aiPrepared});
+        if(channel==="whatsapp"&&result.draft){applyDraftAutomation(result.draft)}
+        $("draftStatus").innerText=`${channel} send ho gaya.`+(result.ai?` Summary: ${result.ai.provider||"local"}`:"");
       }catch(error){
         $("draftStatus").innerText=`${channel} send error: ${error.message}`;
       }
