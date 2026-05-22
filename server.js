@@ -46,6 +46,8 @@ const TELEGRAM_CHAT_ID = String(process.env.TELEGRAM_CHAT_ID || "").trim();
 const WHATSAPP_ACCESS_TOKEN = String(process.env.WHATSAPP_ACCESS_TOKEN || "").trim();
 const WHATSAPP_PHONE_NUMBER_ID = String(process.env.WHATSAPP_PHONE_NUMBER_ID || "").trim();
 const WHATSAPP_TO_NUMBER = String(process.env.WHATSAPP_TO_NUMBER || "").replace(/\D/g, "");
+const GEMINI_API_KEY = String(process.env.GEMINI_API_KEY || "").trim();
+const GEMINI_MODEL = String(process.env.GEMINI_MODEL || "gemini-2.5-flash").trim();
 const OPENAI_API_KEY = String(process.env.OPENAI_API_KEY || "").trim();
 const OPENAI_MODEL = String(process.env.OPENAI_MODEL || "").trim();
 const DEFAULT_MEMBER_PASSWORD = "User@123";
@@ -326,6 +328,51 @@ const duplicateKeysForJob = (job = {}) => {
 
 const generateAiSummary = async (job = {}) => {
   const fallback = buildNotificationSummary(job);
+  if (GEMINI_API_KEY && GEMINI_MODEL && typeof fetch === "function") {
+    try {
+      const prompt = [
+        "Hindi me ek short government job/update notification summary likho.",
+        "Sirf factual points rakho, 4 bullet lines max, extra claim mat karo.",
+        JSON.stringify({
+          title: job.title,
+          department: job.department,
+          totalPosts: job.totalPosts,
+          lastDate: job.lastApplyDate || job.lastDate,
+          qualification: job.qualification,
+          sourceLink: job.sourceLink || job.detailLink
+        })
+      ].join("\n");
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(GEMINI_MODEL)}:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`;
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [
+            {
+              role: "user",
+              parts: [{ text: prompt }]
+            }
+          ],
+          generationConfig: {
+            temperature: 0.2,
+            maxOutputTokens: 220
+          }
+        })
+      });
+      if (!response.ok) {
+        throw new Error(`Gemini HTTP ${response.status}`);
+      }
+      const data = await response.json();
+      const summary = String(data?.candidates?.[0]?.content?.parts || [])
+        ? (data.candidates[0].content.parts || []).map((part) => part.text || "").join("\n").trim()
+        : "";
+      return { summary: summary || fallback, provider: summary ? "gemini" : "local" };
+    } catch (err) {
+      if (!OPENAI_API_KEY || !OPENAI_MODEL) {
+        return { summary: fallback, provider: "local", error: err.message };
+      }
+    }
+  }
   if (!OPENAI_API_KEY || !OPENAI_MODEL || typeof fetch !== "function") {
     return { summary: fallback, provider: "local" };
   }
@@ -1147,7 +1194,8 @@ app.post("/admin/status", async (req, res) => {
       cronSecretConfigured: Boolean(String(process.env.CRON_SECRET || "").trim()),
       telegramConfigured: Boolean(TELEGRAM_BOT_TOKEN && TELEGRAM_CHAT_ID),
       whatsappConfigured: Boolean(WHATSAPP_ACCESS_TOKEN && WHATSAPP_PHONE_NUMBER_ID && WHATSAPP_TO_NUMBER),
-      aiConfigured: Boolean(OPENAI_API_KEY && OPENAI_MODEL),
+      aiConfigured: Boolean((GEMINI_API_KEY && GEMINI_MODEL) || (OPENAI_API_KEY && OPENAI_MODEL)),
+      aiProvider: GEMINI_API_KEY && GEMINI_MODEL ? "Gemini" : (OPENAI_API_KEY && OPENAI_MODEL ? "OpenAI" : "Local"),
       autoCheckerRunning,
       adminEmail: decoded.email || "",
       checkedAt: nowStamp()
@@ -1162,7 +1210,8 @@ app.post("/admin/status", async (req, res) => {
       cronSecretConfigured: Boolean(String(process.env.CRON_SECRET || "").trim()),
       telegramConfigured: Boolean(TELEGRAM_BOT_TOKEN && TELEGRAM_CHAT_ID),
       whatsappConfigured: Boolean(WHATSAPP_ACCESS_TOKEN && WHATSAPP_PHONE_NUMBER_ID && WHATSAPP_TO_NUMBER),
-      aiConfigured: Boolean(OPENAI_API_KEY && OPENAI_MODEL),
+      aiConfigured: Boolean((GEMINI_API_KEY && GEMINI_MODEL) || (OPENAI_API_KEY && OPENAI_MODEL)),
+      aiProvider: GEMINI_API_KEY && GEMINI_MODEL ? "Gemini" : (OPENAI_API_KEY && OPENAI_MODEL ? "OpenAI" : "Local"),
       error: err.message
     });
   }

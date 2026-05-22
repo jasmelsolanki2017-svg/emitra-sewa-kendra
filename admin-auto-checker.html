@@ -269,7 +269,7 @@
         healthCard("Admin SDK",Boolean(data.adminSdkConfigured),data.adminSdkConfigured?"Ready":"Missing"),
         healthCard("Database",Boolean(data.databaseConnected),data.databaseConnected?"Connected":"Error"),
         healthCard("Cron Secret",Boolean(data.cronSecretConfigured),data.cronSecretConfigured?"Set":"Missing"),
-        healthCard("AI",Boolean(data.aiConfigured),data.aiConfigured?"OpenAI Ready":"Local Summary"),
+        healthCard("AI",Boolean(data.aiConfigured),data.aiConfigured?`${data.aiProvider||"AI"} Ready`:"Local Summary"),
         healthCard("Telegram",Boolean(data.telegramConfigured),data.telegramConfigured?"Ready":"Env Missing"),
         healthCard("WhatsApp API",Boolean(data.whatsappConfigured),data.whatsappConfigured?"Ready":"Env Missing")
       ].join("");
