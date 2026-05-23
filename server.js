@@ -291,6 +291,24 @@ const parseAutoJobCategoryPages = (source = {}) => {
   return pages;
 };
 
+const parseAutoJobFeedPages = (source = {}) => {
+  const urls = [];
+  const addUrl = (value = "") => {
+    const url = extractHttpUrl(value || "");
+    if (url) urls.push(url);
+  };
+  addUrl(source.feedUrl || source.rssUrl || "");
+  if (Array.isArray(source.feedUrls)) {
+    source.feedUrls.forEach(addUrl);
+  } else if (typeof source.feedUrls === "string") {
+    source.feedUrls.split(/[\r\n,|]+/).forEach(addUrl);
+  }
+  if (source.feedPages && typeof source.feedPages === "object") {
+    Object.values(source.feedPages).forEach(addUrl);
+  }
+  return Array.from(new Set(urls.map((url) => url.replace(/\/+$/, ""))));
+};
+
 const normalizeProcessedUrl = (value = "") => {
   try {
     const url = new URL(String(value || "").trim());
@@ -775,6 +793,7 @@ const normalizeSource = (id, value = {}) => ({
   keywords: toText(value.keywords || ""),
   categories: parseAutoJobCategories(value.categories || value.enabledCategories),
   categoryPages: parseAutoJobCategoryPages(value),
+  feedUrls: parseAutoJobFeedPages(value),
   maxFetch: readPositiveInt(value.maxFetch, AUTO_JOB_DEFAULT_PER_SOURCE_LIMIT, AUTO_JOB_MAX_PER_SOURCE_LIMIT)
 });
 
@@ -870,6 +889,7 @@ const DEFAULT_AUTO_JOB_SOURCES = [
       answerKey: "https://www.sarkariresult.com/answerkey/",
       syllabus: "https://www.sarkariresult.com/syllabus/"
     },
+    feedUrls: ["https://www.sarkariresult.com/feed_rss.xml"],
     maxFetch: 12
   },
   {
@@ -880,11 +900,12 @@ const DEFAULT_AUTO_JOB_SOURCES = [
     keywords: "online form, recruitment, vacancy, admit card, result, answer key, syllabus, notification, posts",
     sourceKind: "aggregator",
     categoryPages: {
-      latestJob: "https://www.sarkariexam.com/category/top-online-form/",
-      admitCard: "https://www.sarkariexam.com/category/admit-card/",
-      result: "https://www.sarkariexam.com/category/exam-result/",
-      answerKey: "https://www.sarkariexam.com/category/answer-keys/"
+      latestJob: "https://www.sarkariexam.com/category/top-online-form/feed/",
+      admitCard: "https://www.sarkariexam.com/category/admit-card/feed/",
+      result: "https://www.sarkariexam.com/category/exam-result/feed/",
+      answerKey: "https://www.sarkariexam.com/category/answer-keys/feed/"
     },
+    feedUrls: ["https://www.sarkariexam.com/feed/"],
     maxFetch: 12
   },
   {
@@ -901,6 +922,7 @@ const DEFAULT_AUTO_JOB_SOURCES = [
       answerKey: "https://www.freejobalert.com/answer-key/",
       syllabus: "https://www.freejobalert.com/syllabus/"
     },
+    feedUrls: ["https://www.freejobalert.com/feed/"],
     maxFetch: 12
   }
 ].map((source) => ({
@@ -908,6 +930,7 @@ const DEFAULT_AUTO_JOB_SOURCES = [
   enabled: true,
   categories: AUTO_JOB_CATEGORY_KEYS,
   categoryPages: source.categoryPages || {},
+  feedUrls: parseAutoJobFeedPages(source),
   maxFetch: readPositiveInt(source.maxFetch, AUTO_JOB_DEFAULT_PER_SOURCE_LIMIT, AUTO_JOB_MAX_PER_SOURCE_LIMIT),
   sourceKind: normalizeSourceKind(source.sourceKind)
 }));
@@ -929,6 +952,7 @@ const sourcePayloadFromRequest = (value = {}) => {
     sourceKind: normalizeSourceKind(source.sourceKind || source.kind),
     categories: parseAutoJobCategories(source.categories || source.enabledCategories),
     categoryPages: parseAutoJobCategoryPages(source),
+    feedUrls: parseAutoJobFeedPages(source),
     maxFetch: readPositiveInt(source.maxFetch, AUTO_JOB_DEFAULT_PER_SOURCE_LIMIT, AUTO_JOB_MAX_PER_SOURCE_LIMIT),
     enabled: source.enabled !== false,
     updatedAt: nowStamp()
@@ -974,9 +998,6 @@ const fetchText = async (url, timeoutMs = 25000) => {
       text: await response.text()
     };
   } catch (err) {
-    if (err?.httpStatus) {
-      throw err;
-    }
     const fallback = await fetchTextWithCurl(url, timeoutMs).catch(() => null);
     if (fallback) {
       return fallback;
@@ -1063,11 +1084,21 @@ const testAutoJobSource = async (source) => {
   try {
     const targets = sourcePageTargets(source).slice(0, 4);
     const notices = [];
+    const errors = [];
     for (const target of targets) {
-      const page = await fetchText(target.url, 20000);
-      extractLinks(page.text, target.url, target.keywords, { limit: 10 }).forEach((notice) => {
-        notices.push({ ...notice, sourcePage: target.url, pageLabel: target.label });
-      });
+      try {
+        const page = await fetchText(target.url, 20000);
+        extractNotices(page.text, target.url, target.keywords, { limit: 10 }).forEach((notice) => {
+          notices.push({ ...notice, sourcePage: target.url, pageLabel: target.label });
+        });
+      } catch (err) {
+        errors.push({ target: target.url, ...explainFetchError(err) });
+      }
+    }
+    if (!notices.length && errors.length) {
+      const error = new Error(errors[0].detail || errors[0].message);
+      error.friendly = errors[0];
+      throw error;
     }
     return {
       ok: true,
@@ -1076,7 +1107,7 @@ const testAutoJobSource = async (source) => {
       url: source.url,
       status: notices.length ? "ready" : "no_links",
       message: notices.length
-        ? `${targets.length} page open ho rahe hain. ${notices.length} matching links mile.`
+        ? `${targets.length} page/feed check hua. ${notices.length} matching links mile.${errors.length ? ` ${errors.length} blocked/failed target skip hua.` : ""}`
         : "Page open ho raha hai, par matching job links nahi mile. Keywords/category URL check karein.",
       foundCount: notices.length,
       sampleLinks: notices.slice(0, 5),
@@ -1084,7 +1115,7 @@ const testAutoJobSource = async (source) => {
       durationMs: nowStamp() - startedAt
     };
   } catch (err) {
-    const friendly = explainFetchError(err);
+    const friendly = err.friendly || explainFetchError(err);
     return {
       ok: false,
       sourceId: source.id || "",
@@ -1180,6 +1211,62 @@ const fetchPdfText = async (url, timeoutMs = 30000) => {
   }
 };
 
+const extractXmlNotices = (xml = "", baseUrl = "", keywords = [], options = {}) => {
+  const sourceKeywords = keywords.length ? keywords : autoJobKeywords;
+  const limit = readPositiveInt(options.limit, 80, 200);
+  const rows = [];
+  const seen = new Set();
+  const addRow = (title = "", link = "") => {
+    const cleanLink = decodeHtml(link).trim();
+    if (!cleanLink || /^(javascript:|mailto:|tel:|#)/i.test(cleanLink)) return;
+    let resolved = "";
+    try {
+      resolved = new URL(cleanLink, baseUrl).href;
+    } catch (err) {
+      return;
+    }
+    const cleanTitle = decodeHtml(title || resolved).slice(0, 220);
+    const haystack = `${cleanTitle} ${resolved}`.toLowerCase();
+    const matched = sourceKeywords.some((word) => haystack.includes(String(word).toLowerCase()));
+    const isDocument = /\.(pdf|docx?|xlsx?|zip)(?:[?#].*)?$/i.test(resolved);
+    if (!matched && !isDocument) return;
+    const key = resolved.toLowerCase();
+    if (seen.has(key)) return;
+    seen.add(key);
+    rows.push({ title: cleanTitle || resolved, link: resolved });
+  };
+
+  const itemRegex = /<item\b[^>]*>([\s\S]*?)<\/item>/gi;
+  let match;
+  while ((match = itemRegex.exec(xml)) && rows.length < limit) {
+    const item = match[1] || "";
+    const title = item.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] || "";
+    const link = item.match(/<link[^>]*>([\s\S]*?)<\/link>/i)?.[1]
+      || item.match(/<guid[^>]*>(https?:\/\/[\s\S]*?)<\/guid>/i)?.[1]
+      || "";
+    addRow(title, link);
+  }
+
+  const entryRegex = /<entry\b[^>]*>([\s\S]*?)<\/entry>/gi;
+  while ((match = entryRegex.exec(xml)) && rows.length < limit) {
+    const entry = match[1] || "";
+    const title = entry.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] || "";
+    const link = entry.match(/<link[^>]*href=["']([^"']+)["'][^>]*>/i)?.[1]
+      || entry.match(/<link[^>]*>([\s\S]*?)<\/link>/i)?.[1]
+      || "";
+    addRow(title, link);
+  }
+
+  const locRegex = /<loc[^>]*>([\s\S]*?)<\/loc>/gi;
+  while ((match = locRegex.exec(xml)) && rows.length < limit) {
+    const link = match[1] || "";
+    const urlTitle = link.split("/").filter(Boolean).pop()?.replace(/[-_]+/g, " ") || link;
+    addRow(urlTitle, link);
+  }
+
+  return rows.slice(0, limit);
+};
+
 const extractLinks = (html = "", baseUrl = "", keywords = [], options = {}) => {
   const linkRegex = /<a\b[^>]*href\s*=\s*["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
   const sourceKeywords = keywords.length ? keywords : autoJobKeywords;
@@ -1208,6 +1295,14 @@ const extractLinks = (html = "", baseUrl = "", keywords = [], options = {}) => {
     if (rows.length >= limit) break;
   }
   return rows;
+};
+
+const extractNotices = (body = "", baseUrl = "", keywords = [], options = {}) => {
+  const text = String(body || "");
+  const xmlRows = /<(rss|feed|urlset|item|entry)\b/i.test(text)
+    ? extractXmlNotices(text, baseUrl, keywords, options)
+    : [];
+  return xmlRows.length ? xmlRows : extractLinks(text, baseUrl, keywords, options);
 };
 
 const buildDraftFromNotice = (source, notice, options = {}) => {
@@ -1266,8 +1361,18 @@ const sourceKeywordList = (source = {}, category = "") => {
 const sourcePageTargets = (source = {}) => {
   const categories = parseAutoJobCategories(source.categories);
   const categoryPages = parseAutoJobCategoryPages(source);
+  const feedUrls = parseAutoJobFeedPages(source);
   const hasCategoryPages = Object.keys(categoryPages).length > 0;
   const targets = [];
+  feedUrls.forEach((url) => {
+    targets.push({
+      url,
+      label: "RSS Feed",
+      postTarget: "",
+      categories,
+      keywords: sourceKeywordList(source)
+    });
+  });
   if (source.url && !(source.sourceKind === "aggregator" && hasCategoryPages)) {
     targets.push({
       url: source.url,
@@ -1361,6 +1466,8 @@ async function checkOneAutoJobSource(db, source, limits = {}) {
   let newDrafts = 0;
   let skippedDuplicates = 0;
   let pageFetches = 0;
+  let targetErrors = 0;
+  const errorMessages = [];
   try {
     const enabledCategories = parseAutoJobCategories(source.categories);
     const pageTargets = sourcePageTargets(source);
@@ -1374,8 +1481,16 @@ async function checkOneAutoJobSource(db, source, limits = {}) {
       if (newDrafts >= perSourceLimit || (limits.remainingDrafts || 0) <= 0 || (limits.remainingPages || 0) <= 0) break;
       limits.remainingPages -= 1;
       pageFetches++;
-      const page = await fetchText(target.url, limits.fetchTimeoutMs || 18000);
-      const notices = extractLinks(page.text, target.url, target.keywords, {
+      let page;
+      try {
+        page = await fetchText(target.url, limits.fetchTimeoutMs || 18000);
+      } catch (err) {
+        const friendly = explainFetchError(err);
+        targetErrors++;
+        errorMessages.push(`${target.label || "Page"}: ${friendly.message}`);
+        continue;
+      }
+      const notices = extractNotices(page.text, target.url, target.keywords, {
         limit: Math.max(perSourceLimit * 4, 20)
       });
       found += notices.length;
@@ -1453,15 +1568,17 @@ async function checkOneAutoJobSource(db, source, limits = {}) {
       lastNewCount: newDrafts,
       lastSkippedDuplicates: skippedDuplicates,
       lastPageFetches: pageFetches,
+      lastTargetErrors: targetErrors,
+      lastErrorHelp: errorMessages.slice(0, 2).join(" | "),
       updatedAt: nowStamp()
     });
     await logAutoJob(db, {
-      level: "success",
+      level: targetErrors ? "warning" : "success",
       sourceId: source.id,
       sourceName: source.name,
-      message: `${source.name}: ${pageFetches} pages, ${found} links, ${newDrafts} drafts, ${skippedDuplicates} duplicate skipped`
+      message: `${source.name}: ${pageFetches} pages/feeds, ${found} links, ${newDrafts} drafts, ${skippedDuplicates} duplicate skipped${targetErrors ? `, ${targetErrors} target skipped` : ""}`
     });
-    return { sourceId: source.id, found, newDrafts, skippedDuplicates, pageFetches, ok: true };
+    return { sourceId: source.id, found, newDrafts, skippedDuplicates, pageFetches, targetErrors, ok: true };
   } catch (err) {
     const friendly = explainFetchError(err);
     await db.ref(`autoJobSources/${source.id}`).update({
