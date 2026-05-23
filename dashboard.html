@@ -667,6 +667,7 @@ Cook | 1426 |"></textarea>
   const portalCategories = ["admitCard","result","syllabus","answerKey"];
   const portalTargetLabels = { latestJob:"Latest Job", admitCard:"Admit Card", result:"Result", syllabus:"Syllabus", answerKey:"Answer Key" };
   const portalTargetLinks = { admitCard:"admitCardLink", result:"resultLink", syllabus:"syllabusLink", answerKey:"answerKeyLink" };
+  const defaultAdmitCardDate = "Exam se 3-7 din pehle";
   const whatsappChannelUrl = "https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q";
   const siteBaseUrl = () => /^https?:\/\//i.test(location.origin || "") ? location.origin.replace(/\/+$/, "") : "https://emitrawala.online";
   const jobDetailUrl = (id, data = {}) => `${siteBaseUrl()}/job-detail.html?id=${encodeURIComponent(id)}${data.slug ? `&slug=${encodeURIComponent(data.slug)}` : ""}`;
@@ -699,7 +700,7 @@ Cook | 1426 |"></textarea>
       data.totalPosts ? `Total Posts: ${data.totalPosts}` : "",
       data.startDate ? `Start Date: ${data.startDate}` : "",
       data.lastDate ? `Last Date: ${data.lastDate}` : "",
-      target === "admitCard" && data.admitCardDate ? `Admit Card: ${data.admitCardDate}` : "",
+      target === "admitCard" ? `Admit Card: ${data.admitCardDate || defaultAdmitCardDate}` : "",
       target === "result" && data.resultDate ? `Result: ${data.resultDate}` : "",
       data.examDate ? `Exam Date: ${data.examDate}` : "",
       data.qualification ? `Qualification: ${String(data.qualification).split(/\r?\n/)[0]}` : "",
@@ -1380,12 +1381,14 @@ Cook | 1426 |"></textarea>
 
     document.getElementById("jobStatus").innerText = editingJobId ? "Updating..." : "Saving...";
 
+    const existingJob = editingJobId && window.latestJobsCache ? (window.latestJobsCache[editingJobId] || {}) : {};
     const jobData = {
       title:form.title,
       type:form.type || "Online Form",
       displayOrder:form.displayOrder || (!editingJobId ? "1" : ""),
       startDate:form.startDate || "Update Soon",
       lastDate:form.lastDate || "Update Soon",
+      admitCardDate:form.admitCardDate || existingJob.admitCardDate || defaultAdmitCardDate,
       qualification:form.qualification || "Update Soon",
       location:form.location || "All India",
       applyLink:form.applyLink || "#",
@@ -1396,7 +1399,6 @@ Cook | 1426 |"></textarea>
 
     const targetRef = editingJobId ? ref(db, "LatestJobs/" + editingJobId) : push(jobsRef);
     const targetId = editingJobId || targetRef.key;
-    const existingJob = editingJobId && window.latestJobsCache ? (window.latestJobsCache[editingJobId] || {}) : {};
     applyDashboardDisplayOrderShift(targetId, { ...existingJob, ...jobData }).then((orderResult) => {
       const orderedJobData = orderResult.data;
       const saveTask = editingJobId

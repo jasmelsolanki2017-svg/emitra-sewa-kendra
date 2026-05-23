@@ -306,6 +306,7 @@ const isJobVisible = (job) => {
   if(String(job.postStatus || "published").toLowerCase() === "draft"){ return false; }
   return true;
 };
+const defaultAdmitCardDate = "Exam se 3-7 din pehle";
 
 const isFilledValue = (value, options = {}) => {
   const text = String(value || "").trim();
@@ -507,7 +508,7 @@ if(!id){
       { label:"Application Start Date", value:job.startDate },
       { label:"Last Date Apply Online", value:job.lastApplyDate || job.lastDate, className:"danger-date" },
       { label:"Last Date Fee Payment", value:job.lastFeeDate },
-      { label:"Admit Card Date", value:job.admitCardDate },
+      { label:"Admit Card Date", value:job.admitCardDate || defaultAdmitCardDate },
       { label:"Exam Date", value:job.examDate },
       { label:"Result Date", value:job.resultDate }
     ]);
