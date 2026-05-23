@@ -2488,7 +2488,7 @@ Important Links
 
       <div class="home-portal-quick" aria-label="Important job categories">
         <a class="q1" href="#homePortalLatestJobs">Latest Jobs</a>
-        <a class="q2" href="#homePortalResults">Sarkari Result</a>
+        <a class="q2" href="#homePortalResults">Result</a>
         <a class="q3" href="#homePortalAdmitCard">Admit Card</a>
         <a class="q4" href="#homePortalAnswerKey">Answer Key</a>
         <a class="q5" href="OFFLINEFORM.HTML">Offline Forms</a>
@@ -2530,20 +2530,6 @@ Important Links
         </div>
       </div>
 
-      <div class="home-source-special" aria-label="Special source updates">
-        <div class="home-source-title">Special Source Updates</div>
-        <div class="home-source-grid">
-          <div class="home-portal-box" id="homeSarkariResultSource">
-            <h3 class="home-portal-title">SarkariResult Special</h3>
-            <ul class="home-portal-list" id="homeSarkariResultList"><li class="home-portal-message">Source updates load ho rahe hain...</li></ul>
-          </div>
-
-          <div class="home-portal-box" id="homeSarkariExamSource">
-            <h3 class="home-portal-title">SarkariExam Special</h3>
-            <ul class="home-portal-list" id="homeSarkariExamList"><li class="home-portal-message">Source updates load ho rahe hain...</li></ul>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 </section>
@@ -3133,11 +3119,6 @@ answerKey:"homePortalAnswerKeyList",
 syllabus:"homePortalSyllabusList",
 admission:"homePortalAdmissionList"
 };
-const specialSourceMap = {
-sarkariResult:"homeSarkariResultList",
-sarkariExam:"homeSarkariExamList"
-};
-
 const escapeFastHTML = (value = "") => String(value)
 .replace(/&/g,"&amp;")
 .replace(/</g,"&lt;")
@@ -3175,17 +3156,6 @@ return true;
 };
 
 const isFastLatestJobTarget = (job) => !job.postTarget || job.postTarget === "latestJob";
-const getFastSpecialSourceKey = (job = {}) => {
-const haystack = [job.sourceName, job.sourceLink, job.detailLink, job.officialWebsite]
-.filter(Boolean)
-.join(" ")
-.toLowerCase()
-.replace(/\s+/g,"");
-if(haystack.includes("sarkariresult")){ return "sarkariResult"; }
-if(haystack.includes("sarkariexam")){ return "sarkariExam"; }
-return "";
-};
-const fastSpecialSourceLabel = (key) => key === "sarkariResult" ? "SarkariResult" : "SarkariExam";
 const getFastDisplayOrder = (job) => {
 const number = Number(job && job.displayOrder || 0);
 return number > 0 ? number : Number.POSITIVE_INFINITY;
@@ -3210,33 +3180,12 @@ list.innerHTML = items.length
 : '<li class="home-portal-message">Abhi koi update nahi hai.</li>';
 };
 
-const renderFastSpecialSourceJobs = (rows) => {
-Object.entries(specialSourceMap).forEach(([sourceKey, listId])=>{
-const list = document.getElementById(listId);
-if(!list){ return; }
-const sourceRows = rows.filter((row)=>row.sourceKey === sourceKey).slice(0,8);
-list.innerHTML = sourceRows.length
-? sourceRows.map(({ id, job })=>`
-  <li>
-    <a href="job-detail.html?id=${encodeURIComponent(id)}">${escapeFastHTML(job.title || job.text || "Job Update")}</a>
-    <span class="home-source-meta">${escapeFastHTML(job.type || "Update")} | Last: ${escapeFastHTML(job.lastDate || job.lastApplyDate || "Update Soon")}</span>
-  </li>
-`).join("")
-: `<li class="home-portal-message">${fastSpecialSourceLabel(sourceKey)} se abhi koi special update nahi hai.</li>`;
-});
-};
-
 const renderFastJobs = (values) => {
 const portalJobList = document.getElementById("homePortalJobList");
 const box = document.getElementById("homeJobList");
 const rows = Object.entries(values || {})
 .map(([id,value])=>({ id, job:normalizeFastJob(value) }))
 .filter(({ job })=>isFastJobVisible(job));
-const specialRows = rows
-.map((row)=>({ ...row, sourceKey:getFastSpecialSourceKey(row.job) }))
-.filter((row)=>row.sourceKey);
-sortFastJobRows(specialRows);
-renderFastSpecialSourceJobs(specialRows);
 const jobs = rows.filter(({ job })=>isFastLatestJobTarget(job));
 sortFastJobRows(jobs);
 
@@ -3719,24 +3668,6 @@ answerKey:"homePortalAnswerKeyList",
 syllabus:"homePortalSyllabusList",
 admission:"homePortalAdmissionList"
 };
-const homeSpecialSourceMap = {
-sarkariResult:"homeSarkariResultList",
-sarkariExam:"homeSarkariExamList"
-};
-
-const getHomeSpecialSourceKey = (job = {}) => {
-const haystack = [job.sourceName, job.sourceLink, job.detailLink, job.officialWebsite]
-.filter(Boolean)
-.join(" ")
-.toLowerCase()
-.replace(/\s+/g,"");
-if(haystack.includes("sarkariresult")){ return "sarkariResult"; }
-if(haystack.includes("sarkariexam")){ return "sarkariExam"; }
-return "";
-};
-
-const homeSpecialSourceLabel = (key) => key === "sarkariResult" ? "SarkariResult" : "SarkariExam";
-
 const filterHomePortalJobs = () => {
 const input = document.getElementById("homePortalJobSearch");
 const noResult = document.getElementById("homePortalNoResult");
@@ -3809,37 +3740,16 @@ list.innerHTML = `<li class="home-portal-message">Data load nahi hua: ${escapeHT
 });
 });
 
-const renderHomeSpecialSourceJobs = (rows) => {
-Object.entries(homeSpecialSourceMap).forEach(([sourceKey, listId])=>{
-const list = document.getElementById(listId);
-if(!list){ return; }
-const sourceRows = rows.filter((row)=>row.sourceKey === sourceKey).slice(0,8);
-list.innerHTML = sourceRows.length
-? sourceRows.map(({ id, job })=>`
-  <li>
-    <a href="job-detail.html?id=${encodeURIComponent(id)}">${escapeHTML(job.title || job.text || "Job Update")}</a>
-    <span class="home-source-meta">${escapeHTML(job.type || "Update")} | Last: ${escapeHTML(job.lastDate || job.lastApplyDate || "Update Soon")}</span>
-  </li>
-`).join("")
-: `<li class="home-portal-message">${homeSpecialSourceLabel(sourceKey)} se abhi koi special update nahi hai.</li>`;
-});
-};
-
 onValue(jobsRef,(snapshot)=>{
 const box = document.getElementById("homeJobList");
 const portalJobList = document.getElementById("homePortalJobList");
 const jobs = [];
-const specialRows = [];
 
 if(snapshot.exists()){
 snapshot.forEach((child)=>{
 const job = normalizeJob(child.val());
 if(isJobVisible(job)){
 const row = { id:child.key, job:job };
-const sourceKey = getHomeSpecialSourceKey(job);
-if(sourceKey){
-specialRows.push({ ...row, sourceKey });
-}
 if(isLatestJobTarget(job)){
 jobs.push(row);
 }
@@ -3848,8 +3758,6 @@ jobs.push(row);
 }
 
 sortJobRows(jobs);
-sortJobRows(specialRows);
-renderHomeSpecialSourceJobs(specialRows);
 
 if(jobs.length === 0){
 if(portalJobList){

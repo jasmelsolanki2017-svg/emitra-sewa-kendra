@@ -253,7 +253,7 @@ body.dark-mode .nav-logo img {
   <section class="search-box"><i class="fa-solid fa-magnifying-glass"></i><input type="search" id="jobSearch" placeholder="Search karein: SSC, Railway, Police, Army, Teacher, Rajasthan"></section>
   <section class="quick-grid" aria-label="Important categories">
     <a class="q1" href="#latestJobs">Latest Jobs</a>
-    <a class="q2" href="#results">Sarkari Result</a>
+    <a class="q2" href="#results">Result</a>
     <a class="q3" href="#admitCard">Admit Card</a>
     <a class="q4" href="#answerKey">Answer Key</a>
     <a class="q5" href="OFFLINEFORM.HTML">Offline Forms</a>
@@ -302,25 +302,6 @@ body.dark-mode .nav-logo img {
       <ul class="link-list" id="admissionList">
         <li class="message">Loading...</li>
       </ul>
-    </div>
-  </section>
-
-  <section class="source-special" aria-label="Special source updates">
-    <div class="source-special-head">Special Source Updates</div>
-    <div class="source-special-grid">
-      <div class="portal-box" id="sarkariResultSource">
-        <h2 class="box-title">SarkariResult Special</h2>
-        <ul class="link-list" id="sarkariResultList">
-          <li class="message">Source updates load ho rahe hain...</li>
-        </ul>
-      </div>
-
-      <div class="portal-box" id="sarkariExamSource">
-        <h2 class="box-title">SarkariExam Special</h2>
-        <ul class="link-list" id="sarkariExamList">
-          <li class="message">Source updates load ho rahe hain...</li>
-        </ul>
-      </div>
     </div>
   </section>
 
@@ -455,10 +436,6 @@ const portalCategoryMap = {
   syllabus:"syllabusList",
   admission:"admissionList"
 };
-const specialSourceMap = {
-  sarkariResult:"sarkariResultList",
-  sarkariExam:"sarkariExamList"
-};
 const portalListCache = {};
 const portalExpanded = {};
 const sharedParams = new URLSearchParams(window.location.search);
@@ -470,21 +447,7 @@ if(sharedPortalCategory && sharedPortalPost){
 const portalItemHref = (item) => item && item.sourceJobId ? `job-detail.html?id=${encodeURIComponent(item.sourceJobId)}` : safeUrl(item && item.url);
 const jobDetailHref = (id, job = {}) => `job-detail.html?id=${encodeURIComponent(id)}${job.slug ? `&slug=${encodeURIComponent(job.slug)}` : ""}`;
 let jobRowsCache = [];
-let specialSourceRowsCache = [];
 let jobsExpanded = false;
-
-const specialSourceKey = (job = {}) => {
-  const haystack = [job.sourceName, job.sourceLink, job.detailLink, job.officialWebsite]
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase()
-    .replace(/\s+/g, "");
-  if(haystack.includes("sarkariresult")){ return "sarkariResult"; }
-  if(haystack.includes("sarkariexam")){ return "sarkariExam"; }
-  return "";
-};
-
-const specialSourceLabel = (key) => key === "sarkariResult" ? "SarkariResult" : "SarkariExam";
 
 const getPortalLimit = (key) => PORTAL_CATEGORY_LIMITS[key] || PORTAL_VISIBLE_LIMIT;
 
@@ -579,32 +542,6 @@ const renderJobs = () => {
   `).join("") + (searchValue ? "" : renderViewMoreButton("jobs", "jobs", filteredRows.length, expanded));
 };
 
-const renderSpecialSourceJobs = () => {
-  const searchInput = document.getElementById("jobSearch");
-  const searchValue = searchInput ? searchInput.value.trim().toLowerCase() : "";
-
-  Object.entries(specialSourceMap).forEach(([sourceKey, listId]) => {
-    const list = document.getElementById(listId);
-    if(!list){ return; }
-    const sourceRows = specialSourceRowsCache.filter((row) => row.sourceKey === sourceKey);
-    const filteredRows = searchValue
-      ? sourceRows.filter(({ job }) => `${job.title || ""} ${job.text || ""} ${job.type || ""} ${job.qualification || ""} ${job.location || ""}`.toLowerCase().includes(searchValue))
-      : sourceRows;
-
-    if(!filteredRows.length){
-      list.innerHTML = `<li class="message">${specialSourceLabel(sourceKey)} se abhi koi special update nahi hai.</li>`;
-      return;
-    }
-
-    list.innerHTML = filteredRows.slice(0, PORTAL_VISIBLE_LIMIT).map(({ id, job }) => `
-      <li>
-        <a href="${jobDetailHref(id, job)}">${escapeHTML(job.title || job.text || "Job Update")}</a>
-        <span class="source-meta">${escapeHTML(job.type || "Update")} | Last: ${escapeHTML(job.lastDate || job.lastApplyDate || "Update Soon")}</span>
-      </li>
-    `).join("");
-  });
-};
-
 window.toggleJobList = () => {
   jobsExpanded = !jobsExpanded;
   renderJobs();
@@ -612,7 +549,6 @@ window.toggleJobList = () => {
 
 window.jobFormSearchHandler = () => {
   renderJobs();
-  renderSpecialSourceJobs();
 };
 
 onValue(portalItemsRef, (snapshot) => {
@@ -644,7 +580,6 @@ onValue(portalItemsRef, (snapshot) => {
 onValue(jobsRef, (snapshot) => {
   if(snapshot.exists()){
     const jobs = [];
-    const specialRows = [];
 
     snapshot.forEach((child) => {
       const job = normalizeJob(child.val());
@@ -653,10 +588,6 @@ onValue(jobsRef, (snapshot) => {
           id: child.key,
           job: job
         };
-        const sourceKey = specialSourceKey(job);
-        if(sourceKey){
-          specialRows.push({ ...row, sourceKey });
-        }
         if(isLatestJobTarget(job)){
           jobs.push(row);
         }
@@ -664,22 +595,14 @@ onValue(jobsRef, (snapshot) => {
     });
 
     sortJobRows(jobs);
-    sortJobRows(specialRows);
     jobRowsCache = jobs;
-    specialSourceRowsCache = specialRows;
   }else{
     jobRowsCache = [];
-    specialSourceRowsCache = [];
   }
 
   renderJobs();
-  renderSpecialSourceJobs();
 }, (error) => {
   document.getElementById("jobList").innerHTML = `<li class="message">Jobs load nahi ho payi: ${escapeHTML(error.message)}</li>`;
-  Object.values(specialSourceMap).forEach((listId) => {
-    const list = document.getElementById(listId);
-    if(list){ list.innerHTML = `<li class="message">Source updates load nahi ho payi: ${escapeHTML(error.message)}</li>`; }
-  });
 });
 </script>
 <button class="theme-toggle" type="button" aria-label="Toggle dark mode" title="Dark mode" onclick="toggleDarkMode()"><span class="theme-symbol" aria-hidden="true">☾</span></button>

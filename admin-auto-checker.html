@@ -112,7 +112,7 @@
       <h2>Checker Server</h2>
       <div class="form-grid">
         <input class="wide" type="url" id="adminServerUrl" placeholder="Render Server URL jaise https://your-app.onrender.com">
-        <input type="number" id="checkerFetchLimit" min="1" max="120" value="30" placeholder="Max new drafts per run">
+        <input type="number" id="checkerFetchLimit" min="1" max="120" value="12" placeholder="Max new drafts per run">
         <input type="number" id="checkerPageLimit" min="1" max="80" value="20" placeholder="Max pages fetch per run">
       </div>
       <div class="buttons">
@@ -150,7 +150,7 @@
             <option value="official">Official Source</option>
             <option value="aggregator">Scraped Job Portal</option>
           </select>
-          <input id="sourceMaxFetch" type="number" min="1" max="40" value="8" placeholder="Max drafts/source">
+          <input id="sourceMaxFetch" type="number" min="1" max="40" value="4" placeholder="Max drafts/source">
           <select id="sourceEnabled">
             <option value="true">Enabled</option>
             <option value="false">Disabled</option>
@@ -175,7 +175,7 @@
           <button type="button" class="cancel" onclick="clearSourceForm()">Clear</button>
         </div>
         <div class="status" id="sourceStatus"></div>
-        <div class="source-section-title"><span>Scraped Job Portals</span><small>SarkariResult, SarkariExam, FreeJobAlert</small></div>
+        <div class="source-section-title"><span>External Job Sources</span><small>Only for admin review, not public display</small></div>
         <div class="source-list" id="scrapedSourceList"><div class="empty">Loading...</div></div>
         <div class="source-section-title"><span>Official Sources</span><small>Department/board websites</small></div>
         <div class="source-list" id="sourceList"><div class="empty">Loading...</div></div>
@@ -426,7 +426,7 @@
       url:getValue("sourceUrl"),
       keywords:getValue("sourceKeywords"),
       sourceKind:getValue("sourceKind")||"official",
-      maxFetch:Number(getValue("sourceMaxFetch")||8),
+      maxFetch:Number(getValue("sourceMaxFetch")||4),
       categories:getSourceCategories(),
       categoryPages:getSourceCategoryPages(),
       enabled:getValue("sourceEnabled")!=="false",
@@ -451,7 +451,7 @@
 
     window.clearSourceForm=()=>{
       editingSourceId="";
-      sourceFields.forEach((id)=>setValue(id,id==="sourceEnabled"?"true":id==="sourceMaxFetch"?"8":id==="sourceKind"?"official":""));
+      sourceFields.forEach((id)=>setValue(id,id==="sourceEnabled"?"true":id==="sourceMaxFetch"?"4":id==="sourceKind"?"official":""));
       setSourceCategories();
       setSourceCategoryPages();
       $("sourceSaveBtn").innerText="Add Source";
@@ -491,7 +491,7 @@
       setValue("sourceUrl",data.url);
       setValue("sourceKeywords",data.keywords);
       setValue("sourceKind",data.sourceKind||"official");
-      setValue("sourceMaxFetch",data.maxFetch||8);
+      setValue("sourceMaxFetch",data.maxFetch||4);
       setValue("sourceEnabled",data.enabled===false?"false":"true");
       setSourceCategories(data.categories);
       setSourceCategoryPages(data.categoryPages||{});
@@ -900,7 +900,7 @@
       try{
         $("checkerStatus").innerText="Checker run ho raha hai...";
         const result=await callAdminApi("/admin/auto-job-checker/run",{
-          limit:Number(getValue("checkerFetchLimit")||30),
+          limit:Number(getValue("checkerFetchLimit")||12),
           pageLimit:Number(getValue("checkerPageLimit")||20)
         });
         await loadServerState().catch(()=>{});

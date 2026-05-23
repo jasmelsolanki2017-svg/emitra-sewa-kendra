@@ -205,9 +205,9 @@ const AUTO_JOB_CATEGORY_CONFIG = {
 };
 
 const AUTO_JOB_CATEGORY_KEYS = Object.keys(AUTO_JOB_CATEGORY_CONFIG);
-const AUTO_JOB_DEFAULT_DRAFT_LIMIT = 30;
+const AUTO_JOB_DEFAULT_DRAFT_LIMIT = 12;
 const AUTO_JOB_DEFAULT_PAGE_LIMIT = 20;
-const AUTO_JOB_DEFAULT_PER_SOURCE_LIMIT = 8;
+const AUTO_JOB_DEFAULT_PER_SOURCE_LIMIT = 4;
 const AUTO_JOB_MAX_DRAFT_LIMIT = 120;
 const AUTO_JOB_MAX_PAGE_LIMIT = 80;
 const AUTO_JOB_MAX_PER_SOURCE_LIMIT = 40;
@@ -326,6 +326,29 @@ const normalizeProcessedUrl = (value = "") => {
 };
 
 const autoJobUrlCacheKey = (url = "") => `url_${safeKey(normalizeProcessedUrl(url))}`;
+
+const cleanNoticeTitle = (value = "") => toText(value)
+  .replace(/\b(new|click here|read more|view more|download)\b/gi, " ")
+  .replace(/\s+/g, " ")
+  .trim()
+  .slice(0, 180);
+
+const isGenericNoticeTitle = (title = "") => {
+  const text = toText(title).toLowerCase();
+  if (!text) return true;
+  if (text.length < 4) return true;
+  if (/^(home|login|register|contact|about|privacy|terms|download|click here|read more|view more|more|new)$/i.test(text)) return true;
+  if (/^(pdf|doc|docx|xlsx?|zip)$/i.test(text)) return true;
+  return false;
+};
+
+const isUsefulNoticeCandidate = (title = "", link = "", keywords = []) => {
+  const cleanTitle = cleanNoticeTitle(title);
+  if (isGenericNoticeTitle(cleanTitle)) return false;
+  const sourceKeywords = keywords.length ? keywords : autoJobKeywords;
+  const haystack = `${cleanTitle} ${link}`.toLowerCase();
+  return sourceKeywords.some((word) => haystack.includes(String(word).toLowerCase()));
+};
 
 const findFirstMatchLine = (text = "", patterns = []) => {
   const lines = String(text || "").split(/\r?\n|[।]/).map((line) => line.trim()).filter(Boolean);
@@ -1226,11 +1249,8 @@ const extractXmlNotices = (xml = "", baseUrl = "", keywords = [], options = {}) 
     } catch (err) {
       return;
     }
-    const cleanTitle = decodeHtml(title || resolved).slice(0, 220);
-    const haystack = `${cleanTitle} ${resolved}`.toLowerCase();
-    const matched = sourceKeywords.some((word) => haystack.includes(String(word).toLowerCase()));
-    const isDocument = /\.(pdf|docx?|xlsx?|zip)(?:[?#].*)?$/i.test(resolved);
-    if (!matched && !isDocument) return;
+    const cleanTitle = cleanNoticeTitle(decodeHtml(title || resolved));
+    if (!isUsefulNoticeCandidate(cleanTitle, resolved, sourceKeywords)) return;
     const key = resolved.toLowerCase();
     if (seen.has(key)) return;
     seen.add(key);
@@ -1284,11 +1304,8 @@ const extractLinks = (html = "", baseUrl = "", keywords = [], options = {}) => {
     } catch (err) {
       continue;
     }
-    const title = decodeHtml(match[2] || link).slice(0, 220);
-    const haystack = `${title} ${link}`.toLowerCase();
-    const matched = sourceKeywords.some((word) => haystack.includes(String(word).toLowerCase()));
-    const isDocument = /\.(pdf|docx?|xlsx?|zip)(?:[?#].*)?$/i.test(link);
-    if (!matched && !isDocument) continue;
+    const title = cleanNoticeTitle(decodeHtml(match[2] || link));
+    if (!isUsefulNoticeCandidate(title, link, sourceKeywords)) continue;
     const key = link.toLowerCase();
     if (seen.has(key)) continue;
     seen.add(key);
