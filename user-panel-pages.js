@@ -28,9 +28,12 @@ let sessionIntervalId = null;
 let currentUser = null;
 let currentMember = {};
 let currentFiles = [];
+let currentFolders = [];
+let activeFolderId = "__general";
 let currentRequestNotifications = [];
 
 const pageType = document.body.dataset.page || "";
+const generalFolderId = "__general";
 
 const escapeHTML = (value = "") => String(value)
   .replace(/&/g, "&amp;")
@@ -55,6 +58,33 @@ const cleanFileName = (name = "file") => String(name)
   .replace(/[^a-zA-Z0-9._-]+/g, "-")
   .replace(/-+/g, "-")
   .slice(0, 90) || "file";
+
+const cleanFolderName = (name = "") => String(name || "")
+  .replace(/[<>:"/\\|?*\u0000-\u001f]+/g, " ")
+  .replace(/\s+/g, " ")
+  .trim()
+  .slice(0, 40);
+
+const getFolderRows = () => [
+  { id:generalFolderId, folder:{ name:"General", system:true, createdAt:0 } },
+  ...currentFolders
+];
+
+const getFolderName = (folderId = generalFolderId) => {
+  const row = getFolderRows().find((item) => item.id === folderId);
+  return row?.folder?.name || "General";
+};
+
+const getFileFolderId = (file = {}) => {
+  const folderId = String(file.folderId || "").trim();
+  return folderId || generalFolderId;
+};
+
+const getFolderPathSegment = (folderId, folderName) => {
+  if(folderId === generalFolderId){ return "general"; }
+  const name = cleanFileName(folderName || "folder").replace(/\.+$/g, "") || "folder";
+  return `${folderId}-${name}`.slice(0, 80);
+};
 
 const getStorageLimitBytes = () => {
   const direct = Number(currentMember.storageLimitBytes || 0);
@@ -479,19 +509,55 @@ function renderStorageInfo(){
     : "Upload ke liye admin approval pending hai. Approval milne ke baad upload button show hoga.");
 }
 
+function renderFolderControls(){
+  const folderList = document.getElementById("userFolderList");
+  const folderSelect = document.getElementById("uploadFolderSelect");
+  if(!folderList && !folderSelect){ return; }
+
+  const rows = getFolderRows();
+  const validIds = rows.map((item) => item.id);
+  if(!validIds.includes(activeFolderId)){
+    activeFolderId = generalFolderId;
+  }
+
+  const counts = {};
+  currentFiles.forEach((item) => {
+    const folderId = getFileFolderId(item.file);
+    counts[folderId] = (counts[folderId] || 0) + 1;
+  });
+
+  if(folderList){
+    folderList.innerHTML = rows.map(({ id, folder }) => {
+      const count = counts[id] || 0;
+      const activeClass = id === activeFolderId ? " active" : "";
+      const deleteButton = folder.system ? "" : `<button type="button" class="delete-folder" title="Delete folder" onclick="deleteUserFolder('${escapeHTML(id)}', event)">x</button>`;
+      return `<span class="folder-pill${activeClass}"><button type="button" class="folder-open" onclick="setUserFolder('${escapeHTML(id)}')"><span>${escapeHTML(folder.name || "Folder")}</span><span class="folder-count">${count}</span></button>${deleteButton}</span>`;
+    }).join("");
+  }
+
+  if(folderSelect){
+    const selected = folderSelect.value || activeFolderId;
+    folderSelect.innerHTML = rows.map(({ id, folder }) => `<option value="${escapeHTML(id)}">${escapeHTML(folder.name || "Folder")}</option>`).join("");
+    folderSelect.value = validIds.includes(selected) ? selected : activeFolderId;
+  }
+}
+
 function renderUserFiles(){
   const list = document.getElementById("userFilesList");
   renderStorageInfo();
+  renderFolderControls();
   if(!list){ return; }
-  if(!currentFiles.length){
-    list.innerHTML = '<div class="message">Abhi koi file upload nahi hai.</div>';
+  const folderFiles = currentFiles.filter((item) => getFileFolderId(item.file) === activeFolderId);
+  if(!folderFiles.length){
+    list.innerHTML = `<div class="message">${escapeHTML(getFolderName(activeFolderId))} folder me abhi koi file upload nahi hai.</div>`;
     return;
   }
-  list.innerHTML = currentFiles.map((item) => `
+  list.innerHTML = folderFiles.map((item) => `
     <div class="file-row">
       <div>
         <strong>${escapeHTML(item.file.name || "Document")}</strong>
         <small>${formatBytes(item.file.size)} - ${item.file.uploadedAt ? new Date(item.file.uploadedAt).toLocaleString("hi-IN") : "Recently uploaded"}</small>
+        <span class="file-folder-label">${escapeHTML(getFolderName(getFileFolderId(item.file)))}</span>
       </div>
       <div class="file-actions">
         <button class="preview-file" onclick="previewUserFile('${escapeHTML(item.id)}')">Preview</button>
@@ -501,6 +567,73 @@ function renderUserFiles(){
     </div>
   `).join("");
 }
+
+window.setUserFolder = (folderId = generalFolderId) => {
+  activeFolderId = folderId;
+  const folderSelect = document.getElementById("uploadFolderSelect");
+  if(folderSelect){ folderSelect.value = folderId; }
+  renderUserFiles();
+};
+
+window.createUserFolder = async () => {
+  if(!currentUser){
+    alert("Login required.");
+    return;
+  }
+  const input = document.getElementById("folderNameInput");
+  const name = cleanFolderName(input?.value || "");
+  if(!name){
+    alert("Folder name likhein.");
+    return;
+  }
+  const exists = currentFolders.some((item) => String(item.folder.name || "").trim().toLowerCase() === name.toLowerCase());
+  if(exists || name.toLowerCase() === "general"){
+    alert("Ye folder name pehle se hai.");
+    return;
+  }
+  try{
+    const folderRef = push(ref(db, "memberFolders/" + currentUser.uid));
+    await set(folderRef, {
+      name,
+      createdAt:Date.now(),
+      updatedAt:Date.now()
+    });
+    if(!currentFolders.some((item) => item.id === folderRef.key)){
+      currentFolders.push({ id:folderRef.key, folder:{ name, createdAt:Date.now(), updatedAt:Date.now() } });
+    }
+    activeFolderId = folderRef.key;
+    if(input){ input.value = ""; }
+    setText("uploadStatus", `${name} folder ban gaya. Ab upload ke time ye folder select kar sakte hain.`);
+    renderFolderControls();
+  }catch(error){
+    alert("Folder create nahi hua: " + error.message);
+  }
+};
+
+window.deleteUserFolder = async (folderId, event) => {
+  if(event){ event.stopPropagation(); }
+  if(!currentUser || !folderId || folderId === generalFolderId){ return; }
+  const folder = currentFolders.find((item) => item.id === folderId);
+  if(!folder){
+    alert("Folder data nahi mila.");
+    return;
+  }
+  const filesInFolder = currentFiles.filter((item) => getFileFolderId(item.file) === folderId);
+  if(filesInFolder.length){
+    alert("Is folder me files hain. Pehle files delete ya download karke remove karein.");
+    return;
+  }
+  if(!confirm(`${folder.folder.name || "Folder"} folder delete karna hai?`)){ return; }
+  try{
+    await remove(ref(db, "memberFolders/" + currentUser.uid + "/" + folderId));
+    currentFolders = currentFolders.filter((item) => item.id !== folderId);
+    if(activeFolderId === folderId){ activeFolderId = generalFolderId; }
+    setText("uploadStatus", "Folder delete ho gaya.");
+    renderUserFiles();
+  }catch(error){
+    alert("Folder delete nahi hua: " + error.message);
+  }
+};
 
 function loadDataFolder(user){
   onValue(ref(db, "members/" + user.uid), (snapshot) => {
@@ -512,6 +645,20 @@ function loadDataFolder(user){
       return;
     }
     renderStorageInfo();
+  });
+
+  onValue(ref(db, "memberFolders/" + user.uid), (snapshot) => {
+    currentFolders = [];
+    if(snapshot.exists()){
+      snapshot.forEach((child) => {
+        const folder = child.val() || {};
+        if(String(folder.name || "").trim()){
+          currentFolders.push({ id:child.key, folder });
+        }
+      });
+    }
+    currentFolders.sort((a, b) => Number(a.folder.createdAt || 0) - Number(b.folder.createdAt || 0));
+    renderUserFiles();
   });
 
   onValue(ref(db, "memberFiles/" + user.uid), (snapshot) => {
@@ -576,11 +723,18 @@ window.uploadUserFile = async () => {
   let uploadedBytes = 0;
   let uploadedCount = 0;
   const failed = [];
+  const folderSelect = document.getElementById("uploadFolderSelect");
+  const selectedFolderId = folderSelect?.value || activeFolderId || generalFolderId;
+  const validFolderIds = getFolderRows().map((item) => item.id);
+  const folderId = validFolderIds.includes(selectedFolderId) ? selectedFolderId : generalFolderId;
+  const folderName = getFolderName(folderId);
+  activeFolderId = folderId;
 
   for(let index = 0; index < files.length; index += 1){
     const file = files[index];
     const fileRecordRef = push(ref(db, "memberFiles/" + currentUser.uid));
-    const path = `${currentUser.uid}/${fileRecordRef.key}-${cleanFileName(file.name)}`;
+    const folderSegment = getFolderPathSegment(folderId, folderName);
+    const path = `${currentUser.uid}/${folderSegment}/${fileRecordRef.key}-${cleanFileName(file.name)}`;
     status.innerText = `Supabase par upload ho raha hai... ${index + 1}/${files.length}`;
 
     try{
@@ -597,6 +751,8 @@ window.uploadUserFile = async () => {
         name:file.name,
         size:file.size,
         type:file.type || "",
+        folderId,
+        folderName,
         path:path,
         storageProvider:"supabase",
         bucket:supabaseBucket,
@@ -620,7 +776,7 @@ window.uploadUserFile = async () => {
 
   status.innerText = failed.length
     ? `Uploaded: ${uploadedCount}, Failed: ${failed.length}. ${failed.slice(0, 2).join(" | ")}`
-    : `${uploadedCount} file upload ho gayi.`;
+    : `${uploadedCount} file ${folderName} folder me upload ho gayi.`;
 };
 
 window.downloadUserFile = (id) => {

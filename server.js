@@ -1139,6 +1139,7 @@ const backupPaths = [
   "serviceGuides",
   "members",
   "memberFiles",
+  "memberFolders",
   "memberCloudLinks",
   "serviceRequests",
   "userServiceRequests",
@@ -2021,6 +2022,7 @@ app.post("/admin/delete-member", async (req, res) => {
     await db.ref().update({
       [`members/${uid}`]: null,
       [`memberFiles/${uid}`]: null,
+      [`memberFolders/${uid}`]: null,
       [`memberCloudLinks/${uid}`]: null
     });
 

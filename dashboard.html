@@ -81,6 +81,7 @@
     .delete-btn{background:#d90000;color:white;border:none;padding:5px 8px;border-radius:5px;font-weight:700;cursor:pointer;font-size:11px;}
     .edit-btn{background:#ff7a00;color:#03224d;border:none;padding:5px 8px;border-radius:5px;font-weight:800;cursor:pointer;font-size:11px;margin-right:4px;}
     .whatsapp-share-btn{background:#138a36;color:white;border:none;padding:5px 8px;border-radius:5px;font-weight:800;cursor:pointer;font-size:11px;margin-right:4px;}
+    .telegram-share-btn{background:#229ed9;color:white;border:none;padding:5px 8px;border-radius:5px;font-weight:800;cursor:pointer;font-size:11px;margin-right:4px;}
     .action-btn{display:inline-block;background:#0057a8;color:white;border:none;text-decoration:none;padding:5px 8px;border-radius:5px;font-weight:700;cursor:pointer;margin:1px;font-size:11px;}
     .done-btn{background:#138a36;}
     .status-badge{display:inline-block;background:#ff7a00;color:#0057a8;padding:2px 6px;border-radius:6px;font-size:10px;font-weight:800;margin-top:3px;}
@@ -593,6 +594,8 @@ Cook | 1426 |"></textarea>
   const db = getDatabase(app);
 
   const adminEmail = "jasmelsolanki@gmail.com";
+  const adminServerStorageKey = "emitraAdminServerUrl";
+  const defaultAdminServerUrl = "https://emitra-sewa-kendra.onrender.com";
   let adminAllowed = false;
   let editingJobId = null;
 
@@ -611,6 +614,39 @@ Cook | 1426 |"></textarea>
   const hasRealLink = (value = "") => {
     const url = String(value || "").trim();
     return /^https?:\/\//i.test(url) && url !== "#";
+  };
+
+  const getAdminServerUrl = () => {
+    const saved = String(localStorage.getItem(adminServerStorageKey) || "").trim().replace(/\/+$/, "");
+    if(saved){ return saved; }
+    if(location.protocol === "file:" || /^emitrawala\.online$|github\.io$/i.test(location.hostname)){
+      return defaultAdminServerUrl;
+    }
+    return "";
+  };
+
+  const adminApiUrl = (path) => {
+    const base = getAdminServerUrl();
+    return base ? base + path : path;
+  };
+
+  const callAdminApi = async (path, body = {}) => {
+    const user = auth.currentUser;
+    if(!user){ throw new Error("Admin login missing"); }
+    const token = await user.getIdToken();
+    const response = await fetch(adminApiUrl(path), {
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "Authorization":"Bearer " + token
+      },
+      body:JSON.stringify(body)
+    });
+    const data = await response.json().catch(() => ({}));
+    if(!response.ok || data.ok === false){
+      throw new Error(data.error || `Server action failed (${response.status})`);
+    }
+    return data;
   };
 
   const cleanDisplayOrder = (value) => {
@@ -699,6 +735,25 @@ Cook | 1426 |"></textarea>
       document.getElementById("jobStatus").innerText = copied ? "Post data copy ho gaya." : "Copy nahi ho paya. Kripya dobara try karein.";
     }catch(error){
       document.getElementById("jobStatus").innerText = "Copy nahi ho paya. Kripya dobara try karein.";
+    }
+  };
+
+  window.sendLatestJobToTelegram = async (id) => {
+    const data = window.latestJobsCache && window.latestJobsCache[id];
+    if(!data){ alert("Post data load nahi hua. Page refresh karke try karein."); return; }
+    const text = buildWhatsappPostText(id, data);
+    const status = document.getElementById("jobStatus");
+    try{
+      status.innerText = "Telegram post bheji ja rahi hai...";
+      await callAdminApi("/admin/auto-job-checker/share/send", {
+        channel:"telegram",
+        jobId:id,
+        draft:{ ...data, sourceLink:getSharePostUrl(id, data) },
+        text
+      });
+      status.innerText = "Telegram par post send ho gayi.";
+    }catch(error){
+      status.innerText = "Telegram send nahi hua: " + error.message;
     }
   };
   const syncDisplayOrderToPortal = (jobId, data) => {
@@ -1454,6 +1509,7 @@ Cook | 1426 |"></textarea>
             </div>
             <div>
               <button class="whatsapp-share-btn" onclick="shareLatestJobToWhatsapp('${id}')">WhatsApp Post</button>
+              <button class="telegram-share-btn" onclick="sendLatestJobToTelegram('${id}')">Telegram Post</button>
               <button class="edit-btn" onclick="editLatestJob('${id}')">Edit</button>
               <button class="edit-btn" onclick="toggleJobVisibility('${id}')">${isHidden ? "Unhide" : "Hide"}</button>
               <button class="delete-btn" onclick="deleteLatestJob('${id}')">Delete</button>

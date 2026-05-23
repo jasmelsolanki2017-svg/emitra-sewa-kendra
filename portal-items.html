@@ -44,6 +44,7 @@
     .delete{background:#d90000;}
     .edit{background:#ff7a00;color:#03224d;}
     .whatsapp-share{background:#138a36;color:white;}
+    .telegram-share{background:#229ed9;color:white;}
     .empty{background:white;border:1px dashed #bdd0e5;border-radius:7px;padding:18px;text-align:center;color:#55657a;font-weight:700;}
     footer{background:#0057a8;color:white;text-align:center;padding:12px;font-size:12px;}
     @media(max-width:760px){
@@ -139,6 +140,8 @@
     const auth = getAuth(app);
     const db = getDatabase(app);
     const adminEmail = "jasmelsolanki@gmail.com";
+    const adminServerStorageKey = "emitraAdminServerUrl";
+    const defaultAdminServerUrl = "https://emitra-sewa-kendra.onrender.com";
     const portalItemsRef = ref(db, "portalItems");
     let adminAllowed = false;
     let activeCategory = "result";
@@ -163,6 +166,39 @@
     const safeUrl = (value = "#") => {
       const url = String(value || "#").trim();
       return /^https?:\/\//i.test(url) ? url : "#";
+    };
+
+    const getAdminServerUrl = () => {
+      const saved = String(localStorage.getItem(adminServerStorageKey) || "").trim().replace(/\/+$/, "");
+      if(saved){ return saved; }
+      if(location.protocol === "file:" || /^emitrawala\.online$|github\.io$/i.test(location.hostname)){
+        return defaultAdminServerUrl;
+      }
+      return "";
+    };
+
+    const adminApiUrl = (path) => {
+      const base = getAdminServerUrl();
+      return base ? base + path : path;
+    };
+
+    const callAdminApi = async (path, body = {}) => {
+      const user = auth.currentUser;
+      if(!user){ throw new Error("Admin login missing"); }
+      const token = await user.getIdToken();
+      const response = await fetch(adminApiUrl(path), {
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json",
+          "Authorization":"Bearer " + token
+        },
+        body:JSON.stringify(body)
+      });
+      const data = await response.json().catch(() => ({}));
+      if(!response.ok || data.ok === false){
+        throw new Error(data.error || `Server action failed (${response.status})`);
+      }
+      return data;
     };
 
     const whatsappChannelUrl = "https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q";
@@ -224,6 +260,27 @@
       }
     };
 
+    window.sendPortalItemToTelegram = async (category, id) => {
+      const item = allItems.find((row) => row.category === category && row.id === id);
+      if(!item){ alert("Post data nahi mila."); return; }
+      const text = buildPortalWhatsappText(item);
+      try{
+        document.getElementById("itemStatus").innerText = "Telegram post bheji ja rahi hai...";
+        await callAdminApi("/admin/auto-job-checker/share/send", {
+          channel:"telegram",
+          text,
+          draft:{
+            title:item.title || "Update",
+            postTarget:item.category || activeCategory,
+            sourceLink:item.url || buildPortalPostUrl(item)
+          }
+        });
+        document.getElementById("itemStatus").innerText = "Telegram par post send ho gayi.";
+      }catch(error){
+        document.getElementById("itemStatus").innerText = "Telegram send nahi hua: " + error.message;
+      }
+    };
+
     const normalizePortalUrl = (value = "") => {
       let url = String(value || "").trim();
       if(!url){ return ""; }
@@ -270,6 +327,7 @@
           <small>Updated: ${escapeHTML(item.updatedAt ? formatDate(item.updatedAt) : "Not edited yet")}</small>
           <div class="actions">
             <button class="whatsapp-share" onclick="sharePortalItemToWhatsapp('${item.category}','${item.id}')">WhatsApp Post</button>
+            <button class="telegram-share" onclick="sendPortalItemToTelegram('${item.category}','${item.id}')">Telegram Post</button>
             <button class="edit" onclick="editPortalItem('${item.category}','${item.id}')">Edit</button>
             <button class="delete" onclick="deletePortalItem('${item.category}','${item.id}')">Delete</button>
           </div>

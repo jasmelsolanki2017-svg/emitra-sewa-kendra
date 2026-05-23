@@ -653,6 +653,7 @@
       const removals = [
         remove(ref(db, "members/" + uid)),
         remove(ref(db, "memberFiles/" + uid)),
+        remove(ref(db, "memberFolders/" + uid)),
         remove(ref(db, "memberCloudLinks/" + uid))
       ];
       if(mobile){

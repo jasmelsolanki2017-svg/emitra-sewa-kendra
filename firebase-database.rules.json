@@ -86,6 +86,14 @@
       }
     },
 
+    "memberFolders": {
+      ".read": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'",
+      "$uid": {
+        ".read": "auth != null && (auth.uid == $uid || auth.token.email == 'jasmelsolanki@gmail.com')",
+        ".write": "auth != null && (auth.uid == $uid || auth.token.email == 'jasmelsolanki@gmail.com')"
+      }
+    },
+
     "memberCloudLinks": {
       ".read": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'",
       "$uid": {
