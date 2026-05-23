@@ -197,6 +197,10 @@ const AUTO_JOB_CATEGORY_CONFIG = {
   answerKey: {
     label: "Answer Key",
     keywords: ["answer key", "response sheet", "objection", "उत्तर कुंजी", "आपत्ति"]
+  },
+  syllabus: {
+    label: "Syllabus",
+    keywords: ["syllabus", "exam pattern", "previous paper", "पाठ्यक्रम"]
   }
 };
 
@@ -228,7 +232,8 @@ const normalizeAutoJobCategory = (value = "") => {
     result: "result",
     results: "result",
     answerkey: "answerKey",
-    answerkeys: "answerKey"
+    answerkeys: "answerKey",
+    syllabus: "syllabus"
   };
   return map[key] || "";
 };
@@ -264,7 +269,8 @@ const parseAutoJobCategoryPages = (source = {}) => {
     latestJob: ["latestJobUrl", "latestJobsUrl", "jobsUrl"],
     admitCard: ["admitCardUrl", "admitCardsUrl"],
     result: ["resultUrl", "resultsUrl"],
-    answerKey: ["answerKeyUrl", "answerKeysUrl"]
+    answerKey: ["answerKeyUrl", "answerKeysUrl"],
+    syllabus: ["syllabusUrl"]
   };
   Object.entries(aliases).forEach(([key, fields]) => {
     fields.forEach((field) => {
@@ -764,6 +770,7 @@ const normalizeSource = (id, value = {}) => ({
   name: toText(value.name || "Official Source"),
   url: extractHttpUrl(value.url || ""),
   department: toText(value.department || value.name || ""),
+  sourceKind: normalizeSourceKind(value.sourceKind || value.kind),
   enabled: value.enabled !== false,
   keywords: toText(value.keywords || ""),
   categories: parseAutoJobCategories(value.categories || value.enabledCategories),
@@ -771,76 +778,138 @@ const normalizeSource = (id, value = {}) => ({
   maxFetch: readPositiveInt(value.maxFetch, AUTO_JOB_DEFAULT_PER_SOURCE_LIMIT, AUTO_JOB_MAX_PER_SOURCE_LIMIT)
 });
 
+const normalizeSourceKind = (value = "") => {
+  const key = String(value || "").toLowerCase().replace(/[^a-z]/g, "");
+  return key === "aggregator" || key === "portal" || key === "scraped" ? "aggregator" : "official";
+};
+
 const DEFAULT_AUTO_JOB_SOURCES = [
   {
     id: "default_ssc",
     name: "SSC",
     department: "Staff Selection Commission",
     url: "https://ssc.gov.in",
-    keywords: "recruitment, admit card, result, vacancy, notification, notice"
+    keywords: "recruitment, admit card, result, vacancy, notification, notice",
+    sourceKind: "official"
   },
   {
     id: "default_upsc",
     name: "UPSC",
     department: "Union Public Service Commission",
     url: "https://upsc.gov.in/recruitment/recruitment-test",
-    keywords: "recruitment, examination, notification, admit card, result, vacancy"
+    keywords: "recruitment, examination, notification, admit card, result, vacancy",
+    sourceKind: "official"
   },
   {
     id: "default_rpsc",
     name: "RPSC",
     department: "Rajasthan Public Service Commission",
     url: "https://rpsc.rajasthan.gov.in",
-    keywords: "recruitment, advertisement, result, admit card, answer key, press note"
+    keywords: "recruitment, advertisement, result, admit card, answer key, press note",
+    sourceKind: "official"
   },
   {
     id: "default_rssb",
     name: "RSSB",
     department: "Rajasthan Staff Selection Board",
     url: "https://rssb.rajasthan.gov.in",
-    keywords: "recruitment, advertisement, result, admit card, answer key, notification"
+    keywords: "recruitment, advertisement, result, admit card, answer key, notification",
+    sourceKind: "official"
   },
   {
     id: "default_rajasthan_recruitment",
     name: "Rajasthan Recruitment Portal",
     department: "Government of Rajasthan",
     url: "https://www.recruitment.rajasthan.gov.in",
-    keywords: "notification, recruitment, vacancy, admit card, result, apply online"
+    keywords: "notification, recruitment, vacancy, admit card, result, apply online",
+    sourceKind: "official"
   },
   {
     id: "default_ibps",
     name: "IBPS",
     department: "Institute of Banking Personnel Selection",
     url: "https://www.ibps.in/index.php/recruitment",
-    keywords: "recruitment, CRP, notification, admit card, result, provisional allotment"
+    keywords: "recruitment, CRP, notification, admit card, result, provisional allotment",
+    sourceKind: "official"
   },
   {
     id: "default_nta",
     name: "NTA",
     department: "National Testing Agency",
     url: "https://nta.ac.in",
-    keywords: "notification, public notice, admit card, result, exam city, recruitment"
+    keywords: "notification, public notice, admit card, result, exam city, recruitment",
+    sourceKind: "official"
   },
   {
     id: "default_rrb_apply",
     name: "RRB Apply",
     department: "Railway Recruitment Boards",
     url: "https://www.rrbapply.gov.in",
-    keywords: "CEN, recruitment, apply online, admit card, result, notice, railway"
+    keywords: "CEN, recruitment, apply online, admit card, result, notice, railway",
+    sourceKind: "official"
   },
   {
     id: "default_rajasthan_police",
     name: "Rajasthan Police",
     department: "Rajasthan Police",
     url: "https://police.rajasthan.gov.in",
-    keywords: "recruitment, constable, admit card, result, selection list, important notice"
+    keywords: "recruitment, constable, admit card, result, selection list, important notice",
+    sourceKind: "official"
+  },
+  {
+    id: "portal_sarkari_result",
+    name: "Sarkari Result",
+    department: "Sarkari Result Job Portal",
+    url: "https://www.sarkariresult.com/",
+    keywords: "online form, recruitment, vacancy, admit card, result, answer key, syllabus, notification, apply online",
+    sourceKind: "aggregator",
+    categoryPages: {
+      latestJob: "https://www.sarkariresult.com/latestjob/",
+      admitCard: "https://www.sarkariresult.com/admitcard/",
+      result: "https://www.sarkariresult.com/result/",
+      answerKey: "https://www.sarkariresult.com/answerkey/",
+      syllabus: "https://www.sarkariresult.com/syllabus/"
+    },
+    maxFetch: 12
+  },
+  {
+    id: "portal_sarkari_exam",
+    name: "Sarkari Exam",
+    department: "Sarkari Exam Job Portal",
+    url: "https://www.sarkariexam.com/",
+    keywords: "online form, recruitment, vacancy, admit card, result, answer key, syllabus, notification, posts",
+    sourceKind: "aggregator",
+    categoryPages: {
+      latestJob: "https://www.sarkariexam.com/category/top-online-form/",
+      admitCard: "https://www.sarkariexam.com/category/admit-card/",
+      result: "https://www.sarkariexam.com/category/exam-result/",
+      answerKey: "https://www.sarkariexam.com/category/answer-keys/"
+    },
+    maxFetch: 12
+  },
+  {
+    id: "portal_freejobalert",
+    name: "FreeJobAlert",
+    department: "FreeJobAlert Job Portal",
+    url: "https://www.freejobalert.com/",
+    keywords: "recruitment, apply online, notification, vacancy, admit card, result, answer key, syllabus, posts",
+    sourceKind: "aggregator",
+    categoryPages: {
+      latestJob: "https://www.freejobalert.com/latest-notifications/",
+      admitCard: "https://www.freejobalert.com/admit-card/",
+      result: "https://www.freejobalert.com/exam-results/",
+      answerKey: "https://www.freejobalert.com/answer-key/",
+      syllabus: "https://www.freejobalert.com/syllabus/"
+    },
+    maxFetch: 12
   }
 ].map((source) => ({
   ...source,
   enabled: true,
   categories: AUTO_JOB_CATEGORY_KEYS,
-  categoryPages: {},
-  maxFetch: AUTO_JOB_DEFAULT_PER_SOURCE_LIMIT
+  categoryPages: source.categoryPages || {},
+  maxFetch: readPositiveInt(source.maxFetch, AUTO_JOB_DEFAULT_PER_SOURCE_LIMIT, AUTO_JOB_MAX_PER_SOURCE_LIMIT),
+  sourceKind: normalizeSourceKind(source.sourceKind)
 }));
 
 const sourcePayloadFromRequest = (value = {}) => {
@@ -857,6 +926,7 @@ const sourcePayloadFromRequest = (value = {}) => {
     department: toText(source.department || name),
     url,
     keywords: toText(source.keywords),
+    sourceKind: normalizeSourceKind(source.sourceKind || source.kind),
     categories: parseAutoJobCategories(source.categories || source.enabledCategories),
     categoryPages: parseAutoJobCategoryPages(source),
     maxFetch: readPositiveInt(source.maxFetch, AUTO_JOB_DEFAULT_PER_SOURCE_LIMIT, AUTO_JOB_MAX_PER_SOURCE_LIMIT),
@@ -1174,6 +1244,7 @@ const buildDraftFromNotice = (source, notice, options = {}) => {
     checkerStatus: "draft",
     sourceId: source.id,
     sourceName: source.name,
+    sourceKind: source.sourceKind || "official",
     detectedLink: notice.link,
     scanSourcePage: options.scanSourcePage || source.url,
     scanCategory: target,
@@ -1195,8 +1266,9 @@ const sourceKeywordList = (source = {}, category = "") => {
 const sourcePageTargets = (source = {}) => {
   const categories = parseAutoJobCategories(source.categories);
   const categoryPages = parseAutoJobCategoryPages(source);
+  const hasCategoryPages = Object.keys(categoryPages).length > 0;
   const targets = [];
-  if (source.url) {
+  if (source.url && !(source.sourceKind === "aggregator" && hasCategoryPages)) {
     targets.push({
       url: source.url,
       label: "Homepage",
@@ -1949,6 +2021,10 @@ app.post("/admin/auto-job-checker/source/test", async (req, res) => {
 app.post("/admin/auto-job-checker/sources/seed", async (req, res) => {
   try {
     const { db } = await requireAdmin(req);
+    const requestedKind = req.body?.sourceKind || req.body?.kind;
+    const seedSources = requestedKind
+      ? DEFAULT_AUTO_JOB_SOURCES.filter((source) => source.sourceKind === normalizeSourceKind(requestedKind))
+      : DEFAULT_AUTO_JOB_SOURCES;
     const snapshot = await db.ref("autoJobSources").get();
     const existingByUrl = new Map();
     if (snapshot.exists()) {
@@ -1962,7 +2038,7 @@ app.post("/admin/auto-job-checker/sources/seed", async (req, res) => {
     let added = 0;
     let updated = 0;
     const now = nowStamp();
-    for (const source of DEFAULT_AUTO_JOB_SOURCES) {
+    for (const source of seedSources) {
       const key = source.url.replace(/\/+$/, "").toLowerCase();
       const existingId = existingByUrl.get(key);
       const { id, ...payload } = source;
@@ -1975,7 +2051,7 @@ app.post("/admin/auto-job-checker/sources/seed", async (req, res) => {
       }
     }
 
-    return res.json({ ok: true, added, updated, total: DEFAULT_AUTO_JOB_SOURCES.length });
+    return res.json({ ok: true, added, updated, total: seedSources.length });
   } catch (err) {
     return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
   }

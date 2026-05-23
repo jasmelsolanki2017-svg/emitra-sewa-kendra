@@ -74,6 +74,8 @@
     .check-item input{width:auto;margin-top:2px}
     .category-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:6px}
     .bulk-bar{display:flex;gap:7px;align-items:center;flex-wrap:wrap;background:#eef6ff;border:1px solid #d8e6f5;border-radius:7px;padding:8px;margin:8px 0}
+    .source-section-title{display:flex;justify-content:space-between;gap:8px;align-items:center;margin:10px 0 6px;color:#0057a8;font-size:13px;font-weight:900}
+    .source-section-title small{color:#56677c;font-size:11px;font-weight:800}
     .draft-check{width:auto;margin-top:3px;flex-shrink:0}
     .result-box{margin-top:8px;border:1px dashed #bdd0e5;border-radius:7px;background:#fbfdff;padding:8px;font-size:12px;font-weight:700;white-space:pre-wrap;overflow-wrap:anywhere;color:#172033}
     .mini-btn{padding:6px 8px;font-size:11px}
@@ -144,6 +146,10 @@
           <input id="sourceDepartment" placeholder="Department / Board">
           <input class="wide" id="sourceUrl" type="url" placeholder="Official website URL https://...">
           <input class="wide" id="sourceKeywords" placeholder="Keywords comma se: recruitment, admit card, result">
+          <select id="sourceKind">
+            <option value="official">Official Source</option>
+            <option value="aggregator">Scraped Job Portal</option>
+          </select>
           <input id="sourceMaxFetch" type="number" min="1" max="40" value="8" placeholder="Max drafts/source">
           <select id="sourceEnabled">
             <option value="true">Enabled</option>
@@ -154,18 +160,24 @@
             <label class="check-item"><input type="checkbox" class="source-category" value="admitCard" checked> Admit Card</label>
             <label class="check-item"><input type="checkbox" class="source-category" value="result" checked> Result</label>
             <label class="check-item"><input type="checkbox" class="source-category" value="answerKey" checked> Answer Key</label>
+            <label class="check-item"><input type="checkbox" class="source-category" value="syllabus" checked> Syllabus</label>
           </div>
           <input id="sourceLatestJobUrl" type="url" placeholder="Latest Jobs category URL optional">
           <input id="sourceAdmitCardUrl" type="url" placeholder="Admit Card category URL optional">
           <input id="sourceResultUrl" type="url" placeholder="Result category URL optional">
           <input id="sourceAnswerKeyUrl" type="url" placeholder="Answer Key category URL optional">
+          <input id="sourceSyllabusUrl" type="url" placeholder="Syllabus category URL optional">
         </div>
         <div class="buttons">
           <button type="button" id="sourceSaveBtn" onclick="saveSource()">Add Source</button>
+          <button type="button" class="publish" onclick="seedAggregatorSources()">Add Scraped Portals</button>
           <button type="button" class="publish" onclick="seedDefaultSources()">Add Default Sources</button>
           <button type="button" class="cancel" onclick="clearSourceForm()">Clear</button>
         </div>
         <div class="status" id="sourceStatus"></div>
+        <div class="source-section-title"><span>Scraped Job Portals</span><small>SarkariResult, SarkariExam, FreeJobAlert</small></div>
+        <div class="source-list" id="scrapedSourceList"><div class="empty">Loading...</div></div>
+        <div class="source-section-title"><span>Official Sources</span><small>Department/board websites</small></div>
         <div class="source-list" id="sourceList"><div class="empty">Loading...</div></div>
       </section>
 
@@ -236,10 +248,10 @@
     const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getDatabase(app),adminEmail="jasmelsolanki@gmail.com";
     const adminServerStorageKey="emitraAdminServerUrl";
     let adminAllowed=false,editingSourceId="",activeDraftId="",sourcesCache={},draftsCache={},dataSyncStarted=false;
-    const sourceFields=["sourceName","sourceDepartment","sourceUrl","sourceKeywords","sourceMaxFetch","sourceEnabled","sourceLatestJobUrl","sourceAdmitCardUrl","sourceResultUrl","sourceAnswerKeyUrl"];
+    const sourceFields=["sourceName","sourceDepartment","sourceUrl","sourceKeywords","sourceKind","sourceMaxFetch","sourceEnabled","sourceLatestJobUrl","sourceAdmitCardUrl","sourceResultUrl","sourceAnswerKeyUrl","sourceSyllabusUrl"];
     const draftFields=["draftTitle","draftDepartment","draftPostDate","draftTotalPosts","draftImportantDates","draftQualification","draftOfficialLink","draftSourceLink","draftPostTarget","draftLastDate","draftSlug","draftSeoTitle","draftMetaDescription","draftNotificationSummary","draftWhatsappPostText","draftPageContent","draftGeneratedJson"];
     const $=(id)=>document.getElementById(id);
-    const sourceList=$("sourceList"),draftList=$("draftList"),logList=$("logList");
+    const sourceList=$("sourceList"),scrapedSourceList=$("scrapedSourceList"),draftList=$("draftList"),logList=$("logList");
 
     $("adminServerUrl").value=localStorage.getItem(adminServerStorageKey)||"";
 
@@ -248,7 +260,7 @@
     const shortTime=(value)=>value?new Date(Number(value)).toLocaleTimeString("hi-IN"):"--";
     const getValue=(id)=>$(id).value.trim();
     const setValue=(id,value="")=>{$(id).value=value||""};
-    const categoryKeys=["latestJob","admitCard","result","answerKey"];
+    const categoryKeys=["latestJob","admitCard","result","answerKey","syllabus"];
     const sourceCategoryCheckboxes=()=>Array.from(document.querySelectorAll(".source-category"));
     const getSourceCategories=()=>sourceCategoryCheckboxes().filter((item)=>item.checked).map((item)=>item.value);
     const setSourceCategories=(categories=categoryKeys)=>{
@@ -259,13 +271,15 @@
       latestJob:getValue("sourceLatestJobUrl"),
       admitCard:getValue("sourceAdmitCardUrl"),
       result:getValue("sourceResultUrl"),
-      answerKey:getValue("sourceAnswerKeyUrl")
+      answerKey:getValue("sourceAnswerKeyUrl"),
+      syllabus:getValue("sourceSyllabusUrl")
     });
     const setSourceCategoryPages=(pages={})=>{
       setValue("sourceLatestJobUrl",pages.latestJob||"");
       setValue("sourceAdmitCardUrl",pages.admitCard||"");
       setValue("sourceResultUrl",pages.result||"");
       setValue("sourceAnswerKeyUrl",pages.answerKey||"");
+      setValue("sourceSyllabusUrl",pages.syllabus||"");
     };
     const selectedDraftIds=()=>Array.from(document.querySelectorAll(".draft-select:checked")).map((item)=>item.value);
     const updateBulkSelectedCount=()=>{$("bulkSelectedCount").innerText=`${selectedDraftIds().length} selected`};
@@ -410,6 +424,7 @@
       department:getValue("sourceDepartment"),
       url:getValue("sourceUrl"),
       keywords:getValue("sourceKeywords"),
+      sourceKind:getValue("sourceKind")||"official",
       maxFetch:Number(getValue("sourceMaxFetch")||8),
       categories:getSourceCategories(),
       categoryPages:getSourceCategoryPages(),
@@ -418,21 +433,24 @@
     });
 
     const defaultSources=[
-      {id:"default_ssc",name:"SSC",department:"Staff Selection Commission",url:"https://ssc.gov.in",keywords:"recruitment, admit card, result, vacancy, notification, notice",enabled:true},
-      {id:"default_upsc",name:"UPSC",department:"Union Public Service Commission",url:"https://upsc.gov.in/recruitment/recruitment-test",keywords:"recruitment, examination, notification, admit card, result, vacancy",enabled:true},
-      {id:"default_rpsc",name:"RPSC",department:"Rajasthan Public Service Commission",url:"https://rpsc.rajasthan.gov.in",keywords:"recruitment, advertisement, result, admit card, answer key, press note",enabled:true},
-      {id:"default_rssb",name:"RSSB",department:"Rajasthan Staff Selection Board",url:"https://rssb.rajasthan.gov.in",keywords:"recruitment, advertisement, result, admit card, answer key, notification",enabled:true},
-      {id:"default_rajasthan_recruitment",name:"Rajasthan Recruitment Portal",department:"Government of Rajasthan",url:"https://www.recruitment.rajasthan.gov.in",keywords:"notification, recruitment, vacancy, admit card, result, apply online",enabled:true},
-      {id:"default_ibps",name:"IBPS",department:"Institute of Banking Personnel Selection",url:"https://www.ibps.in/index.php/recruitment",keywords:"recruitment, CRP, notification, admit card, result, provisional allotment",enabled:true},
-      {id:"default_nta",name:"NTA",department:"National Testing Agency",url:"https://nta.ac.in",keywords:"notification, public notice, admit card, result, exam city, recruitment",enabled:true},
-      {id:"default_rrb_apply",name:"RRB Apply",department:"Railway Recruitment Boards",url:"https://www.rrbapply.gov.in",keywords:"CEN, recruitment, apply online, admit card, result, notice, railway",enabled:true},
-      {id:"default_rajasthan_police",name:"Rajasthan Police",department:"Rajasthan Police",url:"https://police.rajasthan.gov.in",keywords:"recruitment, constable, admit card, result, selection list, important notice",enabled:true}
-    ].map((source)=>({...source,categories:categoryKeys,categoryPages:{},maxFetch:8}));
+      {id:"default_ssc",name:"SSC",department:"Staff Selection Commission",url:"https://ssc.gov.in",keywords:"recruitment, admit card, result, vacancy, notification, notice",sourceKind:"official",enabled:true},
+      {id:"default_upsc",name:"UPSC",department:"Union Public Service Commission",url:"https://upsc.gov.in/recruitment/recruitment-test",keywords:"recruitment, examination, notification, admit card, result, vacancy",sourceKind:"official",enabled:true},
+      {id:"default_rpsc",name:"RPSC",department:"Rajasthan Public Service Commission",url:"https://rpsc.rajasthan.gov.in",keywords:"recruitment, advertisement, result, admit card, answer key, press note",sourceKind:"official",enabled:true},
+      {id:"default_rssb",name:"RSSB",department:"Rajasthan Staff Selection Board",url:"https://rssb.rajasthan.gov.in",keywords:"recruitment, advertisement, result, admit card, answer key, notification",sourceKind:"official",enabled:true},
+      {id:"default_rajasthan_recruitment",name:"Rajasthan Recruitment Portal",department:"Government of Rajasthan",url:"https://www.recruitment.rajasthan.gov.in",keywords:"notification, recruitment, vacancy, admit card, result, apply online",sourceKind:"official",enabled:true},
+      {id:"default_ibps",name:"IBPS",department:"Institute of Banking Personnel Selection",url:"https://www.ibps.in/index.php/recruitment",keywords:"recruitment, CRP, notification, admit card, result, provisional allotment",sourceKind:"official",enabled:true},
+      {id:"default_nta",name:"NTA",department:"National Testing Agency",url:"https://nta.ac.in",keywords:"notification, public notice, admit card, result, exam city, recruitment",sourceKind:"official",enabled:true},
+      {id:"default_rrb_apply",name:"RRB Apply",department:"Railway Recruitment Boards",url:"https://www.rrbapply.gov.in",keywords:"CEN, recruitment, apply online, admit card, result, notice, railway",sourceKind:"official",enabled:true},
+      {id:"default_rajasthan_police",name:"Rajasthan Police",department:"Rajasthan Police",url:"https://police.rajasthan.gov.in",keywords:"recruitment, constable, admit card, result, selection list, important notice",sourceKind:"official",enabled:true},
+      {id:"portal_sarkari_result",name:"Sarkari Result",department:"Sarkari Result Job Portal",url:"https://www.sarkariresult.com/",keywords:"online form, recruitment, vacancy, admit card, result, answer key, syllabus, notification, apply online",sourceKind:"aggregator",categoryPages:{latestJob:"https://www.sarkariresult.com/latestjob/",admitCard:"https://www.sarkariresult.com/admitcard/",result:"https://www.sarkariresult.com/result/",answerKey:"https://www.sarkariresult.com/answerkey/",syllabus:"https://www.sarkariresult.com/syllabus/"},maxFetch:12,enabled:true},
+      {id:"portal_sarkari_exam",name:"Sarkari Exam",department:"Sarkari Exam Job Portal",url:"https://www.sarkariexam.com/",keywords:"online form, recruitment, vacancy, admit card, result, answer key, syllabus, notification, posts",sourceKind:"aggregator",categoryPages:{latestJob:"https://www.sarkariexam.com/category/top-online-form/",admitCard:"https://www.sarkariexam.com/category/admit-card/",result:"https://www.sarkariexam.com/category/exam-result/",answerKey:"https://www.sarkariexam.com/category/answer-keys/"},maxFetch:12,enabled:true},
+      {id:"portal_freejobalert",name:"FreeJobAlert",department:"FreeJobAlert Job Portal",url:"https://www.freejobalert.com/",keywords:"recruitment, apply online, notification, vacancy, admit card, result, answer key, syllabus, posts",sourceKind:"aggregator",categoryPages:{latestJob:"https://www.freejobalert.com/latest-notifications/",admitCard:"https://www.freejobalert.com/admit-card/",result:"https://www.freejobalert.com/exam-results/",answerKey:"https://www.freejobalert.com/answer-key/",syllabus:"https://www.freejobalert.com/syllabus/"},maxFetch:12,enabled:true}
+    ].map((source)=>({...source,categories:categoryKeys,categoryPages:source.categoryPages||{},maxFetch:source.maxFetch||8}));
     const normalizeSourceUrl=(value="")=>String(value||"").trim().replace(/\/+$/,"").toLowerCase();
 
     window.clearSourceForm=()=>{
       editingSourceId="";
-      sourceFields.forEach((id)=>setValue(id,id==="sourceEnabled"?"true":id==="sourceMaxFetch"?"8":""));
+      sourceFields.forEach((id)=>setValue(id,id==="sourceEnabled"?"true":id==="sourceMaxFetch"?"8":id==="sourceKind"?"official":""));
       setSourceCategories();
       setSourceCategoryPages();
       $("sourceSaveBtn").innerText="Add Source";
@@ -471,6 +489,7 @@
       setValue("sourceDepartment",data.department);
       setValue("sourceUrl",data.url);
       setValue("sourceKeywords",data.keywords);
+      setValue("sourceKind",data.sourceKind||"official");
       setValue("sourceMaxFetch",data.maxFetch||8);
       setValue("sourceEnabled",data.enabled===false?"false":"true");
       setSourceCategories(data.categories);
@@ -510,21 +529,23 @@
       }
     };
 
-    window.seedDefaultSources=async()=>{
+    const seedSourcesByKind=async(sourceKind="")=>{
       if(!adminAllowed){alert("Admin verify nahi hua.");return}
-      $("sourceStatus").innerText="Default sources add ho rahe hain...";
+      const isAggregator=sourceKind==="aggregator";
+      $("sourceStatus").innerText=isAggregator?"Scraped job portals add ho rahe hain...":"Default sources add ho rahe hain...";
       try{
         if(hasAdminServerUrl()){
-          const result=await callAdminApi("/admin/auto-job-checker/sources/seed",{});
+          const result=await callAdminApi("/admin/auto-job-checker/sources/seed",sourceKind?{sourceKind}:{});
           await loadServerState();
-          $("sourceStatus").innerText=`Default sources ready: ${result.added||0} new, ${result.updated||0} update.`;
+          $("sourceStatus").innerText=`${isAggregator?"Scraped portals":"Default sources"} ready: ${result.added||0} new, ${result.updated||0} update.`;
           return;
         }
 
         const existingByUrl=new Map(Object.entries(sourcesCache).map(([id,data])=>[normalizeSourceUrl(data.url),id]).filter(([url])=>url));
         let added=0,updated=0;
         const now=Date.now();
-        for(const source of defaultSources){
+        const seeds=sourceKind?defaultSources.filter((source)=>source.sourceKind===sourceKind):defaultSources;
+        for(const source of seeds){
           const existingId=existingByUrl.get(normalizeSourceUrl(source.url));
           const {id,...payload}=source;
           if(existingId){
@@ -535,11 +556,13 @@
             added++;
           }
         }
-        $("sourceStatus").innerText=`Default sources ready: ${added} new, ${updated} update.`;
+        $("sourceStatus").innerText=`${isAggregator?"Scraped portals":"Default sources"} ready: ${added} new, ${updated} update.`;
       }catch(error){
         $("sourceStatus").innerText=error.message+" | Render Server URL save hai to server redeploy ke baad dobara try karein.";
       }
     };
+    window.seedDefaultSources=()=>seedSourcesByKind("");
+    window.seedAggregatorSources=()=>seedSourcesByKind("aggregator");
 
     const draftForm=()=>({
       title:getValue("draftTitle"),
@@ -856,11 +879,18 @@
       }
     };
 
+    const sourceKind=(data={})=>String(data.sourceKind||data.kind||"official").toLowerCase()==="aggregator"?"aggregator":"official";
+    const sourceRowHtml=([id,data])=>`<div class="row ${data.lastStatus==="error"||data.lastTestStatus==="error"?"error":data.lastStatus==="success"?"success":""}"><div><strong>${escapeHTML(data.name||"Official Source")}</strong><small>${escapeHTML(data.url||"")}</small><small>Type: ${sourceKind(data)==="aggregator"?"Scraped Job Portal":"Official Source"} | Categories: ${escapeHTML((data.categories||categoryKeys).join(", "))} | Max/source: ${escapeHTML(data.maxFetch||8)}</small><small>Last checked: ${formatTime(data.lastCheckedAt)} | Status: ${escapeHTML(data.lastStatus||"new")} | Pages: ${escapeHTML(data.lastPageFetches||0)} | New: ${escapeHTML(data.lastNewCount||0)} | Found: ${escapeHTML(data.lastFoundCount||0)} | Duplicate: ${escapeHTML(data.lastSkippedDuplicates||0)}</small>${friendlyErrorText(data)?`<small style="color:#d90000;">${escapeHTML(friendlyErrorText(data))}</small>`:""}${data.lastTestedAt?`<small>Last test: ${shortTime(data.lastTestedAt)} | ${escapeHTML(data.lastTestMessage||"")}</small>`:""}<span class="badge">${data.enabled===false?"Disabled":"Enabled"}</span></div><div class="actions"><button class="mini-btn" onclick="testSource('${id}')">Test URL</button><button class="mini-btn" onclick="editSource('${id}')">Edit</button><button class="delete mini-btn" onclick="deleteSource('${id}')">Delete</button></div></div>`;
+    const renderSourceGroup=(target,rows,emptyText)=>{
+      target.innerHTML=rows.length?rows.map(sourceRowHtml).join(""):`<div class="empty">${emptyText}</div>`;
+    };
     const renderSources=()=>{
       const rows=Object.entries(sourcesCache).sort((a,b)=>String(a[1].name||"").localeCompare(String(b[1].name||"")));
       $("sourceCount").innerText=rows.length;
-      if(!rows.length){sourceList.innerHTML='<div class="empty">Abhi koi source add nahi hai.</div>';return}
-      sourceList.innerHTML=rows.map(([id,data])=>`<div class="row ${data.lastStatus==="error"||data.lastTestStatus==="error"?"error":data.lastStatus==="success"?"success":""}"><div><strong>${escapeHTML(data.name||"Official Source")}</strong><small>${escapeHTML(data.url||"")}</small><small>Categories: ${escapeHTML((data.categories||categoryKeys).join(", "))} | Max/source: ${escapeHTML(data.maxFetch||8)}</small><small>Last checked: ${formatTime(data.lastCheckedAt)} | Status: ${escapeHTML(data.lastStatus||"new")} | Pages: ${escapeHTML(data.lastPageFetches||0)} | New: ${escapeHTML(data.lastNewCount||0)} | Found: ${escapeHTML(data.lastFoundCount||0)} | Duplicate: ${escapeHTML(data.lastSkippedDuplicates||0)}</small>${friendlyErrorText(data)?`<small style="color:#d90000;">${escapeHTML(friendlyErrorText(data))}</small>`:""}${data.lastTestedAt?`<small>Last test: ${shortTime(data.lastTestedAt)} | ${escapeHTML(data.lastTestMessage||"")}</small>`:""}<span class="badge">${data.enabled===false?"Disabled":"Enabled"}</span></div><div class="actions"><button class="mini-btn" onclick="testSource('${id}')">Test URL</button><button class="mini-btn" onclick="editSource('${id}')">Edit</button><button class="delete mini-btn" onclick="deleteSource('${id}')">Delete</button></div></div>`).join("");
+      const scrapedRows=rows.filter(([,data])=>sourceKind(data)==="aggregator");
+      const officialRows=rows.filter(([,data])=>sourceKind(data)!=="aggregator");
+      renderSourceGroup(scrapedSourceList,scrapedRows,"Scraped portal source nahi hai. Add Scraped Portals dabayein.");
+      renderSourceGroup(sourceList,officialRows,"Official source nahi hai. Add Default Sources dabayein.");
     };
 
     const draftTypeGroup=(data={})=>{
@@ -915,7 +945,7 @@
           ].filter((type)=>group.types[type.key].length).map((type)=>`
             <details class="draft-type-section">
               <summary class="draft-type-head"><span>${type.label}</span><small>${group.types[type.key].length} draft${group.types[type.key].length>1?"s":""}</small></summary>
-            ${group.types[type.key].map(([id,data])=>`<div class="row ${activeDraftId===id?"success":""}"><input class="draft-check draft-select" type="checkbox" value="${escapeHTML(id)}" onchange="updateBulkSelectedCount()"><div><strong>${escapeHTML(data.title||"Untitled Draft")}</strong><small>${escapeHTML(data.department||"Department not set")} | ${escapeHTML(data.postTarget||"latestJob")} | ${formatTime(data.createdAt)}</small><small>${data.lightweightDraft?"Light draft":"Full draft"} | PDF text: ${data.pdfTextExtracted?"Yes":"No"}</small><small>${escapeHTML(data.sourceLink||data.detailLink||"")}</small><span class="badge">Draft</span></div><div class="actions"><button class="mini-btn" onclick="selectDraft('${id}')">Review</button><button class="publish mini-btn" onclick="quickPublishDraft('${id}','latestJob')">Job</button><button class="publish mini-btn" onclick="quickPublishDraft('${id}','admitCard')">Admit</button><button class="publish mini-btn" onclick="quickPublishDraft('${id}','result')">Result</button><button class="delete mini-btn" onclick="ignoreDraft('${id}')">Ignore</button></div></div>`).join("")}
+            ${group.types[type.key].map(([id,data])=>`<div class="row ${activeDraftId===id?"success":""}"><input class="draft-check draft-select" type="checkbox" value="${escapeHTML(id)}" onchange="updateBulkSelectedCount()"><div><strong>${escapeHTML(data.title||"Untitled Draft")}</strong><small>${escapeHTML(data.department||"Department not set")} | ${escapeHTML(data.postTarget||"latestJob")} | ${formatTime(data.createdAt)}</small><small>${data.lightweightDraft?"Light draft":"Full draft"} | PDF text: ${data.pdfTextExtracted?"Yes":"No"}</small><small>${escapeHTML(data.sourceLink||data.detailLink||"")}</small><span class="badge">Draft</span>${data.sourceKind==="aggregator"?'<span class="badge">Scraped Portal</span>':""}</div><div class="actions"><button class="mini-btn" onclick="selectDraft('${id}')">Review</button><button class="publish mini-btn" onclick="quickPublishDraft('${id}','latestJob')">Job</button><button class="publish mini-btn" onclick="quickPublishDraft('${id}','admitCard')">Admit</button><button class="publish mini-btn" onclick="quickPublishDraft('${id}','result')">Result</button><button class="publish mini-btn" onclick="quickPublishDraft('${id}','syllabus')">Syllabus</button><button class="delete mini-btn" onclick="ignoreDraft('${id}')">Ignore</button></div></div>`).join("")}
             </details>
           `).join("")}
         </div>
@@ -954,7 +984,7 @@
       if(hasAdminServerUrl()){
         loadServerState().catch((serverError)=>{
           const text=`${message} | Server load error: ${serverError.message}`;
-          if(area==="sources"){sourceList.innerHTML=`<div class="empty">${escapeHTML(text)}</div>`}
+          if(area==="sources"){sourceList.innerHTML=`<div class="empty">${escapeHTML(text)}</div>`;scrapedSourceList.innerHTML=`<div class="empty">${escapeHTML(text)}</div>`}
           if(area==="drafts"){draftList.innerHTML=`<div class="empty">${escapeHTML(text)}</div>`}
           if(area==="logs"){logList.innerHTML=`<div class="empty">${escapeHTML(text)}</div>`}
           $("sourceStatus").innerText=text;
@@ -962,7 +992,7 @@
         return;
       }
       const text=`${message} | Render Server URL save karein, phir dobara try karein.`;
-      if(area==="sources"){sourceList.innerHTML=`<div class="empty">${escapeHTML(text)}</div>`}
+      if(area==="sources"){sourceList.innerHTML=`<div class="empty">${escapeHTML(text)}</div>`;scrapedSourceList.innerHTML=`<div class="empty">${escapeHTML(text)}</div>`}
       if(area==="drafts"){draftList.innerHTML=`<div class="empty">${escapeHTML(text)}</div>`}
       if(area==="logs"){logList.innerHTML=`<div class="empty">${escapeHTML(text)}</div>`}
       $("sourceStatus").innerText=text;
