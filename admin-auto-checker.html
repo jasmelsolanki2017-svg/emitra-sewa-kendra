@@ -232,6 +232,7 @@
         <button type="button" onclick="selectVisibleDrafts(true)">Select Visible</button>
         <button type="button" onclick="selectVisibleDrafts(false)">Clear Selection</button>
         <button type="button" class="publish" onclick="bulkApproveDrafts()">Bulk Approve Selected</button>
+        <button type="button" class="delete" onclick="bulkDeleteDrafts()">Bulk Delete Selected</button>
         <span class="muted" id="bulkSelectedCount">0 selected</span>
       </div>
       <div class="draft-list" id="draftList"><div class="empty">Loading...</div></div>
@@ -844,6 +845,36 @@
         $("draftStatus").innerText=`Bulk approve complete: ${result.published||0} published, ${result.failed||0} failed.`+(failedRows.length?` Failed: ${failedRows.map((item)=>item.error).join(" | ")}`:"");
       }catch(error){
         $("draftStatus").innerText="Bulk approve error: "+error.message;
+      }
+    };
+
+    window.bulkDeleteDrafts=async()=>{
+      if(!adminAllowed){alert("Admin verify nahi hua.");return}
+      const ids=selectedDraftIds();
+      if(!ids.length){$("draftStatus").innerText="Bulk delete ke liye drafts select karein.";return}
+      if(!confirm(`${ids.length} selected drafts delete karne hain? Duplicate record saved rahega taki same post dobara pending me na aaye.`))return;
+      try{
+        $("draftStatus").innerText=`${ids.length} drafts delete ho rahe hain...`;
+        const failed=[];
+        if(hasAdminServerUrl()){
+          for(const id of ids){
+            try{
+              await callAdminApi("/admin/auto-job-checker/draft/delete",{draftId:id});
+            }catch(error){
+              failed.push(`${id}: ${error.message}`);
+            }
+          }
+          await loadServerState().catch(()=>{});
+        }else{
+          await Promise.all(ids.map((id)=>remove(ref(db,"autoJobDrafts/"+id)).catch((error)=>failed.push(`${id}: ${error.message}`))));
+        }
+        if(ids.includes(activeDraftId)){clearDraftForm()}
+        ids.forEach((id)=>{delete draftsCache[id]});
+        renderDrafts();
+        const deleted=ids.length-failed.length;
+        $("draftStatus").innerText=`Bulk delete complete: ${deleted} deleted, ${failed.length} failed.`+(failed.length?` Failed: ${failed.slice(0,3).join(" | ")}`:"");
+      }catch(error){
+        $("draftStatus").innerText="Bulk delete error: "+error.message;
       }
     };
 
