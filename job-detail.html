@@ -26,7 +26,7 @@
 }
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins','Noto Sans Devanagari',sans-serif;}
 html{scroll-behavior:smooth;}
-body{background:#f4f7fb;color:var(--text);line-height:1.55;overflow-x:hidden;font-weight:400;}
+body{background:#f7fbff;color:var(--text);line-height:1.6;overflow-x:hidden;font-weight:400;}
 a{color:inherit;}
 nav{background:var(--blue);padding:14px 6%;display:flex;align-items:center;justify-content:space-between;gap:18px;position:sticky;top:0;z-index:20;box-shadow:0 4px 15px rgba(0,0,0,.14);}
 .logo{color:white;text-decoration:none;font-size:26px;font-weight:900;letter-spacing:.2px;white-space:nowrap;}
@@ -34,59 +34,70 @@ nav{background:var(--blue);padding:14px 6%;display:flex;align-items:center;justi
 nav ul{display:flex;list-style:none;gap:16px;flex-wrap:wrap;justify-content:flex-end;}
 nav a{color:#fff;text-decoration:none;font-weight:700;}
 nav a:hover{color:var(--orange);}
-.hero{background:linear-gradient(135deg,var(--blue),var(--deep));color:#fff;padding:26px 6% 24px;border-bottom:4px solid var(--orange);}
-.hero-inner{max-width:1120px;margin:auto;}
-.tag{display:inline-block;background:var(--orange);color:var(--deep);padding:7px 12px;border-radius:6px;font-weight:900;font-size:13px;margin-bottom:14px;}
-.hero h1{font-size:clamp(22px,4vw,36px);line-height:1.18;color:#fff;margin-bottom:8px;}
-.hero p{max-width:850px;color:#fff1df;font-weight:600;font-size:14px;}
-main{max-width:920px;margin:auto;padding:26px 3% 42px;}
-.layout{display:block;}
-.detail-sheet{background:white;border:2px solid #222;box-shadow:0 8px 24px rgba(8,31,74,.08);padding:8px 8px 14px;}
-.detail-heading{text-align:center;padding:8px 6px 12px;}
-.detail-heading h2{font-size:17px;color:#c40000;text-decoration:underline;margin-bottom:10px;}
-.detail-heading h3{font-size:16px;color:#008000;text-decoration:underline;}
-.panel{background:white;border:0;border-radius:0;padding:0;box-shadow:none;margin-bottom:26px;}
-.panel h2,.sarkari-section-title{background:#79cdf0;border:1px solid #70bfe0;color:#000;text-align:center;font-size:17px;font-weight:900;line-height:1.25;padding:8px 10px;margin:0;}
-.info-list{list-style:none;padding:10px 12px;font-size:15px;color:#172033;}
-.info-list li{margin:0 0 8px;display:grid;grid-template-columns:minmax(190px,260px) minmax(0,1fr);border:1px solid #c8dcee;background:white;border-radius:4px;overflow:hidden;}
-.info-label{display:flex;align-items:center;background:#eaf4ff;border-right:1px solid #c8dcee;color:#061c38;font-weight:900;padding:9px 11px;line-height:1.35;}
-.info-value{display:block;background:#fff;color:#202738;font-weight:500;white-space:pre-line;padding:9px 12px;line-height:1.55;min-height:42px;}
-.detail-layout-grid .info-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
-.detail-layout-grid .info-list li{display:block;margin:0;border-radius:6px;}
-.detail-layout-grid .info-label{border-right:0;border-bottom:1px solid #c8dcee;}
-.detail-layout-list .info-list{padding:9px 18px 2px 34px;list-style:disc;font-size:15px;}
-.detail-layout-list .info-list li{display:list-item;border:0;background:transparent;margin:5px 0;overflow:visible;}
-.detail-layout-list .info-label{display:inline;background:transparent;border:0;color:#000;padding:0;font-weight:900;}
-.detail-layout-list .info-label::after{content:" : ";}
-.detail-layout-list .info-value{display:inline;background:transparent;color:#202738;padding:0;font-weight:500;min-height:0;}
+.hero{background:linear-gradient(135deg,var(--blue),var(--deep));color:#fff;padding:28px 6% 30px;border-bottom:4px solid var(--orange);}
+.hero-inner{max-width:1180px;margin:auto;}
+.tag{display:inline-flex;align-items:center;background:var(--orange);color:var(--deep);padding:7px 12px;border-radius:4px;font-weight:900;font-size:13px;margin-bottom:14px;}
+.hero h1{font-size:clamp(24px,4vw,40px);line-height:1.22;color:#fff;margin-bottom:12px;max-width:960px;}
+.hero p{max-width:900px;color:#fff6ed;font-weight:500;font-size:16px;}
+.meta-badges{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px;}
+.meta-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.32);color:#fff;border-radius:4px;padding:7px 10px;font-size:12px;font-weight:800;}
+main{max-width:1180px;margin:auto;padding:26px 3% 42px;}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:22px;align-items:start;}
+.detail-sheet,.detail-sidebar{background:#fff;border:1px solid #d9e7f7;border-radius:8px;box-shadow:0 10px 28px rgba(3,34,77,.08);}
+.detail-sheet{padding:0;overflow:hidden;}
+.article-head{padding:22px 22px 14px;border-bottom:1px solid #e2edf8;background:linear-gradient(180deg,#fff,#f7fbff);}
+.article-head h2{color:var(--deep);font-size:clamp(20px,3vw,30px);line-height:1.3;margin-bottom:10px;}
+.article-intro{color:#334155;font-size:16px;font-weight:500;margin:0;}
+.panel{background:#fff;border:0;border-radius:0;padding:0;margin:0;border-bottom:1px solid #e5effa;}
+.panel:last-child{border-bottom:0;}
+.panel h2,.sarkari-section-title{background:#eef7ff;border-left:5px solid var(--blue);color:var(--deep);font-size:20px;font-weight:900;line-height:1.25;padding:13px 18px;margin:0;}
+.table-wrap{width:100%;overflow-x:auto;padding:14px 18px 18px;}
+.detail-table{width:100%;border-collapse:collapse;background:#fff;font-size:15px;}
+.detail-table th,.detail-table td{border:1px solid #d8e5f3;padding:11px 12px;text-align:left;vertical-align:top;}
+.detail-table th{width:34%;background:#f1f7ff;color:#03224d;font-weight:900;}
+.detail-table td{color:#1f2937;font-weight:500;white-space:pre-line;}
 .danger-date{color:#d90000!important;font-weight:900;}
 .text-highlight{background:#fff2a8;color:#7a2200;border-radius:3px;padding:1px 4px;font-weight:900;}
-.content-box{color:#000;font-weight:600;background:white;border:0;padding:0;}
-.section-manual{padding:0 12px 10px;}
+.auto-link{color:#003ac0;text-decoration:underline;font-weight:900;overflow-wrap:anywhere;}
+.auto-link:hover{color:#b30000;}
+.content-box{color:#1f2937;font-weight:500;background:white;border:0;padding:14px 18px 18px;}
+.section-manual{padding:0 18px 18px;}
 .section-manual:empty{display:none;}
-.content-section{margin-bottom:26px;}
-.section-manual .content-section{margin-bottom:12px;}
-.content-section ul{padding:9px 18px 2px 34px;font-size:13px;font-weight:600;}
-.content-section li{margin:5px 0;}
-.content-section p{padding:8px 10px;font-size:13px;font-weight:600;}
-.content-table{width:100%;border-collapse:collapse;font-size:12px;margin:0 0 2px;}
-.content-table th,.content-table td{border:1px solid #d3d3d3;padding:8px 9px;text-align:center;vertical-align:middle;color:#000;}
-.content-table th{font-weight:900;background:#fff;}
-.content-table td:first-child,.content-table th:first-child{text-align:center;}
+.manual-lines{display:grid;gap:8px;}
+.manual-line{margin:0;color:#1f2937;font-size:15px;white-space:pre-wrap;}
+.manual-label{color:var(--deep);font-weight:900;}
+.content-section{margin-bottom:18px;}
+.content-section:last-child{margin-bottom:0;}
+.content-section ul{padding:12px 18px 2px 34px;font-size:15px;font-weight:500;}
+.content-section li{margin:6px 0;}
+.content-section p{padding:10px 0;font-size:15px;font-weight:500;}
+.content-table{width:100%;border-collapse:collapse;font-size:14px;margin:10px 0 2px;}
+.content-table th,.content-table td{border:1px solid #d8e5f3;padding:9px 10px;text-align:left;vertical-align:middle;color:#1f2937;}
+.content-table th{font-weight:900;background:#f1f7ff;color:var(--deep);}
 .content-table ul{text-align:left;padding:0 0 0 18px;}
-.community-table{font-size:18px;margin:0;}
-.community-table td{padding:16px 10px;font-weight:900;}
+.community-table{font-size:17px;margin:0;}
+.community-table td{padding:16px 10px;font-weight:900;text-align:center;}
 .community-label{color:#00897b;}
 .community-link{color:#001dff;text-decoration:none;}
 .community-link:hover{text-decoration:underline;}
 .empty{color:#6a7281;font-weight:700;}
-.actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:12px 0 4px;}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--blue);color:white;text-decoration:none;padding:9px 14px;border-radius:4px;font-weight:900;font-size:13px;}
-.btn.alt{background:var(--orange);color:var(--deep);}
+.actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;padding:14px 18px 18px;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--blue);color:white;text-decoration:none;padding:11px 14px;border-radius:5px;font-weight:900;font-size:14px;min-height:44px;text-align:center;box-shadow:0 6px 16px rgba(0,87,168,.14);}
+.btn.apply{background:var(--orange);color:#fff;}
+.btn.notification{background:var(--blue);color:#fff;}
+.btn.website{background:#16803d;color:#fff;}
+.btn.alt{background:var(--orange);color:white;}
 .btn.whatsapp{background:var(--green);color:white;}
-.post-apply-links{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;padding:6px 10px 12px;}
+.post-apply-links{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;padding:0 18px 18px;}
 .post-apply-links .btn{background:#0b7a3d;}
 .post-apply-links .empty{display:none;}
+.detail-sidebar{position:sticky;top:82px;padding:14px;}
+.sidebar-card{border:1px solid #dce9f7;border-radius:8px;background:#fff;margin-bottom:14px;overflow:hidden;}
+.sidebar-card h3{background:var(--deep);color:#fff;font-size:15px;padding:10px 12px;}
+.sidebar-links,.related-list{display:grid;gap:8px;padding:12px;}
+.sidebar-links .btn{font-size:13px;min-height:38px;padding:8px 10px;box-shadow:none;}
+.related-list a{display:block;color:var(--deep);text-decoration:none;font-weight:800;font-size:13px;padding:8px 0;border-bottom:1px dashed #d8e5f3;}
+.related-list a:last-child{border-bottom:0;}
 .message{text-align:center;background:white;border:1px solid var(--line);border-top:5px solid var(--orange);border-radius:8px;padding:28px;font-weight:800;color:var(--blue);box-shadow:0 8px 24px rgba(8,31,74,.08);}
 footer{background:var(--blue);color:#fff;text-align:center;padding:24px 6%;}
 footer a{color:var(--orange);text-decoration:none;font-weight:800;margin:0 7px;display:inline-block;}
@@ -94,16 +105,15 @@ footer a{color:var(--orange);text-decoration:none;font-weight:800;margin:0 7px;d
 body.dark-mode{background:#07111f!important;color:#e8f1ff!important;}
 body.dark-mode nav,body.dark-mode footer,body.dark-mode .hero{background:linear-gradient(135deg,#06101f,#0b2749)!important;}
 body.dark-mode main{background:#07111f!important;}
-body.dark-mode .detail-sheet,body.dark-mode .panel,body.dark-mode .content-box,body.dark-mode .message{background:#101b2d!important;color:#e8f1ff!important;border-color:#24405f!important;box-shadow:0 8px 24px rgba(0,0,0,.34)!important;}
+body.dark-mode .detail-sheet,body.dark-mode .detail-sidebar,body.dark-mode .sidebar-card,body.dark-mode .panel,body.dark-mode .content-box,body.dark-mode .message{background:#101b2d!important;color:#e8f1ff!important;border-color:#24405f!important;box-shadow:0 8px 24px rgba(0,0,0,.34)!important;}
 body.dark-mode h1,body.dark-mode h2,body.dark-mode h3{color:#ffb15c!important;}
-body.dark-mode p,body.dark-mode small,body.dark-mode .empty{color:#cbd8ea!important;}
-body.dark-mode .info-list li{background:#101b2d!important;border-color:#24405f!important;}
-body.dark-mode .info-label{background:#0b2749!important;border-color:#24405f!important;color:#ffb15c!important;}
-body.dark-mode .info-value{background:#07111f!important;color:#e8f1ff!important;}
-body.dark-mode .detail-layout-list .info-list li,body.dark-mode .detail-layout-list .info-label,body.dark-mode .detail-layout-list .info-value{background:transparent!important;border-color:transparent!important;}
-body.dark-mode .content-table th,body.dark-mode .content-table td,body.dark-mode .content-section p,body.dark-mode .content-section ul{color:#e8f1ff!important;border-color:#24405f!important;}
+body.dark-mode p,body.dark-mode small,body.dark-mode .empty,body.dark-mode .article-intro,body.dark-mode .manual-line{color:#cbd8ea!important;}
+body.dark-mode .article-head,body.dark-mode .panel h2,body.dark-mode .sarkari-section-title,body.dark-mode .detail-table th,body.dark-mode .content-table th{background:#0b2749!important;border-color:#24405f!important;color:#ffb15c!important;}
+body.dark-mode .detail-table th,body.dark-mode .detail-table td,body.dark-mode .content-table th,body.dark-mode .content-table td,body.dark-mode .content-section p,body.dark-mode .content-section ul{color:#e8f1ff!important;border-color:#24405f!important;}
+body.dark-mode .detail-table td,body.dark-mode .content-table td{background:#101b2d!important;}
 body.dark-mode .text-highlight{background:#ffd35a!important;color:#1f1600!important;}
-@media(max-width:820px){nav{flex-direction:column;align-items:flex-start}.hero{padding:28px 5%}main{padding:18px 1% 34px}.detail-sheet{border-left:1px solid #222;border-right:1px solid #222}.panel h2,.sarkari-section-title{font-size:14px}.info-list{font-size:14px;padding:8px}.info-list li{grid-template-columns:1fr}.info-label{border-right:0;border-bottom:1px solid #c8dcee}.content-table{font-size:11px}.content-table th,.content-table td{padding:7px 5px}.theme-toggle{right:16px;bottom:16px;width:50px;height:50px;}}
+body.dark-mode .auto-link{color:#8ec5ff!important;}
+@media(max-width:920px){.layout{grid-template-columns:1fr}.detail-sidebar{position:static;top:auto}.hero{padding:24px 5% 26px}main{padding:18px 3% 34px}.detail-table th,.detail-table td{display:block;width:100%;}.detail-table th{border-bottom:0}.panel h2,.sarkari-section-title{font-size:17px}.actions{grid-template-columns:1fr}.content-table{font-size:12px}.content-table th,.content-table td{padding:7px 6px}.theme-toggle{right:16px;bottom:16px;width:50px;height:50px;}nav{flex-direction:column;align-items:flex-start}}
 </style>
 </head>
 <body>
@@ -121,6 +131,7 @@ body.dark-mode .text-highlight{background:#ffd35a!important;color:#1f1600!import
   <div class="hero-inner">
     <span class="tag" id="jobType">Job Details</span>
     <h1 id="jobTitle">Job Details</h1>
+    <div class="meta-badges" id="metaBadges"></div>
     <p id="jobIntro">Important dates, qualification, links aur form details yahan dekhein.</p>
   </div>
 </header>
@@ -130,59 +141,101 @@ body.dark-mode .text-highlight{background:#ffd35a!important;color:#1f1600!import
   <div id="jobDetailWrap" class="layout" style="display:none;">
     <article>
       <div class="detail-sheet">
-        <div class="detail-heading">
+        <div class="article-head">
           <h2 id="sheetTitle">Job Update</h2>
-          <h3 id="sheetSubTitle">Apply Online Form</h3>
+          <p class="article-intro" id="sheetSubTitle">Important notification details, eligibility, dates aur apply links yahan dekhein.</p>
         </div>
+
+        <section class="panel" id="featurePanel" style="display:none;">
+          <h2>Feature Details</h2>
+          <div class="table-wrap">
+            <table class="detail-table">
+              <tbody id="featureTable"></tbody>
+            </table>
+          </div>
+        </section>
 
         <section class="panel" id="importantPanel" style="display:none;">
           <h2>Important Dates</h2>
-          <ul class="info-list" id="importantList"></ul>
+          <div class="table-wrap">
+            <table class="detail-table">
+              <tbody id="importantList"></tbody>
+            </table>
+          </div>
           <div class="content-box section-manual" id="importantManual"></div>
         </section>
 
         <section class="panel" id="jobInfoPanel" style="display:none;">
-          <h2>Job Information</h2>
-          <ul class="info-list" id="jobInfoList"></ul>
+          <h2>Basic Details</h2>
+          <div class="table-wrap">
+            <table class="detail-table">
+              <tbody id="jobInfoList"></tbody>
+            </table>
+          </div>
           <div class="content-box section-manual" id="jobInfoManual"></div>
         </section>
 
         <section class="panel" id="feePanel" style="display:none;">
           <h2>Application Fee</h2>
-          <ul class="info-list" id="feeList"></ul>
+          <div class="table-wrap">
+            <table class="detail-table">
+              <tbody id="feeList"></tbody>
+            </table>
+          </div>
           <div class="content-box section-manual" id="feeManual"></div>
         </section>
 
         <section class="panel" id="agePanel" style="display:none;">
           <h2>Age Limit</h2>
-          <ul class="info-list" id="ageList"></ul>
+          <div class="table-wrap">
+            <table class="detail-table">
+              <tbody id="ageList"></tbody>
+            </table>
+          </div>
           <div class="content-box section-manual" id="ageManual"></div>
         </section>
 
         <section class="panel" id="vacancyPanel" style="display:none;">
           <h2>Vacancy Details</h2>
-          <ul class="info-list" id="vacancyList"></ul>
+          <div class="table-wrap">
+            <table class="detail-table">
+              <tbody id="vacancyList"></tbody>
+            </table>
+          </div>
           <div class="content-box section-manual" id="vacancyManual"></div>
         </section>
 
         <section class="panel" id="eligibilityPanel" style="display:none;">
           <h2>Eligibility / Qualification</h2>
-          <ul class="info-list" id="eligibilityList"></ul>
+          <div class="table-wrap">
+            <table class="detail-table">
+              <tbody id="eligibilityList"></tbody>
+            </table>
+          </div>
           <div class="content-box section-manual" id="eligibilityManual"></div>
+        </section>
+
+        <section class="panel" id="selectionPanel" style="display:none;">
+          <h2>Selection Process</h2>
+          <div class="content-box" id="selectionContent"></div>
+        </section>
+
+        <section class="panel" id="applyProcessPanel" style="display:none;">
+          <h2>How to Apply</h2>
+          <div class="content-box" id="applyProcessContent"></div>
         </section>
 
         <section class="panel" id="extraPanel" style="display:none;">
           <h2>Extra Useful Details</h2>
-          <ul class="info-list" id="extraList"></ul>
           <div class="content-box section-manual" id="extraManual"></div>
         </section>
 
         <section class="panel" id="linksPanel" style="display:none;">
           <h2>Important Links</h2>
           <div class="actions">
-            <a class="btn" id="applyBtn" href="#" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-arrow-up-right-from-square"></i> Apply Online</a>
-            <a class="btn alt" id="officialBtn" href="#" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-file-lines"></i> Official Notification</a>
-            <a class="btn" id="websiteBtn" href="#" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-globe"></i> Official Website</a>
+            <a class="btn apply" id="applyBtn" href="#" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-arrow-up-right-from-square"></i> Apply Online</a>
+            <a class="btn notification" id="officialBtn" href="#" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-file-lines"></i> Official Notification</a>
+            <a class="btn website" id="websiteBtn" href="#" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-globe"></i> Official Website</a>
             <a class="btn" id="admitCardBtn" href="#" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-id-card"></i> Admit Card</a>
             <a class="btn" id="resultBtn" href="#" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-square-poll-vertical"></i> Result</a>
             <a class="btn" id="syllabusBtn" href="#" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-book-open"></i> Syllabus</a>
@@ -208,6 +261,21 @@ body.dark-mode .text-highlight{background:#ffd35a!important;color:#1f1600!import
         </section>
       </div>
     </article>
+    <aside class="detail-sidebar" aria-label="Job quick links">
+      <div class="sidebar-card">
+        <h3>Important Links</h3>
+        <div class="sidebar-links" id="sideQuickLinks"></div>
+      </div>
+      <div class="sidebar-card">
+        <h3>Latest Updates / Related Jobs</h3>
+        <div class="related-list" id="relatedJobs">
+          <a href="job-form.html">Latest Jobs</a>
+          <a href="job-form.html#notification">Notifications</a>
+          <a href="job-form.html#result">Results</a>
+          <a href="job-form.html#admitcard">Admit Cards</a>
+        </div>
+      </div>
+    </aside>
   </div>
 </main>
 
@@ -260,13 +328,25 @@ const escapeHTML = (value = "") => String(value)
   .replace(/"/g, "&quot;")
   .replace(/'/g, "&#039;");
 
-const renderFormattedText = (value = "") => escapeHTML(value || "—")
-  .replace(/==(.+?)==/g, '<mark class="text-highlight">$1</mark>')
-  .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+const linkifyText = (html = "") => html.replace(/(https?:\/\/[^\s<]+|www\.[^\s<]+)/gi, (match) => {
+  const clean = match.replace(/[.,;:!?)]*$/g, "");
+  const tail = match.slice(clean.length);
+  const href = clean.toLowerCase().startsWith("www.") ? `https://${clean}` : clean;
+  return `<a class="auto-link" href="${href}" target="_blank" rel="noopener noreferrer">${clean}</a>${tail}`;
+});
+
+const renderFormattedText = (value = "") => {
+  const html = escapeHTML(value || "—")
+    .replace(/==(.+?)==/g, '<mark class="text-highlight">$1</mark>')
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+  return linkifyText(html);
+};
 
 const safeUrl = (value = "#") => {
   const url = String(value || "#").trim();
-  return /^https?:\/\//i.test(url) ? url : "#";
+  if(/^https?:\/\//i.test(url)){ return url; }
+  if(/^www\./i.test(url)){ return `https://${url}`; }
+  return "#";
 };
 
 const setMeta = (selector, attr, value) => {
@@ -339,8 +419,6 @@ const isJobVisible = (job) => {
   if(String(job.postStatus || "published").toLowerCase() === "draft"){ return false; }
   return true;
 };
-const defaultAdmitCardDate = "Exam se 3-7 din pehle";
-
 const isFilledValue = (value, options = {}) => {
   const text = String(value || "").trim();
   if(!text || text === "#"){ return false; }
@@ -352,12 +430,52 @@ const isFilledValue = (value, options = {}) => {
 const renderList = (listId, panelId, rows) => {
   const list = document.getElementById(listId);
   const panel = document.getElementById(panelId);
+  if(!list || !panel){ return false; }
   const html = rows
     .filter((row) => isFilledValue(row.value, row.options))
-    .map((row) => `<li><span class="info-label">${escapeHTML(row.label)}</span><strong class="info-value ${row.className || ""}">${renderFormattedText(row.value)}</strong></li>`)
+    .map((row) => `<tr><th scope="row">${escapeHTML(row.label)}</th><td class="${row.className || ""}">${renderFormattedText(row.value)}</td></tr>`)
     .join("");
   list.innerHTML = html;
+  const tableWrap = list.closest(".table-wrap");
+  if(tableWrap){ tableWrap.style.display = html ? "block" : "none"; }
   panel.style.display = html ? "block" : "none";
+  return Boolean(html);
+};
+
+const renderLabeledLine = (line = "") => {
+  const text = String(line || "").trim();
+  const colonIndex = text.indexOf(":");
+  if(colonIndex > 0 && colonIndex <= 70){
+    const label = text.slice(0, colonIndex + 1);
+    const value = text.slice(colonIndex + 1).trim();
+    return `<strong class="manual-label">${renderFormattedText(label)}</strong>${value ? " " + renderFormattedText(value) : ""}`;
+  }
+  return renderFormattedText(text);
+};
+
+const renderManualBlock = (content = "") => {
+  const lines = String(content || "").split(/\r?\n/);
+  const html = lines
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => `<p class="manual-line">${renderLabeledLine(line)}</p>`)
+    .join("");
+  return html ? `<div class="manual-lines">${html}</div>` : "";
+};
+
+const renderTextBlock = (boxId, panelId, value) => {
+  const box = document.getElementById(boxId);
+  const panel = document.getElementById(panelId);
+  const content = String(value || "").trim();
+  if(!box || !panel){ return false; }
+  if(!isFilledValue(content)){
+    box.innerHTML = "";
+    panel.style.display = "none";
+    return false;
+  }
+  box.innerHTML = renderManualBlock(content);
+  panel.style.display = "block";
+  return true;
 };
 
 const renderManualContent = (boxId, panelId, value, title) => {
@@ -369,7 +487,7 @@ const renderManualContent = (boxId, panelId, value, title) => {
     box.innerHTML = "";
     return false;
   }
-  box.innerHTML = renderPageContent(content, title) || renderFormattedText(content);
+  box.innerHTML = renderManualBlock(content) || renderPageContent(content, title) || renderFormattedText(content);
   panel.style.display = "block";
   return true;
 };
@@ -379,7 +497,7 @@ const parsePostWiseApplyLinks = (value = "") => String(value || "")
   .map((line) => line.trim())
   .filter(Boolean)
   .map((line) => {
-    const urlMatch = line.match(/https?:\/\/\S+/i);
+    const urlMatch = line.match(/https?:\/\/\S+|www\.\S+/i);
     if(!urlMatch){ return null; }
     const url = urlMatch[0];
     const label = line.slice(0, urlMatch.index).replace(/[:|,-]+$/g, "").trim() || "Apply Link";
@@ -394,13 +512,26 @@ const renderPostWiseApplyLinks = (value = "") => {
   return links.length > 0;
 };
 
-const applyDetailLayout = (layout = "table") => {
-  const sheet = document.querySelector(".detail-sheet");
-  const safeLayout = ["table","grid","list"].includes(String(layout || "").trim()) ? String(layout).trim() : "table";
-  if(sheet){
-    sheet.classList.remove("detail-layout-table","detail-layout-grid","detail-layout-list");
-    sheet.classList.add(`detail-layout-${safeLayout}`);
-  }
+const renderMetaBadges = (items = []) => {
+  const box = document.getElementById("metaBadges");
+  if(!box){ return; }
+  box.innerHTML = items
+    .filter((item) => isFilledValue(item.value))
+    .map((item) => `<span class="meta-badge"><i class="${item.icon}" aria-hidden="true"></i>${escapeHTML(item.label)}: ${escapeHTML(item.value)}</span>`)
+    .join("");
+};
+
+const buildButton = (item, extraClass = "") => {
+  const url = safeUrl(item.url);
+  if(url === "#"){ return ""; }
+  return `<a class="btn ${extraClass}" href="${url}" target="_blank" rel="noopener noreferrer"><i class="${item.icon}" aria-hidden="true"></i> ${escapeHTML(item.label)}</a>`;
+};
+
+const renderSidebarLinks = (items = []) => {
+  const box = document.getElementById("sideQuickLinks");
+  if(!box){ return; }
+  const html = items.map((item) => buildButton(item, item.className || "")).filter(Boolean).join("");
+  box.innerHTML = html || '<a class="btn notification" href="job-form.html">Latest Jobs</a>';
 };
 
 const splitTableCells = (line) => line
@@ -484,9 +615,9 @@ const renderPageContent = (content, title) => {
         }
         index -= 1;
         if(bullets.length === 1){
-          html += `<p>${renderFormattedText(bullets[0])}</p>`;
+          html += `<p>${renderLabeledLine(bullets[0])}</p>`;
         }else{
-          html += `<ul>${bullets.map((item) => `<li>${renderFormattedText(item)}</li>`).join("")}</ul>`;
+          html += `<ul>${bullets.map((item) => `<li>${renderLabeledLine(item)}</li>`).join("")}</ul>`;
         }
       }
     }
@@ -545,29 +676,45 @@ if(!id){
     setMeta('meta[name="twitter:description"]', "content", job.metaDescription || job.notificationSummary || `${title} important dates, qualification and apply link.`);
     document.getElementById("jobType").textContent = type;
     document.getElementById("jobTitle").textContent = title;
-    document.getElementById("jobIntro").textContent = `${type} - dates, qualification, apply link aur important details.`;
+    document.getElementById("jobIntro").innerHTML = renderFormattedText(job.shortInfo || `${title} ke important dates, eligibility, fee, vacancy details aur apply links yahan dekhein.`);
     document.getElementById("sheetTitle").textContent = title;
-    document.getElementById("sheetSubTitle").textContent = `${title} ${type}`.trim();
-    applyDetailLayout(job.detailLayout || "table");
+    document.getElementById("sheetSubTitle").innerHTML = renderFormattedText(job.shortInfo || `${type} notification ki complete details yahan clean format me di gayi hain.`);
+    renderMetaBadges([
+      { label:"Post Date", value:job.postDate, icon:"fa-solid fa-calendar-plus" },
+      { label:"Last Date", value:job.lastApplyDate || job.lastDate, icon:"fa-solid fa-calendar-check" },
+      { label:"Department", value:job.department, icon:"fa-solid fa-building" },
+      { label:"Total Posts", value:job.totalPosts || job.totalVacancy, icon:"fa-solid fa-users" }
+    ]);
+
+    renderList("featureTable", "featurePanel", [
+      { label:"Organization / Department", value:job.department },
+      { label:"Post Name", value:job.postName || title },
+      { label:"Total Posts / Vacancy", value:job.totalVacancy || job.totalPosts },
+      { label:"Job Location", value:job.location, options:{ hideDefaultAllIndia:true } },
+      { label:"Application Mode", value:job.applicationMode || job.mode || job.type },
+      { label:"Post Type", value:job.type },
+      { label:"Last Date", value:job.lastApplyDate || job.lastDate, className:"danger-date" },
+      { label:"Official Website", value:job.officialWebsite }
+    ]);
 
     renderList("importantList", "importantPanel", [
-      { label:"Post Date", value:job.postDate },
       { label:"Application Start Date", value:job.startDate },
       { label:"Last Date Apply Online", value:job.lastApplyDate || job.lastDate, className:"danger-date" },
       { label:"Last Date Fee Payment", value:job.lastFeeDate },
-      { label:"Admit Card Date", value:job.admitCardDate || defaultAdmitCardDate },
       { label:"Exam Date", value:job.examDate },
+      { label:"Admit Card Date", value:job.admitCardDate },
       { label:"Result Date", value:job.resultDate }
     ]);
     renderManualContent("importantManual", "importantPanel", job.importantDatesManual, "Other Important Dates");
 
     renderList("jobInfoList", "jobInfoPanel", [
       { label:"Department / Board Name", value:job.department },
+      { label:"Post Name", value:job.postName },
       { label:"Category", value:job.category },
       { label:"Total Posts", value:job.totalPosts },
       { label:"Job Type", value:job.type },
       { label:"Job Location", value:job.location, options:{ hideDefaultAllIndia:true } },
-      { label:"Short Information", value:job.shortInfo }
+      { label:"Salary / Pay Scale", value:job.salary }
     ]);
     renderManualContent("jobInfoManual", "jobInfoPanel", job.basicDetailsManual, "Other Basic Details");
 
@@ -587,8 +734,8 @@ if(!id){
     renderList("ageList", "agePanel", [
       { label:"Minimum Age", value:job.minAge },
       { label:"Maximum Age", value:job.maxAge },
-      { label:"Age Relaxation", value:job.ageRelaxation },
-      { label:"Age Calculate Date", value:job.ageCalculateDate }
+      { label:"Age Calculate Date", value:job.ageCalculateDate },
+      { label:"Age Relaxation", value:job.ageRelaxation }
     ]);
     renderManualContent("ageManual", "agePanel", job.ageLimitManual, "Other Age Limit");
 
@@ -608,31 +755,29 @@ if(!id){
     ]);
     renderManualContent("eligibilityManual", "eligibilityPanel", job.eligibilityManual, "Other Eligibility Details");
 
-    renderList("extraList", "extraPanel", [
-      { label:"Salary / Pay Scale", value:job.salary },
-      { label:"Selection Process", value:job.selectionProcess },
-      { label:"How to Apply", value:job.howToApply }
-    ]);
+    renderTextBlock("selectionContent", "selectionPanel", job.selectionProcess);
+    renderTextBlock("applyProcessContent", "applyProcessPanel", job.howToApply);
     renderManualContent("extraManual", "extraPanel", job.extraUsefulManual, "Other Useful Details");
 
     const linkButtons = [
-      ["applyBtn", job.applyLink],
-      ["officialBtn", job.detailLink],
-      ["websiteBtn", job.officialWebsite],
-      ["admitCardBtn", job.admitCardLink],
-      ["resultBtn", job.resultLink],
-      ["syllabusBtn", job.syllabusLink],
-      ["answerKeyBtn", job.answerKeyLink]
+      { id:"applyBtn", label:"Apply Online", url:job.applyLink, icon:"fa-solid fa-arrow-up-right-from-square", className:"apply" },
+      { id:"officialBtn", label:"Official Notification", url:job.detailLink, icon:"fa-solid fa-file-lines", className:"notification" },
+      { id:"websiteBtn", label:"Official Website", url:job.officialWebsite, icon:"fa-solid fa-globe", className:"website" },
+      { id:"admitCardBtn", label:"Admit Card", url:job.admitCardLink, icon:"fa-solid fa-id-card" },
+      { id:"resultBtn", label:"Result", url:job.resultLink, icon:"fa-solid fa-square-poll-vertical" },
+      { id:"syllabusBtn", label:"Syllabus", url:job.syllabusLink, icon:"fa-solid fa-book-open" },
+      { id:"answerKeyBtn", label:"Answer Key", url:job.answerKeyLink, icon:"fa-solid fa-key" }
     ];
     let hasLink = false;
     const hasPostApplyLinks = renderPostWiseApplyLinks(job.postWiseApplyLinks);
-    linkButtons.forEach(([buttonId, url]) => {
-      const button = document.getElementById(buttonId);
-      button.href = safeUrl(url);
+    linkButtons.forEach((item) => {
+      const button = document.getElementById(item.id);
+      button.href = safeUrl(item.url);
       const visible = !button.href.endsWith("#");
       button.style.display = visible ? "inline-flex" : "none";
       hasLink = hasLink || visible;
     });
+    renderSidebarLinks(linkButtons);
     const hasLinksManual = renderManualContent("linksManual", "linksPanel", job.importantLinksManual, "Other Important Links");
     document.getElementById("linksPanel").style.display = hasLink || hasPostApplyLinks || hasLinksManual ? "block" : "none";
 
