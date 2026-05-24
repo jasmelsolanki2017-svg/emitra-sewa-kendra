@@ -60,6 +60,7 @@ main{max-width:920px;margin:auto;padding:26px 3% 42px;}
 .detail-layout-list .info-label::after{content:" : ";}
 .detail-layout-list .info-value{display:inline;background:transparent;color:#202738;padding:0;font-weight:500;min-height:0;}
 .danger-date{color:#d90000!important;font-weight:900;}
+.text-highlight{background:#fff2a8;color:#7a2200;border-radius:3px;padding:1px 4px;font-weight:900;}
 .content-box{color:#000;font-weight:600;background:white;border:0;padding:0;}
 .section-manual{padding:0 12px 10px;}
 .section-manual:empty{display:none;}
@@ -96,6 +97,7 @@ body.dark-mode .info-label{background:#0b2749!important;border-color:#24405f!imp
 body.dark-mode .info-value{background:#07111f!important;color:#e8f1ff!important;}
 body.dark-mode .detail-layout-list .info-list li,body.dark-mode .detail-layout-list .info-label,body.dark-mode .detail-layout-list .info-value{background:transparent!important;border-color:transparent!important;}
 body.dark-mode .content-table th,body.dark-mode .content-table td,body.dark-mode .content-section p,body.dark-mode .content-section ul{color:#e8f1ff!important;border-color:#24405f!important;}
+body.dark-mode .text-highlight{background:#ffd35a!important;color:#1f1600!important;}
 @media(max-width:820px){nav{flex-direction:column;align-items:flex-start}.hero{padding:28px 5%}main{padding:18px 1% 34px}.detail-sheet{border-left:1px solid #222;border-right:1px solid #222}.panel h2,.sarkari-section-title{font-size:14px}.info-list{font-size:14px;padding:8px}.info-list li{grid-template-columns:1fr}.info-label{border-right:0;border-bottom:1px solid #c8dcee}.content-table{font-size:11px}.content-table th,.content-table td{padding:7px 5px}.theme-toggle{right:16px;bottom:16px;width:50px;height:50px;}}
 </style>
 </head>
@@ -242,6 +244,10 @@ const escapeHTML = (value = "") => String(value)
   .replace(/"/g, "&quot;")
   .replace(/'/g, "&#039;");
 
+const renderFormattedText = (value = "") => escapeHTML(value || "—")
+  .replace(/==(.+?)==/g, '<mark class="text-highlight">$1</mark>')
+  .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+
 const safeUrl = (value = "#") => {
   const url = String(value || "#").trim();
   return /^https?:\/\//i.test(url) ? url : "#";
@@ -332,7 +338,7 @@ const renderList = (listId, panelId, rows) => {
   const panel = document.getElementById(panelId);
   const html = rows
     .filter((row) => isFilledValue(row.value, row.options))
-    .map((row) => `<li><span class="info-label">${escapeHTML(row.label)}</span><strong class="info-value ${row.className || ""}">${escapeHTML(row.value)}</strong></li>`)
+    .map((row) => `<li><span class="info-label">${escapeHTML(row.label)}</span><strong class="info-value ${row.className || ""}">${renderFormattedText(row.value)}</strong></li>`)
     .join("");
   list.innerHTML = html;
   panel.style.display = html ? "block" : "none";
@@ -347,7 +353,7 @@ const renderManualContent = (boxId, panelId, value, title) => {
     box.innerHTML = "";
     return false;
   }
-  box.innerHTML = renderPageContent(content, title) || escapeHTML(content);
+  box.innerHTML = renderPageContent(content, title) || renderFormattedText(content);
   panel.style.display = "block";
   return true;
 };
@@ -407,7 +413,7 @@ const renderTableBlock = (lines) => {
   const normalized = rows.map((row) => keepColumns.map((keep, index) => keep ? (row[index] || "") : null).filter((cell) => cell !== null));
   const head = normalized[0] || [];
   const body = normalized.slice(1);
-  const th = head.map((cell) => `<th>${escapeHTML(cell)}</th>`).join("");
+  const th = head.map((cell) => `<th>${renderFormattedText(cell)}</th>`).join("");
   const tr = body.map((row) => `<tr>${row.map((cell) => `<td>${renderInlineList(cell)}</td>`).join("")}</tr>`).join("");
   return `<table class="content-table"><thead><tr>${th}</tr></thead><tbody>${tr}</tbody></table>`;
 };
@@ -417,10 +423,10 @@ const renderInlineList = (text = "") => {
   if(value.includes(";")){
     const items = value.split(";").map((item) => item.trim()).filter(Boolean);
     if(items.length > 1){
-      return `<ul>${items.map((item) => `<li>${escapeHTML(item)}</li>`).join("")}</ul>`;
+      return `<ul>${items.map((item) => `<li>${renderFormattedText(item)}</li>`).join("")}</ul>`;
     }
   }
-  return escapeHTML(value || "—");
+  return renderFormattedText(value || "—");
 };
 
 const sectionTitleFromLine = (line) => String(line || "")
@@ -462,9 +468,9 @@ const renderPageContent = (content, title) => {
         }
         index -= 1;
         if(bullets.length === 1){
-          html += `<p>${escapeHTML(bullets[0])}</p>`;
+          html += `<p>${renderFormattedText(bullets[0])}</p>`;
         }else{
-          html += `<ul>${bullets.map((item) => `<li>${escapeHTML(item)}</li>`).join("")}</ul>`;
+          html += `<ul>${bullets.map((item) => `<li>${renderFormattedText(item)}</li>`).join("")}</ul>`;
         }
       }
     }
@@ -618,7 +624,7 @@ if(!id){
     if(content){
       document.getElementById("pageContentPanel").style.display = "block";
       contentBox.classList.remove("empty");
-      contentBox.innerHTML = renderPageContent(content, `${title} Details`) || escapeHTML(content);
+      contentBox.innerHTML = renderPageContent(content, `${title} Details`) || renderFormattedText(content);
     }else{
       document.getElementById("pageContentPanel").style.display = "none";
     }
