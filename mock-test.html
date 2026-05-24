@@ -39,6 +39,11 @@ button:disabled{opacity:.65;cursor:not-allowed}
 .category-tabs{display:flex;gap:8px;flex-wrap:wrap}
 .category-tabs button{background:#fff;color:var(--blue);border:1px solid #bdd0e5}
 .category-tabs button.active{background:var(--orange);color:var(--deep);border-color:var(--orange)}
+.date-filter{display:flex;align-items:center;gap:7px;flex-wrap:wrap;background:white;border:1px solid var(--line);border-radius:8px;padding:7px}
+.date-filter button{width:38px;min-height:38px;padding:0}
+.date-filter button.today-btn{width:auto;padding:8px 10px}
+.date-filter input{height:38px;border:1px solid #bdd0e5;border-radius:6px;color:var(--blue);font-weight:900;padding:0 9px}
+.date-filter small{color:var(--muted);font-weight:800;padding:0 3px}
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:14px 0 22px}
 .test-card,.panel{background:white;border:1px solid var(--line);border-radius:8px;padding:14px;box-shadow:0 5px 16px rgba(8,31,74,.07)}
 .test-card{display:flex;flex-direction:column;gap:10px}
@@ -104,6 +109,13 @@ footer a{color:#ffcf75;text-decoration:none;font-weight:800;margin:0 7px;display
 <main>
   <section class="toolbar">
     <div class="category-tabs" id="categoryTabs"></div>
+    <div class="date-filter" id="dateFilter">
+      <button type="button" class="secondary" id="prevDateBtn" title="Previous date"><i class="fa-solid fa-chevron-left"></i></button>
+      <input type="date" id="testDatePicker">
+      <button type="button" class="secondary" id="nextDateBtn" title="Next date"><i class="fa-solid fa-chevron-right"></i></button>
+      <button type="button" class="secondary today-btn" id="todayDateBtn"><i class="fa-solid fa-calendar-day"></i> Today</button>
+      <small id="selectedDateText"></small>
+    </div>
     <div id="authStatus" class="auth-box">Login status check ho raha hai...</div>
   </section>
 
@@ -171,6 +183,7 @@ let currentUser = null;
 let allTests = [];
 let historyRows = [];
 let activeCategory = "All";
+let selectedDate = "";
 let activeTest = null;
 let timerId = null;
 let startedAt = 0;
@@ -190,6 +203,29 @@ const formatTime = (seconds) => {
   const sec = String(safe % 60).padStart(2, "0");
   return `${min}:${sec}`;
 };
+const dateInputValue = (date = new Date()) => {
+  const local = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+  return local.toISOString().slice(0, 10);
+};
+const normalizeDateValue = (value = "") => {
+  const text = String(value || "").trim();
+  if(!text){ return ""; }
+  const isoMatch = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if(isoMatch){ return isoMatch[0]; }
+  const parsed = new Date(text);
+  return Number.isNaN(parsed.getTime()) ? text : dateInputValue(parsed);
+};
+const shiftDate = (dateValue, days) => {
+  const base = dateValue ? new Date(`${dateValue}T00:00:00`) : new Date();
+  base.setDate(base.getDate() + days);
+  return dateInputValue(base);
+};
+const formatDisplayDate = (dateValue) => {
+  const normalized = normalizeDateValue(dateValue);
+  if(!normalized){ return "Daily"; }
+  return new Date(`${normalized}T00:00:00`).toLocaleDateString("hi-IN", { day:"2-digit", month:"short", year:"numeric" });
+};
+selectedDate = dateInputValue();
 function normalizeText(value = "") {
   return String(value)
     .toLowerCase()
@@ -244,6 +280,10 @@ const testMatchesDirectSlug = (test, directValue = linkedTestId) => {
   const selectedSlug = getCategorySlug(directValue);
   return normalizeText(test.id) === normalizeText(directValue) || getTestCategorySlug(test, test.id) === selectedSlug;
 };
+const testMatchesSelectedDate = (test) => {
+  const testDate = normalizeDateValue(test.date);
+  return !testDate || testDate === selectedDate;
+};
 const normalizeQuestionList = (value) => {
   const source = Array.isArray(value) ? value : (value && typeof value === "object" ? Object.values(value) : []);
   return source
@@ -278,19 +318,26 @@ const renderCategories = () => {
     `<button type="button" class="${activeCategory === category ? "active" : ""}" data-category="${escapeHTML(category)}">${escapeHTML(category)}</button>`
   ).join("");
 };
+const renderDateFilter = () => {
+  $("testDatePicker").value = selectedDate;
+  $("selectedDateText").textContent = formatDisplayDate(selectedDate);
+};
 
 const renderTests = () => {
   renderCategories();
+  renderDateFilter();
   const selectedCategory = activeCategory;
   const selectedSlug = getCategorySlug(selectedCategory);
   const filteredTests = allTests.filter((test) => {
     if(!test.questions.length){ return false; }
+    if(!testMatchesSelectedDate(test)){ return false; }
     if(selectedSlug === "all"){ return true; }
     const testSlug = getTestCategorySlug(test, test.id);
     return testSlug === selectedSlug;
   });
   console.log("All tests", allTests);
   console.log("Selected category", selectedCategory);
+  console.log("Selected date", selectedDate);
   console.log("Filtered tests", filteredTests);
   const linkedTest = linkedTestId ? allTests.find((test) => test.questions.length && testMatchesDirectSlug(test, linkedTestId)) : null;
   const visible = linkedTest ? [linkedTest] : filteredTests;
@@ -307,7 +354,7 @@ const renderTests = () => {
             <span>Category: ${escapeHTML(test.category)}</span>
             <span>Total Questions: ${escapeHTML(test.totalQuestions || test.questions.length)}</span>
             <span>Time Limit: ${escapeHTML(test.timeLimit)} min</span>
-            <span>Date: ${escapeHTML(test.date || "Daily")}</span>
+            <span>Date: ${escapeHTML(formatDisplayDate(test.date))}</span>
           </div>
           <button type="button" data-start="${escapeHTML(test.id)}"><i class="fa-solid fa-play"></i> Start Test</button>
           <div class="test-link-box">
@@ -322,7 +369,7 @@ const renderTests = () => {
       `;
     });
   }else{
-    cardsHtml += `<div class="message">Is category me abhi active mock test nahi hai.</div>`;
+    cardsHtml += `<div class="message">Is date/category me abhi active mock test nahi hai.</div>`;
   }
   $("testCards").innerHTML = cardsHtml;
   if(linkedTest){
@@ -510,6 +557,31 @@ $("categoryTabs").addEventListener("click", (event) => {
   }
   renderTests();
   renderHistory();
+});
+
+const setSelectedDate = (dateValue) => {
+  selectedDate = normalizeDateValue(dateValue) || dateInputValue();
+  linkedTestId = "";
+  if(location.search.includes("test=")){
+    history.replaceState(null, "", location.pathname);
+  }
+  renderTests();
+};
+
+$("testDatePicker").addEventListener("change", (event) => {
+  setSelectedDate(event.target.value);
+});
+
+$("prevDateBtn").addEventListener("click", () => {
+  setSelectedDate(shiftDate(selectedDate, -1));
+});
+
+$("nextDateBtn").addEventListener("click", () => {
+  setSelectedDate(shiftDate(selectedDate, 1));
+});
+
+$("todayDateBtn").addEventListener("click", () => {
+  setSelectedDate(dateInputValue());
 });
 
 $("testCards").addEventListener("click", (event) => {
