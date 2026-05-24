@@ -33,6 +33,21 @@
       ".write": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'"
     },
 
+    "mockTests": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'",
+      ".indexOn": ["status", "category", "date"]
+    },
+
+    "mockResults": {
+      ".read": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'",
+      "$uid": {
+        ".read": "auth != null && (auth.uid == $uid || auth.token.email == 'jasmelsolanki@gmail.com')",
+        ".write": "auth != null && (auth.uid == $uid || auth.token.email == 'jasmelsolanki@gmail.com')",
+        ".indexOn": ["submittedAt"]
+      }
+    },
+
     "autoJobSources": {
       ".read": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'",
       ".write": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'"
