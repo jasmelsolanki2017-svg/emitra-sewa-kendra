@@ -41,9 +41,15 @@ button:disabled{opacity:.65;cursor:not-allowed}
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:14px 0 22px}
 .test-card,.panel{background:white;border:1px solid var(--line);border-radius:8px;padding:14px;box-shadow:0 5px 16px rgba(8,31,74,.07)}
 .test-card{display:flex;flex-direction:column;gap:10px}
+.test-card.linked{border-color:var(--orange);box-shadow:0 0 0 2px rgba(255,122,0,.18),0 5px 16px rgba(8,31,74,.07)}
 .test-card h2{font-size:18px;color:var(--blue);line-height:1.3}
 .meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;font-size:13px;font-weight:800;color:var(--muted)}
 .meta span{background:var(--soft);border:1px solid #d9e9f8;border-radius:6px;padding:7px 8px}
+.test-link-box{display:grid;gap:5px;background:#fff7ed;border:1px solid #ffd1a1;border-radius:7px;padding:8px 9px;font-size:12px}
+.test-link-box small{color:#8a3a00;font-weight:900}
+.test-link-box a{color:var(--blue);font-weight:900;overflow-wrap:anywhere;text-decoration:underline}
+.test-link-actions{display:flex;gap:7px;flex-wrap:wrap}
+.test-link-actions .btn,.test-link-actions button{font-size:12px;min-height:34px;padding:7px 10px}
 .panel h2{font-size:20px;color:var(--blue);margin-bottom:10px}
 .test-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
 .timer{background:#fff4e6;border:1px solid #ffd1a1;color:#8a3a00;border-radius:8px;padding:8px 11px;font-weight:900}
@@ -163,6 +169,7 @@ let activeTest = null;
 let timerId = null;
 let startedAt = 0;
 let remainingSeconds = 0;
+const linkedTestId = new URLSearchParams(location.search).get("test") || "";
 
 const $ = (id) => document.getElementById(id);
 const escapeHTML = (value = "") => String(value)
@@ -187,6 +194,7 @@ const normalizeTest = (id, value = {}) => ({
   date:String(value.date || "").trim(),
   questions:Array.isArray(value.questions) ? value.questions : []
 });
+const testPublicLink = (testId) => `${location.origin}${location.pathname}?test=${encodeURIComponent(testId)}`;
 
 const renderCategories = () => {
   $("categoryTabs").innerHTML = categories.map((category) =>
@@ -198,7 +206,7 @@ const renderTests = () => {
   renderCategories();
   const visible = tests.filter((test) => test.status === "active" && (activeCategory === "All" || test.category === activeCategory));
   $("testCards").innerHTML = visible.length ? visible.map((test) => `
-    <article class="test-card">
+    <article class="test-card ${linkedTestId === test.id ? "linked" : ""}" id="test-${escapeHTML(test.id)}">
       <h2>${escapeHTML(test.title)}</h2>
       <div class="meta">
         <span>Category: ${escapeHTML(test.category)}</span>
@@ -207,8 +215,19 @@ const renderTests = () => {
         <span>Date: ${escapeHTML(test.date || "Daily")}</span>
       </div>
       <button type="button" data-start="${escapeHTML(test.id)}"><i class="fa-solid fa-play"></i> Start Test</button>
+      <div class="test-link-box">
+        <small>Is Test Ka Direct Link</small>
+        <a href="${testPublicLink(test.id)}">${escapeHTML(testPublicLink(test.id))}</a>
+        <div class="test-link-actions">
+          <button type="button" class="secondary" data-copy-link="${escapeHTML(testPublicLink(test.id))}"><i class="fa-solid fa-copy"></i> Copy Link</button>
+          <a class="btn" href="${testPublicLink(test.id)}"><i class="fa-solid fa-link"></i> Open Link</a>
+        </div>
+      </div>
     </article>
   `).join("") : `<div class="message">Is category me abhi active mock test nahi hai.</div>`;
+  if(linkedTestId){
+    setTimeout(() => document.getElementById(`test-${linkedTestId}`)?.scrollIntoView({ behavior:"smooth", block:"center" }), 80);
+  }
 };
 
 const showLoginPrompt = () => {
@@ -356,6 +375,15 @@ $("categoryTabs").addEventListener("click", (event) => {
 $("testCards").addEventListener("click", (event) => {
   const button = event.target.closest("button[data-start]");
   if(button){ startTest(button.dataset.start); }
+  const copyButton = event.target.closest("button[data-copy-link]");
+  if(copyButton){
+    navigator.clipboard?.writeText(copyButton.dataset.copyLink).then(() => {
+      copyButton.innerHTML = '<i class="fa-solid fa-check"></i> Copied';
+      setTimeout(() => { copyButton.innerHTML = '<i class="fa-solid fa-copy"></i> Copy Link'; }, 1300);
+    }).catch(() => {
+      prompt("Test link copy karein:", copyButton.dataset.copyLink);
+    });
+  }
 });
 
 $("submitTestBtn").addEventListener("click", submitTest);

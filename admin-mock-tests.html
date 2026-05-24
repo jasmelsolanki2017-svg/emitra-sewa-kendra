@@ -44,6 +44,7 @@ button.secondary{background:#eaf4ff;color:var(--blue);border:1px solid #bdd0e5}
 .test-card h3{color:var(--blue);font-size:15px}
 .test-card small{display:block;color:var(--muted);font-weight:800;margin-top:3px}
 .test-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.public-link{display:block;color:var(--blue);font-weight:900;font-size:12px;margin-top:5px;overflow-wrap:anywhere;text-decoration:underline}
 .pill{display:inline-flex;background:var(--soft);border:1px solid #d8e6f5;color:var(--blue);border-radius:999px;padding:3px 8px;margin-top:6px;font-size:11px;font-weight:900}
 .empty{padding:18px;text-align:center;color:var(--muted);font-weight:800}
 @media(max-width:800px){nav{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap}nav a,nav button{white-space:nowrap}.form-grid{grid-template-columns:1fr}.test-card{grid-template-columns:1fr}.test-actions{justify-content:flex-start}textarea{min-height:260px}}
@@ -100,6 +101,7 @@ button.secondary{background:#eaf4ff;color:var(--blue);border:1px solid #bdd0e5}
       <button type="button" class="green" onclick="saveFullTest()"><i class="fa-solid fa-floppy-disk"></i> Save / Update Full Test</button>
       <button type="button" class="orange" onclick="appendQuestionsToTest()"><i class="fa-solid fa-plus"></i> Add Questions To Test</button>
       <button type="button" class="secondary" onclick="loadSampleJson()">Sample JSON</button>
+      <button type="button" class="secondary" onclick="saveAllCategorySamples()">Add 4 Category Samples</button>
       <button type="button" class="secondary" onclick="clearEditor()">Clear</button>
     </div>
     <div id="saveStatus" class="status"></div>
@@ -227,6 +229,59 @@ const requireAdmin = () => {
   if(!adminAllowed){ throw new Error("Admin verify nahi hua."); }
 };
 
+const todayISO = () => new Date().toISOString().slice(0,10);
+
+const sampleByCategory = (category = "Rajasthan GK") => {
+  const today = $("dateInput").value || todayISO();
+  const samples = {
+    "Rajasthan GK":{
+      title:"Daily Mock Test - Rajasthan GK",
+      question:"राजस्थान की राजधानी क्या है?",
+      options:["जयपुर","जोधपुर","उदयपुर","कोटा"],
+      correctAnswer:"जयपुर",
+      explanation:"राजस्थान की राजधानी जयपुर है।"
+    },
+    "Reasoning":{
+      title:"Daily Mock Test - Reasoning",
+      question:"श्रृंखला पूरी करें: 2, 4, 8, 16, ?",
+      options:["18","24","32","36"],
+      correctAnswer:"32",
+      explanation:"हर संख्या पिछले नंबर का दोगुना है, इसलिए उत्तर 32 है।"
+    },
+    "SSC Level Math":{
+      title:"Daily Mock Test - SSC Level Math",
+      question:"20 का 25% कितना होता है?",
+      options:["4","5","10","15"],
+      correctAnswer:"5",
+      explanation:"20 x 25 / 100 = 5."
+    },
+    "English":{
+      title:"Daily Mock Test - English",
+      question:"Choose the correct synonym of 'Quick'.",
+      options:["Slow","Fast","Late","Weak"],
+      correctAnswer:"Fast",
+      explanation:"Quick ka synonym Fast hota hai."
+    }
+  };
+  const item = samples[category] || samples["Rajasthan GK"];
+  return {
+    title:item.title,
+    category,
+    timeLimit:20,
+    totalQuestions:1,
+    status:"active",
+    date:today,
+    questions:[{
+      question:item.question,
+      options:item.options,
+      correctAnswer:item.correctAnswer,
+      explanation:item.explanation
+    }]
+  };
+};
+
+const publicTestLink = (id) => `${location.origin}/mock-test.html?test=${encodeURIComponent(id)}`;
+
 window.saveFullTest = async () => {
   try{
     requireAdmin();
@@ -280,24 +335,32 @@ window.appendQuestionsToTest = async () => {
 };
 
 window.loadSampleJson = () => {
-  const today = new Date().toISOString().slice(0,10);
+  const today = todayISO();
+  const sample = sampleByCategory($("categoryInput").value || "Rajasthan GK");
   $("dateInput").value = today;
-  $("jsonInput").value = JSON.stringify({
-    title:"Daily Mock Test - Rajasthan GK",
-    category:"Rajasthan GK",
-    timeLimit:20,
-    totalQuestions:1,
-    status:"active",
-    date:today,
-    questions:[
-      {
-        question:"राजस्थान की राजधानी क्या है?",
-        options:["जयपुर","जोधपुर","उदयपुर","कोटा"],
-        correctAnswer:"जयपुर",
-        explanation:"राजस्थान की राजधानी जयपुर है।"
-      }
-    ]
-  }, null, 2);
+  sample.date = today;
+  $("testIdInput").value = slugify(`${sample.category}-${sample.date}`);
+  $("jsonInput").value = JSON.stringify(sample, null, 2);
+};
+
+window.saveAllCategorySamples = async () => {
+  try{
+    requireAdmin();
+    const today = $("dateInput").value || todayISO();
+    $("dateInput").value = today;
+    $("saveStatus").innerText = "4 category samples save ho rahe hain...";
+    const categories = ["Rajasthan GK","Reasoning","SSC Level Math","English"];
+    await Promise.all(categories.map((category) => {
+      const sample = sampleByCategory(category);
+      sample.date = today;
+      sample.updatedAt = Date.now();
+      sample.createdAt = Date.now();
+      return set(ref(db, "mockTests/" + slugify(`${category}-${today}`)), sample);
+    }));
+    $("saveStatus").innerText = "Rajasthan GK, Reasoning, SSC Level Math aur English samples save ho gaye.";
+  }catch(error){
+    $("saveStatus").innerText = error.message;
+  }
 };
 
 window.clearEditor = () => {
@@ -359,6 +422,7 @@ onValue(testsRef, (snapshot) => {
       <div>
         <h3>${escapeHTML(test.title || "Daily Mock Test")}</h3>
         <small>ID: ${escapeHTML(test.id)} | ${escapeHTML(test.category || "General")} | ${escapeHTML(test.date || "No date")}</small>
+        <a class="public-link" href="${publicTestLink(test.id)}" target="_blank" rel="noopener noreferrer">${escapeHTML(publicTestLink(test.id))}</a>
         <span class="pill">${escapeHTML(test.status || "active")}</span>
         <span class="pill">${qCount} Questions</span>
         <span class="pill">${escapeHTML(test.timeLimit || 20)} min</span>
