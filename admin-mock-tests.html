@@ -40,6 +40,12 @@ button.secondary{background:#eaf4ff;color:var(--blue);border:1px solid #bdd0e5}
 .status{margin-top:10px;color:var(--blue);font-weight:900;font-size:13px}
 .example{background:#0f172a;color:#e2e8f0;border-radius:8px;padding:12px;overflow:auto;font-size:12px;line-height:1.5}
 .tests-list{display:grid;gap:10px}
+.date-group{border:1px solid var(--line);border-radius:8px;background:#fff;overflow:hidden}
+.date-group summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px;background:#eaf4ff;color:var(--blue);font-weight:900;padding:10px 12px;cursor:pointer}
+.date-group summary::-webkit-details-marker{display:none}
+.date-group summary span{display:inline-flex;align-items:center;gap:7px}
+.date-group summary small{color:var(--muted);font-weight:900}
+.date-tests{display:grid;gap:10px;padding:10px}
 .test-card{background:#fbfdff;border:1px solid var(--line);border-left:5px solid var(--blue);border-radius:8px;padding:11px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center}
 .test-card h3{color:var(--blue);font-size:15px}
 .test-card small{display:block;color:var(--muted);font-weight:800;margin-top:3px}
@@ -385,6 +391,31 @@ const sampleByCategory = (category = "Rajasthan GK") => {
 };
 
 const publicTestLink = (id) => `${location.origin}/mock-test.html?test=${encodeURIComponent(id)}`;
+const testDateKey = (date = "") => String(date || "").trim() || "No date";
+const formatDateLabel = (date = "") => {
+  const key = testDateKey(date);
+  if(key === "No date"){ return "No date"; }
+  const parsed = new Date(`${key}T00:00:00`);
+  if(Number.isNaN(parsed.getTime())){ return key; }
+  return parsed.toLocaleDateString("hi-IN", { day:"2-digit", month:"short", year:"numeric" });
+};
+const renderTestCard = (test) => {
+  const qCount = Array.isArray(test.questions) ? test.questions.length : Number(test.totalQuestions || 0);
+  return `<article class="test-card">
+    <div>
+      <h3>${escapeHTML(test.title || "Daily Mock Test")}</h3>
+      <small>ID: ${escapeHTML(test.id)} | ${escapeHTML(test.category || "General")} | ${escapeHTML(test.date || "No date")}</small>
+      <a class="public-link" href="${publicTestLink(test.id)}" target="_blank" rel="noopener noreferrer">${escapeHTML(publicTestLink(test.id))}</a>
+      <span class="pill">${escapeHTML(test.status || "active")}</span>
+      <span class="pill">${qCount} Questions</span>
+      <span class="pill">${escapeHTML(test.timeLimit || 20)} min</span>
+    </div>
+    <div class="test-actions">
+      <button type="button" class="secondary" onclick="editMockTest('${escapeHTML(test.id)}')">Edit JSON</button>
+      <button type="button" class="red" onclick="deleteMockTest('${escapeHTML(test.id)}')">Delete</button>
+    </div>
+  </article>`;
+};
 
 window.saveFullTest = async () => {
   try{
@@ -542,23 +573,29 @@ onValue(testsRef, (snapshot) => {
   }
   rows.sort((a,b) => String(b.date || "").localeCompare(String(a.date || "")) || String(a.title || "").localeCompare(String(b.title || "")));
   $("listStatus").innerText = `Firebase se ${rows.length} mock test load hue.`;
-  list.innerHTML = rows.length ? rows.map((test) => {
-    const qCount = Array.isArray(test.questions) ? test.questions.length : Number(test.totalQuestions || 0);
-    return `<article class="test-card">
-      <div>
-        <h3>${escapeHTML(test.title || "Daily Mock Test")}</h3>
-        <small>ID: ${escapeHTML(test.id)} | ${escapeHTML(test.category || "General")} | ${escapeHTML(test.date || "No date")}</small>
-        <a class="public-link" href="${publicTestLink(test.id)}" target="_blank" rel="noopener noreferrer">${escapeHTML(publicTestLink(test.id))}</a>
-        <span class="pill">${escapeHTML(test.status || "active")}</span>
-        <span class="pill">${qCount} Questions</span>
-        <span class="pill">${escapeHTML(test.timeLimit || 20)} min</span>
+  if(!rows.length){
+    list.innerHTML = '<div class="empty">Abhi koi mock test save nahi hai.</div>';
+    return;
+  }
+  const grouped = rows.reduce((groups, test) => {
+    const key = testDateKey(test.date);
+    if(!groups[key]){ groups[key] = []; }
+    groups[key].push(test);
+    return groups;
+  }, {});
+  const dateGroups = Object.entries(grouped)
+    .sort(([dateA], [dateB]) => String(dateB === "No date" ? "" : dateB).localeCompare(String(dateA === "No date" ? "" : dateA)));
+  list.innerHTML = dateGroups.map(([date, tests], index) => `
+    <details class="date-group" ${index === 0 ? "open" : ""}>
+      <summary>
+        <span><i class="fa-solid fa-calendar-days"></i> ${escapeHTML(formatDateLabel(date))}</span>
+        <small>${tests.length} test${tests.length > 1 ? "s" : ""}</small>
+      </summary>
+      <div class="date-tests">
+        ${tests.map(renderTestCard).join("")}
       </div>
-      <div class="test-actions">
-        <button type="button" class="secondary" onclick="editMockTest('${escapeHTML(test.id)}')">Edit JSON</button>
-        <button type="button" class="red" onclick="deleteMockTest('${escapeHTML(test.id)}')">Delete</button>
-      </div>
-    </article>`;
-  }).join("") : '<div class="empty">Abhi koi mock test save nahi hai.</div>';
+    </details>
+  `).join("");
 }, (error) => {
   $("listStatus").innerText = "Mock tests load nahi hue: " + error.message;
   $("testsList").innerHTML = '<div class="empty">Firebase se data load nahi ho paya.</div>';
