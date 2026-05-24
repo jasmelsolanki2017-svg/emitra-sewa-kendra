@@ -10,6 +10,12 @@
 <link rel="shortcut icon" href="favicon.ico">
 <link rel="apple-touch-icon" href="favicon.png">
 <meta name="description" content="E-MITRA WALA job detail page with important dates, qualification, apply link and custom job information.">
+<meta name="robots" content="index,follow">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Job Details | E-MITRA WALA">
+<meta property="og:description" content="Important dates, qualification, apply link and notification details.">
+<meta property="og:url" content="https://emitrawala.online/job-detail.html">
+<meta name="twitter:card" content="summary">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -377,6 +383,17 @@ const setCanonical = (url) => {
   link.href = text;
 };
 
+const setJsonLd = (data = {}) => {
+  let script = document.getElementById("jobSchemaJsonLd");
+  if(!script){
+    script = document.createElement("script");
+    script.type = "application/ld+json";
+    script.id = "jobSchemaJsonLd";
+    document.head.appendChild(script);
+  }
+  script.textContent = JSON.stringify(data);
+};
+
 const normalizeJob = (value) => {
   if(typeof value === "string"){
     return { title:value, type:"Online Form" };
@@ -666,14 +683,29 @@ if(!id){
 
     document.title = `${job.seoTitle || title} | E-MITRA WALA`;
     const metaDescription = document.querySelector('meta[name="description"]');
-    if(metaDescription && job.metaDescription){ metaDescription.setAttribute("content", job.metaDescription); }
+    const description = job.metaDescription || job.notificationSummary || job.shortInfo || `${title} important dates, eligibility, fee, vacancy details aur apply links.`;
+    if(metaDescription){ metaDescription.setAttribute("content", description.slice(0, 160)); }
     const canonicalUrl = `${location.origin}${location.pathname}?id=${encodeURIComponent(id)}${job.slug ? `&slug=${encodeURIComponent(job.slug)}` : (slugParam ? `&slug=${encodeURIComponent(slugParam)}` : "")}`;
     setCanonical(canonicalUrl);
     setMeta('meta[property="og:title"]', "content", job.seoTitle || title);
-    setMeta('meta[property="og:description"]', "content", job.metaDescription || job.notificationSummary || `${title} important dates, qualification and apply link.`);
+    setMeta('meta[property="og:description"]', "content", description);
     setMeta('meta[property="og:url"]', "content", canonicalUrl);
     setMeta('meta[name="twitter:title"]', "content", job.seoTitle || title);
-    setMeta('meta[name="twitter:description"]', "content", job.metaDescription || job.notificationSummary || `${title} important dates, qualification and apply link.`);
+    setMeta('meta[name="twitter:description"]', "content", description);
+    setJsonLd({
+      "@context":"https://schema.org",
+      "@type":"Article",
+      "headline":job.seoTitle || title,
+      "description":description,
+      "url":canonicalUrl,
+      "datePublished":job.createdAt ? new Date(job.createdAt).toISOString() : undefined,
+      "dateModified":job.updatedAt ? new Date(job.updatedAt).toISOString() : undefined,
+      "publisher":{
+        "@type":"Organization",
+        "name":"E-MITRA WALA",
+        "url":`${location.origin}/`
+      }
+    });
     document.getElementById("jobType").textContent = type;
     document.getElementById("jobTitle").textContent = title;
     document.getElementById("jobIntro").innerHTML = renderFormattedText(job.shortInfo || `${title} ke important dates, eligibility, fee, vacancy details aur apply links yahan dekhein.`);

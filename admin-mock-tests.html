@@ -190,6 +190,15 @@ const normalizeText = (value = "") => String(value)
   .replace(/[^a-z0-9]+/g, "-")
   .replace(/^-+|-+$/g, "");
 
+const normalizeQuestionKey = (value = "") => String(value)
+  .normalize("NFKD")
+  .toLowerCase()
+  .replace(/[\u0300-\u036f]/g, "")
+  .replace(/&/g, " and ")
+  .replace(/[\p{P}\p{S}]+/gu, " ")
+  .replace(/\s+/g, " ")
+  .trim();
+
 const getCategorySlug = (value = "") => {
   const key = normalizeText(value);
   const map = {
@@ -217,7 +226,11 @@ const categoryLabelMap = {
 };
 
 const getCategoryLabel = (value = "") => categoryLabelMap[getCategorySlug(value)] || String(value || "Rajasthan GK").trim();
-const categoryTestId = (value = "") => getCategorySlug(value);
+const categoryTestId = (value = "", date = "") => {
+  const slug = getCategorySlug(value);
+  const datePart = String(date || "").trim();
+  return datePart ? slugify(`${slug}-${datePart}`) : slug;
+};
 
 const parseJson = () => {
   const text = $("jsonInput").value.trim();
@@ -254,6 +267,39 @@ const normalizeQuestions = (value) => {
     .filter((item) => item.question && item.options.length >= 2 && item.correctAnswer);
 };
 
+const getDuplicateQuestionReport = (questions = [], existing = []) => {
+  const seen = new Map();
+  const duplicates = [];
+  const unique = [];
+  const register = (question, source) => {
+    const key = normalizeQuestionKey(question?.question);
+    if(!key){ return false; }
+    if(seen.has(key)){
+      duplicates.push({
+        question:String(question.question || "").trim(),
+        first:seen.get(key),
+        source
+      });
+      return false;
+    }
+    seen.set(key, source);
+    return true;
+  };
+  (Array.isArray(existing) ? existing : []).forEach((question, index) => register(question, `existing #${index + 1}`));
+  questions.forEach((question, index) => {
+    if(register(question, `new #${index + 1}`)){
+      unique.push(question);
+    }
+  });
+  return { unique, duplicates };
+};
+
+const duplicateMessage = (duplicates = []) => {
+  const sample = duplicates.slice(0, 4).map((item) => `"${item.question}"`).join(", ");
+  const more = duplicates.length > 4 ? ` +${duplicates.length - 4} more` : "";
+  return `Duplicate question mila: ${sample}${more}. Same test me duplicate question save nahi hoga.`;
+};
+
 const groupQuestionsByCategory = (raw) => {
   const source = Array.isArray(raw) ? raw : (Array.isArray(raw?.questions) ? raw.questions : []);
   const groups = {};
@@ -270,14 +316,9 @@ const groupQuestionsByCategory = (raw) => {
 
 const mergeQuestions = (existing = [], incoming = []) => {
   const rows = Array.isArray(existing) ? existing.slice() : [];
-  const seen = new Set(rows.map((item) => String(item?.id || item?.question || "").trim()).filter(Boolean));
-  incoming.forEach((question) => {
-    const key = String(question.id || question.question || "").trim();
-    if(key && seen.has(key)){ return; }
-    if(key){ seen.add(key); }
-    rows.push(question);
-  });
-  return rows;
+  const report = getDuplicateQuestionReport(incoming, rows);
+  rows.push(...report.unique);
+  return { questions:rows, duplicates:report.duplicates, added:report.unique.length };
 };
 
 const saveQuestionGroups = async (groups, rawMeta = {}) => {
@@ -287,15 +328,18 @@ const saveQuestionGroups = async (groups, rawMeta = {}) => {
   const date = String(rawMeta.date || $("dateInput").value || todayISO()).trim();
   const status = String(rawMeta.status || $("statusInput").value || "active").trim().toLowerCase();
   const saved = [];
+  const duplicateWarnings = [];
   for(const [slug, questions] of entries){
-    const id = categoryTestId(slug);
+    const id = categoryTestId(slug, date);
     const label = getCategoryLabel(slug);
     const testRef = ref(db, "mockTests/" + id);
     const testSnap = await get(testRef);
     const oldTest = testSnap.exists() ? (testSnap.val() || {}) : {};
-    const nextQuestions = mergeQuestions(oldTest.questions, questions);
+    const merged = mergeQuestions(oldTest.questions, questions);
+    const nextQuestions = merged.questions;
+    if(merged.duplicates.length){ duplicateWarnings.push(`${label}: ${merged.duplicates.length} duplicate skipped`); }
     await update(testRef, {
-      title:String(oldTest.title || rawMeta.title || "Daily Mock Test").trim(),
+      title:String(oldTest.title || rawMeta.title || `Daily Mock Test - ${label}`).trim(),
       category:label,
       subject:label,
       timeLimit:Number(oldTest.timeLimit || rawMeta.timeLimit || 20),
@@ -306,8 +350,9 @@ const saveQuestionGroups = async (groups, rawMeta = {}) => {
       updatedAt:now,
       createdAt:Number(oldTest.createdAt || now)
     });
-    saved.push(`${label}: +${questions.length} / total ${nextQuestions.length}`);
+    saved.push(`${label}: +${merged.added} / total ${nextQuestions.length}`);
   }
+  if(duplicateWarnings.length){ saved.push(duplicateWarnings.join(", ")); }
   return saved;
 };
 
@@ -429,6 +474,8 @@ window.saveFullTest = async () => {
     }
     const test = normalizeTest(raw);
     if(!test.questions.length){ throw new Error("Questions valid nahi mili. Har question me question, options, correctAnswer hona chahiye."); }
+    const duplicateReport = getDuplicateQuestionReport(test.questions);
+    if(duplicateReport.duplicates.length){ throw new Error(duplicateMessage(duplicateReport.duplicates)); }
     test.totalQuestions = Number(test.totalQuestions || test.questions.length);
     const id = getTestId(raw, test);
     $("saveStatus").innerText = "Saving test...";
@@ -458,7 +505,9 @@ window.appendQuestionsToTest = async () => {
     const testSnap = await get(ref(db, "mockTests/" + testId));
     const oldTest = testSnap.exists() ? (testSnap.val() || {}) : {};
     const existing = Array.isArray(oldTest.questions) ? oldTest.questions : [];
-    const nextQuestions = existing.concat(questions);
+    const merged = mergeQuestions(existing, questions);
+    if(merged.duplicates.length){ throw new Error(duplicateMessage(merged.duplicates)); }
+    const nextQuestions = merged.questions;
     const patch = {
       questions:nextQuestions,
       totalQuestions:nextQuestions.length,
@@ -473,7 +522,7 @@ window.appendQuestionsToTest = async () => {
       patch.createdAt = Date.now();
     }
     await update(ref(db, "mockTests/" + testId), patch);
-    $("saveStatus").innerText = `${questions.length} question add ho gaye. Total: ${nextQuestions.length}`;
+    $("saveStatus").innerText = `${merged.added} question add ho gaye. Total: ${nextQuestions.length}`;
   }catch(error){
     $("saveStatus").innerText = error.message;
   }

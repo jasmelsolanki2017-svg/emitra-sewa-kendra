@@ -5,6 +5,7 @@ Disallow: /admin-links.html
 Disallow: /admin-updates.html
 Disallow: /admin-ads.html
 Disallow: /admin-jobs.html
+Disallow: /admin-mock-tests.html
 Disallow: /admin-auto-checker.html
 Disallow: /admin-requests.html
 Disallow: /admin-services.html
