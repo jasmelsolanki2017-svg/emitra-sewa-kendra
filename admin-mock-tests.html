@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mock Test Manager | E-MITRA WALA</title>
+<link rel="icon" type="image/png" sizes="512x512" href="favicon.png">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="shortcut icon" href="favicon.ico">
+<link rel="apple-touch-icon" href="favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root{--blue:#0057a8;--deep:#03224d;--orange:#ff7a00;--soft:#eaf4ff;--line:#d8e6f5;--text:#172033;--muted:#5d6b7f;--green:#138a36;--red:#d90000}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Poppins','Noto Sans Devanagari',sans-serif}
+body{background:#f7fbff;color:var(--text);line-height:1.55}
+.topbar{background:#043a76;color:#fff;padding:7px 4%;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:12px}
+header{background:linear-gradient(135deg,var(--blue),var(--deep));color:#fff;text-align:center;padding:20px 4%;border-bottom:4px solid var(--orange)}
+header h1{color:var(--orange);font-size:clamp(23px,4vw,34px)}
+header p{color:#fff1df;font-weight:700}
+nav{background:#fff;padding:8px 4%;display:flex;gap:8px;flex-wrap:wrap;justify-content:center;box-shadow:0 4px 14px rgba(3,34,77,.08);position:sticky;top:0;z-index:10}
+nav a,nav button{background:var(--blue);color:#fff;border:0;text-decoration:none;padding:8px 12px;border-radius:6px;font-weight:800;font-size:12px;cursor:pointer}
+nav a:hover,nav button:hover{background:var(--orange);color:var(--deep)}
+main{max-width:1180px;margin:auto;padding:18px 4% 38px}
+.panel{background:#fff;border:1px solid var(--line);border-top:4px solid var(--orange);border-radius:8px;padding:14px;margin-bottom:14px;box-shadow:0 8px 22px rgba(8,31,74,.08)}
+.admin-info{text-align:center;background:#eef7ff;border-top-color:var(--blue)}
+.panel h2{color:var(--blue);font-size:19px;margin-bottom:9px}
+.panel p,.hint{color:var(--muted);font-size:13px;font-weight:700}
+.form-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:12px 0}
+label{display:grid;gap:5px;color:var(--deep);font-size:12px;font-weight:900}
+input,select,textarea{width:100%;min-width:0;border:1px solid #bdd0e5;border-radius:7px;padding:9px 10px;font-size:13px;background:#fff;color:var(--text)}
+textarea{min-height:330px;resize:vertical;font-family:Consolas,'Courier New',monospace;line-height:1.45}
+.wide{grid-column:1/-1}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+button{border:0;border-radius:7px;padding:9px 13px;font-weight:900;cursor:pointer;background:var(--blue);color:#fff}
+button.green{background:var(--green)}
+button.orange{background:var(--orange);color:var(--deep)}
+button.red{background:var(--red)}
+button.secondary{background:#eaf4ff;color:var(--blue);border:1px solid #bdd0e5}
+.status{margin-top:10px;color:var(--blue);font-weight:900;font-size:13px}
+.example{background:#0f172a;color:#e2e8f0;border-radius:8px;padding:12px;overflow:auto;font-size:12px;line-height:1.5}
+.tests-list{display:grid;gap:10px}
+.test-card{background:#fbfdff;border:1px solid var(--line);border-left:5px solid var(--blue);border-radius:8px;padding:11px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center}
+.test-card h3{color:var(--blue);font-size:15px}
+.test-card small{display:block;color:var(--muted);font-weight:800;margin-top:3px}
+.test-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.pill{display:inline-flex;background:var(--soft);border:1px solid #d8e6f5;color:var(--blue);border-radius:999px;padding:3px 8px;margin-top:6px;font-size:11px;font-weight:900}
+.empty{padding:18px;text-align:center;color:var(--muted);font-weight:800}
+@media(max-width:800px){nav{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap}nav a,nav button{white-space:nowrap}.form-grid{grid-template-columns:1fr}.test-card{grid-template-columns:1fr}.test-actions{justify-content:flex-start}textarea{min-height:260px}}
+</style>
+</head>
+<body>
+<div class="topbar"><div>Mock Test Manager</div><div id="liveTime">Loading...</div></div>
+<header>
+  <h1>Mock Test Manager</h1>
+  <p>JSON paste karke Daily Mock Test aur questions Firebase me add/update karein.</p>
+</header>
+<nav>
+  <a href="dashboard.html">Dashboard</a>
+  <a href="mock-test.html">Public Mock Test</a>
+  <a href="admin-jobs.html">Latest Jobs</a>
+  <a href="admin-updates.html">Latest Updates</a>
+  <button type="button" onclick="logoutUser()">Logout</button>
+</nav>
+<main>
+  <section class="panel admin-info">
+    <h2 id="accessTitle">Admin Access Checking...</h2>
+    <p id="adminEmailText">Please wait...</p>
+  </section>
+
+  <section class="panel">
+    <h2>Paste Mock Test JSON</h2>
+    <p>Full test object paste karke save/update karein, ya sirf questions array paste karke selected Test ID me questions append karein.</p>
+    <div class="form-grid">
+      <label>Test ID (optional for full test, required for append)
+        <input id="testIdInput" type="text" placeholder="daily-rajasthan-gk-2026-05-24">
+      </label>
+      <label>Category
+        <select id="categoryInput">
+          <option>Rajasthan GK</option>
+          <option>Reasoning</option>
+          <option>SSC Level Math</option>
+          <option>English</option>
+        </select>
+      </label>
+      <label>Status
+        <select id="statusInput">
+          <option value="active">active</option>
+          <option value="draft">draft</option>
+        </select>
+      </label>
+      <label>Date
+        <input id="dateInput" type="date">
+      </label>
+      <label class="wide">JSON Data
+        <textarea id="jsonInput" spellcheck="false" placeholder='{"title":"Daily Mock Test - Rajasthan GK","category":"Rajasthan GK","timeLimit":20,"totalQuestions":25,"status":"active","date":"2026-05-24","questions":[{"question":"राजस्थान की राजधानी क्या है?","options":["जयपुर","जोधपुर","उदयपुर","कोटा"],"correctAnswer":"जयपुर","explanation":"राजस्थान की राजधानी जयपुर है।"}]}'></textarea>
+      </label>
+    </div>
+    <div class="actions">
+      <button type="button" class="green" onclick="saveFullTest()"><i class="fa-solid fa-floppy-disk"></i> Save / Update Full Test</button>
+      <button type="button" class="orange" onclick="appendQuestionsToTest()"><i class="fa-solid fa-plus"></i> Add Questions To Test</button>
+      <button type="button" class="secondary" onclick="loadSampleJson()">Sample JSON</button>
+      <button type="button" class="secondary" onclick="clearEditor()">Clear</button>
+    </div>
+    <div id="saveStatus" class="status"></div>
+  </section>
+
+  <section class="panel">
+    <h2>JSON Format Example</h2>
+    <pre class="example">{
+  "title": "Daily Mock Test - Rajasthan GK",
+  "category": "Rajasthan GK",
+  "timeLimit": 20,
+  "totalQuestions": 25,
+  "status": "active",
+  "date": "2026-05-24",
+  "questions": [
+    {
+      "question": "राजस्थान की राजधानी क्या है?",
+      "options": ["जयपुर", "जोधपुर", "उदयपुर", "कोटा"],
+      "correctAnswer": "जयपुर",
+      "explanation": "राजस्थान की राजधानी जयपुर है।"
+    }
+  ]
+}</pre>
+  </section>
+
+  <section class="panel">
+    <h2>Saved Mock Tests</h2>
+    <div id="listStatus" class="status">Loading tests...</div>
+    <div id="testsList" class="tests-list"><div class="empty">Loading...</div></div>
+  </section>
+</main>
+
+<script>
+function updateLiveTime(){document.getElementById("liveTime").innerText=new Date().toLocaleString("hi-IN")}
+updateLiveTime();
+setInterval(updateLiveTime,1000);
+</script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+import { getDatabase, ref, onValue, get, set, update, remove, push } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey:"AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",
+  authDomain:"my-website-73785.firebaseapp.com",
+  databaseURL:"https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app/",
+  projectId:"my-website-73785",
+  storageBucket:"my-website-73785.firebasestorage.app",
+  messagingSenderId:"854088341990",
+  appId:"1:854088341990:web:3211d4ef9fe4b78d025e27"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+const adminEmail = "jasmelsolanki@gmail.com";
+const testsRef = ref(db, "mockTests");
+let adminAllowed = false;
+let testsCache = {};
+
+const $ = (id) => document.getElementById(id);
+const escapeHTML = (value = "") => String(value)
+  .replace(/&/g,"&amp;")
+  .replace(/</g,"&lt;")
+  .replace(/>/g,"&gt;")
+  .replace(/"/g,"&quot;")
+  .replace(/'/g,"&#039;");
+
+const slugify = (value = "mock-test") => String(value)
+  .toLowerCase()
+  .trim()
+  .replace(/[^a-z0-9]+/g, "-")
+  .replace(/^-+|-+$/g, "")
+  .slice(0, 70) || "mock-test";
+
+const parseJson = () => {
+  const text = $("jsonInput").value.trim();
+  if(!text){ throw new Error("JSON data paste karein."); }
+  try{
+    return JSON.parse(text);
+  }catch(error){
+    throw new Error("JSON valid nahi hai: " + error.message);
+  }
+};
+
+const normalizeQuestions = (value) => {
+  const source = Array.isArray(value) ? value : (Array.isArray(value?.questions) ? value.questions : [value]);
+  return source
+    .filter((item) => item && typeof item === "object")
+    .map((item) => ({
+      question:String(item.question || "").trim(),
+      options:Array.isArray(item.options) ? item.options.map((option) => String(option || "").trim()).filter(Boolean).slice(0, 4) : [],
+      correctAnswer:String(item.correctAnswer || item.answer || "").trim(),
+      explanation:String(item.explanation || "").trim()
+    }))
+    .filter((item) => item.question && item.options.length >= 2 && item.correctAnswer);
+};
+
+const normalizeTest = (raw) => {
+  const now = Date.now();
+  const title = String(raw.title || "Daily Mock Test").trim();
+  const questions = normalizeQuestions(raw);
+  return {
+    title,
+    category:String(raw.category || $("categoryInput").value || "Rajasthan GK").trim(),
+    timeLimit:Number(raw.timeLimit || 20),
+    totalQuestions:Number(raw.totalQuestions || questions.length),
+    status:String(raw.status || $("statusInput").value || "active").trim().toLowerCase(),
+    date:String(raw.date || $("dateInput").value || new Date().toISOString().slice(0,10)).trim(),
+    questions,
+    updatedAt:now,
+    createdAt:Number(raw.createdAt || now)
+  };
+};
+
+const getTestId = (raw, test) => {
+  const typed = $("testIdInput").value.trim();
+  if(typed){ return slugify(typed); }
+  if(raw.testId || raw.id){ return slugify(raw.testId || raw.id); }
+  return slugify(`${test.category}-${test.title}-${test.date}`);
+};
+
+const requireAdmin = () => {
+  if(!adminAllowed){ throw new Error("Admin verify nahi hua."); }
+};
+
+window.saveFullTest = async () => {
+  try{
+    requireAdmin();
+    const raw = parseJson();
+    if(Array.isArray(raw)){ throw new Error("Full test save ke liye object JSON paste karein. Questions array add karne ke liye Add Questions button use karein."); }
+    const test = normalizeTest(raw);
+    if(!test.questions.length){ throw new Error("Questions valid nahi mili. Har question me question, options, correctAnswer hona chahiye."); }
+    test.totalQuestions = Number(test.totalQuestions || test.questions.length);
+    const id = getTestId(raw, test);
+    $("saveStatus").innerText = "Saving test...";
+    await set(ref(db, "mockTests/" + id), test);
+    $("saveStatus").innerText = `Mock test saved: ${id} (${test.questions.length} questions)`;
+    $("testIdInput").value = id;
+  }catch(error){
+    $("saveStatus").innerText = error.message;
+  }
+};
+
+window.appendQuestionsToTest = async () => {
+  try{
+    requireAdmin();
+    const typedTestId = $("testIdInput").value.trim();
+    if(!typedTestId){ throw new Error("Questions append karne ke liye Test ID fill karein."); }
+    const testId = slugify(typedTestId);
+    const raw = parseJson();
+    const questions = normalizeQuestions(raw);
+    if(!questions.length){ throw new Error("Valid questions nahi mili. Array ya {questions:[...]} paste karein."); }
+    $("saveStatus").innerText = "Questions add ho rahe hain...";
+    const testSnap = await get(ref(db, "mockTests/" + testId));
+    const oldTest = testSnap.exists() ? (testSnap.val() || {}) : {};
+    const existing = Array.isArray(oldTest.questions) ? oldTest.questions : [];
+    const nextQuestions = existing.concat(questions);
+    const patch = {
+      questions:nextQuestions,
+      totalQuestions:nextQuestions.length,
+      updatedAt:Date.now()
+    };
+    if(!testSnap.exists()){
+      patch.title = String(raw.title || "Daily Mock Test").trim();
+      patch.category = String(raw.category || $("categoryInput").value || "Rajasthan GK").trim();
+      patch.timeLimit = Number(raw.timeLimit || 20);
+      patch.status = String(raw.status || $("statusInput").value || "active").trim().toLowerCase();
+      patch.date = String(raw.date || $("dateInput").value || new Date().toISOString().slice(0,10)).trim();
+      patch.createdAt = Date.now();
+    }
+    await update(ref(db, "mockTests/" + testId), patch);
+    $("saveStatus").innerText = `${questions.length} question add ho gaye. Total: ${nextQuestions.length}`;
+  }catch(error){
+    $("saveStatus").innerText = error.message;
+  }
+};
+
+window.loadSampleJson = () => {
+  const today = new Date().toISOString().slice(0,10);
+  $("dateInput").value = today;
+  $("jsonInput").value = JSON.stringify({
+    title:"Daily Mock Test - Rajasthan GK",
+    category:"Rajasthan GK",
+    timeLimit:20,
+    totalQuestions:1,
+    status:"active",
+    date:today,
+    questions:[
+      {
+        question:"राजस्थान की राजधानी क्या है?",
+        options:["जयपुर","जोधपुर","उदयपुर","कोटा"],
+        correctAnswer:"जयपुर",
+        explanation:"राजस्थान की राजधानी जयपुर है।"
+      }
+    ]
+  }, null, 2);
+};
+
+window.clearEditor = () => {
+  $("testIdInput").value = "";
+  $("jsonInput").value = "";
+  $("saveStatus").innerText = "";
+};
+
+window.editMockTest = (id) => {
+  const test = testsCache[id];
+  if(!test){ return; }
+  $("testIdInput").value = id;
+  $("categoryInput").value = test.category || "Rajasthan GK";
+  $("statusInput").value = test.status || "active";
+  $("dateInput").value = test.date || "";
+  $("jsonInput").value = JSON.stringify(test, null, 2);
+  $("jsonInput").focus();
+  scrollTo({ top:0, behavior:"smooth" });
+};
+
+window.deleteMockTest = async (id) => {
+  try{
+    requireAdmin();
+    if(confirm("Ye mock test delete karna hai?")){
+      await remove(ref(db, "mockTests/" + id));
+      $("saveStatus").innerText = "Mock test delete ho gaya.";
+    }
+  }catch(error){
+    $("saveStatus").innerText = error.message;
+  }
+};
+
+onAuthStateChanged(auth, (user) => {
+  if(user && user.email === adminEmail){
+    adminAllowed = true;
+    $("accessTitle").innerText = "Admin Access Verified";
+    $("adminEmailText").innerText = user.email;
+  }else{
+    location.href = "index.html";
+  }
+});
+
+onValue(testsRef, (snapshot) => {
+  const list = $("testsList");
+  testsCache = {};
+  const rows = [];
+  if(snapshot.exists()){
+    snapshot.forEach((child) => {
+      const data = child.val() || {};
+      rows.push({ id:child.key, ...data });
+      testsCache[child.key] = data;
+    });
+  }
+  rows.sort((a,b) => String(b.date || "").localeCompare(String(a.date || "")) || String(a.title || "").localeCompare(String(b.title || "")));
+  $("listStatus").innerText = `Firebase se ${rows.length} mock test load hue.`;
+  list.innerHTML = rows.length ? rows.map((test) => {
+    const qCount = Array.isArray(test.questions) ? test.questions.length : Number(test.totalQuestions || 0);
+    return `<article class="test-card">
+      <div>
+        <h3>${escapeHTML(test.title || "Daily Mock Test")}</h3>
+        <small>ID: ${escapeHTML(test.id)} | ${escapeHTML(test.category || "General")} | ${escapeHTML(test.date || "No date")}</small>
+        <span class="pill">${escapeHTML(test.status || "active")}</span>
+        <span class="pill">${qCount} Questions</span>
+        <span class="pill">${escapeHTML(test.timeLimit || 20)} min</span>
+      </div>
+      <div class="test-actions">
+        <button type="button" class="secondary" onclick="editMockTest('${escapeHTML(test.id)}')">Edit JSON</button>
+        <button type="button" class="red" onclick="deleteMockTest('${escapeHTML(test.id)}')">Delete</button>
+      </div>
+    </article>`;
+  }).join("") : '<div class="empty">Abhi koi mock test save nahi hai.</div>';
+}, (error) => {
+  $("listStatus").innerText = "Mock tests load nahi hue: " + error.message;
+  $("testsList").innerHTML = '<div class="empty">Firebase se data load nahi ho paya.</div>';
+});
+
+window.logoutUser = () => signOut(auth).then(() => { location.href = "index.html"; });
+</script>
+</body>
+</html>
