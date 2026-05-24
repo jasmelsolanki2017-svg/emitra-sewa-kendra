@@ -29,6 +29,7 @@ nav a:hover{color:#ffcf75}
 main{max-width:1120px;margin:auto;padding:22px 3% 42px}
 .toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap}
 .auth-box,.message{background:white;border:1px solid var(--line);border-left:4px solid var(--orange);border-radius:8px;padding:12px 14px;font-weight:700;color:var(--blue)}
+.direct-test-note{margin-bottom:12px}
 .auth-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
 button,.btn{border:0;border-radius:6px;background:var(--blue);color:white;text-decoration:none;font-weight:900;padding:9px 13px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px}
 button:hover,.btn:hover{background:var(--orange);color:var(--deep)}
@@ -169,7 +170,7 @@ let activeTest = null;
 let timerId = null;
 let startedAt = 0;
 let remainingSeconds = 0;
-const linkedTestId = new URLSearchParams(location.search).get("test") || "";
+let linkedTestId = new URLSearchParams(location.search).get("test") || "";
 
 const $ = (id) => document.getElementById(id);
 const escapeHTML = (value = "") => String(value)
@@ -204,8 +205,11 @@ const renderCategories = () => {
 
 const renderTests = () => {
   renderCategories();
-  const visible = tests.filter((test) => test.status === "active" && (activeCategory === "All" || test.category === activeCategory));
-  $("testCards").innerHTML = visible.length ? visible.map((test) => `
+  const linkedTest = linkedTestId ? tests.find((test) => test.id === linkedTestId && test.status === "active") : null;
+  const visible = linkedTest ? [linkedTest] : tests.filter((test) => test.status === "active" && (activeCategory === "All" || test.category === activeCategory));
+  const directNote = linkedTest ? `<div class="message direct-test-note">Direct test link open hai: ${escapeHTML(linkedTest.category)}. <a href="mock-test.html">All Tests Dekhein</a></div>` : "";
+  const missingDirectNote = linkedTestId && !linkedTest ? `<div class="message direct-test-note">Is direct link ka test active nahi mila. Neeche available tests dikha rahe hain. <a href="mock-test.html">All Tests Dekhein</a></div>` : "";
+  $("testCards").innerHTML = (directNote || missingDirectNote) + (visible.length ? visible.map((test) => `
     <article class="test-card ${linkedTestId === test.id ? "linked" : ""}" id="test-${escapeHTML(test.id)}">
       <h2>${escapeHTML(test.title)}</h2>
       <div class="meta">
@@ -224,7 +228,7 @@ const renderTests = () => {
         </div>
       </div>
     </article>
-  `).join("") : `<div class="message">Is category me abhi active mock test nahi hai.</div>`;
+  `).join("") : `<div class="message">Is category me abhi active mock test nahi hai.</div>`);
   if(linkedTestId){
     setTimeout(() => document.getElementById(`test-${linkedTestId}`)?.scrollIntoView({ behavior:"smooth", block:"center" }), 80);
   }
@@ -369,6 +373,10 @@ $("categoryTabs").addEventListener("click", (event) => {
   const button = event.target.closest("button[data-category]");
   if(!button){ return; }
   activeCategory = button.dataset.category;
+  linkedTestId = "";
+  if(location.search.includes("test=")){
+    history.replaceState(null, "", location.pathname);
+  }
   renderTests();
 });
 
