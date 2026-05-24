@@ -71,7 +71,7 @@ button.secondary{background:#eaf4ff;color:var(--blue);border:1px solid #bdd0e5}
 
   <section class="panel">
     <h2>Paste Mock Test JSON</h2>
-    <p>Full test object paste karke save/update karein, ya sirf questions array paste karke selected Test ID me questions append karein.</p>
+    <p>Full test object save/update karein, selected Test ID me questions append karein, ya mixed category questions array paste karke auto category wise add karein.</p>
     <div class="form-grid">
       <label>Test ID (optional for full test, required for append)
         <input id="testIdInput" type="text" placeholder="daily-rajasthan-gk-2026-05-24">
@@ -100,6 +100,7 @@ button.secondary{background:#eaf4ff;color:var(--blue);border:1px solid #bdd0e5}
     <div class="actions">
       <button type="button" class="green" onclick="saveFullTest()"><i class="fa-solid fa-floppy-disk"></i> Save / Update Full Test</button>
       <button type="button" class="orange" onclick="appendQuestionsToTest()"><i class="fa-solid fa-plus"></i> Add Questions To Test</button>
+      <button type="button" class="secondary" onclick="autoAddQuestionsByCategory()"><i class="fa-solid fa-layer-group"></i> Auto Add By Category</button>
       <button type="button" class="secondary" onclick="loadSampleJson()">Sample JSON</button>
       <button type="button" class="secondary" onclick="saveAllCategorySamples()">Add 4 Category Samples</button>
       <button type="button" class="secondary" onclick="clearEditor()">Clear</button>
@@ -178,6 +179,42 @@ const slugify = (value = "mock-test") => String(value)
   .replace(/^-+|-+$/g, "")
   .slice(0, 70) || "mock-test";
 
+const normalizeText = (value = "") => String(value)
+  .toLowerCase()
+  .trim()
+  .replace(/&/g, "and")
+  .replace(/[^a-z0-9]+/g, "-")
+  .replace(/^-+|-+$/g, "");
+
+const getCategorySlug = (value = "") => {
+  const key = normalizeText(value);
+  const map = {
+    "rajasthan-gk":"rajasthan-gk",
+    "rajasthan":"rajasthan-gk",
+    "gk":"rajasthan-gk",
+    "raj-gk":"rajasthan-gk",
+    "rajasthangk":"rajasthan-gk",
+    "reasoning":"reasoning",
+    "ssc-level-math":"ssc-level-math",
+    "ssc-math":"ssc-level-math",
+    "ssc":"ssc-level-math",
+    "math":"ssc-level-math",
+    "maths":"ssc-level-math",
+    "english":"english"
+  };
+  return map[key] || key || "rajasthan-gk";
+};
+
+const categoryLabelMap = {
+  "rajasthan-gk":"Rajasthan GK",
+  "reasoning":"Reasoning",
+  "ssc-level-math":"SSC Level Math",
+  "english":"English"
+};
+
+const getCategoryLabel = (value = "") => categoryLabelMap[getCategorySlug(value)] || String(value || "Rajasthan GK").trim();
+const categoryTestId = (value = "") => getCategorySlug(value);
+
 const parseJson = () => {
   const text = $("jsonInput").value.trim();
   if(!text){ throw new Error("JSON data paste karein."); }
@@ -188,17 +225,86 @@ const parseJson = () => {
   }
 };
 
+const normalizeQuestionItem = (item = {}) => {
+  const options = Array.isArray(item.options)
+    ? item.options.map((option) => String(option || "").trim()).filter(Boolean).slice(0, 4)
+    : [];
+  const hasCorrectIndex = item.correctIndex !== undefined && item.correctIndex !== null && item.correctIndex !== "";
+  const indexAnswer = hasCorrectIndex && Number.isInteger(Number(item.correctIndex)) ? options[Number(item.correctIndex)] : "";
+  return {
+    id:String(item.id || "").trim(),
+    level:String(item.level || "").trim(),
+    subject:String(item.subject || item.category || "").trim(),
+    question:String(item.question || "").trim(),
+    options,
+    correctAnswer:String(item.correctAnswer || item.answer || indexAnswer || "").trim(),
+    explanation:String(item.explanation || "").trim()
+  };
+};
+
 const normalizeQuestions = (value) => {
   const source = Array.isArray(value) ? value : (Array.isArray(value?.questions) ? value.questions : [value]);
   return source
     .filter((item) => item && typeof item === "object")
-    .map((item) => ({
-      question:String(item.question || "").trim(),
-      options:Array.isArray(item.options) ? item.options.map((option) => String(option || "").trim()).filter(Boolean).slice(0, 4) : [],
-      correctAnswer:String(item.correctAnswer || item.answer || "").trim(),
-      explanation:String(item.explanation || "").trim()
-    }))
+    .map(normalizeQuestionItem)
     .filter((item) => item.question && item.options.length >= 2 && item.correctAnswer);
+};
+
+const groupQuestionsByCategory = (raw) => {
+  const source = Array.isArray(raw) ? raw : (Array.isArray(raw?.questions) ? raw.questions : []);
+  const groups = {};
+  source.forEach((item) => {
+    if(!item || typeof item !== "object"){ return; }
+    const question = normalizeQuestionItem(item);
+    if(!question.question || question.options.length < 2 || !question.correctAnswer){ return; }
+    const slug = getCategorySlug(item.category || item.subject || item.id || $("categoryInput").value || "Rajasthan GK");
+    if(!groups[slug]){ groups[slug] = []; }
+    groups[slug].push(question);
+  });
+  return groups;
+};
+
+const mergeQuestions = (existing = [], incoming = []) => {
+  const rows = Array.isArray(existing) ? existing.slice() : [];
+  const seen = new Set(rows.map((item) => String(item?.id || item?.question || "").trim()).filter(Boolean));
+  incoming.forEach((question) => {
+    const key = String(question.id || question.question || "").trim();
+    if(key && seen.has(key)){ return; }
+    if(key){ seen.add(key); }
+    rows.push(question);
+  });
+  return rows;
+};
+
+const saveQuestionGroups = async (groups, rawMeta = {}) => {
+  const entries = Object.entries(groups).filter(([, questions]) => questions.length);
+  if(!entries.length){ throw new Error("Valid categorized questions nahi mili."); }
+  const now = Date.now();
+  const date = String(rawMeta.date || $("dateInput").value || todayISO()).trim();
+  const status = String(rawMeta.status || $("statusInput").value || "active").trim().toLowerCase();
+  const saved = [];
+  for(const [slug, questions] of entries){
+    const id = categoryTestId(slug);
+    const label = getCategoryLabel(slug);
+    const testRef = ref(db, "mockTests/" + id);
+    const testSnap = await get(testRef);
+    const oldTest = testSnap.exists() ? (testSnap.val() || {}) : {};
+    const nextQuestions = mergeQuestions(oldTest.questions, questions);
+    await update(testRef, {
+      title:String(oldTest.title || rawMeta.title || "Daily Mock Test").trim(),
+      category:label,
+      subject:label,
+      timeLimit:Number(oldTest.timeLimit || rawMeta.timeLimit || 20),
+      totalQuestions:nextQuestions.length,
+      status:String(oldTest.status || status || "active").trim().toLowerCase(),
+      date:String(oldTest.date || date).trim(),
+      questions:nextQuestions,
+      updatedAt:now,
+      createdAt:Number(oldTest.createdAt || now)
+    });
+    saved.push(`${label}: +${questions.length} / total ${nextQuestions.length}`);
+  }
+  return saved;
 };
 
 const normalizeTest = (raw) => {
@@ -286,7 +392,12 @@ window.saveFullTest = async () => {
   try{
     requireAdmin();
     const raw = parseJson();
-    if(Array.isArray(raw)){ throw new Error("Full test save ke liye object JSON paste karein. Questions array add karne ke liye Add Questions button use karein."); }
+    if(Array.isArray(raw)){
+      $("saveStatus").innerText = "Category wise questions add ho rahe hain...";
+      const saved = await saveQuestionGroups(groupQuestionsByCategory(raw), raw);
+      $("saveStatus").innerText = saved.join(" | ");
+      return;
+    }
     const test = normalizeTest(raw);
     if(!test.questions.length){ throw new Error("Questions valid nahi mili. Har question me question, options, correctAnswer hona chahiye."); }
     test.totalQuestions = Number(test.totalQuestions || test.questions.length);
@@ -304,9 +415,14 @@ window.appendQuestionsToTest = async () => {
   try{
     requireAdmin();
     const typedTestId = $("testIdInput").value.trim();
-    if(!typedTestId){ throw new Error("Questions append karne ke liye Test ID fill karein."); }
-    const testId = slugify(typedTestId);
     const raw = parseJson();
+    if(!typedTestId){
+      $("saveStatus").innerText = "Category wise questions add ho rahe hain...";
+      const saved = await saveQuestionGroups(groupQuestionsByCategory(raw), raw);
+      $("saveStatus").innerText = saved.join(" | ");
+      return;
+    }
+    const testId = slugify(typedTestId);
     const questions = normalizeQuestions(raw);
     if(!questions.length){ throw new Error("Valid questions nahi mili. Array ya {questions:[...]} paste karein."); }
     $("saveStatus").innerText = "Questions add ho rahe hain...";
@@ -329,6 +445,18 @@ window.appendQuestionsToTest = async () => {
     }
     await update(ref(db, "mockTests/" + testId), patch);
     $("saveStatus").innerText = `${questions.length} question add ho gaye. Total: ${nextQuestions.length}`;
+  }catch(error){
+    $("saveStatus").innerText = error.message;
+  }
+};
+
+window.autoAddQuestionsByCategory = async () => {
+  try{
+    requireAdmin();
+    const raw = parseJson();
+    $("saveStatus").innerText = "Category wise questions add ho rahe hain...";
+    const saved = await saveQuestionGroups(groupQuestionsByCategory(raw), raw);
+    $("saveStatus").innerText = saved.join(" | ");
   }catch(error){
     $("saveStatus").innerText = error.message;
   }
