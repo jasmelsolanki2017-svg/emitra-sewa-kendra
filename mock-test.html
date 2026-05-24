@@ -168,7 +168,7 @@ const auth = getAuth(app);
 const db = getDatabase(app);
 const categories = ["All","Rajasthan GK","Reasoning","SSC Level Math","English"];
 let currentUser = null;
-let tests = [];
+let allTests = [];
 let historyRows = [];
 let activeCategory = "All";
 let activeTest = null;
@@ -283,39 +283,48 @@ const renderTests = () => {
   renderCategories();
   const selectedCategory = activeCategory;
   const selectedSlug = getCategorySlug(selectedCategory);
-  const filteredTests = tests.filter((test) => {
-    if(!isActiveTest(test) || !test.questions.length){ return false; }
+  const filteredTests = allTests.filter((test) => {
+    if(!test.questions.length){ return false; }
     if(selectedSlug === "all"){ return true; }
     const testSlug = getTestCategorySlug(test, test.id);
     return testSlug === selectedSlug;
   });
-  console.log("All tests", tests);
+  console.log("All tests", allTests);
   console.log("Selected category", selectedCategory);
   console.log("Filtered tests", filteredTests);
-  const linkedTest = linkedTestId ? tests.find((test) => isActiveTest(test) && test.questions.length && testMatchesDirectSlug(test, linkedTestId)) : null;
+  const linkedTest = linkedTestId ? allTests.find((test) => test.questions.length && testMatchesDirectSlug(test, linkedTestId)) : null;
   const visible = linkedTest ? [linkedTest] : filteredTests;
   const directNote = linkedTest ? `<div class="message direct-test-note">Direct test link open hai: ${escapeHTML(linkedTest.category)}. <a href="mock-test.html">All Tests Dekhein</a></div>` : "";
   const missingDirectNote = linkedTestId && !linkedTest ? `<div class="message direct-test-note">Is direct link ka test active nahi mila. Neeche available tests dikha rahe hain. <a href="mock-test.html">All Tests Dekhein</a></div>` : "";
-  $("testCards").innerHTML = (directNote || missingDirectNote) + (visible.length ? visible.map((test) => `
-    <article class="test-card ${linkedTest && linkedTest.id === test.id ? "linked" : ""}" id="test-${escapeHTML(test.id)}">
-      <h2>${escapeHTML(test.title)}</h2>
-      <div class="meta">
-        <span>Category: ${escapeHTML(test.category)}</span>
-        <span>Total Questions: ${escapeHTML(test.totalQuestions || test.questions.length)}</span>
-        <span>Time Limit: ${escapeHTML(test.timeLimit)} min</span>
-        <span>Date: ${escapeHTML(test.date || "Daily")}</span>
-      </div>
-      <button type="button" data-start="${escapeHTML(test.id)}"><i class="fa-solid fa-play"></i> Start Test</button>
-      <div class="test-link-box">
-        <small>Is Test Ka Direct Link</small>
-        <a href="${testPublicLink(test)}">${escapeHTML(testPublicLink(test))}</a>
-        <div class="test-link-actions">
-          <button type="button" class="secondary" data-copy-link="${escapeHTML(testPublicLink(test))}"><i class="fa-solid fa-copy"></i> Copy Link</button>
-          <a class="btn" href="${testPublicLink(test)}"><i class="fa-solid fa-link"></i> Open Link</a>
-        </div>
-      </div>
-    </article>
-  `).join("") : `<div class="message">Is category me abhi active mock test nahi hai.</div>`);
+  let cardsHtml = directNote || missingDirectNote;
+  if(visible.length){
+    visible.forEach((test) => {
+      const directLink = testPublicLink(test);
+      cardsHtml += `
+        <article class="test-card ${linkedTest && linkedTest.id === test.id ? "linked" : ""}" id="test-${escapeHTML(test.id)}">
+          <h2>${escapeHTML(test.title)}</h2>
+          <div class="meta">
+            <span>Category: ${escapeHTML(test.category)}</span>
+            <span>Total Questions: ${escapeHTML(test.totalQuestions || test.questions.length)}</span>
+            <span>Time Limit: ${escapeHTML(test.timeLimit)} min</span>
+            <span>Date: ${escapeHTML(test.date || "Daily")}</span>
+          </div>
+          <button type="button" data-start="${escapeHTML(test.id)}"><i class="fa-solid fa-play"></i> Start Test</button>
+          <div class="test-link-box">
+            <small>Is Test Ka Direct Link</small>
+            <a href="${directLink}">${escapeHTML(directLink)}</a>
+            <div class="test-link-actions">
+              <button type="button" class="secondary" data-copy-link="${escapeHTML(directLink)}"><i class="fa-solid fa-copy"></i> Copy Link</button>
+              <a class="btn" href="${directLink}"><i class="fa-solid fa-link"></i> Open Link</a>
+            </div>
+          </div>
+        </article>
+      `;
+    });
+  }else{
+    cardsHtml += `<div class="message">Is category me abhi active mock test nahi hai.</div>`;
+  }
+  $("testCards").innerHTML = cardsHtml;
   if(linkedTest){
     setTimeout(() => document.getElementById(`test-${linkedTest.id}`)?.scrollIntoView({ behavior:"smooth", block:"center" }), 80);
   }
@@ -345,7 +354,7 @@ const startTest = (testId) => {
     showLoginPrompt();
     return;
   }
-  const test = tests.find((item) => item.id === testId);
+  const test = allTests.find((item) => item.id === testId);
   if(!test || !test.questions.length){
     alert("Is test me questions available nahi hain.");
     return;
@@ -550,11 +559,13 @@ onAuthStateChanged(auth, (user) => {
 
 renderCategories();
 onValue(ref(db, "mockTests"), (snapshot) => {
-  tests = [];
-  if(snapshot.exists()){
-    snapshot.forEach((child) => tests.push(normalizeTest(child.key, child.val())));
-  }
-  tests.sort((a,b) => String(b.date || "").localeCompare(String(a.date || "")) || a.title.localeCompare(b.title));
+  const data = snapshot.val() || {};
+  console.log("Firebase raw data", data);
+  const savedTests = Object.entries(data).map(([id, test]) => ({ id, ...(test || {}) }));
+  allTests = savedTests
+    .map((test) => normalizeTest(test.id, test))
+    .filter((test) => isActiveTest(test));
+  allTests.sort((a,b) => String(b.date || "").localeCompare(String(a.date || "")) || a.title.localeCompare(b.title));
   renderTests();
 }, (error) => {
   $("testCards").innerHTML = `<div class="message">Mock tests load nahi ho paye: ${escapeHTML(error.message)}</div>`;
