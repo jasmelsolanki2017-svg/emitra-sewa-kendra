@@ -51,11 +51,6 @@ button:disabled{opacity:.65;cursor:not-allowed}
 .test-card h2{font-size:18px;color:var(--blue);line-height:1.3}
 .meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;font-size:13px;font-weight:800;color:var(--muted)}
 .meta span{background:var(--soft);border:1px solid #d9e9f8;border-radius:6px;padding:7px 8px}
-.test-link-box{display:grid;gap:5px;background:#fff7ed;border:1px solid #ffd1a1;border-radius:7px;padding:8px 9px;font-size:12px}
-.test-link-box small{color:#8a3a00;font-weight:900}
-.test-link-box a{color:var(--blue);font-weight:900;overflow-wrap:anywhere;text-decoration:underline}
-.test-link-actions{display:flex;gap:7px;flex-wrap:wrap}
-.test-link-actions .btn,.test-link-actions button{font-size:12px;min-height:34px;padding:7px 10px}
 .panel h2{font-size:20px;color:var(--blue);margin-bottom:10px}
 .test-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
 .timer{background:#fff4e6;border:1px solid #ffd1a1;color:#8a3a00;border-radius:8px;padding:8px 11px;font-weight:900}
@@ -120,8 +115,8 @@ footer a{color:#ffcf75;text-decoration:none;font-weight:800;margin:0 7px;display
   </section>
 
   <section id="loginPanel" class="auth-box hidden">
-    <strong>Test start karne ke liye login zaruri hai.</strong>
-    <p>Existing Firebase Auth session use hoga. Google login try kar sakte hain ya home page se existing login karein.</p>
+    <strong>Login optional hai.</strong>
+    <p>Bina login test de sakte hain. Login karenge to score history Firebase me save hogi.</p>
     <div class="auth-actions">
       <button type="button" id="googleLoginBtn"><i class="fa-brands fa-google"></i> Google Login</button>
       <a class="btn" href="index.html"><i class="fa-solid fa-right-to-bracket"></i> Existing Login</a>
@@ -308,11 +303,6 @@ const normalizeTest = (id, value = {}) => ({
   date:String(value.date || "").trim(),
   questions:normalizeQuestionList(value.questions)
 });
-const testPublicLink = (test, testId = test.id) => {
-  const testSlug = getTestCategorySlug(test, testId);
-  return `${location.origin}/mock-test.html?test=${encodeURIComponent(testSlug)}`;
-};
-
 const renderCategories = () => {
   $("categoryTabs").innerHTML = categories.map((category) =>
     `<button type="button" class="${activeCategory === category ? "active" : ""}" data-category="${escapeHTML(category)}">${escapeHTML(category)}</button>`
@@ -346,7 +336,6 @@ const renderTests = () => {
   let cardsHtml = directNote || missingDirectNote;
   if(visible.length){
     visible.forEach((test) => {
-      const directLink = testPublicLink(test);
       cardsHtml += `
         <article class="test-card ${linkedTest && linkedTest.id === test.id ? "linked" : ""}" id="test-${escapeHTML(test.id)}">
           <h2>${escapeHTML(test.title)}</h2>
@@ -357,14 +346,6 @@ const renderTests = () => {
             <span>Date: ${escapeHTML(formatDisplayDate(test.date))}</span>
           </div>
           <button type="button" data-start="${escapeHTML(test.id)}"><i class="fa-solid fa-play"></i> Start Test</button>
-          <div class="test-link-box">
-            <small>Is Test Ka Direct Link</small>
-            <a href="${directLink}">${escapeHTML(directLink)}</a>
-            <div class="test-link-actions">
-              <button type="button" class="secondary" data-copy-link="${escapeHTML(directLink)}"><i class="fa-solid fa-copy"></i> Copy Link</button>
-              <a class="btn" href="${directLink}"><i class="fa-solid fa-link"></i> Open Link</a>
-            </div>
-          </div>
         </article>
       `;
     });
@@ -376,11 +357,6 @@ const renderTests = () => {
     setTimeout(() => document.getElementById(`test-${linkedTest.id}`)?.scrollIntoView({ behavior:"smooth", block:"center" }), 80);
   }
   renderHistory();
-};
-
-const showLoginPrompt = () => {
-  $("loginPanel").classList.remove("hidden");
-  $("loginPanel").scrollIntoView({ behavior:"smooth", block:"center" });
 };
 
 const startTimer = () => {
@@ -397,10 +373,6 @@ const startTimer = () => {
 };
 
 const startTest = (testId) => {
-  if(!currentUser){
-    showLoginPrompt();
-    return;
-  }
   const test = allTests.find((item) => item.id === testId);
   if(!test || !test.questions.length){
     alert("Is test me questions available nahi hain.");
@@ -477,6 +449,7 @@ const renderResult = (result, answers) => {
       <div class="result-stat"><small>Percentage</small><strong>${result.percentage}%</strong></div>
     </div>
     <p><strong>Time Taken:</strong> ${escapeHTML(result.timeTaken)}</p>
+    ${currentUser ? "" : `<div class="message">Guest mode me result sirf screen par dikh raha hai. Score history save nahi hui.</div>`}
     <div class="answer-review">
       <h2>Answer Explanation</h2>
       ${answers.map((item, index) => `<div class="review-item">
@@ -587,15 +560,6 @@ $("todayDateBtn").addEventListener("click", () => {
 $("testCards").addEventListener("click", (event) => {
   const button = event.target.closest("button[data-start]");
   if(button){ startTest(button.dataset.start); }
-  const copyButton = event.target.closest("button[data-copy-link]");
-  if(copyButton){
-    navigator.clipboard?.writeText(copyButton.dataset.copyLink).then(() => {
-      copyButton.innerHTML = '<i class="fa-solid fa-check"></i> Copied';
-      setTimeout(() => { copyButton.innerHTML = '<i class="fa-solid fa-copy"></i> Copy Link'; }, 1300);
-    }).catch(() => {
-      prompt("Test link copy karein:", copyButton.dataset.copyLink);
-    });
-  }
 });
 
 $("submitTestBtn").addEventListener("click", submitTest);
@@ -618,8 +582,8 @@ onAuthStateChanged(auth, (user) => {
   currentUser = user;
   $("authStatus").innerHTML = user
     ? `Logged in: <strong>${escapeHTML(user.email || user.displayName || "User")}</strong>`
-    : `Not logged in`;
-  $("loginPanel").classList.toggle("hidden", Boolean(user));
+    : `Guest mode: test result screen par dikhega, history save nahi hogi.`;
+  $("loginPanel").classList.toggle("hidden", true);
   if(user){
     onValue(query(ref(db, `mockResults/${user.uid}`), orderByChild("submittedAt"), limitToLast(50)), renderHistory, (error) => {
       $("historyList").innerHTML = `<div class="message">Score history load nahi hui: ${escapeHTML(error.message)}</div>`;
