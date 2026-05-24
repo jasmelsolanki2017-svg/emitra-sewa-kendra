@@ -666,14 +666,14 @@ Cook | 1426 |"></textarea>
     return orderDiff || Number(b.data.createdAt || 0) - Number(a.data.createdAt || 0);
   });
 
-  const portalCategories = ["admitCard","result","syllabus","answerKey"];
-  const portalTargetLabels = { latestJob:"Latest Job", admitCard:"Admit Card", result:"Result", syllabus:"Syllabus", answerKey:"Answer Key" };
-  const portalTargetLinks = { admitCard:"admitCardLink", result:"resultLink", syllabus:"syllabusLink", answerKey:"answerKeyLink" };
+  const portalCategories = ["notification","admitCard","result","syllabus","answerKey","admission"];
+  const portalTargetLabels = { latestJob:"Latest Job", notification:"Notification", admitCard:"Admit Card", result:"Result", syllabus:"Syllabus", answerKey:"Answer Key", admission:"Admission" };
+  const portalTargetLinks = { notification:"detailLink", admitCard:"admitCardLink", result:"resultLink", syllabus:"syllabusLink", answerKey:"answerKeyLink", admission:"detailLink" };
   const defaultAdmitCardDate = "Exam se 3-7 din pehle";
   const whatsappChannelUrl = "https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q";
   const siteBaseUrl = () => /^https?:\/\//i.test(location.origin || "") ? location.origin.replace(/\/+$/, "") : "https://emitrawala.online";
   const jobDetailUrl = (id, data = {}) => `${siteBaseUrl()}/job-detail.html?id=${encodeURIComponent(id)}${data.slug ? `&slug=${encodeURIComponent(data.slug)}` : ""}`;
-  const portalSectionMap = { admitCard:"admitCard", result:"results", syllabus:"syllabus", answerKey:"answerKey" };
+  const portalSectionMap = { notification:"notification", admitCard:"admitCard", result:"results", syllabus:"syllabus", answerKey:"answerKey", admission:"admission" };
   const jobPostPageUrl = (id, data = {}) => {
     const target = data.postTarget || "latestJob";
     if(portalSectionMap[target]){

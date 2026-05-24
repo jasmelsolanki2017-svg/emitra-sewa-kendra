@@ -2323,6 +2323,9 @@ body.dark-mode #importantLinksMenuList a:hover {
 <a class="side-menu-row" href="job-form.html#latestJobs">
 <i class="fa-solid fa-briefcase"></i> Latest Jobs
 </a>
+<a class="side-menu-row" href="mock-test.html">
+<i class="fa-solid fa-clipboard-check"></i> Daily Mock Test
+</a>
 <a class="side-menu-row" href="job-form.html#admitCard">
 <i class="fa-solid fa-id-card"></i> Admit Card
 </a>
@@ -2339,6 +2342,7 @@ body.dark-mode #importantLinksMenuList a:hover {
 <li><a href="OFFLINEFORM.HTML">PDF FORM</a></li>
 <li><a href="#" onclick="openLogin('user')">Login</a></li>
 <li><a href="job-form.html">Latest Job</a></li>
+<li><a href="mock-test.html">Daily Mock Test</a></li>
 <li><a href="stationery.html">Stationery</a></li>
 <li><a href="useful-pages.html">Useful Pages</a></li>
 <li><a href="contact.html">Contact</a></li>
@@ -2471,6 +2475,7 @@ Important Links
       <p>Latest Government Jobs, Online Form, Result, Admit Card, Answer Key aur Exam Updates</p>
       <div class="home-portal-links">
         <a href="#homePortalLatestJobs">Latest Jobs</a>
+        <a href="#homePortalNotification">Notification</a>
         <a href="#homePortalResults">Results</a>
         <a href="#homePortalAdmitCard">Admit Card</a>
         <a href="#homePortalAnswerKey">Answer Key</a>
@@ -2488,10 +2493,10 @@ Important Links
 
       <div class="home-portal-quick" aria-label="Important job categories">
         <a class="q1" href="#homePortalLatestJobs">Latest Jobs</a>
-        <a class="q2" href="#homePortalResults">Result</a>
+        <a class="q2" href="#homePortalNotification">Notification</a>
         <a class="q3" href="#homePortalAdmitCard">Admit Card</a>
         <a class="q4" href="#homePortalAnswerKey">Answer Key</a>
-        <a class="q5" href="OFFLINEFORM.HTML">Offline Forms</a>
+        <a class="q5" href="#homePortalResults">Result</a>
         <a class="q6" href="government-job-form.html">Job Form Guide</a>
         <a class="q7" href="useful-pages.html">Useful Pages</a>
         <a class="q8" href="contact.html">Contact Help</a>
@@ -2512,6 +2517,11 @@ Important Links
           <h3 class="home-portal-title">Top Online Form</h3>
           <ul class="home-portal-list" id="homePortalJobList"><li class="home-portal-message">Jobs load ho rahi hain...</li></ul>
           <p class="home-portal-message" id="homePortalNoResult" style="display:none;">कोई matching job नहीं मिली</p>
+        </div>
+
+        <div class="home-portal-box" id="homePortalNotification">
+          <h3 class="home-portal-title">Notification</h3>
+          <ul class="home-portal-list" id="homePortalNotificationList"><li class="home-portal-message">Loading...</li></ul>
         </div>
 
         <div class="home-portal-box" id="homePortalAnswerKey">
@@ -3113,6 +3123,7 @@ renderDocumentChecklist();
 (function(){
 const databaseURL = "https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app";
 const portalCategoryMap = {
+notification:"homePortalNotificationList",
 result:"homePortalResultList",
 admitCard:"homePortalAdmitCardList",
 answerKey:"homePortalAnswerKeyList",
@@ -3662,6 +3673,7 @@ const jobsRef = ref(db,"LatestJobs");
 const portalItemsRef = ref(db,"portalItems");
 
 const homePortalCategoryMap = {
+notification:"homePortalNotificationList",
 result:"homePortalResultList",
 admitCard:"homePortalAdmitCardList",
 answerKey:"homePortalAnswerKeyList",

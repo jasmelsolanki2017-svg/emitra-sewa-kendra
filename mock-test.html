@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Mock Test | E-MITRA WALA</title>
+<meta name="description" content="E-MITRA WALA par Rajasthan GK, Reasoning, SSC Level Math aur English ke daily mock tests.">
+<link rel="icon" type="image/png" sizes="512x512" href="favicon.png">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="shortcut icon" href="favicon.ico">
+<link rel="apple-touch-icon" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root{--blue:#0057a8;--deep:#03224d;--orange:#ff7a00;--soft:#eaf4ff;--line:#d8e6f5;--text:#172033;--muted:#5d6b7f;--green:#138a36;--red:#d90000}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Poppins','Noto Sans Devanagari',sans-serif}
+body{background:#f7fbff;color:var(--text);line-height:1.55;overflow-x:hidden}
+nav{background:var(--blue);padding:12px 6%;display:flex;align-items:center;justify-content:space-between;gap:18px;position:sticky;top:0;z-index:20;box-shadow:0 4px 16px rgba(0,0,0,.16)}
+.logo{color:#ffcf75;font-size:25px;font-weight:900;text-decoration:none;white-space:nowrap}
+nav ul{display:flex;list-style:none;gap:15px;flex-wrap:wrap;justify-content:flex-end}
+nav a{color:#fff;text-decoration:none;font-weight:700;font-size:15px}
+nav a:hover{color:#ffcf75}
+.hero{background:linear-gradient(135deg,var(--blue),var(--deep));color:#fff;border-bottom:4px solid var(--orange);padding:28px 6%}
+.hero-inner{max-width:1120px;margin:auto}
+.tag{display:inline-flex;align-items:center;gap:8px;background:var(--orange);color:var(--deep);padding:7px 12px;border-radius:6px;font-weight:900;font-size:13px;margin-bottom:12px}
+.hero h1{font-size:clamp(25px,4vw,38px);line-height:1.15;margin-bottom:8px}
+.hero p{color:#fff1df;font-weight:600;max-width:820px}
+main{max-width:1120px;margin:auto;padding:22px 3% 42px}
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.auth-box,.message{background:white;border:1px solid var(--line);border-left:4px solid var(--orange);border-radius:8px;padding:12px 14px;font-weight:700;color:var(--blue)}
+.auth-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+button,.btn{border:0;border-radius:6px;background:var(--blue);color:white;text-decoration:none;font-weight:900;padding:9px 13px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px}
+button:hover,.btn:hover{background:var(--orange);color:var(--deep)}
+button.secondary{background:#eaf4ff;color:var(--blue);border:1px solid #bdd0e5}
+button.danger{background:var(--red)}
+button:disabled{opacity:.65;cursor:not-allowed}
+.category-tabs{display:flex;gap:8px;flex-wrap:wrap}
+.category-tabs button{background:#fff;color:var(--blue);border:1px solid #bdd0e5}
+.category-tabs button.active{background:var(--orange);color:var(--deep);border-color:var(--orange)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:14px 0 22px}
+.test-card,.panel{background:white;border:1px solid var(--line);border-radius:8px;padding:14px;box-shadow:0 5px 16px rgba(8,31,74,.07)}
+.test-card{display:flex;flex-direction:column;gap:10px}
+.test-card h2{font-size:18px;color:var(--blue);line-height:1.3}
+.meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;font-size:13px;font-weight:800;color:var(--muted)}
+.meta span{background:var(--soft);border:1px solid #d9e9f8;border-radius:6px;padding:7px 8px}
+.panel h2{font-size:20px;color:var(--blue);margin-bottom:10px}
+.test-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.timer{background:#fff4e6;border:1px solid #ffd1a1;color:#8a3a00;border-radius:8px;padding:8px 11px;font-weight:900}
+.question{border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:10px;background:#fbfdff}
+.question h3{font-size:16px;margin-bottom:9px;color:#061c38}
+.options{display:grid;gap:8px}
+.option{display:flex;gap:8px;align-items:flex-start;background:white;border:1px solid #cfe0f2;border-radius:6px;padding:9px 10px;cursor:pointer}
+.option input{margin-top:4px}
+.result-summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:12px 0}
+.result-stat{background:var(--soft);border:1px solid #d8e6f5;border-radius:8px;padding:10px;text-align:center}
+.result-stat small{display:block;color:var(--muted);font-weight:800}
+.result-stat strong{font-size:21px;color:var(--blue)}
+.answer-review{border-top:1px solid var(--line);padding-top:10px;margin-top:10px}
+.review-item{border:1px solid var(--line);border-radius:8px;padding:10px;margin-bottom:8px;background:#fff}
+.correct{color:var(--green);font-weight:900}
+.wrong{color:var(--red);font-weight:900}
+.history-list{display:grid;gap:8px}
+.history-row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;background:#fbfdff;border:1px solid var(--line);border-radius:7px;padding:10px}
+.history-row strong{color:var(--blue)}
+.history-row small{display:block;color:var(--muted);font-weight:700}
+.hidden{display:none!important}
+footer{background:var(--blue);color:#fff;text-align:center;padding:22px 6%}
+footer a{color:#ffcf75;text-decoration:none;font-weight:800;margin:0 7px;display:inline-block}
+@media(max-width:820px){nav{flex-direction:column;align-items:flex-start}nav ul{justify-content:flex-start}.grid,.result-summary{grid-template-columns:1fr}.meta{grid-template-columns:1fr}.history-row{grid-template-columns:1fr}.toolbar{align-items:flex-start}}
+</style>
+</head>
+<body>
+<nav>
+  <a class="logo" href="index.html">E-MITRA WALA</a>
+  <ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="job-form.html">Latest Jobs</a></li>
+    <li><a href="OFFLINEFORM.HTML">PDF Forms</a></li>
+    <li><a href="mock-test.html">Daily Mock Test</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+</nav>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div class="tag"><i class="fa-solid fa-clipboard-check"></i> Daily Practice</div>
+    <h1>Daily Mock Test</h1>
+    <p>Rajasthan GK, Reasoning, SSC Level Math aur English ke active tests yahan Firebase se live show honge.</p>
+  </div>
+</header>
+
+<main>
+  <section class="toolbar">
+    <div class="category-tabs" id="categoryTabs"></div>
+    <div id="authStatus" class="auth-box">Login status check ho raha hai...</div>
+  </section>
+
+  <section id="loginPanel" class="auth-box hidden">
+    <strong>Test start karne ke liye login zaruri hai.</strong>
+    <p>Existing Firebase Auth session use hoga. Google login try kar sakte hain ya home page se existing login karein.</p>
+    <div class="auth-actions">
+      <button type="button" id="googleLoginBtn"><i class="fa-brands fa-google"></i> Google Login</button>
+      <a class="btn" href="index.html"><i class="fa-solid fa-right-to-bracket"></i> Existing Login</a>
+    </div>
+  </section>
+
+  <section id="testsPanel">
+    <div id="testCards" class="grid"></div>
+  </section>
+
+  <section id="activeTestPanel" class="panel hidden">
+    <div class="test-head">
+      <div>
+        <h2 id="activeTestTitle">Mock Test</h2>
+        <p id="activeTestMeta"></p>
+      </div>
+      <div class="timer" id="timerBox">00:00</div>
+    </div>
+    <form id="questionForm"></form>
+    <button type="button" id="submitTestBtn"><i class="fa-solid fa-paper-plane"></i> Submit Test</button>
+    <button type="button" class="secondary" id="cancelTestBtn">Back to Tests</button>
+  </section>
+
+  <section id="resultPanel" class="panel hidden"></section>
+
+  <section class="panel" id="historyPanel">
+    <h2>My Score History</h2>
+    <div id="historyList" class="history-list">
+      <div class="message">Login ke baad latest results yahan dikhenge.</div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <p>© 2026 E-MITRA WALA | Daily Mock Test</p>
+  <p><a href="privacy-policy.html">Privacy Policy</a><a href="about.html">About</a><a href="contact.html">Contact</a></p>
+</footer>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+import { getDatabase, ref, onValue, push, set, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey:"AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",
+  authDomain:"my-website-73785.firebaseapp.com",
+  databaseURL:"https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app/",
+  projectId:"my-website-73785",
+  storageBucket:"my-website-73785.firebasestorage.app",
+  messagingSenderId:"854088341990",
+  appId:"1:854088341990:web:3211d4ef9fe4b78d025e27"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+const categories = ["All","Rajasthan GK","Reasoning","SSC Level Math","English"];
+let currentUser = null;
+let tests = [];
+let activeCategory = "All";
+let activeTest = null;
+let timerId = null;
+let startedAt = 0;
+let remainingSeconds = 0;
+
+const $ = (id) => document.getElementById(id);
+const escapeHTML = (value = "") => String(value)
+  .replace(/&/g,"&amp;")
+  .replace(/</g,"&lt;")
+  .replace(/>/g,"&gt;")
+  .replace(/"/g,"&quot;")
+  .replace(/'/g,"&#039;");
+const formatTime = (seconds) => {
+  const safe = Math.max(0, Number(seconds || 0));
+  const min = String(Math.floor(safe / 60)).padStart(2, "0");
+  const sec = String(safe % 60).padStart(2, "0");
+  return `${min}:${sec}`;
+};
+const normalizeTest = (id, value = {}) => ({
+  id,
+  title:String(value.title || "Daily Mock Test").trim(),
+  category:String(value.category || "General").trim(),
+  timeLimit:Number(value.timeLimit || 20),
+  totalQuestions:Number(value.totalQuestions || (Array.isArray(value.questions) ? value.questions.length : 0)),
+  status:String(value.status || "active").toLowerCase(),
+  date:String(value.date || "").trim(),
+  questions:Array.isArray(value.questions) ? value.questions : []
+});
+
+const renderCategories = () => {
+  $("categoryTabs").innerHTML = categories.map((category) =>
+    `<button type="button" class="${activeCategory === category ? "active" : ""}" data-category="${escapeHTML(category)}">${escapeHTML(category)}</button>`
+  ).join("");
+};
+
+const renderTests = () => {
+  renderCategories();
+  const visible = tests.filter((test) => test.status === "active" && (activeCategory === "All" || test.category === activeCategory));
+  $("testCards").innerHTML = visible.length ? visible.map((test) => `
+    <article class="test-card">
+      <h2>${escapeHTML(test.title)}</h2>
+      <div class="meta">
+        <span>Category: ${escapeHTML(test.category)}</span>
+        <span>Total Questions: ${escapeHTML(test.totalQuestions || test.questions.length)}</span>
+        <span>Time Limit: ${escapeHTML(test.timeLimit)} min</span>
+        <span>Date: ${escapeHTML(test.date || "Daily")}</span>
+      </div>
+      <button type="button" data-start="${escapeHTML(test.id)}"><i class="fa-solid fa-play"></i> Start Test</button>
+    </article>
+  `).join("") : `<div class="message">Is category me abhi active mock test nahi hai.</div>`;
+};
+
+const showLoginPrompt = () => {
+  $("loginPanel").classList.remove("hidden");
+  $("loginPanel").scrollIntoView({ behavior:"smooth", block:"center" });
+};
+
+const startTimer = () => {
+  clearInterval(timerId);
+  $("timerBox").textContent = formatTime(remainingSeconds);
+  timerId = setInterval(() => {
+    remainingSeconds -= 1;
+    $("timerBox").textContent = formatTime(remainingSeconds);
+    if(remainingSeconds <= 0){
+      clearInterval(timerId);
+      submitTest();
+    }
+  }, 1000);
+};
+
+const startTest = (testId) => {
+  if(!currentUser){
+    showLoginPrompt();
+    return;
+  }
+  const test = tests.find((item) => item.id === testId);
+  if(!test || !test.questions.length){
+    alert("Is test me questions available nahi hain.");
+    return;
+  }
+  activeTest = test;
+  startedAt = Date.now();
+  remainingSeconds = Math.max(1, test.timeLimit) * 60;
+  $("testsPanel").classList.add("hidden");
+  $("resultPanel").classList.add("hidden");
+  $("activeTestPanel").classList.remove("hidden");
+  $("activeTestTitle").textContent = test.title;
+  $("activeTestMeta").textContent = `${test.category} | ${test.questions.length} Questions | ${test.timeLimit} min`;
+  $("questionForm").innerHTML = test.questions.map((question, index) => {
+    const options = Array.isArray(question.options) ? question.options : [];
+    return `<div class="question">
+      <h3>Q${index + 1}. ${escapeHTML(question.question || "")}</h3>
+      <div class="options">
+        ${options.map((option) => `<label class="option"><input type="radio" name="q${index}" value="${escapeHTML(option)}"> <span>${escapeHTML(option)}</span></label>`).join("")}
+      </div>
+    </div>`;
+  }).join("");
+  $("activeTestPanel").scrollIntoView({ behavior:"smooth", block:"start" });
+  startTimer();
+};
+
+const submitTest = async () => {
+  if(!activeTest){ return; }
+  clearInterval(timerId);
+  const total = activeTest.questions.length;
+  let correct = 0;
+  const answers = activeTest.questions.map((question, index) => {
+    const selected = document.querySelector(`input[name="q${index}"]:checked`)?.value || "";
+    const isCorrect = selected === String(question.correctAnswer || "");
+    if(isCorrect){ correct += 1; }
+    return { question, selected, isCorrect };
+  });
+  const wrong = total - correct;
+  const percentage = total ? Math.round((correct / total) * 100) : 0;
+  const timeTakenSeconds = Math.max(0, Math.round((Date.now() - startedAt) / 1000));
+  const resultData = {
+    testId:activeTest.id,
+    testTitle:activeTest.title,
+    category:activeTest.category,
+    score:correct,
+    totalQuestions:total,
+    correct,
+    wrong,
+    percentage,
+    timeTaken:formatTime(timeTakenSeconds),
+    submittedAt:new Date().toISOString()
+  };
+  if(currentUser){
+    const resultRef = push(ref(db, `mockResults/${currentUser.uid}`));
+    await set(resultRef, resultData).catch((error) => {
+      console.warn("Result save failed", error);
+      alert("Result show ho raha hai, lekin Firebase me save nahi ho paya.");
+    });
+  }
+  renderResult(resultData, answers);
+};
+
+const renderResult = (result, answers) => {
+  $("activeTestPanel").classList.add("hidden");
+  $("resultPanel").classList.remove("hidden");
+  $("testsPanel").classList.remove("hidden");
+  $("resultPanel").innerHTML = `
+    <h2>Result - ${escapeHTML(result.testTitle)}</h2>
+    <div class="result-summary">
+      <div class="result-stat"><small>Score</small><strong>${result.score}</strong></div>
+      <div class="result-stat"><small>Total</small><strong>${result.totalQuestions}</strong></div>
+      <div class="result-stat"><small>Correct</small><strong>${result.correct}</strong></div>
+      <div class="result-stat"><small>Wrong</small><strong>${result.wrong}</strong></div>
+      <div class="result-stat"><small>Percentage</small><strong>${result.percentage}%</strong></div>
+    </div>
+    <p><strong>Time Taken:</strong> ${escapeHTML(result.timeTaken)}</p>
+    <div class="answer-review">
+      <h2>Answer Explanation</h2>
+      ${answers.map((item, index) => `<div class="review-item">
+        <strong>Q${index + 1}. ${escapeHTML(item.question.question || "")}</strong>
+        <p>Your Answer: <span class="${item.isCorrect ? "correct" : "wrong"}">${escapeHTML(item.selected || "Not Answered")}</span></p>
+        <p>Correct Answer: <span class="correct">${escapeHTML(item.question.correctAnswer || "")}</span></p>
+        ${item.question.explanation ? `<p>Explanation: ${escapeHTML(item.question.explanation)}</p>` : ""}
+      </div>`).join("")}
+    </div>
+  `;
+  $("resultPanel").scrollIntoView({ behavior:"smooth", block:"start" });
+};
+
+const renderHistory = (snapshot) => {
+  if(!currentUser){
+    $("historyList").innerHTML = `<div class="message">Login ke baad latest results yahan dikhenge.</div>`;
+    return;
+  }
+  if(!snapshot.exists()){
+    $("historyList").innerHTML = `<div class="message">Abhi koi score history nahi hai.</div>`;
+    return;
+  }
+  const rows = [];
+  snapshot.forEach((child) => rows.push({ id:child.key, ...child.val() }));
+  rows.sort((a,b) => String(b.submittedAt || "").localeCompare(String(a.submittedAt || "")));
+  $("historyList").innerHTML = rows.slice(0, 10).map((row) => `
+    <div class="history-row">
+      <div>
+        <strong>${escapeHTML(row.testTitle || "Mock Test")}</strong>
+        <small>${escapeHTML(row.category || "")} | ${escapeHTML(row.submittedAt ? new Date(row.submittedAt).toLocaleString("hi-IN") : "")}</small>
+      </div>
+      <div><strong>${escapeHTML(row.score || 0)}/${escapeHTML(row.totalQuestions || 0)}</strong> <small>${escapeHTML(row.percentage || 0)}%</small></div>
+    </div>
+  `).join("");
+};
+
+$("categoryTabs").addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-category]");
+  if(!button){ return; }
+  activeCategory = button.dataset.category;
+  renderTests();
+});
+
+$("testCards").addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-start]");
+  if(button){ startTest(button.dataset.start); }
+});
+
+$("submitTestBtn").addEventListener("click", submitTest);
+$("cancelTestBtn").addEventListener("click", () => {
+  clearInterval(timerId);
+  activeTest = null;
+  $("activeTestPanel").classList.add("hidden");
+  $("testsPanel").classList.remove("hidden");
+});
+
+$("googleLoginBtn").addEventListener("click", async () => {
+  try{
+    await signInWithPopup(auth, new GoogleAuthProvider());
+  }catch(error){
+    alert("Google login available nahi hua. Kripya home page se existing login use karein.");
+  }
+});
+
+onAuthStateChanged(auth, (user) => {
+  currentUser = user;
+  $("authStatus").innerHTML = user
+    ? `Logged in: <strong>${escapeHTML(user.email || user.displayName || "User")}</strong>`
+    : `Not logged in`;
+  $("loginPanel").classList.toggle("hidden", Boolean(user));
+  if(user){
+    onValue(query(ref(db, `mockResults/${user.uid}`), orderByChild("submittedAt"), limitToLast(10)), renderHistory, (error) => {
+      $("historyList").innerHTML = `<div class="message">Score history load nahi hui: ${escapeHTML(error.message)}</div>`;
+    });
+  }else{
+    renderHistory({ exists:() => false });
+  }
+});
+
+renderCategories();
+onValue(ref(db, "mockTests"), (snapshot) => {
+  tests = [];
+  if(snapshot.exists()){
+    snapshot.forEach((child) => tests.push(normalizeTest(child.key, child.val())));
+  }
+  tests.sort((a,b) => String(b.date || "").localeCompare(String(a.date || "")) || a.title.localeCompare(b.title));
+  renderTests();
+}, (error) => {
+  $("testCards").innerHTML = `<div class="message">Mock tests load nahi ho paye: ${escapeHTML(error.message)}</div>`;
+});
+</script>
+</body>
+</html>

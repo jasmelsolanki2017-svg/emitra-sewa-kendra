@@ -246,19 +246,19 @@ body.dark-mode .nav-logo img {
 <header class="masthead">
   <h1>Sarkari Job, Result & Admit Card</h1>
   <p>Latest Government Jobs, Online Form, Result, Admit Card, Answer Key aur Exam Updates</p>
-  <div class="sub-links"><a href="#latestJobs">Latest Jobs</a><a href="#results">Results</a><a href="#admitCard">Admit Card</a><a href="#answerKey">Answer Key</a><a href="government-job-form.html">Form Guide</a></div>
+  <div class="sub-links"><a href="#latestJobs">Latest Jobs</a><a href="#notification">Notification</a><a href="#results">Results</a><a href="#admitCard">Admit Card</a><a href="#answerKey">Answer Key</a><a href="government-job-form.html">Form Guide</a></div>
 </header>
 <main>
   <div class="ticker">Breaking Updates: <span>Latest job updates yahan regularly show hongi.</span></div>
   <section class="search-box"><i class="fa-solid fa-magnifying-glass"></i><input type="search" id="jobSearch" placeholder="Search karein: SSC, Railway, Police, Army, Teacher, Rajasthan"></section>
   <section class="quick-grid" aria-label="Important categories">
     <a class="q1" href="#latestJobs">Latest Jobs</a>
-    <a class="q2" href="#results">Result</a>
+    <a class="q2" href="#notification">Notification</a>
     <a class="q3" href="#admitCard">Admit Card</a>
     <a class="q4" href="#answerKey">Answer Key</a>
-    <a class="q5" href="OFFLINEFORM.HTML">Offline Forms</a>
-    <a class="q6" href="government-job-form.html">Job Form Guide</a>
-    <a class="q7" href="useful-pages.html">Useful Pages</a>
+    <a class="q5" href="#results">Result</a>
+    <a class="q6" href="OFFLINEFORM.HTML">Offline Forms</a>
+    <a class="q7" href="government-job-form.html">Job Form Guide</a>
     <a class="q8" href="contact.html">Contact Help</a>
   </section>
 
@@ -281,6 +281,13 @@ body.dark-mode .nav-logo img {
       <h2 class="box-title">Top Online Form</h2>
       <ul class="link-list" id="jobList"><li class="message">Jobs load ho rahi hain...</li></ul>
       <p class="message" id="noResult" style="display:none;">कोई matching job नहीं मिली</p>
+    </div>
+
+    <div class="portal-box" id="notification">
+      <h2 class="box-title">Notification</h2>
+      <ul class="link-list" id="notificationList">
+        <li class="message">Loading...</li>
+      </ul>
     </div>
 
     <div class="portal-box" id="answerKey">
@@ -424,12 +431,14 @@ const jobsRef = ref(db, "LatestJobs");
 const portalItemsRef = ref(db, "portalItems");
 const PORTAL_VISIBLE_LIMIT = 20;
 const PORTAL_CATEGORY_LIMITS = {
+  notification: 10,
   answerKey: 10,
   syllabus: 10,
   admission: 10
 };
 
 const portalCategoryMap = {
+  notification:"notificationList",
   result:"resultList",
   admitCard:"admitCardList",
   answerKey:"answerKeyList",
