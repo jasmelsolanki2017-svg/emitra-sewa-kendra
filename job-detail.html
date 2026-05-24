@@ -61,7 +61,10 @@ main{max-width:920px;margin:auto;padding:26px 3% 42px;}
 .detail-layout-list .info-value{display:inline;background:transparent;color:#202738;padding:0;font-weight:500;min-height:0;}
 .danger-date{color:#d90000!important;font-weight:900;}
 .content-box{color:#000;font-weight:600;background:white;border:0;padding:0;}
+.section-manual{padding:0 12px 10px;}
+.section-manual:empty{display:none;}
 .content-section{margin-bottom:26px;}
+.section-manual .content-section{margin-bottom:12px;}
 .content-section ul{padding:9px 18px 2px 34px;font-size:13px;font-weight:600;}
 .content-section li{margin:5px 0;}
 .content-section p{padding:8px 10px;font-size:13px;font-weight:600;}
@@ -128,36 +131,43 @@ body.dark-mode .content-table th,body.dark-mode .content-table td,body.dark-mode
         <section class="panel" id="importantPanel" style="display:none;">
           <h2>Important Dates</h2>
           <ul class="info-list" id="importantList"></ul>
+          <div class="content-box section-manual" id="importantManual"></div>
         </section>
 
         <section class="panel" id="jobInfoPanel" style="display:none;">
           <h2>Job Information</h2>
           <ul class="info-list" id="jobInfoList"></ul>
+          <div class="content-box section-manual" id="jobInfoManual"></div>
         </section>
 
         <section class="panel" id="feePanel" style="display:none;">
           <h2>Application Fee</h2>
           <ul class="info-list" id="feeList"></ul>
+          <div class="content-box section-manual" id="feeManual"></div>
         </section>
 
         <section class="panel" id="agePanel" style="display:none;">
           <h2>Age Limit</h2>
           <ul class="info-list" id="ageList"></ul>
+          <div class="content-box section-manual" id="ageManual"></div>
         </section>
 
         <section class="panel" id="vacancyPanel" style="display:none;">
           <h2>Vacancy Details</h2>
           <ul class="info-list" id="vacancyList"></ul>
+          <div class="content-box section-manual" id="vacancyManual"></div>
         </section>
 
         <section class="panel" id="eligibilityPanel" style="display:none;">
           <h2>Eligibility / Qualification</h2>
           <ul class="info-list" id="eligibilityList"></ul>
+          <div class="content-box section-manual" id="eligibilityManual"></div>
         </section>
 
         <section class="panel" id="extraPanel" style="display:none;">
           <h2>Extra Useful Details</h2>
           <ul class="info-list" id="extraList"></ul>
+          <div class="content-box section-manual" id="extraManual"></div>
         </section>
 
         <section class="panel" id="linksPanel" style="display:none;">
@@ -172,6 +182,7 @@ body.dark-mode .content-table th,body.dark-mode .content-table td,body.dark-mode
             <a class="btn" id="answerKeyBtn" href="#" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-key"></i> Answer Key</a>
           </div>
           <div class="post-apply-links" id="postApplyLinks"></div>
+          <div class="content-box section-manual" id="linksManual"></div>
         </section>
 
         <section class="panel" id="pageContentPanel" style="display:none;">
@@ -325,6 +336,20 @@ const renderList = (listId, panelId, rows) => {
     .join("");
   list.innerHTML = html;
   panel.style.display = html ? "block" : "none";
+};
+
+const renderManualContent = (boxId, panelId, value, title) => {
+  const box = document.getElementById(boxId);
+  const panel = document.getElementById(panelId);
+  const content = String(value || "").trim();
+  if(!box || !panel){ return false; }
+  if(!isFilledValue(content)){
+    box.innerHTML = "";
+    return false;
+  }
+  box.innerHTML = renderPageContent(content, title) || escapeHTML(content);
+  panel.style.display = "block";
+  return true;
 };
 
 const parsePostWiseApplyLinks = (value = "") => String(value || "")
@@ -512,6 +537,7 @@ if(!id){
       { label:"Exam Date", value:job.examDate },
       { label:"Result Date", value:job.resultDate }
     ]);
+    renderManualContent("importantManual", "importantPanel", job.importantDatesManual, "Other Important Dates");
 
     renderList("jobInfoList", "jobInfoPanel", [
       { label:"Department / Board Name", value:job.department },
@@ -521,6 +547,7 @@ if(!id){
       { label:"Job Location", value:job.location, options:{ hideDefaultAllIndia:true } },
       { label:"Short Information", value:job.shortInfo }
     ]);
+    renderManualContent("jobInfoManual", "jobInfoPanel", job.basicDetailsManual, "Other Basic Details");
 
     renderList("feeList", "feePanel", [
       { label:"General / OBC Fee", value:job.generalObcFee },
@@ -529,8 +556,11 @@ if(!id){
       { label:"OBC Female Fee", value:job.obcFemaleFee },
       { label:"SC Female Fee", value:job.scFemaleFee },
       { label:"PH Candidate Fee", value:job.phCandidateFee || job.onlyFemaleFee },
+      { label:"Single Exam Fee", value:job.singleExamFee || job.oneExamFee },
+      { label:"Both Exam Fee", value:job.bothExamFee || job.combinedExamFee || job.twoExamFee },
       { label:"Payment Mode", value:job.paymentMode }
     ]);
+    renderManualContent("feeManual", "feePanel", job.applicationFeeManual, "Other Application Fee");
 
     renderList("ageList", "agePanel", [
       { label:"Minimum Age", value:job.minAge },
@@ -538,6 +568,7 @@ if(!id){
       { label:"Age Relaxation", value:job.ageRelaxation },
       { label:"Age Calculate Date", value:job.ageCalculateDate }
     ]);
+    renderManualContent("ageManual", "agePanel", job.ageLimitManual, "Other Age Limit");
 
     renderList("vacancyList", "vacancyPanel", [
       { label:"Post Name", value:job.postName },
@@ -545,6 +576,7 @@ if(!id){
       { label:"Category Wise Vacancy", value:job.categoryWiseVacancy },
       { label:"State Wise Vacancy", value:job.stateWiseVacancy }
     ]);
+    renderManualContent("vacancyManual", "vacancyPanel", job.vacancyDetailsManual, "Other Vacancy Details");
 
     renderList("eligibilityList", "eligibilityPanel", [
       { label:"Education Qualification", value:job.qualification },
@@ -552,12 +584,14 @@ if(!id){
       { label:"Required Documents", value:job.requiredDocuments },
       { label:"Physical Eligibility", value:job.physicalEligibility }
     ]);
+    renderManualContent("eligibilityManual", "eligibilityPanel", job.eligibilityManual, "Other Eligibility Details");
 
     renderList("extraList", "extraPanel", [
       { label:"Salary / Pay Scale", value:job.salary },
       { label:"Selection Process", value:job.selectionProcess },
       { label:"How to Apply", value:job.howToApply }
     ]);
+    renderManualContent("extraManual", "extraPanel", job.extraUsefulManual, "Other Useful Details");
 
     const linkButtons = [
       ["applyBtn", job.applyLink],
@@ -577,7 +611,8 @@ if(!id){
       button.style.display = visible ? "inline-flex" : "none";
       hasLink = hasLink || visible;
     });
-    document.getElementById("linksPanel").style.display = hasLink || hasPostApplyLinks ? "block" : "none";
+    const hasLinksManual = renderManualContent("linksManual", "linksPanel", job.importantLinksManual, "Other Important Links");
+    document.getElementById("linksPanel").style.display = hasLink || hasPostApplyLinks || hasLinksManual ? "block" : "none";
 
     const contentBox = document.getElementById("pageContent");
     if(content){

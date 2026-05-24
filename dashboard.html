@@ -487,6 +487,8 @@ body.dark-mode .nav-logo img {
       <input type="text" id="jobLocation" placeholder="Location जैसे All India">
       <input type="url" id="jobApplyLink" placeholder="Apply Link https://...">
       <input type="url" id="jobDetailLink" placeholder="Official Detail / Notification Link https://...">
+      <input type="text" id="jobSingleExamFee" placeholder="Single Exam Fee (1 Exam)">
+      <input type="text" id="jobBothExamFee" placeholder="Both Exam Fee (2 Exams)">
       <textarea id="jobPageContent" placeholder="Detail sections likhein. Example:
 Application Fee:
 - General/OBC : Rs. 100/-
@@ -920,6 +922,8 @@ Cook | 1426 |"></textarea>
     location:document.getElementById("jobLocation").value.trim(),
     applyLink:document.getElementById("jobApplyLink").value.trim(),
     detailLink:document.getElementById("jobDetailLink").value.trim(),
+    singleExamFee:document.getElementById("jobSingleExamFee").value.trim(),
+    bothExamFee:document.getElementById("jobBothExamFee").value.trim(),
     pageContent:document.getElementById("jobPageContent").value.trim()
   });
 
@@ -933,6 +937,8 @@ Cook | 1426 |"></textarea>
     document.getElementById("jobLocation").value = "";
     document.getElementById("jobApplyLink").value = "";
     document.getElementById("jobDetailLink").value = "";
+    document.getElementById("jobSingleExamFee").value = "";
+    document.getElementById("jobBothExamFee").value = "";
     document.getElementById("jobPageContent").value = "";
   };
 
@@ -1393,6 +1399,8 @@ Cook | 1426 |"></textarea>
       location:form.location || "All India",
       applyLink:form.applyLink || "#",
       detailLink:form.detailLink || "#",
+      singleExamFee:form.singleExamFee || "",
+      bothExamFee:form.bothExamFee || "",
       pageContent:form.pageContent || "",
       updatedAt:Date.now()
     };
@@ -1429,6 +1437,8 @@ Cook | 1426 |"></textarea>
     document.getElementById("jobLocation").value = data.location || "";
     document.getElementById("jobApplyLink").value = data.applyLink && data.applyLink !== "#" ? data.applyLink : "";
     document.getElementById("jobDetailLink").value = data.detailLink && data.detailLink !== "#" ? data.detailLink : "";
+    document.getElementById("jobSingleExamFee").value = data.singleExamFee || data.oneExamFee || "";
+    document.getElementById("jobBothExamFee").value = data.bothExamFee || data.combinedExamFee || data.twoExamFee || "";
     document.getElementById("jobPageContent").value = data.pageContent || "";
     document.getElementById("jobSubmitBtn").innerText = "Update Job";
     document.getElementById("jobCancelEditBtn").style.display = "block";
@@ -1504,6 +1514,8 @@ Cook | 1426 |"></textarea>
               <small>Updated Time: ${escapeHTML(data.updatedAt ? formatAdminTime(data.updatedAt) : "Not edited yet")}</small>
               <small>Qualification: ${escapeHTML(data.qualification || "Update Soon")}</small>
               <small>Location: ${escapeHTML(data.location || "All India")}</small>
+              <small>Single Exam Fee: ${escapeHTML(data.singleExamFee || data.oneExamFee || "Not added")}</small>
+              <small>Both Exam Fee: ${escapeHTML(data.bothExamFee || data.combinedExamFee || data.twoExamFee || "Not added")}</small>
               <small>Job Page: <a href="job-detail.html?id=${id}" target="_blank" rel="noopener noreferrer">Open Design Page</a></small>
               <small>Apply Link: <a href="${safeUrl(data.applyLink)}" target="_blank" rel="noopener noreferrer">${escapeHTML(data.applyLink || "#")}</a></small>
               <small>Official Detail Link: <a href="${safeUrl(data.detailLink)}" target="_blank" rel="noopener noreferrer">${escapeHTML(data.detailLink || "#")}</a></small>
