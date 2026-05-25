@@ -104,6 +104,12 @@ button.secondary{background:#eaf4ff;color:var(--blue);border:1px solid #bdd0e5}
       <label>Date
         <input id="dateInput" type="date">
       </label>
+      <label>Duplicate Questions
+        <select id="duplicateModeInput">
+          <option value="no">No - block duplicates</option>
+          <option value="yes">Yes - allow duplicates</option>
+        </select>
+      </label>
       <label class="wide">JSON Data
         <textarea id="jsonInput" spellcheck="false" placeholder='{"title":"Daily Mock Test - Rajasthan GK","category":"Rajasthan GK","timeLimit":20,"totalQuestions":25,"status":"active","date":"2026-05-24","questions":[{"question":"राजस्थान की राजधानी क्या है?","options":["जयपुर","जोधपुर","उदयपुर","कोटा"],"correctAnswer":"जयपुर","explanation":"राजस्थान की राजधानी जयपुर है।"}]}'></textarea>
       </label>
@@ -231,6 +237,18 @@ const normalizeQuestionKey = (value = "") => String(value)
   .replace(/\s+/g, " ")
   .trim();
 
+const getQuestionDuplicateKey = (question = {}) => {
+  const textKey = normalizeQuestionKey(question.question);
+  if(!textKey){ return ""; }
+  const optionsKey = (Array.isArray(question.options) ? question.options : [])
+    .map(normalizeQuestionKey)
+    .filter(Boolean)
+    .sort()
+    .join("|");
+  const answerKey = normalizeQuestionKey(question.correctAnswer || question.answer || "");
+  return [textKey, answerKey, optionsKey].filter(Boolean).join("::");
+};
+
 const getCategorySlug = (value = "") => {
   const key = normalizeText(value);
   const map = {
@@ -317,7 +335,7 @@ const getDuplicateQuestionReport = (questions = [], existing = []) => {
   const duplicates = [];
   const unique = [];
   const register = (question, source) => {
-    const key = normalizeQuestionKey(question?.question);
+    const key = getQuestionDuplicateKey(question);
     if(!key){ return false; }
     if(seen.has(key)){
       duplicates.push({
@@ -345,6 +363,8 @@ const duplicateMessage = (duplicates = []) => {
   return `Duplicate question mila: ${sample}${more}. Same test me duplicate question save nahi hoga.`;
 };
 
+const allowDuplicateQuestions = () => $("duplicateModeInput")?.value === "yes";
+
 const groupQuestionsByCategory = (raw) => {
   const source = Array.isArray(raw) ? raw : (Array.isArray(raw?.questions) ? raw.questions : []);
   const groups = {};
@@ -359,8 +379,12 @@ const groupQuestionsByCategory = (raw) => {
   return groups;
 };
 
-const mergeQuestions = (existing = [], incoming = []) => {
+const mergeQuestions = (existing = [], incoming = [], options = {}) => {
   const rows = Array.isArray(existing) ? existing.slice() : [];
+  if(options.allowDuplicates){
+    rows.push(...incoming);
+    return { questions:rows, duplicates:[], added:incoming.length };
+  }
   const report = getDuplicateQuestionReport(incoming, rows);
   rows.push(...report.unique);
   return { questions:rows, duplicates:report.duplicates, added:report.unique.length };
@@ -372,6 +396,7 @@ const saveQuestionGroups = async (groups, rawMeta = {}) => {
   const now = Date.now();
   const date = String(rawMeta.date || $("dateInput").value || todayISO()).trim();
   const status = String(rawMeta.status || $("statusInput").value || "active").trim().toLowerCase();
+  const allowDuplicates = allowDuplicateQuestions();
   const saved = [];
   const duplicateWarnings = [];
   for(const [slug, questions] of entries){
@@ -380,9 +405,9 @@ const saveQuestionGroups = async (groups, rawMeta = {}) => {
     const testRef = ref(db, "mockTests/" + id);
     const testSnap = await get(testRef);
     const oldTest = testSnap.exists() ? (testSnap.val() || {}) : {};
-    const merged = mergeQuestions(oldTest.questions, questions);
+    const merged = mergeQuestions(oldTest.questions, questions, { allowDuplicates });
     const nextQuestions = merged.questions;
-    if(merged.duplicates.length){ duplicateWarnings.push(`${label}: ${merged.duplicates.length} duplicate skipped`); }
+    if(!allowDuplicates && merged.duplicates.length){ duplicateWarnings.push(`${label}: ${merged.duplicates.length} duplicate skipped`); }
     await update(testRef, {
       title:String(oldTest.title || rawMeta.title || `Daily Mock Test - ${label}`).trim(),
       category:label,
@@ -497,12 +522,15 @@ const saveScheduledTests = async (tests = []) => {
   const valid = tests.filter((test) => test.questions && test.questions.length && test.date);
   if(!valid.length){ throw new Error("30 din schedule me valid date/category/questions nahi mile."); }
   const now = Date.now();
+  const allowDuplicates = allowDuplicateQuestions();
   const saved = [];
   for(const test of valid){
     const id = categoryTestId(test.category, test.date);
-    const duplicateReport = getDuplicateQuestionReport(test.questions);
-    if(duplicateReport.duplicates.length){
-      throw new Error(`${test.date} ${test.category}: ${duplicateMessage(duplicateReport.duplicates)}`);
+    if(!allowDuplicates){
+      const duplicateReport = getDuplicateQuestionReport(test.questions);
+      if(duplicateReport.duplicates.length){
+        throw new Error(`${test.date} ${test.category}: ${duplicateMessage(duplicateReport.duplicates)}`);
+      }
     }
     await set(ref(db, "mockTests/" + id), {
       ...test,
@@ -710,8 +738,10 @@ window.saveFullTest = async () => {
     }
     const test = normalizeTest(raw);
     if(!test.questions.length){ throw new Error("Questions valid nahi mili. Har question me question, options, correctAnswer hona chahiye."); }
-    const duplicateReport = getDuplicateQuestionReport(test.questions);
-    if(duplicateReport.duplicates.length){ throw new Error(duplicateMessage(duplicateReport.duplicates)); }
+    if(!allowDuplicateQuestions()){
+      const duplicateReport = getDuplicateQuestionReport(test.questions);
+      if(duplicateReport.duplicates.length){ throw new Error(duplicateMessage(duplicateReport.duplicates)); }
+    }
     test.totalQuestions = Number(test.totalQuestions || test.questions.length);
     const id = getTestId(raw, test);
     $("saveStatus").innerText = "Saving test...";
@@ -741,8 +771,9 @@ window.appendQuestionsToTest = async () => {
     const testSnap = await get(ref(db, "mockTests/" + testId));
     const oldTest = testSnap.exists() ? (testSnap.val() || {}) : {};
     const existing = Array.isArray(oldTest.questions) ? oldTest.questions : [];
-    const merged = mergeQuestions(existing, questions);
-    if(merged.duplicates.length){ throw new Error(duplicateMessage(merged.duplicates)); }
+    const allowDuplicates = allowDuplicateQuestions();
+    const merged = mergeQuestions(existing, questions, { allowDuplicates });
+    if(!allowDuplicates && merged.duplicates.length){ throw new Error(duplicateMessage(merged.duplicates)); }
     const nextQuestions = merged.questions;
     const patch = {
       questions:nextQuestions,
