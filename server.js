@@ -23,7 +23,14 @@ try {
 }
 
 const app = express();
-app.use(express.static(__dirname));
+const staticMiddleware = express.static(__dirname);
+app.use((req, res, next) => {
+  const publicPath = String(req.path || "").toLowerCase();
+  if (publicPath === "/sitemap.xml" || publicPath === "/sitemap-jobs.xml" || publicPath === "/robots.txt") {
+    return next();
+  }
+  return staticMiddleware(req, res, next);
+});
 
 const PORT = process.env.PORT || 3000;
 const DEFAULT_FIREBASE_URL = "https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app";
@@ -405,6 +412,74 @@ const getPublicJobUrl = (id = "", job = {}) => {
     params.set("slug", job.slug);
   }
   return `${SITE_BASE_URL}/job-detail.html?${params.toString()}`;
+};
+
+const xmlEscape = (value = "") => String(value || "")
+  .replace(/&/g, "&amp;")
+  .replace(/</g, "&lt;")
+  .replace(/>/g, "&gt;")
+  .replace(/"/g, "&quot;")
+  .replace(/'/g, "&apos;");
+
+const sitemapDate = (value = "") => {
+  const number = Number(value || 0);
+  const date = number ? new Date(number) : new Date(value || Date.now());
+  if (Number.isNaN(date.getTime())) {
+    return new Date().toISOString().slice(0, 10);
+  }
+  return date.toISOString().slice(0, 10);
+};
+
+const sitemapEntry = ({ loc, lastmod, changefreq = "daily", priority = "0.8" }) => `  <url>
+    <loc>${xmlEscape(loc)}</loc>
+    <lastmod>${xmlEscape(lastmod || new Date().toISOString().slice(0, 10))}</lastmod>
+    <changefreq>${xmlEscape(changefreq)}</changefreq>
+    <priority>${xmlEscape(priority)}</priority>
+  </url>`;
+
+const getLiveJobSitemapEntries = async () => {
+  const db = getAdminDb();
+  if (!db) {
+    return [];
+  }
+  const snapshot = await db.ref("LatestJobs").get();
+  if (!snapshot.exists()) {
+    return [];
+  }
+  const entries = [];
+  snapshot.forEach((child) => {
+    const job = child.val() || {};
+    if (String(job.postStatus || "published").toLowerCase() === "draft") {
+      return;
+    }
+    const publicJob = {
+      ...job,
+      slug: toText(job.slug) || buildSlug(job.title || "job-update", child.key)
+    };
+    entries.push(sitemapEntry({
+      loc: getPublicJobUrl(child.key, publicJob),
+      lastmod: sitemapDate(job.updatedAt || job.createdAt || job.postDate),
+      changefreq: "daily",
+      priority: "0.8"
+    }));
+  });
+  return entries;
+};
+
+const readStaticSitemap = () => fs.readFileSync(path.join(__dirname, "sitemap.xml"), "utf8");
+const readStaticJobSitemap = () => fs.readFileSync(path.join(__dirname, "sitemap-jobs.xml"), "utf8");
+
+const removeDynamicJobEntries = (xml = "") => String(xml || "")
+  .replace(/\s*<url>\s*<loc>https:\/\/emitrawala\.online\/job-detail\.html\?id=[\s\S]*?<\/url>/g, "");
+
+const buildCombinedSitemap = async () => {
+  const originalXml = readStaticSitemap().trim();
+  const jobEntries = await getLiveJobSitemapEntries();
+  if (!jobEntries.length) {
+    return originalXml;
+  }
+  const staticXml = removeDynamicJobEntries(originalXml).trim();
+  return staticXml.replace("</urlset>", `${jobEntries.join("\n")}\n</urlset>`);
 };
 
 const compactLine = (label, value) => {
@@ -1892,6 +1967,37 @@ app.get("/api/health", (req, res) => {
 
 app.post("/api/health", (req, res) => {
   res.json(buildServerStatus({ message: "Admin API is running" }));
+});
+
+app.get("/sitemap.xml", async (req, res) => {
+  try {
+    const xml = await buildCombinedSitemap();
+    res.type("application/xml").send(xml);
+  } catch (err) {
+    res.type("application/xml").send(readStaticSitemap());
+  }
+});
+
+app.get("/sitemap-jobs.xml", async (req, res) => {
+  try {
+    const jobEntries = await getLiveJobSitemapEntries();
+    if (!jobEntries.length) {
+      res.type("application/xml").send(readStaticJobSitemap());
+      return;
+    }
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${jobEntries.join("\n")}
+</urlset>`;
+    res.type("application/xml").send(xml);
+  } catch (err) {
+    res.type("application/xml").send(readStaticJobSitemap());
+  }
+});
+
+app.get("/robots.txt", (req, res) => {
+  const robots = fs.readFileSync(path.join(__dirname, "robots.txt"), "utf8");
+  res.type("text/plain").send(robots);
 });
 
 app.get("/", (req, res) => {

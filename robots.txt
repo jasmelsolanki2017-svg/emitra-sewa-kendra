@@ -1,5 +1,12 @@
 User-agent: *
 Allow: /
+Allow: /about.html
+Allow: /contact.html
+Allow: /privacy-policy.html
+Allow: /disclaimer.html
+Allow: /terms-and-conditions.html
+Allow: /job-form.html
+Allow: /job-detail.html
 Disallow: /dashboard.html
 Disallow: /admin-links.html
 Disallow: /admin-updates.html
@@ -21,3 +28,4 @@ Disallow: /user-my-requests.html
 Disallow: /server.js
 
 Sitemap: https://emitrawala.online/sitemap.xml
+Sitemap: https://emitrawala.online/sitemap-jobs.xml
