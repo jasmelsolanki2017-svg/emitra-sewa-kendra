@@ -58,10 +58,8 @@ const fetchJson = (url) => new Promise((resolve, reject) => {
 });
 
 const jobUrl = (id, job = {}) => {
-  const params = new URLSearchParams();
-  params.set("id", id);
-  params.set("slug", String(job.slug || buildSlug(job.title, id)).trim());
-  return `${SITE_BASE_URL}/job-detail.html?${params.toString()}`;
+  const slug = String(job.slug || buildSlug(job.title, id)).trim();
+  return `${SITE_BASE_URL}/post/${encodeURIComponent(slug)}`;
 };
 
 const sitemapEntry = ({ loc, lastmod, changefreq = "daily", priority = "0.8" }) => `  <url>
@@ -72,7 +70,9 @@ const sitemapEntry = ({ loc, lastmod, changefreq = "daily", priority = "0.8" }) 
   </url>`;
 
 const removeDynamicJobEntries = (xml = "") => String(xml || "")
-  .replace(/\s*<url>\s*<loc>https?:\/\/[^<]+\/job-detail\.html\?id=[\s\S]*?<\/url>/g, "");
+  .replace(/\s*<url>\s*<loc>https?:\/\/[^<]+\/job-detail\.html<\/loc>[\s\S]*?<\/url>/g, "")
+  .replace(/\s*<url>\s*<loc>https?:\/\/[^<]+\/job-detail\.html\?id=[\s\S]*?<\/url>/g, "")
+  .replace(/\s*<url>\s*<loc>https?:\/\/[^<]+\/post\/[\s\S]*?<\/url>/g, "");
 
 const normalizeJob = (value) => {
   if (typeof value === "string") {

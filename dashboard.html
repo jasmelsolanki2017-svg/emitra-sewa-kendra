@@ -681,7 +681,14 @@ Cook | 1426 |"></textarea>
   const defaultAdmitCardDate = "Exam se 3-7 din pehle";
   const whatsappChannelUrl = "https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q";
   const siteBaseUrl = () => /^https?:\/\//i.test(location.origin || "") ? location.origin.replace(/\/+$/, "") : "https://emitrawala.online";
-  const jobDetailUrl = (id, data = {}) => `${siteBaseUrl()}/job-detail.html?id=${encodeURIComponent(id)}${data.slug ? `&slug=${encodeURIComponent(data.slug)}` : ""}`;
+  const buildCanonicalSlug = (id, data = {}) => {
+    const stored = String(data.slug || "").trim();
+    if(stored){ return stored; }
+    const base = String(data.title || data.text || "job-update").toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/['"]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 90) || "job-update";
+    const suffix = String(id || "").replace(/[^a-zA-Z0-9]/g, "").slice(-6).toLowerCase();
+    return suffix ? `${base}-${suffix}` : base;
+  };
+  const jobDetailUrl = (id, data = {}) => `${siteBaseUrl()}/post/${encodeURIComponent(buildCanonicalSlug(id, data))}`;
   const portalSectionMap = { notification:"notification", admitCard:"admitCard", result:"results", syllabus:"syllabus", answerKey:"answerKey", admission:"admission" };
   const jobPostPageUrl = (id, data = {}) => {
     const target = data.postTarget || "latestJob";
@@ -1530,7 +1537,7 @@ Cook | 1426 |"></textarea>
               <small>Location: ${escapeHTML(data.location || "All India")}</small>
               <small>Single Exam Fee: ${escapeHTML(data.singleExamFee || data.oneExamFee || "Not added")}</small>
               <small>Both Exam Fee: ${escapeHTML(data.bothExamFee || data.combinedExamFee || data.twoExamFee || "Not added")}</small>
-              <small>Job Page: <a href="job-detail.html?id=${id}" target="_blank" rel="noopener noreferrer">Open Design Page</a></small>
+              <small>Job Page: <a href="${jobDetailUrl(id, data)}" target="_blank" rel="noopener noreferrer">Open Design Page</a></small>
               <small>Apply Link: <a href="${safeUrl(data.applyLink)}" target="_blank" rel="noopener noreferrer">${escapeHTML(data.applyLink || "#")}</a></small>
               <small>Official Detail Link: <a href="${safeUrl(data.detailLink)}" target="_blank" rel="noopener noreferrer">${escapeHTML(data.detailLink || "#")}</a></small>
               <small>Page Content: ${escapeHTML(data.pageContent || "No content added")}</small>

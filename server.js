@@ -409,12 +409,8 @@ const buildSlug = (title = "", id = "") => {
 };
 
 const getPublicJobUrl = (id = "", job = {}) => {
-  const params = new URLSearchParams();
-  params.set("id", id);
-  if (job.slug) {
-    params.set("slug", job.slug);
-  }
-  return `${SITE_BASE_URL}/job-detail.html?${params.toString()}`;
+  const slug = toText(job.slug) || buildSlug(job.title || "job-update", id);
+  return `${SITE_BASE_URL}/post/${encodeURIComponent(slug)}`;
 };
 
 const xmlEscape = (value = "") => String(value || "")
@@ -480,7 +476,37 @@ const readStaticSitemap = () => fs.readFileSync(path.join(__dirname, "sitemap.xm
 const readStaticJobSitemap = () => fs.readFileSync(path.join(__dirname, "sitemap-jobs.xml"), "utf8");
 
 const removeDynamicJobEntries = (xml = "") => String(xml || "")
-  .replace(/\s*<url>\s*<loc>https?:\/\/[^<]+\/job-detail\.html\?id=[\s\S]*?<\/url>/g, "");
+  .replace(/\s*<url>\s*<loc>https?:\/\/[^<]+\/job-detail\.html<\/loc>[\s\S]*?<\/url>/g, "")
+  .replace(/\s*<url>\s*<loc>https?:\/\/[^<]+\/job-detail\.html\?id=[\s\S]*?<\/url>/g, "")
+  .replace(/\s*<url>\s*<loc>https?:\/\/[^<]+\/post\/[\s\S]*?<\/url>/g, "");
+
+const fetchPublicFirebaseJson = async (pathName = "") => {
+  const url = `${FIREBASE_URL}/${String(pathName || "").replace(/^\/+/, "")}.json`;
+  const response = await fetch(url);
+  if (!response.ok) {
+    return null;
+  }
+  return response.json();
+};
+
+const getPublishedJobById = async (id = "") => {
+  const cleanId = toText(id);
+  if (!cleanId) {
+    return null;
+  }
+  const db = getAdminDb();
+  let job = null;
+  if (db) {
+    const snapshot = await db.ref(`LatestJobs/${cleanId}`).get();
+    job = snapshot.exists() ? snapshot.val() : null;
+  } else {
+    job = await fetchPublicFirebaseJson(`LatestJobs/${cleanId}`);
+  }
+  if (!job || String(job.postStatus || "published").toLowerCase() === "draft") {
+    return null;
+  }
+  return { id: cleanId, job };
+};
 
 const isoDateOrUndefined = (value = "") => {
   const text = toText(value);
@@ -571,6 +597,40 @@ const renderPrerenderedJobDetail = (id = "", job = {}) => {
     .replace(/<h1 id="jobTitle">[\s\S]*?<\/h1>/i, `<h1 id="jobTitle">${htmlEscape(title)}</h1>`)
     .replace(/<p id="jobIntro">[\s\S]*?<\/p>/i, `<p id="jobIntro">${htmlEscape(description)}</p>`)
     .replace(/<section class="panel" id="seoFallbackPanel">[\s\S]*?<\/section>/i, `<section class="panel" id="seoFallbackPanel">\n          ${fallbackHtml}\n        </section>`);
+};
+
+const findPublishedJobBySlug = async (slug = "") => {
+  const targetSlug = toText(decodeURIComponent(slug)).toLowerCase();
+  if (!targetSlug) {
+    return null;
+  }
+  const db = getAdminDb();
+  let jobs = null;
+  if (db) {
+    const snapshot = await db.ref("LatestJobs").get();
+    jobs = snapshot.exists() ? snapshot.val() : null;
+  } else {
+    jobs = await fetchPublicFirebaseJson("LatestJobs");
+  }
+  if (!jobs || typeof jobs !== "object") {
+    return null;
+  }
+  let found = null;
+  Object.entries(jobs).some(([id, job]) => {
+    if (found) {
+      return true;
+    }
+    if (String(job.postStatus || "published").toLowerCase() === "draft") {
+      return false;
+    }
+    const canonicalSlug = toText(job.slug) || buildSlug(job.title || "job-update", id);
+    if (canonicalSlug.toLowerCase() === targetSlug) {
+      found = { id, job: { ...job, slug: canonicalSlug } };
+      return true;
+    }
+    return false;
+  });
+  return found;
 };
 
 const buildCombinedSitemap = async () => {
@@ -2107,19 +2167,27 @@ app.get("/job-detail.html", async (req, res, next) => {
     return next();
   }
   try {
-    const db = getAdminDb();
-    if (!db) {
+    const found = await getPublishedJobById(id);
+    if (!found) {
       return next();
     }
-    const snapshot = await db.ref(`LatestJobs/${id}`).get();
-    if (!snapshot.exists()) {
+    return res.redirect(301, getPublicJobUrl(found.id, found.job));
+  } catch (err) {
+    return next();
+  }
+});
+
+app.get("/post/:slug", async (req, res, next) => {
+  try {
+    const found = await findPublishedJobBySlug(req.params.slug);
+    if (!found) {
       return next();
     }
-    const job = snapshot.val() || {};
-    if (String(job.postStatus || "published").toLowerCase() === "draft") {
-      return next();
+    const canonicalPath = new URL(getPublicJobUrl(found.id, found.job)).pathname;
+    if (req.path !== canonicalPath) {
+      return res.redirect(301, canonicalPath);
     }
-    res.type("html").send(renderPrerenderedJobDetail(id, job));
+    return res.type("html").send(renderPrerenderedJobDetail(found.id, found.job));
   } catch (err) {
     return next();
   }

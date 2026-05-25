@@ -496,8 +496,22 @@ const sharedPortalPost = sharedParams.get("post") || "";
 if(sharedPortalCategory && sharedPortalPost){
   portalExpanded[sharedPortalCategory] = true;
 }
-const portalItemHref = (item) => item && item.sourceJobId ? `job-detail.html?id=${encodeURIComponent(item.sourceJobId)}${item.slug ? `&slug=${encodeURIComponent(item.slug)}` : ""}` : safeUrl(item && item.url);
-const jobDetailHref = (id, job = {}) => `job-detail.html?id=${encodeURIComponent(id)}${job.slug ? `&slug=${encodeURIComponent(job.slug)}` : ""}`;
+const buildCanonicalSlug = (id, job = {}) => {
+  const storedSlug = String(job.slug || "").trim();
+  if(storedSlug){ return storedSlug; }
+  const base = String(job.title || job.text || "job-update").toLowerCase()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/['"]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 90) || "job-update";
+  const suffix = String(id || "").replace(/[^a-zA-Z0-9]/g, "").slice(-6).toLowerCase();
+  return suffix ? `${base}-${suffix}` : base;
+};
+const canonicalPostHref = (id, job = {}) => `post/${encodeURIComponent(buildCanonicalSlug(id, job))}`;
+const portalItemHref = (item) => item && item.sourceJobId ? canonicalPostHref(item.sourceJobId, item) : safeUrl(item && item.url);
+const jobDetailHref = (id, job = {}) => canonicalPostHref(id, job);
 let jobRowsCache = [];
 let jobsExpanded = false;
 

@@ -442,6 +442,24 @@ const setCanonical = (url) => {
   link.href = text;
 };
 
+const buildCanonicalSlug = (job = {}, fallbackId = "") => {
+  const storedSlug = String(job.slug || "").trim();
+  if(storedSlug){ return storedSlug; }
+  const title = String(job.title || job.text || "job-update").toLowerCase()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/['"]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 90) || "job-update";
+  const suffix = String(fallbackId || "").replace(/[^a-zA-Z0-9]/g, "").slice(-6).toLowerCase();
+  return suffix ? `${title}-${suffix}` : title;
+};
+
+const canonicalJobHref = (id = "", job = {}) => `post/${encodeURIComponent(buildCanonicalSlug(job, id))}`;
+
+const canonicalJobUrl = (id = "", job = {}) => `${location.origin}/${canonicalJobHref(id, job)}`;
+
 const setJsonLd = (data = {}) => {
   let script = document.getElementById("jobSchemaJsonLd");
   if(!script){
@@ -860,20 +878,12 @@ const renderPageContent = (content, title) => {
 
 const id = new URLSearchParams(window.location.search).get("id");
 const slugParam = new URLSearchParams(window.location.search).get("slug");
+const pathSlug = decodeURIComponent((location.pathname.match(/^\/post\/([^/?#]+)/) || [])[1] || "").trim();
 const message = document.getElementById("jobMessage");
 const wrap = document.getElementById("jobDetailWrap");
 
-if(!id){
-  message.textContent = "Please open this page from Latest Jobs.";
-}else{
-  onValue(ref(db, "LatestJobs/" + id), (snapshot) => {
-    if(!snapshot.exists()){
-      message.textContent = "Job detail nahi mili ya delete ho chuki hai.";
-      wrap.style.display = "none";
-      return;
-    }
-
-    const job = normalizeJob(snapshot.val());
+const renderJobDetail = (jobId, rawJob) => {
+    const job = normalizeJob(rawJob);
     if(!isJobVisible(job)){
       message.textContent = "Ye post abhi public page par hidden hai.";
       wrap.style.display = "none";
@@ -899,7 +909,7 @@ if(!id){
     const articleIntroText = Array.isArray(job.intro) ? job.intro.map((item) => String(item || "").trim()).filter(Boolean).join(" ") : "";
     const description = job.metaDescription || job.notificationSummary || job.shortInfo || articleIntroText || `${title} important dates, eligibility, fee, vacancy details aur apply links.`;
     if(metaDescription){ metaDescription.setAttribute("content", description.slice(0, 160)); }
-    const canonicalUrl = `${location.origin}${location.pathname}?id=${encodeURIComponent(id)}${job.slug ? `&slug=${encodeURIComponent(job.slug)}` : (slugParam ? `&slug=${encodeURIComponent(slugParam)}` : "")}`;
+    const canonicalUrl = canonicalJobUrl(jobId, job);
     setCanonical(canonicalUrl);
     setMeta('meta[property="og:title"]', "content", job.seoTitle || title);
     setMeta('meta[property="og:description"]', "content", description);
@@ -1043,6 +1053,39 @@ if(!id){
     if(fallbackPanel){ fallbackPanel.style.display = "none"; }
     message.style.display = "none";
     wrap.style.display = "block";
+};
+
+if(!id && !pathSlug){
+  message.textContent = "Please open this page from Latest Jobs.";
+}else if(id){
+  onValue(ref(db, "LatestJobs/" + id), (snapshot) => {
+    if(!snapshot.exists()){
+      message.textContent = "Job detail nahi mili ya delete ho chuki hai.";
+      wrap.style.display = "none";
+      return;
+    }
+    renderJobDetail(id, snapshot.val());
+  }, (error) => {
+    message.textContent = "Job details load nahi ho payi: " + error.message;
+  });
+}else{
+  onValue(ref(db, "LatestJobs"), (snapshot) => {
+    let match = null;
+    if(snapshot.exists()){
+      snapshot.forEach((child) => {
+        if(match){ return; }
+        const job = normalizeJob(child.val());
+        if(buildCanonicalSlug(job, child.key).toLowerCase() === pathSlug.toLowerCase()){
+          match = { id:child.key, job };
+        }
+      });
+    }
+    if(!match){
+      message.textContent = "Job detail nahi mili ya delete ho chuki hai.";
+      wrap.style.display = "none";
+      return;
+    }
+    renderJobDetail(match.id, match.job);
   }, (error) => {
     message.textContent = "Job details load nahi ho payi: " + error.message;
   });
