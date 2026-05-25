@@ -26,6 +26,13 @@ nav{background:var(--blue);padding:14px 6%;display:flex;justify-content:space-be
 nav ul{display:flex;list-style:none;gap:18px;flex-wrap:wrap;justify-content:flex-end;}
 nav a{color:white;text-decoration:none;font-weight:700;}
 nav a:hover{color:var(--yellow);}
+.nav-tools{position:relative;}
+.nav-tools summary{list-style:none;color:white;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:7px;}
+.nav-tools summary::-webkit-details-marker{display:none;}
+.nav-tools[open] summary,.nav-tools summary:hover{color:var(--yellow);}
+.nav-tools-menu{position:absolute;right:0;top:calc(100% + 10px);width:220px;background:white;border:1px solid var(--line);border-radius:8px;box-shadow:0 12px 26px rgba(0,0,0,.18);padding:7px;display:grid;gap:4px;z-index:50;}
+.nav-tools-menu a{color:var(--blue);padding:9px 10px;border-radius:6px;font-size:13px;font-weight:900;display:flex;gap:8px;align-items:center;}
+.nav-tools-menu a:hover{background:var(--blue);color:white;}
 .hero{background:linear-gradient(135deg,var(--blue),var(--deep));color:white;padding:42px 6%;}
 .hero-inner{max-width:1180px;margin:auto;}
 .hero h1{font-size:clamp(28px,5vw,44px);line-height:1.15;color:var(--yellow);margin-bottom:8px;}
@@ -108,7 +115,7 @@ button:hover{background:var(--yellow);color:var(--deep);}
 footer{background:var(--blue);color:white;text-align:center;padding:22px 6%;margin-top:20px;}
 footer a{color:var(--yellow);text-decoration:none;font-weight:800;margin:0 7px;display:inline-block;}
 @media(max-width:980px){main{grid-template-columns:1fr}.panel{position:static}.resume-sheet{min-height:auto}.resume-head{grid-template-columns:1fr 100px}.two-col{grid-template-columns:1fr;}.form-grid{grid-template-columns:1fr;}}
-@media(max-width:560px){nav{flex-direction:column;align-items:flex-start}nav ul{gap:12px}.hero{padding:34px 4%}main{padding:16px 3%}.resume-sheet{padding:24px 18px}.resume-head{grid-template-columns:1fr}.photo-box{justify-self:start}.resume-name{font-size:24px}.whatsapp{right:15px;bottom:15px;width:52px;height:52px;font-size:25px}}
+@media(max-width:560px){nav{flex-direction:column;align-items:flex-start}nav ul{gap:12px}.nav-tools{width:100%}.nav-tools-menu{position:static;width:100%;margin-top:8px}.hero{padding:34px 4%}main{padding:16px 3%}.resume-sheet{padding:24px 18px}.resume-head{grid-template-columns:1fr}.photo-box{justify-self:start}.resume-name{font-size:24px}.whatsapp{right:15px;bottom:15px;width:52px;height:52px;font-size:25px}}
 @media print{
   body{background:white;}
   nav,.hero,.panel,.whatsapp,footer{display:none!important;}
@@ -126,6 +133,17 @@ footer a{color:var(--yellow);text-decoration:none;font-weight:800;margin:0 7px;d
   <a class="logo" href="index.html"><img src="site-logo.svg" alt="E-MITRA WALA"></a>
   <ul>
     <li><a href="index.html">Home</a></li>
+    <li>
+      <details class="nav-tools">
+        <summary><i class="fa-solid fa-toolbox"></i> Tools</summary>
+        <div class="nav-tools-menu">
+          <a href="resume-format.html"><i class="fa-solid fa-file-lines"></i> Resume Builder</a>
+          <a href="invoice-generator.html"><i class="fa-solid fa-file-invoice"></i> Invoice Generator</a>
+          <a href="index.html#tools"><i class="fa-solid fa-calculator"></i> Age Calculator</a>
+          <a href="mock-test.html"><i class="fa-solid fa-clipboard-check"></i> Daily Mock Test</a>
+        </div>
+      </details>
+    </li>
     <li><a href="OFFLINEFORM.HTML">PDF Forms</a></li>
     <li><a href="job-form.html">Latest Jobs</a></li>
     <li><a href="useful-pages.html">Useful Pages</a></li>
