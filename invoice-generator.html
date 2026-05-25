@@ -11,9 +11,29 @@
 <meta name="description" content="Free blank invoice generator. Apni shop, customer, items aur amount fill karke multiple invoice formats me print-ready bill banaye.">
 <meta name="robots" content="index,follow">
 <link rel="canonical" href="https://emitrawala.online/invoice-generator.html">
+<meta property="og:title" content="Invoice Generator | E-MITRA WALA">
+<meta property="og:description" content="Shop logo, signature, GST fields, invoice history aur multiple printable invoice formats ke saath free invoice generator.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://emitrawala.online/invoice-generator.html">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Invoice Generator",
+  "url": "https://emitrawala.online/invoice-generator.html",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "Any",
+  "description": "Free printable invoice generator with multiple formats, GST fields, logo and signature upload, local invoice history, and PDF print support.",
+  "provider": {
+    "@type": "Organization",
+    "name": "E-MITRA WALA",
+    "url": "https://emitrawala.online/"
+  }
+}
+</script>
 <style>
 :root{--blue:#0057a8;--deep:#03224d;--orange:#ff7a00;--bg:#f7fbff;--line:#d8e0f0;--text:#172033;--muted:#5a6678;--accent:#0057a8;}
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins','Noto Sans Devanagari',sans-serif;}
@@ -47,12 +67,22 @@ button{border:0;border-radius:6px;padding:10px 12px;font-size:13px;font-weight:9
 button:hover{background:var(--orange);color:var(--deep);}
 .secondary{background:#4d5d72;}
 .danger{background:#c62828;}
-.line-editor{display:grid;grid-template-columns:1.3fr .55fr .75fr 38px;gap:7px;margin-bottom:7px;align-items:center;}
+.line-editor{display:grid;grid-template-columns:1.35fr .62fr .5fr .5fr .68fr 38px;gap:7px;margin-bottom:7px;align-items:center;}
 .line-editor button{padding:9px 0;background:#c62828;}
+.asset-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.asset-preview{margin-top:6px;min-height:54px;border:1px dashed #bdd0e5;border-radius:6px;display:flex;align-items:center;justify-content:center;background:#f8fbff;color:#6b778b;font-size:12px;overflow:hidden;}
+.asset-preview img{max-width:100%;max-height:78px;object-fit:contain;}
 .status{margin-top:10px;font-size:12px;font-weight:800;color:var(--blue);background:#eef6ff;border:1px solid #d8e6f5;border-radius:6px;padding:8px 10px;}
+.history-list{display:grid;gap:8px;margin-top:8px;}
+.history-item{border:1px solid #d8e6f5;border-radius:7px;background:#f8fbff;padding:9px;display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;}
+.history-item strong{display:block;color:#0057a8;font-size:13px;overflow-wrap:anywhere;}
+.history-item small{display:block;color:#5a6678;font-size:11px;}
+.history-item .actions{margin:0;}
 .preview-wrap{overflow:auto;}
-.invoice-sheet{width:min(100%,794px);min-height:1123px;margin:auto;padding:38px 42px;color:#111;background:white;}
+.invoice-sheet{width:min(100%,794px);min-height:1123px;margin:auto;padding:38px 42px;color:#111;background:white;overflow:hidden;}
 .invoice-top{display:grid;grid-template-columns:1.2fr .8fr;gap:18px;align-items:start;border-bottom:3px solid var(--accent);padding-bottom:16px;margin-bottom:18px;}
+.preview-logo{max-width:120px;max-height:80px;object-fit:contain;margin-bottom:8px;}
+.preview-signature{max-width:160px;max-height:70px;object-fit:contain;display:block;margin:0 auto 4px;}
 .brand-name{font-size:28px;line-height:1.14;font-weight:900;color:var(--accent);overflow-wrap:anywhere;}
 .brand-meta,.client-meta,.invoice-meta,.notes{font-size:12px;color:#354054;white-space:pre-line;overflow-wrap:anywhere;}
 .invoice-title{text-align:right;font-size:34px;line-height:1;font-weight:900;color:#111;text-transform:uppercase;}
@@ -63,7 +93,7 @@ button:hover{background:var(--orange);color:var(--deep);}
 .item-table{width:100%;border-collapse:collapse;margin:12px 0 14px;font-size:12px;}
 .item-table th{background:var(--accent);color:white;text-align:left;padding:9px;border:1px solid var(--accent);}
 .item-table td{border:1px solid #d4dce8;padding:8px;vertical-align:top;}
-.item-table td:nth-child(2),.item-table td:nth-child(3),.item-table td:nth-child(4),.item-table th:nth-child(2),.item-table th:nth-child(3),.item-table th:nth-child(4){text-align:right;}
+.item-table td:nth-child(3),.item-table td:nth-child(4),.item-table td:nth-child(5),.item-table th:nth-child(3),.item-table th:nth-child(4),.item-table th:nth-child(5){text-align:right;}
 .totals{margin-left:auto;width:min(100%,330px);font-size:13px;}
 .total-row{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid #e2e8f1;}
 .grand{font-size:18px;font-weight:900;color:var(--accent);border-bottom:0;border-top:3px solid var(--accent);margin-top:5px;padding-top:10px;}
@@ -96,6 +126,7 @@ button:hover{background:var(--orange);color:var(--deep);}
 .memo-line{display:flex;justify-content:space-between;gap:12px;font-size:16px;}
 .memo-heading{text-align:center;font-size:20px;font-weight:700;line-height:1.1;}
 .memo-business{text-align:center;font-size:42px;line-height:1.05;font-weight:900;letter-spacing:2px;margin:5px 0;text-transform:uppercase;}
+.memo-logo{max-width:90px;max-height:54px;object-fit:contain;display:block;margin:0 auto 4px;}
 .memo-prop{display:inline-block;background:#111;color:white;border-radius:50%;padding:3px 22px;font-size:17px;font-style:italic;font-weight:700;}
 .memo-subtitle{text-align:center;font-size:18px;line-height:1.4;}
 .dotted-row{display:flex;gap:8px;align-items:flex-end;margin-top:12px;font-size:15px;}
@@ -141,11 +172,12 @@ button:hover{background:var(--orange);color:var(--deep);}
 .dd-bottom>div{min-height:126px;padding:7px;border-right:1px solid #111;}
 .dd-bottom>div:last-child{border-right:0;text-align:center;}
 .signature-script{font-family:cursive;font-size:42px;margin-top:26px;}
+.format-sign-img{max-width:180px;max-height:64px;object-fit:contain;margin-top:18px;}
 .whatsapp{position:fixed;right:22px;bottom:22px;width:56px;height:56px;border-radius:50%;background:#25d366;color:white;display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:28px;box-shadow:0 8px 22px rgba(37,211,102,.35);z-index:30;}
 footer{background:var(--blue);color:white;text-align:center;padding:22px 6%;margin-top:20px;}
 footer a{color:var(--orange);text-decoration:none;font-weight:800;margin:0 7px;display:inline-block;}
-@media(max-width:980px){main{grid-template-columns:1fr}.panel{position:static;max-height:none}.invoice-sheet{min-height:auto}.bill-grid,.invoice-foot{grid-template-columns:1fr}.invoice-title,.invoice-meta{text-align:left}.form-grid{grid-template-columns:1fr;}.line-editor{grid-template-columns:1fr .55fr .75fr 38px;}}
-@media(max-width:560px){nav{flex-direction:column;align-items:flex-start}nav ul{gap:12px}.hero{padding:34px 4%}main{padding:16px 3%}.invoice-sheet{padding:24px 16px}.invoice-top{grid-template-columns:1fr}.brand-name{font-size:23px}.invoice-title{font-size:26px}.line-editor{grid-template-columns:1fr 1fr}.line-editor input:first-child{grid-column:1/-1}.whatsapp{right:15px;bottom:15px;width:52px;height:52px;font-size:25px}}
+@media(max-width:980px){main{grid-template-columns:1fr}.panel{position:static;max-height:none}.invoice-sheet{min-height:auto}.bill-grid,.invoice-foot,.asset-row{grid-template-columns:1fr}.invoice-title,.invoice-meta{text-align:left}.form-grid{grid-template-columns:1fr;}.line-editor{grid-template-columns:1fr 1fr 1fr}.line-editor input:first-child{grid-column:1/-1}.line-editor button{height:100%;}}
+@media(max-width:560px){nav{flex-direction:column;align-items:flex-start}nav ul{gap:12px}.hero{padding:34px 4%}main{padding:16px 3%}.preview-wrap{overflow-x:auto;padding-bottom:10px}.invoice-sheet{padding:20px 14px;width:720px;min-width:720px}.invoice-receipt{width:560px;min-width:560px}.brand-name{font-size:23px}.invoice-title{font-size:26px}.line-editor{grid-template-columns:1fr 1fr}.line-editor input:first-child{grid-column:1/-1}.history-item{grid-template-columns:1fr}.whatsapp{right:15px;bottom:15px;width:52px;height:52px;font-size:25px}}
 @media print{
   body{background:white;}
   nav,.hero,.panel,.whatsapp,footer{display:none!important;}
@@ -188,12 +220,22 @@ footer a{color:var(--orange);text-decoration:none;font-weight:800;margin:0 7px;d
 Mobile: 00000 00000
 Email: yourmail@example.com
 GSTIN / Udyam: Optional</textarea></div>
+      <div class="field"><label>GSTIN / Tax ID</label><input id="gstin" placeholder="GSTIN / Tax ID"></div>
+      <div class="field"><label>PAN</label><input id="panNo" placeholder="PAN number"></div>
       <div class="field"><label>Invoice No.</label><input id="invoiceNo" value="INV-001" placeholder="INV-001"></div>
       <div class="field"><label>Invoice Date</label><input id="invoiceDate" type="date"></div>
       <div class="field"><label>Due Date</label><input id="dueDate" type="date"></div>
       <div class="field"><label>Payment Mode</label><input id="paymentMode" value="Cash / UPI" placeholder="Cash / UPI"></div>
+      <div class="field"><label>Place of Supply</label><input id="placeSupply" placeholder="Rajasthan / Delhi"></div>
+      <div class="field"><label>Transport / Lorry No.</label><input id="transportNo" placeholder="Vehicle / Lorry no."></div>
       <div class="field full"><label>Customer Name</label><input id="clientName" value="Customer Name" placeholder="Customer name"></div>
       <div class="field full"><label>Customer Details</label><textarea id="clientDetails">Customer address / mobile / email</textarea></div>
+    </div>
+
+    <div class="group-title">Logo & Signature</div>
+    <div class="asset-row">
+      <div class="field"><label>Shop Logo</label><input id="logoInput" type="file" accept="image/*"><div class="asset-preview" id="logoPreview">No logo</div></div>
+      <div class="field"><label>Signature Image</label><input id="signatureInput" type="file" accept="image/*"><div class="asset-preview" id="signaturePreview">No signature</div></div>
     </div>
 
     <div class="group-title">Items</div>
@@ -215,9 +257,13 @@ Goods once sold will not be taken back.</textarea></div>
     </div>
     <div class="actions">
       <button type="button" onclick="window.print()"><i class="fa-solid fa-print"></i> Print / Save PDF</button>
+      <button class="secondary" type="button" onclick="saveInvoiceToHistory()"><i class="fa-solid fa-floppy-disk"></i> Save Invoice</button>
       <button class="danger" type="button" onclick="clearInvoice()"><i class="fa-solid fa-trash"></i> Blank Invoice</button>
     </div>
-    <div class="status">Fields blank bhi chhod sakte hain. Jitna data fill karenge, invoice utna customize ho jayega.</div>
+    <div class="status" id="invoiceStatus">Fields blank bhi chhod sakte hain. Jitna data fill karenge, invoice utna customize ho jayega.</div>
+
+    <div class="group-title">Saved Invoice History</div>
+    <div class="history-list" id="invoiceHistoryList"></div>
   </section>
 
   <section class="preview-wrap" aria-label="Invoice preview">
@@ -275,6 +321,9 @@ Goods once sold will not be taken back.</textarea></div>
 <script>
 const itemWrap = document.getElementById("lineItems");
 const moneyFields = ["taxRate","discount","paidAmount"];
+const historyKey = "emitraInvoiceHistory";
+let logoDataUrl = "";
+let signatureDataUrl = "";
 
 function escapeHTML(value = ""){
   return String(value).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
@@ -292,6 +341,44 @@ function numberValue(value){
 function formatMoney(amount){
   const symbol = document.getElementById("currency").value;
   return `${symbol}${numberValue(amount).toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+}
+
+function wordsBelowThousand(number){
+  const ones = ["","One","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten","Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen","Seventeen","Eighteen","Nineteen"];
+  const tens = ["","","Twenty","Thirty","Forty","Fifty","Sixty","Seventy","Eighty","Ninety"];
+  let value = Math.floor(number);
+  const parts = [];
+  if(value >= 100){
+    parts.push(`${ones[Math.floor(value / 100)]} Hundred`);
+    value %= 100;
+  }
+  if(value >= 20){
+    parts.push(tens[Math.floor(value / 10)]);
+    value %= 10;
+  }
+  if(value > 0){ parts.push(ones[value]); }
+  return parts.join(" ");
+}
+
+function amountInWords(amount){
+  let value = Math.round(numberValue(amount));
+  if(!value){ return "Zero Only"; }
+  const units = [
+    { label:"Crore", value:10000000 },
+    { label:"Lakh", value:100000 },
+    { label:"Thousand", value:1000 },
+    { label:"", value:1 }
+  ];
+  const parts = [];
+  units.forEach((unit) => {
+    const count = Math.floor(value / unit.value);
+    if(count){
+      parts.push(`${wordsBelowThousand(count)} ${unit.label}`.trim());
+      value %= unit.value;
+    }
+  });
+  const prefix = document.getElementById("currency").value === "₹" ? "Rupees " : "";
+  return `${prefix}${parts.join(" ")} Only`;
 }
 
 function todayValue(){
@@ -312,7 +399,9 @@ function addLineItem(item = {}){
   row.className = "line-editor";
   row.innerHTML = `
     <input class="item-desc" value="${escapeHTML(item.desc || "")}" placeholder="Item / work description">
+    <input class="item-hsn" value="${escapeHTML(item.hsn || "")}" placeholder="HSN">
     <input class="item-qty" type="number" value="${escapeHTML(item.qty ?? 1)}" min="0" step="0.01" placeholder="Qty">
+    <input class="item-unit" value="${escapeHTML(item.unit || "pcs")}" placeholder="Unit">
     <input class="item-rate" type="number" value="${escapeHTML(item.rate ?? 0)}" min="0" step="0.01" placeholder="Rate">
     <button type="button" title="Remove item" aria-label="Remove item"><i class="fa-solid fa-xmark"></i></button>
   `;
@@ -327,9 +416,11 @@ function addLineItem(item = {}){
 function getItems(){
   return Array.from(itemWrap.querySelectorAll(".line-editor")).map((row) => {
     const desc = row.querySelector(".item-desc").value.trim();
+    const hsn = row.querySelector(".item-hsn").value.trim();
     const qty = numberValue(row.querySelector(".item-qty").value);
+    const unit = row.querySelector(".item-unit").value.trim();
     const rate = numberValue(row.querySelector(".item-rate").value);
-    return { desc, qty, rate, amount: qty * rate };
+    return { desc, hsn, qty, unit, rate, amount: qty * rate };
   });
 }
 
@@ -348,12 +439,16 @@ function getInvoiceData(){
     format:inputValue("invoiceFormat") || "simple",
     businessName:inputValue("businessName") || "Your Business Name",
     businessDetails,
+    gstin:inputValue("gstin"),
+    panNo:inputValue("panNo"),
     clientName:inputValue("clientName") || "Customer Name",
     clientDetails:inputValue("clientDetails"),
     invoiceNo:inputValue("invoiceNo") || "-",
     invoiceDate:displayDate(inputValue("invoiceDate")),
     dueDate:displayDate(inputValue("dueDate")),
     paymentMode:inputValue("paymentMode") || "-",
+    placeSupply:inputValue("placeSupply"),
+    transportNo:inputValue("transportNo"),
     taxLabel:inputValue("taxLabel") || "Tax",
     taxRate,
     taxAmount,
@@ -362,10 +457,14 @@ function getInvoiceData(){
     balance,
     subtotal,
     grandTotal,
+    amountWords:amountInWords(grandTotal),
+    taxWords:amountInWords(taxAmount),
     items,
     notes:inputValue("notes"),
     signatureText:inputValue("signatureText") || "Authorised Signature",
-    mobile
+    mobile,
+    logoDataUrl,
+    signatureDataUrl
   };
 }
 
@@ -373,12 +472,13 @@ function renderStandardInvoice(data){
   return `
     <div class="invoice-top">
       <div>
+        ${data.logoDataUrl ? `<img class="preview-logo" src="${escapeHTML(data.logoDataUrl)}" alt="">` : ""}
         <div class="brand-name">${escapeHTML(data.businessName)}</div>
-        <div class="brand-meta">${escapeHTML(data.businessDetails)}</div>
+        <div class="brand-meta">${escapeHTML([data.businessDetails, data.gstin ? `GSTIN: ${data.gstin}` : "", data.panNo ? `PAN: ${data.panNo}` : ""].filter(Boolean).join("\n"))}</div>
       </div>
       <div>
         <div class="invoice-title">Invoice</div>
-        <div class="invoice-meta">${escapeHTML([`Invoice No: ${data.invoiceNo}`,`Date: ${data.invoiceDate}`,`Due Date: ${data.dueDate}`].join("\n"))}</div>
+        <div class="invoice-meta">${escapeHTML([`Invoice No: ${data.invoiceNo}`,`Date: ${data.invoiceDate}`,`Due Date: ${data.dueDate}`,data.placeSupply ? `Place of Supply: ${data.placeSupply}` : "",data.transportNo ? `Transport: ${data.transportNo}` : ""].filter(Boolean).join("\n"))}</div>
       </div>
     </div>
     <div class="bill-grid">
@@ -393,13 +493,13 @@ function renderStandardInvoice(data){
       </div>
     </div>
     <table class="item-table">
-      <thead><tr><th>Item / Description</th><th>Qty</th><th>Rate</th><th>Amount</th></tr></thead>
-      <tbody>${data.items.map((item) => `<tr><td>${escapeHTML(item.desc || "Blank item")}</td><td>${escapeHTML(item.qty)}</td><td>${escapeHTML(formatMoney(item.rate))}</td><td>${escapeHTML(formatMoney(item.amount))}</td></tr>`).join("")}</tbody>
+      <thead><tr><th>Item / Description</th><th>HSN</th><th>Qty</th><th>Rate</th><th>Amount</th></tr></thead>
+      <tbody>${data.items.map((item) => `<tr><td>${escapeHTML(item.desc || "Blank item")}</td><td>${escapeHTML(item.hsn)}</td><td>${escapeHTML(item.qty)} ${escapeHTML(item.unit)}</td><td>${escapeHTML(formatMoney(item.rate))}</td><td>${escapeHTML(formatMoney(item.amount))}</td></tr>`).join("")}</tbody>
     </table>
     <div class="totals">${renderTotals(data)}</div>
     <div class="invoice-foot">
-      <div><div class="block-label">Notes</div><div class="notes">${escapeHTML(data.notes)}</div></div>
-      <div class="sign-box">${escapeHTML(data.signatureText)}</div>
+      <div><div class="block-label">Amount in Words</div><div class="notes">${escapeHTML(data.amountWords)}</div><br><div class="block-label">Notes</div><div class="notes">${escapeHTML(data.notes)}</div></div>
+      <div class="sign-box">${data.signatureDataUrl ? `<img class="preview-signature" src="${escapeHTML(data.signatureDataUrl)}" alt="">` : ""}${escapeHTML(data.signatureText)}</div>
     </div>
   `;
 }
@@ -432,57 +532,58 @@ function renderFormat1(data){
   return `
     <div class="memo-frame">
       <div class="memo-line"><span>No - ${escapeHTML(data.invoiceNo)}</span><span class="memo-heading">Bill/Cash Memo</span><span>Mob - ${escapeHTML(data.mobile || "0000000000")}</span></div>
+      ${data.logoDataUrl ? `<img class="memo-logo" src="${escapeHTML(data.logoDataUrl)}" alt="">` : ""}
       <div class="memo-business">${escapeHTML(data.businessName)}</div>
       <div class="center"><span class="memo-prop">${escapeHTML(data.signatureText)}</span></div>
-      <div class="memo-subtitle">${escapeHTML(data.businessDetails)}</div>
+      <div class="memo-subtitle">${escapeHTML([data.businessDetails, data.gstin ? `GSTIN ${data.gstin}` : ""].filter(Boolean).join("\n"))}</div>
       <div class="dotted-row"><span>Customer's Name</span><div class="dotted-line">${escapeHTML(data.clientName)}</div></div>
       <div class="dotted-row"><span>Address</span><div class="dotted-line">${escapeHTML(data.clientDetails)}</div></div>
-      <div class="dotted-row"><span>Lorry No.</span><div class="dotted-line"></div><span>Date</span><div class="dotted-line">${escapeHTML(data.invoiceDate)}</div></div>
+      <div class="dotted-row"><span>Lorry No.</span><div class="dotted-line">${escapeHTML(data.transportNo)}</div><span>Date</span><div class="dotted-line">${escapeHTML(data.invoiceDate)}</div></div>
     </div>
     <table class="memo-table">
       <thead><tr><th>SL.No</th><th>Particulars</th><th>Quantity</th><th>Rate</th><th colspan="2">Amount<br>Rs. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; P</th></tr></thead>
       <tbody>
         ${rows.map((row) => `<tr><td class="center">${escapeHTML(row[0])}</td><td>${escapeHTML(row[1])}</td><td class="center">${escapeHTML(row[2])}</td><td class="right">${escapeHTML(row[3])}</td><td class="right">${escapeHTML(row[4])}</td><td>${escapeHTML(row[5])}</td></tr>`).join("")}
-        <tr><td colspan="3" class="word-cell">Amount in Word ....................................<br><br>...................................................</td><td class="total-label">Total</td><td class="right bold">${escapeHTML(formatMoney(data.grandTotal))}</td><td></td></tr>
+        <tr><td colspan="3" class="word-cell">Amount in Word ${escapeHTML(data.amountWords)}</td><td class="total-label">Total</td><td class="right bold">${escapeHTML(formatMoney(data.grandTotal))}</td><td></td></tr>
       </tbody>
     </table>
-    <div class="memo-signs"><div>Signature of Customer's</div><div>Signature of Proprietor</div></div>
+    <div class="memo-signs"><div>Signature of Customer's</div><div>${data.signatureDataUrl ? `<img class="format-sign-img" src="${escapeHTML(data.signatureDataUrl)}" alt="">` : ""}<br>Signature of Proprietor</div></div>
   `;
 }
 
 function renderFormat2(data){
-  const rows = itemRows(data, 7, (item,index) => [`${index + 1}`, item.desc || "Blank item", item.qty, formatMoney(item.rate), formatMoney(item.amount)]);
+  const rows = itemRows(data, 7, (item,index) => [`${index + 1}`, item.desc || "Blank item", item.qty, item.unit || "", formatMoney(item.rate), formatMoney(item.amount)]);
   return `
     <div class="export-title">Invoice</div>
     <div class="export-grid">
-      <div><div class="export-small">Exporter & Manufacturer</div><div class="export-strong">${escapeHTML(data.businessName)}</div><div>${escapeHTML(data.businessDetails)}</div></div>
+      <div><div class="export-small">Exporter & Manufacturer</div>${data.logoDataUrl ? `<img class="memo-logo" src="${escapeHTML(data.logoDataUrl)}" alt="">` : ""}<div class="export-strong">${escapeHTML(data.businessName)}</div><div>${escapeHTML([data.businessDetails, data.gstin ? `GSTIN: ${data.gstin}` : "", data.panNo ? `PAN: ${data.panNo}` : ""].filter(Boolean).join("\n"))}</div></div>
       <div><div class="export-small">Invoice No & Date</div><div class="bold">${escapeHTML(data.invoiceNo)} &nbsp; ${escapeHTML(data.invoiceDate)}</div><hr><div class="export-small">Exporter's Ref.</div><div>${escapeHTML(data.paymentMode)}</div></div>
       <div><div class="export-small">Consignee</div><br>${escapeHTML(data.clientName)}<br>${escapeHTML(data.clientDetails)}</div>
       <div><div class="export-small">Buyer (if other than consignee)</div><br>${escapeHTML(data.clientName)}<br>${escapeHTML(data.clientDetails)}<br><br><div class="center bold">IE CODE NO.</div></div>
-      <div><span class="export-small">Pre Carried by</span><br><b>BY ROAD</b></div>
-      <div><span class="export-small">Country of Origin of Goods</span><br><b>INDIA</b><br><span class="export-small">Terms Of Delivery and Payment</span><br>${escapeHTML(data.notes)}</div>
+      <div><span class="export-small">Pre Carried by</span><br><b>${escapeHTML(data.transportNo || "BY ROAD")}</b></div>
+      <div><span class="export-small">Country of Origin of Goods</span><br><b>INDIA</b><br><span class="export-small">Place of Supply</span><br>${escapeHTML(data.placeSupply || "-")}<br><span class="export-small">Terms Of Delivery and Payment</span><br>${escapeHTML(data.notes)}</div>
     </div>
     <table class="export-table">
-      <thead><tr><th>Marks & Nos.</th><th>Description of Goods</th><th>Quantity</th><th>Rate</th><th>Amount</th></tr></thead>
+      <thead><tr><th>Marks & Nos.</th><th>Description of Goods</th><th>Quantity</th><th>Unit</th><th>Rate</th><th>Amount</th></tr></thead>
       <tbody>
-        ${rows.map((row) => `<tr><td>${escapeHTML(row[0])}</td><td>${escapeHTML(row[1])}</td><td class="right">${escapeHTML(row[2])}</td><td class="right">${escapeHTML(row[3])}</td><td class="right">${escapeHTML(row[4])}</td></tr>`).join("")}
-        <tr><td colspan="2" class="goods-cell"><b>NET WT P/PS</b></td><td></td><td class="right bold">Total</td><td class="right bold">${escapeHTML(formatMoney(data.grandTotal))}</td></tr>
+        ${rows.map((row) => `<tr><td>${escapeHTML(row[0])}</td><td>${escapeHTML(row[1])}</td><td class="right">${escapeHTML(row[2])}</td><td>${escapeHTML(row[3])}</td><td class="right">${escapeHTML(row[4])}</td><td class="right">${escapeHTML(row[5])}</td></tr>`).join("")}
+        <tr><td colspan="2" class="goods-cell"><b>NET WT P/PS</b></td><td></td><td></td><td class="right bold">Total</td><td class="right bold">${escapeHTML(formatMoney(data.grandTotal))}</td></tr>
       </tbody>
     </table>
-    <table class="summary-table"><tr><td>Amount Chargeable<br>(in words)</td><td class="bold">C & F VALUE ${escapeHTML(formatMoney(data.grandTotal))}</td><td class="right">Signature & Date<br><br><br>${escapeHTML(data.signatureText)}</td></tr></table>
+    <table class="summary-table"><tr><td>Amount Chargeable<br>(in words)</td><td class="bold">${escapeHTML(data.amountWords)}</td><td class="right">Signature & Date<br>${data.signatureDataUrl ? `<img class="format-sign-img" src="${escapeHTML(data.signatureDataUrl)}" alt="">` : "<br><br>"}<br>${escapeHTML(data.signatureText)}</td></tr></table>
   `;
 }
 
 function renderFormat3(data){
-  const rows = itemRows(data, 6, (item,index) => [index + 1, item.desc || "Blank item", "", item.qty, formatMoney(item.rate), "pcs", formatMoney(item.amount)]);
+  const rows = itemRows(data, 6, (item,index) => [index + 1, item.desc || "Blank item", item.hsn || "", item.qty, formatMoney(item.rate), item.unit || "pcs", formatMoney(item.amount)]);
   return `
     <div class="tax-title">Tax Invoice</div>
     <div class="tax-head-grid">
-      <div><div class="tax-strong">${escapeHTML(data.businessName)}</div>${escapeHTML(data.businessDetails)}</div>
+      <div>${data.logoDataUrl ? `<img class="memo-logo" src="${escapeHTML(data.logoDataUrl)}" alt="">` : ""}<div class="tax-strong">${escapeHTML(data.businessName)}</div>${escapeHTML([data.businessDetails, data.gstin ? `GSTIN/UIN: ${data.gstin}` : "", data.panNo ? `PAN: ${data.panNo}` : ""].filter(Boolean).join("\n"))}</div>
       <div class="tax-meta-grid">
         <div>Invoice No.<br><b>${escapeHTML(data.invoiceNo)}</b></div><div>e-Way Bill No.</div><div>Dated<br><b>${escapeHTML(data.invoiceDate)}</b></div>
         <div>Delivery Note</div><div>Mode/Terms of Payment<br>${escapeHTML(data.paymentMode)}</div><div>Other Reference(s)</div>
-        <div>Buyer's Order No.</div><div>Dated</div><div>Destination</div>
+        <div>Transport<br>${escapeHTML(data.transportNo || "-")}</div><div>Dated</div><div>Destination<br>${escapeHTML(data.placeSupply || "-")}</div>
       </div>
       <div><b>Buyer</b><br><div class="tax-strong">${escapeHTML(data.clientName)}</div>${escapeHTML(data.clientDetails)}</div>
       <div>Terms of Delivery<br>${escapeHTML(data.notes)}</div>
@@ -495,19 +596,19 @@ function renderFormat3(data){
         <tr><td colspan="3" class="right bold">Total</td><td class="right bold">${escapeHTML(data.items.reduce((sum,item) => sum + item.qty, 0))} pcs</td><td></td><td></td><td class="right bold">${escapeHTML(formatMoney(data.grandTotal))}</td></tr>
       </tbody>
     </table>
-    <div class="tax-summary"><div>Amount Chargeable (in words)<br><b>${escapeHTML(formatMoney(data.grandTotal))} Only</b></div><div class="right">E. & O.E</div><div>Tax Amount (in words): <b>${escapeHTML(formatMoney(data.taxAmount))} Only</b></div><div class="right"><b>for ${escapeHTML(data.businessName)}</b><br><br><br>${escapeHTML(data.signatureText)}</div></div>
+    <div class="tax-summary"><div>Amount Chargeable (in words)<br><b>${escapeHTML(data.amountWords)}</b></div><div class="right">E. & O.E</div><div>Tax Amount (in words): <b>${escapeHTML(data.taxWords)}</b></div><div class="right"><b>for ${escapeHTML(data.businessName)}</b><br>${data.signatureDataUrl ? `<img class="format-sign-img" src="${escapeHTML(data.signatureDataUrl)}" alt="">` : "<br><br>"}<br>${escapeHTML(data.signatureText)}</div></div>
     <div class="center">This is a Computer Generated Invoice</div>
   `;
 }
 
 function renderFormat4(data){
-  const rows = itemRows(data, 6, (item) => [item.desc || "Blank item", "", item.qty, "pcs", formatMoney(item.rate), formatMoney(item.amount)]);
+  const rows = itemRows(data, 6, (item) => [item.desc || "Blank item", item.hsn || "", item.qty, item.unit || "pcs", formatMoney(item.rate), formatMoney(item.amount)]);
   return `
     <div class="dd-title">Tax Invoice</div>
-    <div class="dd-business"><h2>${escapeHTML(data.businessName)}</h2><p>${escapeHTML(data.businessDetails)}</p></div>
+    <div class="dd-business">${data.logoDataUrl ? `<img class="memo-logo" src="${escapeHTML(data.logoDataUrl)}" alt="">` : ""}<h2>${escapeHTML(data.businessName)}</h2><p>${escapeHTML([data.businessDetails, data.gstin ? `GSTIN No ${data.gstin}` : ""].filter(Boolean).join("\n"))}</p></div>
     <div class="dd-top-grid">
       <div>Bill to<br><br><b>${escapeHTML(data.clientName)}</b><br><br>${escapeHTML(data.clientDetails)}</div>
-      <div>Place of Supply<br><br><b>${escapeHTML(data.clientName)}</b><br>${escapeHTML(data.clientDetails)}</div>
+      <div>Place of Supply<br><br><b>${escapeHTML(data.placeSupply || data.clientName)}</b><br>${escapeHTML(data.clientDetails)}</div>
       <div class="center"><b>INVOICE No</b><br><br>${escapeHTML(data.invoiceNo)}<br><br><b>Dated</b><br>${escapeHTML(data.invoiceDate)}</div>
     </div>
     <table class="dd-table">
@@ -518,8 +619,108 @@ function renderFormat4(data){
         <tr><td colspan="5">Total</td><td class="right bold">${escapeHTML(formatMoney(data.grandTotal))}</td></tr>
       </tbody>
     </table>
-    <div class="dd-bottom"><div>Amount Chargeable (in words)<br><b>${escapeHTML(formatMoney(data.grandTotal))} only</b><br><br>Company's PAN: __________<br><br>${escapeHTML(data.notes)}</div><div>For ${escapeHTML(data.businessName)}<div class="signature-script">Signature</div>${escapeHTML(data.signatureText)}</div></div>
+    <div class="dd-bottom"><div>Amount Chargeable (in words)<br><b>${escapeHTML(data.amountWords)}</b><br><br>Company's PAN: ${escapeHTML(data.panNo || "__________")}<br><br>${escapeHTML(data.notes)}</div><div>For ${escapeHTML(data.businessName)}<div>${data.signatureDataUrl ? `<img class="format-sign-img" src="${escapeHTML(data.signatureDataUrl)}" alt="">` : `<div class="signature-script">Signature</div>`}</div>${escapeHTML(data.signatureText)}</div></div>
   `;
+}
+
+function serializeInvoice(){
+  const fields = {};
+  document.querySelectorAll("input,textarea,select").forEach((field) => {
+    if(field.type !== "file"){ fields[field.id] = field.value; }
+  });
+  return {
+    id:Date.now().toString(),
+    savedAt:Date.now(),
+    fields,
+    items:getItems(),
+    logoDataUrl,
+    signatureDataUrl
+  };
+}
+
+function applyInvoiceState(state){
+  if(!state){ return; }
+  Object.entries(state.fields || {}).forEach(([id,value]) => {
+    const field = document.getElementById(id);
+    if(field && field.type !== "file"){ field.value = value; }
+  });
+  logoDataUrl = state.logoDataUrl || "";
+  signatureDataUrl = state.signatureDataUrl || "";
+  renderAssetPreviews();
+  itemWrap.innerHTML = "";
+  (state.items && state.items.length ? state.items : [{ desc:"", hsn:"", qty:1, unit:"pcs", rate:0 }]).forEach(addLineItem);
+  updateInvoice();
+}
+
+function getHistory(){
+  try {
+    const rows = JSON.parse(localStorage.getItem(historyKey) || "[]");
+    return Array.isArray(rows) ? rows : [];
+  } catch(error) {
+    return [];
+  }
+}
+
+function setHistory(rows){
+  localStorage.setItem(historyKey, JSON.stringify(rows.slice(0, 12)));
+  renderHistory();
+}
+
+function saveInvoiceToHistory(){
+  const snapshot = serializeInvoice();
+  const rows = [snapshot, ...getHistory().filter((row) => row.id !== snapshot.id)].slice(0, 12);
+  setHistory(rows);
+  document.getElementById("invoiceStatus").innerText = "Invoice history me save ho gaya.";
+}
+
+function loadInvoiceFromHistory(id){
+  const row = getHistory().find((item) => item.id === id);
+  if(!row){ return; }
+  applyInvoiceState(row);
+  document.getElementById("invoiceStatus").innerText = "Saved invoice load ho gaya.";
+}
+
+function deleteInvoiceFromHistory(id){
+  setHistory(getHistory().filter((item) => item.id !== id));
+}
+
+function renderHistory(){
+  const list = document.getElementById("invoiceHistoryList");
+  const rows = getHistory();
+  if(!rows.length){
+    list.innerHTML = '<div class="status">Abhi koi saved invoice nahi hai.</div>';
+    return;
+  }
+  list.innerHTML = rows.map((row) => {
+    const fields = row.fields || {};
+    const total = (row.items || []).reduce((sum,item) => sum + numberValue(item.amount), 0);
+    return `
+      <div class="history-item">
+        <div><strong>${escapeHTML(fields.invoiceNo || "Invoice")}: ${escapeHTML(fields.clientName || "Customer")}</strong><small>${escapeHTML(new Date(row.savedAt || Date.now()).toLocaleString("hi-IN"))} | Items: ${escapeHTML((row.items || []).length)} | Subtotal: ${escapeHTML(formatMoney(total))}</small></div>
+        <div class="actions"><button type="button" onclick="loadInvoiceFromHistory('${escapeHTML(row.id)}')">Load</button><button class="danger" type="button" onclick="deleteInvoiceFromHistory('${escapeHTML(row.id)}')">Delete</button></div>
+      </div>
+    `;
+  }).join("");
+}
+
+function renderAssetPreviews(){
+  document.getElementById("logoPreview").innerHTML = logoDataUrl ? `<img src="${escapeHTML(logoDataUrl)}" alt="Logo preview">` : "No logo";
+  document.getElementById("signaturePreview").innerHTML = signatureDataUrl ? `<img src="${escapeHTML(signatureDataUrl)}" alt="Signature preview">` : "No signature";
+}
+
+function readImageFile(file, callback){
+  if(!file){ callback(""); return; }
+  if(!file.type.startsWith("image/")){
+    alert("Kripya image file select karein.");
+    return;
+  }
+  if(file.size > 600 * 1024){
+    alert("Image 600KB se chhoti rakhein, warna browser history heavy ho jayegi.");
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = () => callback(String(reader.result || ""));
+  reader.readAsDataURL(file);
 }
 
 function updateInvoice(){
@@ -536,21 +737,38 @@ function clearInvoice(){
   document.querySelectorAll("input,textarea").forEach((field) => {
     if(field.type === "color"){ field.value = "#0057a8"; return; }
     if(field.type === "date"){ field.value = ""; return; }
+    if(field.type === "file"){ field.value = ""; return; }
     if(field.id === "taxRate" || field.id === "discount" || field.id === "paidAmount"){ field.value = "0"; return; }
     field.value = "";
   });
   document.getElementById("currency").value = "₹";
   document.getElementById("invoiceFormat").value = "simple";
+  logoDataUrl = "";
+  signatureDataUrl = "";
+  renderAssetPreviews();
   itemWrap.innerHTML = "";
-  addLineItem({ desc:"", qty:1, rate:0 });
+  addLineItem({ desc:"", hsn:"", qty:1, unit:"pcs", rate:0 });
+  document.getElementById("invoiceStatus").innerText = "Blank invoice ready hai.";
   updateInvoice();
 }
 
 document.querySelectorAll("input,textarea,select").forEach((field) => field.addEventListener("input", updateInvoice));
+document.getElementById("logoInput").addEventListener("change", (event) => readImageFile(event.target.files[0], (value) => {
+  logoDataUrl = value;
+  renderAssetPreviews();
+  updateInvoice();
+}));
+document.getElementById("signatureInput").addEventListener("change", (event) => readImageFile(event.target.files[0], (value) => {
+  signatureDataUrl = value;
+  renderAssetPreviews();
+  updateInvoice();
+}));
 document.getElementById("invoiceDate").value = todayValue();
-addLineItem({ desc:"Service / Product", qty:1, rate:0 });
-addLineItem({ desc:"Additional work", qty:1, rate:0 });
+addLineItem({ desc:"Service / Product", hsn:"", qty:1, unit:"pcs", rate:0 });
+addLineItem({ desc:"Additional work", hsn:"", qty:1, unit:"pcs", rate:0 });
 moneyFields.forEach((id) => document.getElementById(id).addEventListener("change", updateInvoice));
+renderAssetPreviews();
+renderHistory();
 updateInvoice();
 </script>
 </body>
