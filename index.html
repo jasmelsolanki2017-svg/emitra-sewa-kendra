@@ -3312,7 +3312,8 @@ const safeFastUrl = (value = "#") => {
 const url = String(value || "#").trim();
 return /^https?:\/\//i.test(url) ? url : "#";
 };
-const fastPortalHref = (item) => item && item.sourceJobId ? `job-detail.html?id=${encodeURIComponent(item.sourceJobId)}` : safeFastUrl(item && item.url);
+const fastPortalHref = (item) => item && item.sourceJobId ? `job-detail.html?id=${encodeURIComponent(item.sourceJobId)}${item.slug ? `&slug=${encodeURIComponent(item.slug)}` : ""}` : safeFastUrl(item && item.url);
+const fastJobDetailHref = (id, job = {}) => `job-detail.html?id=${encodeURIComponent(id)}${job.slug ? `&slug=${encodeURIComponent(job.slug)}` : ""}`;
 
 const normalizeFastJob = (value) => {
 if(typeof value === "string"){
@@ -3381,13 +3382,13 @@ if(portalJobList){
 portalJobList.innerHTML = jobs.map(({ id, job })=>`
   <li class="home-portal-job-card">
     <span class="badge">${escapeFastHTML(job.type || "Online Form")}</span>
-    <h3><a href="job-detail.html?id=${encodeURIComponent(id)}">${escapeFastHTML(job.title || job.text || "Job Update")}</a></h3>
+    <h3><a href="${fastJobDetailHref(id, job)}">${escapeFastHTML(job.title || job.text || "Job Update")}</a></h3>
     <p>Start: ${escapeFastHTML(job.startDate || "Update Soon")} | Last: <span class="last-date">${escapeFastHTML(job.lastDate || job.lastApplyDate || "Update Soon")}</span></p>
     <p>Qualification: ${escapeFastHTML(job.qualification || "Update Soon")}</p>
     <p>Location: ${escapeFastHTML(job.location || "All India")}</p>
     <div class="job-actions">
       <a href="${safeFastUrl(job.applyLink)}" target="_blank" rel="noopener noreferrer">Apply</a>
-      <a class="detail" href="job-detail.html?id=${encodeURIComponent(id)}">Details</a>
+      <a class="detail" href="${fastJobDetailHref(id, job)}">Details</a>
     </div>
   </li>
 `).join("");
@@ -3400,7 +3401,7 @@ box.innerHTML = jobs.map(({ id, job })=>`
     <h3>${escapeFastHTML(job.title || "Job Update")}</h3>
     <p>Last Date: <span class="last-date">${escapeFastHTML(job.lastDate || job.lastApplyDate || "Update Soon")}</span></p>
     <p>Location: ${escapeFastHTML(job.location || "All India")}</p>
-    <a href="job-detail.html?id=${encodeURIComponent(id)}">View Details</a>
+    <a href="${fastJobDetailHref(id, job)}">View Details</a>
   </article>
 `).join("");
 }
@@ -3895,7 +3896,8 @@ list.innerHTML = items.map((item)=>`
 `).join("");
 };
 
-const portalItemHref = (item) => item && item.sourceJobId ? `job-detail.html?id=${encodeURIComponent(item.sourceJobId)}` : safeUrl(item && item.url);
+const portalItemHref = (item) => item && item.sourceJobId ? `job-detail.html?id=${encodeURIComponent(item.sourceJobId)}${item.slug ? `&slug=${encodeURIComponent(item.slug)}` : ""}` : safeUrl(item && item.url);
+const jobDetailHref = (id, job = {}) => `job-detail.html?id=${encodeURIComponent(id)}${job.slug ? `&slug=${encodeURIComponent(job.slug)}` : ""}`;
 
 onValue(portalItemsRef,(snapshot)=>{
 Object.keys(homePortalCategoryMap).forEach((category)=>{
@@ -3956,13 +3958,13 @@ if(portalJobList){
 portalJobList.innerHTML = jobs.map(({ id, job })=>`
   <li class="home-portal-job-card">
     <span class="badge">${escapeHTML(job.type || "Online Form")}</span>
-    <h3><a href="job-detail.html?id=${encodeURIComponent(id)}">${escapeHTML(job.title || job.text || "Job Update")}</a></h3>
+    <h3><a href="${jobDetailHref(id, job)}">${escapeHTML(job.title || job.text || "Job Update")}</a></h3>
     <p>Start: ${escapeHTML(job.startDate || "Update Soon")} | Last: <span class="last-date">${escapeHTML(job.lastDate || job.lastApplyDate || "Update Soon")}</span></p>
     <p>Qualification: ${escapeHTML(job.qualification || "Update Soon")}</p>
     <p>Location: ${escapeHTML(job.location || "All India")}</p>
     <div class="job-actions">
       <a href="${safeUrl(job.applyLink)}" target="_blank" rel="noopener noreferrer">Apply</a>
-      <a class="detail" href="job-detail.html?id=${encodeURIComponent(id)}">Details</a>
+      <a class="detail" href="${jobDetailHref(id, job)}">Details</a>
     </div>
   </li>
 `).join("");
@@ -3979,7 +3981,7 @@ box.innerHTML = jobs.map(({ id, job })=>`
     <h3>${escapeHTML(job.title || "Job Update")}</h3>
     <p>Last Date: <span class="last-date">${escapeHTML(job.lastDate || job.lastApplyDate || "Update Soon")}</span></p>
     <p>Location: ${escapeHTML(job.location || "All India")}</p>
-    <a href="job-detail.html?id=${encodeURIComponent(id)}">View Details</a>
+    <a href="${jobDetailHref(id, job)}">View Details</a>
   </article>
 `).join("");
 },(error)=>{

@@ -129,7 +129,10 @@ body.dark-mode .auto-link{color:#8ec5ff!important;}
     <li><a href="index.html">Home</a></li>
     <li><a href="job-form.html">Latest Jobs</a></li>
     <li><a href="OFFLINEFORM.HTML">PDF Forms</a></li>
+    <li><a href="about.html">About</a></li>
     <li><a href="contact.html">Contact</a></li>
+    <li><a href="privacy-policy.html">Privacy Policy</a></li>
+    <li><a href="disclaimer.html">Disclaimer</a></li>
   </ul>
 </nav>
 
@@ -151,9 +154,13 @@ body.dark-mode .auto-link{color:#8ec5ff!important;}
           <h2 id="sheetTitle">Job Update</h2>
           <p class="article-intro" id="sheetSubTitle">Important notification details, eligibility, dates aur apply links yahan dekhein.</p>
         </div>
+        <section class="panel" id="shortInfoPanel" style="display:none;">
+          <h2>Short Information</h2>
+          <div class="content-box" id="shortInfoContent"></div>
+        </section>
 
         <section class="panel" id="featurePanel" style="display:none;">
-          <h2>Feature Details</h2>
+          <h2>Overview Table</h2>
           <div class="table-wrap">
             <table class="detail-table">
               <tbody id="featureTable"></tbody>
@@ -251,6 +258,11 @@ body.dark-mode .auto-link{color:#8ec5ff!important;}
           <div class="content-box section-manual" id="linksManual"></div>
         </section>
 
+        <section class="panel" id="faqPanel" style="display:none;">
+          <h2>FAQ</h2>
+          <div class="content-box" id="faqContent"></div>
+        </section>
+
         <section class="panel" id="pageContentPanel" style="display:none;">
           <div id="pageContent" class="content-box"></div>
         </section>
@@ -287,7 +299,7 @@ body.dark-mode .auto-link{color:#8ec5ff!important;}
 
 <footer>
   <p>© 2026 E-MITRA WALA | Job Details</p>
-  <p><a href="privacy-policy.html">Privacy Policy</a><a href="about.html">About</a><a href="contact.html">Contact</a></p>
+  <p><a href="privacy-policy.html">Privacy Policy</a><a href="about.html">About Us</a><a href="contact.html">Contact Us</a><a href="disclaimer.html">Disclaimer</a><a href="terms-and-conditions.html">Terms & Conditions</a></p>
 </footer>
 
 <button class="theme-toggle" type="button" aria-label="Toggle dark mode" title="Dark mode" onclick="toggleDarkMode()"><span class="theme-symbol" aria-hidden="true">☾</span></button>
@@ -394,13 +406,70 @@ const setJsonLd = (data = {}) => {
   script.textContent = JSON.stringify(data);
 };
 
-const normalizeJob = (value) => {
-  if(typeof value === "string"){
-    return { title:value, type:"Online Form" };
-  }
-
-  return value && typeof value === "object" ? value : {};
+const normalizePostTarget = (value = "") => {
+  const key = String(value || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  const map = { latestjob:"latestJob", jobs:"latestJob", job:"latestJob", notification:"notification", admitcard:"admitCard", result:"result", syllabus:"syllabus", answerkey:"answerKey", admission:"admission" };
+  return map[key] || "latestJob";
 };
+const slugifyText = (value = "") => String(value || "").toLowerCase().replace(/['"]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 120) || `job-${Date.now()}`;
+const parsePostWiseApplyLinks = (value = "") => String(value || "").split(/\r?\n/).map((line) => line.trim()).filter(Boolean).map((line) => {
+  const urlMatch = line.match(/https?:\/\/\S+|www\.\S+/i);
+  if(!urlMatch){ return null; }
+  const url = urlMatch[0];
+  const label = line.slice(0, urlMatch.index).replace(/[:|,-]+$/g, "").trim() || "Apply Link";
+  return { label, url:safeUrl(url) };
+}).filter(Boolean);
+const buildImportantLinks = (job = {}) => {
+  const links = [];
+  const push = (label, url) => {
+    const clean = safeUrl(url);
+    if(clean !== "#"){ links.push({ label, url:clean }); }
+  };
+  push("Apply Online", job.applyLink);
+  push("Official Notification", job.detailLink);
+  push("Official Website", job.officialWebsite);
+  push("Admit Card", job.admitCardLink);
+  push("Result", job.resultLink);
+  push("Syllabus", job.syllabusLink);
+  push("Answer Key", job.answerKeyLink);
+  parsePostWiseApplyLinks(job.postWiseApplyLinks).forEach((item) => push(item.label, item.url));
+  return links;
+};
+const buildOverviewRows = (job = {}) => [
+  { label:"Organization / Department", value:job.department },
+  { label:"Post Name", value:job.postName || job.title },
+  { label:"Total Posts / Vacancy", value:job.totalVacancy || job.totalPosts },
+  { label:"Job Location", value:job.location },
+  { label:"Application Mode", value:job.applicationMode || job.mode || job.type },
+  { label:"Post Type", value:job.type },
+  { label:"Last Date", value:job.lastApplyDate || job.lastDate },
+  { label:"Official Website", value:job.officialWebsite }
+].filter((row) => isFilledValue(row.value, row.options));
+const normalizeJobToArticle = (input = {}) => {
+  const base = typeof input === "string" ? { title:input, type:"Online Form" } : ((input && typeof input === "object") ? { ...input } : {});
+  const article = base.advancedArticleData && typeof base.advancedArticleData === "object" ? { ...base.advancedArticleData } : {};
+  const title = String(base.title || article.title || "").trim();
+  const shortInfo = String(base.shortInfo || article.shortInfo || "").trim();
+  const sections = Array.isArray(base.sections) ? base.sections : (Array.isArray(article.sections) ? article.sections : []);
+  const intro = Array.isArray(base.intro) ? base.intro : (Array.isArray(article.intro) ? article.intro : (shortInfo ? [shortInfo] : []));
+  const overview = Array.isArray(base.overview) ? base.overview : (Array.isArray(article.overview) ? article.overview : buildOverviewRows(base));
+  const importantLinks = Array.isArray(base.importantLinks) ? base.importantLinks : (Array.isArray(article.importantLinks) ? article.importantLinks : buildImportantLinks(base));
+  const faq = Array.isArray(base.faq) ? base.faq : (Array.isArray(article.faq) ? article.faq : []);
+  return {
+    ...base,
+    title,
+    shortInfo,
+    slug:String(base.slug || article.slug || slugifyText(title)).trim(),
+    postTarget:normalizePostTarget(base.postTarget || article.postTarget),
+    sections,
+    intro,
+    overview,
+    importantLinks,
+    faq,
+    advancedArticleData:{ ...article, title, shortInfo, sections, intro, overview, importantLinks, faq }
+  };
+};
+const normalizeJob = (value) => normalizeJobToArticle(value);
 
 const parseJobLastDate = (value = "") => {
   const text = String(value || "").trim();
@@ -509,19 +578,6 @@ const renderManualContent = (boxId, panelId, value, title) => {
   return true;
 };
 
-const parsePostWiseApplyLinks = (value = "") => String(value || "")
-  .split(/\r?\n/)
-  .map((line) => line.trim())
-  .filter(Boolean)
-  .map((line) => {
-    const urlMatch = line.match(/https?:\/\/\S+|www\.\S+/i);
-    if(!urlMatch){ return null; }
-    const url = urlMatch[0];
-    const label = line.slice(0, urlMatch.index).replace(/[:|,-]+$/g, "").trim() || "Apply Link";
-    return { label, url };
-  })
-  .filter(Boolean);
-
 const renderPostWiseApplyLinks = (value = "") => {
   const box = document.getElementById("postApplyLinks");
   const links = parsePostWiseApplyLinks(value);
@@ -537,6 +593,21 @@ const renderMetaBadges = (items = []) => {
     .map((item) => `<span class="meta-badge"><i class="${item.icon}" aria-hidden="true"></i>${escapeHTML(item.label)}: ${escapeHTML(item.value)}</span>`)
     .join("");
 };
+const articleRowsToTableRows = (items = []) => items.map((item, index) => {
+  if(typeof item === "string"){
+    const colonIndex = item.indexOf(":");
+    return colonIndex > 0 && colonIndex <= 70
+      ? { label:item.slice(0, colonIndex), value:item.slice(colonIndex + 1).trim() }
+      : { label:`Overview ${index + 1}`, value:item };
+  }
+  if(item && typeof item === "object"){
+    return {
+      label:item.label || item.title || item.name || item.key || `Overview ${index + 1}`,
+      value:item.value || item.text || item.content || item.description || item.detail || ""
+    };
+  }
+  return null;
+}).filter(Boolean);
 
 const buildButton = (item, extraClass = "") => {
   const url = safeUrl(item.url);
@@ -549,6 +620,32 @@ const renderSidebarLinks = (items = []) => {
   if(!box){ return; }
   const html = items.map((item) => buildButton(item, item.className || "")).filter(Boolean).join("");
   box.innerHTML = html || '<a class="btn notification" href="job-form.html">Latest Jobs</a>';
+};
+const renderFaqSection = (job = {}, title = "Job Update") => {
+  const faqBox = document.getElementById("faqContent");
+  const faqPanel = document.getElementById("faqPanel");
+  const incomingFaq = Array.isArray(job.faq) ? job.faq : [];
+  const autoFaq = [
+    { q:`${title} ki last date kya hai?`, a:job.lastApplyDate || job.lastDate || "Official notification ke according check karein." },
+    { q:`${title} ke liye eligibility kya hai?`, a:job.qualification || "Qualification section me updated details dekhein." },
+    { q:`${title} ka apply kaise karein?`, a:job.howToApply || "How to Apply section me step-by-step process diya gaya hai." }
+  ];
+  const faqs = [...incomingFaq, ...autoFaq].map((item) => {
+    if(!item){ return null; }
+    if(typeof item === "string"){ return null; }
+    const question = String(item.question || item.q || "").trim();
+    const answer = String(item.answer || item.a || "").trim();
+    if(!question || !answer){ return null; }
+    return { question, answer };
+  }).filter(Boolean);
+  if(!faqs.length){
+    faqBox.innerHTML = "";
+    faqPanel.style.display = "none";
+    return [];
+  }
+  faqBox.innerHTML = faqs.map((item) => `<div class="content-section"><h2 class="sarkari-section-title">${escapeHTML(item.question)}</h2><p>${renderFormattedText(item.answer)}</p></div>`).join("");
+  faqPanel.style.display = "block";
+  return faqs;
 };
 
 const splitTableCells = (line) => line
@@ -680,10 +777,21 @@ if(!id){
     const title = job.title || "Job Update";
     const type = job.type || "Online Form";
     const content = String(job.pageContent || "").trim();
+    const nestedSections = Array.isArray(job.sections) ? job.sections : [];
+    const nestedSectionText = nestedSections.map((section) => {
+      if(typeof section === "string"){ return section; }
+      if(section && typeof section === "object"){
+        const heading = String(section.heading || section.title || section.name || "").trim();
+        const body = String(section.content || section.text || section.value || "").trim();
+        return `${heading ? `${heading}:` : ""}${body ? `\n${body}` : ""}`.trim();
+      }
+      return "";
+    }).filter(Boolean).join("\n\n");
 
     document.title = `${job.seoTitle || title} | E-MITRA WALA`;
     const metaDescription = document.querySelector('meta[name="description"]');
-    const description = job.metaDescription || job.notificationSummary || job.shortInfo || `${title} important dates, eligibility, fee, vacancy details aur apply links.`;
+    const articleIntroText = Array.isArray(job.intro) ? job.intro.map((item) => String(item || "").trim()).filter(Boolean).join(" ") : "";
+    const description = job.metaDescription || job.notificationSummary || job.shortInfo || articleIntroText || `${title} important dates, eligibility, fee, vacancy details aur apply links.`;
     if(metaDescription){ metaDescription.setAttribute("content", description.slice(0, 160)); }
     const canonicalUrl = `${location.origin}${location.pathname}?id=${encodeURIComponent(id)}${job.slug ? `&slug=${encodeURIComponent(job.slug)}` : (slugParam ? `&slug=${encodeURIComponent(slugParam)}` : "")}`;
     setCanonical(canonicalUrl);
@@ -692,14 +800,22 @@ if(!id){
     setMeta('meta[property="og:url"]', "content", canonicalUrl);
     setMeta('meta[name="twitter:title"]', "content", job.seoTitle || title);
     setMeta('meta[name="twitter:description"]', "content", description);
+    const faqItems = renderFaqSection(job, title);
     setJsonLd({
       "@context":"https://schema.org",
-      "@type":"Article",
+      "@type":["Article","JobPosting"],
       "headline":job.seoTitle || title,
+      "title":title,
       "description":description,
       "url":canonicalUrl,
+      "mainEntityOfPage":canonicalUrl,
+      "employmentType":job.type || "Online Form",
+      "datePosted":job.postDate || undefined,
+      "validThrough":job.lastApplyDate || job.lastDate || undefined,
+      "hiringOrganization":job.department ? { "@type":"Organization", "name":job.department } : undefined,
       "datePublished":job.createdAt ? new Date(job.createdAt).toISOString() : undefined,
       "dateModified":job.updatedAt ? new Date(job.updatedAt).toISOString() : undefined,
+      "mainEntity":faqItems.length ? faqItems.map((item) => ({ "@type":"Question", "name":item.question, "acceptedAnswer":{ "@type":"Answer", "text":item.answer } })) : undefined,
       "publisher":{
         "@type":"Organization",
         "name":"E-MITRA WALA",
@@ -711,6 +827,7 @@ if(!id){
     document.getElementById("jobIntro").innerHTML = renderFormattedText(job.shortInfo || `${title} ke important dates, eligibility, fee, vacancy details aur apply links yahan dekhein.`);
     document.getElementById("sheetTitle").textContent = title;
     document.getElementById("sheetSubTitle").innerHTML = renderFormattedText(job.shortInfo || `${type} notification ki complete details yahan clean format me di gayi hain.`);
+    renderTextBlock("shortInfoContent", "shortInfoPanel", job.shortInfo || (Array.isArray(job.intro) ? job.intro.join("\n") : ""));
     renderMetaBadges([
       { label:"Post Date", value:job.postDate, icon:"fa-solid fa-calendar-plus" },
       { label:"Last Date", value:job.lastApplyDate || job.lastDate, icon:"fa-solid fa-calendar-check" },
@@ -718,7 +835,7 @@ if(!id){
       { label:"Total Posts", value:job.totalPosts || job.totalVacancy, icon:"fa-solid fa-users" }
     ]);
 
-    renderList("featureTable", "featurePanel", [
+    const defaultOverviewRows = [
       { label:"Organization / Department", value:job.department },
       { label:"Post Name", value:job.postName || title },
       { label:"Total Posts / Vacancy", value:job.totalVacancy || job.totalPosts },
@@ -727,7 +844,10 @@ if(!id){
       { label:"Post Type", value:job.type },
       { label:"Last Date", value:job.lastApplyDate || job.lastDate, className:"danger-date" },
       { label:"Official Website", value:job.officialWebsite }
-    ]);
+    ];
+    const hasDefaultOverview = defaultOverviewRows.some((row) => isFilledValue(row.value, row.options));
+    const nestedOverviewRows = articleRowsToTableRows(job.overview);
+    renderList("featureTable", "featurePanel", hasDefaultOverview ? defaultOverviewRows : nestedOverviewRows);
 
     renderList("importantList", "importantPanel", [
       { label:"Application Start Date", value:job.startDate },
@@ -809,15 +929,26 @@ if(!id){
       button.style.display = visible ? "inline-flex" : "none";
       hasLink = hasLink || visible;
     });
-    renderSidebarLinks(linkButtons);
     const hasLinksManual = renderManualContent("linksManual", "linksPanel", job.importantLinksManual, "Other Important Links");
-    document.getElementById("linksPanel").style.display = hasLink || hasPostApplyLinks || hasLinksManual ? "block" : "none";
+    const nestedImportant = Array.isArray(job.importantLinks) ? job.importantLinks : [];
+    let hasNestedImportant = false;
+    if(nestedImportant.length && !hasPostApplyLinks){
+      const nestedLinksHtml = nestedImportant.filter((item) => item && item.label && item.url).map((item) => `<a class="btn" href="${safeUrl(item.url)}" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-link"></i> ${escapeHTML(item.label)}</a>`).join("");
+      document.getElementById("postApplyLinks").innerHTML = nestedLinksHtml;
+      hasNestedImportant = Boolean(nestedLinksHtml);
+    }
+    renderSidebarLinks([
+      ...linkButtons,
+      ...nestedImportant.map((item) => ({ label:item.label || "Important Link", url:item.url, icon:"fa-solid fa-link" }))
+    ]);
+    document.getElementById("linksPanel").style.display = hasLink || hasPostApplyLinks || hasLinksManual || hasNestedImportant ? "block" : "none";
 
     const contentBox = document.getElementById("pageContent");
-    if(content){
+    if(content || nestedSectionText){
       document.getElementById("pageContentPanel").style.display = "block";
       contentBox.classList.remove("empty");
-      contentBox.innerHTML = renderPageContent(content, `${title} Details`) || renderFormattedText(content);
+      const mergedContent = [content, nestedSectionText].filter(Boolean).join("\n\n");
+      contentBox.innerHTML = renderPageContent(mergedContent, `${title} Details`) || renderFormattedText(mergedContent);
     }else{
       document.getElementById("pageContentPanel").style.display = "none";
     }
