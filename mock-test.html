@@ -733,6 +733,12 @@ const readDirectTest = async (id) => {
   return snap.exists() ? [{ id, ...(snap.val() || {}) }] : [];
 };
 
+const readKnownCategoryDateTests = async (date) => {
+  const slugs = ["rajasthan-gk", "reasoning", "ssc-level-math", "english"];
+  const directReads = await Promise.all(slugs.map((slug) => readDirectTest(categoryDateTestId(slug, date))));
+  return directReads.flat();
+};
+
 const readDateTests = async (date) => {
   const rows = new Map();
   const addSnapshotRows = (snap) => {
@@ -740,8 +746,16 @@ const readDateTests = async (date) => {
       snap.forEach((child) => rows.set(child.key, { id:child.key, ...(child.val() || {}) }));
     }
   };
-  addSnapshotRows(await get(query(ref(db, "mockTests"), orderByChild("date"), equalTo(date))));
-  addSnapshotRows(await get(query(ref(db, "mockTests"), orderByChild("publishDate"), equalTo(date))));
+  (await readKnownCategoryDateTests(date)).forEach((test) => rows.set(test.id, test));
+  const runIndexedDateQuery = async (field) => {
+    try{
+      addSnapshotRows(await get(query(ref(db, "mockTests"), orderByChild(field), equalTo(date))));
+    }catch(error){
+      console.warn(`mockTests ${field} indexed query failed, direct date IDs loaded instead.`, error);
+    }
+  };
+  await runIndexedDateQuery("date");
+  await runIndexedDateQuery("publishDate");
   return Array.from(rows.values());
 };
 
