@@ -20,13 +20,26 @@
 <script>
 (function(){
   var params = new URLSearchParams(window.location.search || "");
-  var slug = params.get("post") || params.get("slug") || ((window.location.pathname.match(/^\/post\/([^/?#]+)/) || [])[1] || "");
+  var isOldQueryUrl = /\/job-detail\.html$/i.test(window.location.pathname || "") && (params.get("id") || params.get("post") || params.get("slug"));
+  var slug = isOldQueryUrl ? (params.get("post") || params.get("slug") || "") : ((window.location.pathname.match(/^\/post\/([^/?#]+)/) || [])[1] || "");
   if(!slug){ return; }
   var canonical = window.location.origin + "/post/" + encodeURIComponent(decodeURIComponent(slug));
   var link = document.querySelector('link[rel="canonical"]');
   if(link){ link.setAttribute("href", canonical); }
   var ogUrl = document.querySelector('meta[property="og:url"]');
   if(ogUrl){ ogUrl.setAttribute("content", canonical); }
+})();
+</script>
+<script>
+(function(){
+  if(!("serviceWorker" in navigator)){ return; }
+  window.addEventListener("load", function(){
+    navigator.serviceWorker.getRegistrations().then(function(registrations){
+      registrations.forEach(function(registration){
+        registration.unregister().catch(function(){});
+      });
+    }).catch(function(){});
+  }, { once:true });
 })();
 </script>
 <script type="application/ld+json" id="jobSchemaJsonLd">
@@ -478,6 +491,23 @@ const buildCanonicalSlug = (job = {}, fallbackId = "") => {
 const canonicalJobHref = (id = "", job = {}) => `post/${encodeURIComponent(buildCanonicalSlug(job, id))}`;
 
 const canonicalJobUrl = (id = "", job = {}) => `${location.origin}/${canonicalJobHref(id, job)}`;
+
+const normalizeComparableUrl = (value = "") => {
+  try{
+    const url = new URL(value, location.origin);
+    const normalizedPath = url.pathname.replace(/\/+$/, "") || "/";
+    return `${url.origin}${normalizedPath}${url.search}`;
+  }catch(_error){
+    return String(value || "");
+  }
+};
+
+const shouldRedirectToCanonical = (targetUrl = "") => {
+  const params = new URLSearchParams(window.location.search || "");
+  const isOldQueryUrl = /\/job-detail\.html$/i.test(location.pathname || "") && (params.get("id") || params.get("post") || params.get("slug"));
+  if(!isOldQueryUrl){ return false; }
+  return normalizeComparableUrl(location.href) !== normalizeComparableUrl(targetUrl);
+};
 
 const setJsonLd = (data = {}) => {
   let script = document.getElementById("jobSchemaJsonLd");
@@ -1005,13 +1035,10 @@ const renderJobDetail = (jobId, rawJob) => {
     if(metaDescription){ metaDescription.setAttribute("content", description.slice(0, 160)); }
     const canonicalUrl = canonicalJobUrl(jobId, job);
     setCanonical(canonicalUrl);
-    try{
-      const canonicalPath = new URL(canonicalUrl).pathname;
-      if((location.pathname !== canonicalPath || location.search) && /^https?:$/i.test(location.protocol)){
-        location.replace(canonicalUrl);
-        return;
-      }
-    }catch(_error){}
+    if(/^https?:$/i.test(location.protocol) && shouldRedirectToCanonical(canonicalUrl)){
+      location.replace(canonicalUrl);
+      return;
+    }
     setMeta('meta[property="og:title"]', "content", job.seoTitle || title);
     setMeta('meta[property="og:description"]', "content", description);
     setMeta('meta[property="og:url"]', "content", canonicalUrl);

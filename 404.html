@@ -15,9 +15,19 @@
     var canonical = window.location.origin + "/post/" + slug;
     var link = document.querySelector('link[rel="canonical"]');
     if(link){ link.setAttribute("href", canonical); }
-    return;
   }
-  window.location.replace("/index.html");
+})();
+</script>
+<script>
+(function(){
+  if(!("serviceWorker" in navigator)){ return; }
+  window.addEventListener("load", function(){
+    navigator.serviceWorker.getRegistrations().then(function(registrations){
+      registrations.forEach(function(registration){
+        registration.unregister().catch(function(){});
+      });
+    }).catch(function(){});
+  }, { once:true });
 })();
 </script>
 </head>
