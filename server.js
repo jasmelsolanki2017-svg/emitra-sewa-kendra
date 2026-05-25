@@ -606,7 +606,7 @@ const jobSchemaGraph = ({ id = "", job = {}, title = "Job Update", description =
   const manualFaqs = normalizeFaqItems(job.faq);
   const faqItems = manualFaqs.length ? manualFaqs : buildDefaultFaqItems(job, title);
   const publisher = { "@type": "Organization", name: "E-MITRA WALA", url: `${SITE_BASE_URL}/` };
-  return {
+  return removeUndefinedDeep({
     "@context": "https://schema.org",
     "@graph": [
       {
@@ -644,8 +644,24 @@ const jobSchemaGraph = ({ id = "", job = {}, title = "Job Update", description =
         }))
       }
     ]
-  };
+  });
 };
+
+function removeUndefinedDeep(value) {
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => removeUndefinedDeep(item))
+      .filter((item) => item !== undefined);
+  }
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value)
+        .map(([key, item]) => [key, removeUndefinedDeep(item)])
+        .filter(([, item]) => item !== undefined)
+    );
+  }
+  return value === undefined ? undefined : value;
+}
 
 const buildSeoStorageFields = (id = "", job = {}) => {
   const seo = buildSeoFields(job, id);
