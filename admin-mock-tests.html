@@ -46,14 +46,19 @@ button.secondary{background:#eaf4ff;color:var(--blue);border:1px solid #bdd0e5}
 .date-group summary span{display:inline-flex;align-items:center;gap:7px}
 .date-group summary small{color:var(--muted);font-weight:900}
 .date-tests{display:grid;gap:10px;padding:10px}
-.test-card{background:#fbfdff;border:1px solid var(--line);border-left:5px solid var(--blue);border-radius:8px;padding:11px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center}
+.test-card{background:#fbfdff;border:1px solid var(--line);border-left:5px solid var(--blue);border-radius:8px;padding:11px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center}
+.test-select{width:18px;height:18px;accent-color:var(--blue)}
 .test-card h3{color:var(--blue);font-size:15px}
 .test-card small{display:block;color:var(--muted);font-weight:800;margin-top:3px}
 .test-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.bulk-toolbar{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:#eef7ff;border:1px solid var(--line);border-radius:8px;padding:9px 10px;margin-bottom:10px}
+.bulk-toolbar strong{color:var(--blue);font-size:13px}
+.date-select-label{display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+.date-select-label input{width:16px;height:16px;accent-color:var(--blue)}
 .public-link{display:block;color:var(--blue);font-weight:900;font-size:12px;margin-top:5px;overflow-wrap:anywhere;text-decoration:underline}
 .pill{display:inline-flex;background:var(--soft);border:1px solid #d8e6f5;color:var(--blue);border-radius:999px;padding:3px 8px;margin-top:6px;font-size:11px;font-weight:900}
 .empty{padding:18px;text-align:center;color:var(--muted);font-weight:800}
-@media(max-width:800px){nav{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap}nav a,nav button{white-space:nowrap}.form-grid{grid-template-columns:1fr}.test-card{grid-template-columns:1fr}.test-actions{justify-content:flex-start}textarea{min-height:260px}}
+@media(max-width:800px){nav{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap}nav a,nav button{white-space:nowrap}.form-grid{grid-template-columns:1fr}.test-card{grid-template-columns:auto minmax(0,1fr)}.test-actions{grid-column:1/-1;justify-content:flex-start}textarea{min-height:260px}}
 </style>
 </head>
 <body>
@@ -153,6 +158,14 @@ button.secondary{background:#eaf4ff;color:var(--blue);border:1px solid #bdd0e5}
   <section class="panel">
     <h2>Saved Mock Tests</h2>
     <div id="listStatus" class="status">Loading tests...</div>
+    <div class="bulk-toolbar">
+      <strong id="selectedCount">Selected: 0</strong>
+      <div class="actions" style="margin-top:0">
+        <button type="button" class="secondary" onclick="selectAllVisibleTests()">Select Visible</button>
+        <button type="button" class="secondary" onclick="clearSelectedTests()">Clear Selection</button>
+        <button type="button" class="red" onclick="deleteSelectedMockTests()"><i class="fa-solid fa-trash"></i> Delete Selected</button>
+      </div>
+    </div>
     <div id="testsList" class="tests-list"><div class="empty">Loading...</div></div>
   </section>
 </main>
@@ -185,6 +198,7 @@ const adminEmail = "jasmelsolanki@gmail.com";
 const testsRef = ref(db, "mockTests");
 let adminAllowed = false;
 let testsCache = {};
+let selectedTestIds = new Set();
 
 const $ = (id) => document.getElementById(id);
 const escapeHTML = (value = "") => String(value)
@@ -602,6 +616,7 @@ const formatDateLabel = (date = "") => {
 const renderTestCard = (test) => {
   const qCount = Array.isArray(test.questions) ? test.questions.length : Number(test.totalQuestions || 0);
   return `<article class="test-card">
+    <input class="test-select" type="checkbox" data-test-select="${escapeHTML(test.id)}" aria-label="Select ${escapeHTML(test.title || test.id)}" ${selectedTestIds.has(test.id) ? "checked" : ""}>
     <div>
       <h3>${escapeHTML(test.title || "Daily Mock Test")}</h3>
       <small>ID: ${escapeHTML(test.id)} | ${escapeHTML(test.category || "General")} | ${escapeHTML(test.date || "No date")}</small>
@@ -615,6 +630,66 @@ const renderTestCard = (test) => {
       <button type="button" class="red" onclick="deleteMockTest('${escapeHTML(test.id)}')">Delete</button>
     </div>
   </article>`;
+};
+
+const updateDateSelectStates = () => {
+  document.querySelectorAll(".date-group").forEach((group) => {
+    const dateBox = group.querySelector("[data-date-select]");
+    const testBoxes = Array.from(group.querySelectorAll("[data-test-select]"));
+    if(!dateBox){ return; }
+    const checkedCount = testBoxes.filter((box) => box.checked).length;
+    dateBox.checked = testBoxes.length > 0 && checkedCount === testBoxes.length;
+    dateBox.indeterminate = checkedCount > 0 && checkedCount < testBoxes.length;
+  });
+};
+
+const updateSelectedCount = () => {
+  const countEl = $("selectedCount");
+  if(countEl){ countEl.innerText = `Selected: ${selectedTestIds.size}`; }
+  updateDateSelectStates();
+};
+
+const pruneSelectedTests = () => {
+  const validIds = new Set(Object.keys(testsCache));
+  selectedTestIds = new Set(Array.from(selectedTestIds).filter((id) => validIds.has(id)));
+  updateSelectedCount();
+};
+
+window.selectAllVisibleTests = () => {
+  document.querySelectorAll("[data-test-select]").forEach((box) => {
+    box.checked = true;
+    selectedTestIds.add(box.dataset.testSelect);
+  });
+  updateSelectedCount();
+};
+
+window.clearSelectedTests = () => {
+  selectedTestIds.clear();
+  document.querySelectorAll("[data-test-select], [data-date-select]").forEach((box) => {
+    box.checked = false;
+    box.indeterminate = false;
+  });
+  updateSelectedCount();
+};
+
+window.deleteSelectedMockTests = async () => {
+  try{
+    requireAdmin();
+    const ids = Array.from(selectedTestIds).filter(Boolean);
+    if(!ids.length){
+      $("saveStatus").innerText = "Delete ke liye pehle test select karein.";
+      return;
+    }
+    if(confirm(`${ids.length} selected mock test delete karne hain?`)){
+      $("saveStatus").innerText = `${ids.length} selected mock test delete ho rahe hain...`;
+      await Promise.all(ids.map((id) => remove(ref(db, "mockTests/" + id))));
+      selectedTestIds.clear();
+      updateSelectedCount();
+      $("saveStatus").innerText = `${ids.length} mock test delete ho gaye.`;
+    }
+  }catch(error){
+    $("saveStatus").innerText = error.message;
+  }
 };
 
 window.saveFullTest = async () => {
@@ -765,12 +840,41 @@ window.deleteMockTest = async (id) => {
     requireAdmin();
     if(confirm("Ye mock test delete karna hai?")){
       await remove(ref(db, "mockTests/" + id));
+      selectedTestIds.delete(id);
+      updateSelectedCount();
       $("saveStatus").innerText = "Mock test delete ho gaya.";
     }
   }catch(error){
     $("saveStatus").innerText = error.message;
   }
 };
+
+$("testsList").addEventListener("change", (event) => {
+  const testBox = event.target.closest("[data-test-select]");
+  if(testBox){
+    if(testBox.checked){
+      selectedTestIds.add(testBox.dataset.testSelect);
+    }else{
+      selectedTestIds.delete(testBox.dataset.testSelect);
+    }
+    updateSelectedCount();
+    return;
+  }
+  const dateBox = event.target.closest("[data-date-select]");
+  if(dateBox){
+    const group = dateBox.closest(".date-group");
+    if(!group){ return; }
+    group.querySelectorAll("[data-test-select]").forEach((box) => {
+      box.checked = dateBox.checked;
+      if(dateBox.checked){
+        selectedTestIds.add(box.dataset.testSelect);
+      }else{
+        selectedTestIds.delete(box.dataset.testSelect);
+      }
+    });
+    updateSelectedCount();
+  }
+});
 
 onAuthStateChanged(auth, (user) => {
   if(user && user.email === adminEmail){
@@ -795,8 +899,10 @@ onValue(testsRef, (snapshot) => {
   }
   rows.sort((a,b) => String(b.date || "").localeCompare(String(a.date || "")) || String(a.title || "").localeCompare(String(b.title || "")));
   $("listStatus").innerText = `Firebase se ${rows.length} mock test load hue.`;
+  pruneSelectedTests();
   if(!rows.length){
     list.innerHTML = '<div class="empty">Abhi koi mock test save nahi hai.</div>';
+    updateSelectedCount();
     return;
   }
   const grouped = rows.reduce((groups, test) => {
@@ -811,6 +917,10 @@ onValue(testsRef, (snapshot) => {
     <details class="date-group" ${index === 0 ? "open" : ""}>
       <summary>
         <span><i class="fa-solid fa-calendar-days"></i> ${escapeHTML(formatDateLabel(date))}</span>
+        <label class="date-select-label" onclick="event.stopPropagation()">
+          <input type="checkbox" data-date-select="${escapeHTML(date)}">
+          Select Date
+        </label>
         <small>${tests.length} test${tests.length > 1 ? "s" : ""}</small>
       </summary>
       <div class="date-tests">
@@ -818,6 +928,7 @@ onValue(testsRef, (snapshot) => {
       </div>
     </details>
   `).join("");
+  updateSelectedCount();
 }, (error) => {
   $("listStatus").innerText = "Mock tests load nahi hue: " + error.message;
   $("testsList").innerHTML = '<div class="empty">Firebase se data load nahi ho paya.</div>';
