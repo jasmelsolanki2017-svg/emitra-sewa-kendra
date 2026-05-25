@@ -60,7 +60,7 @@ button.secondary{background:#eaf4ff;color:var(--blue);border:1px solid #bdd0e5}
 <div class="topbar"><div>Mock Test Manager</div><div id="liveTime">Loading...</div></div>
 <header>
   <h1>Mock Test Manager</h1>
-  <p>JSON paste karke Daily Mock Test aur questions Firebase me add/update karein.</p>
+  <p>JSON paste karke Daily Mock Test, category-wise questions ya 30 din ka schedule Firebase me add/update karein.</p>
 </header>
 <nav>
   <a href="dashboard.html">Dashboard</a>
@@ -77,7 +77,7 @@ button.secondary{background:#eaf4ff;color:var(--blue);border:1px solid #bdd0e5}
 
   <section class="panel">
     <h2>Paste Mock Test JSON</h2>
-    <p>Full test object save/update karein, selected Test ID me questions append karein, ya mixed category questions array paste karke auto category wise add karein.</p>
+    <p>Full test object save/update karein, selected Test ID me questions append karein, mixed category questions array paste karein, ya 30 din ka category/date schedule ek saath import karein.</p>
     <div class="form-grid">
       <label>Test ID (optional for full test, required for append)
         <input id="testIdInput" type="text" placeholder="daily-rajasthan-gk-2026-05-24">
@@ -107,6 +107,7 @@ button.secondary{background:#eaf4ff;color:var(--blue);border:1px solid #bdd0e5}
       <button type="button" class="green" onclick="saveFullTest()"><i class="fa-solid fa-floppy-disk"></i> Save / Update Full Test</button>
       <button type="button" class="orange" onclick="appendQuestionsToTest()"><i class="fa-solid fa-plus"></i> Add Questions To Test</button>
       <button type="button" class="secondary" onclick="autoAddQuestionsByCategory()"><i class="fa-solid fa-layer-group"></i> Auto Add By Category</button>
+      <button type="button" class="green" onclick="importMonthlyTests()"><i class="fa-solid fa-calendar-days"></i> Import 30 Days JSON</button>
       <button type="button" class="secondary" onclick="clearEditor()">Clear</button>
     </div>
     <div id="saveStatus" class="status"></div>
@@ -114,7 +115,8 @@ button.secondary{background:#eaf4ff;color:var(--blue);border:1px solid #bdd0e5}
 
   <section class="panel">
     <h2>JSON Format Example</h2>
-    <pre class="example">{
+    <pre class="example">Single test:
+{
   "title": "Daily Mock Test - Rajasthan GK",
   "category": "Rajasthan GK",
   "timeLimit": 20,
@@ -129,6 +131,22 @@ button.secondary{background:#eaf4ff;color:var(--blue);border:1px solid #bdd0e5}
       "explanation": "राजस्थान की राजधानी जयपुर है।"
     }
   ]
+}
+
+30 days/category-wise schedule:
+{
+  "timeLimit": 20,
+  "status": "active",
+  "dates": {
+    "2026-05-25": {
+      "Rajasthan GK": [
+        {"question":"राजस्थान की राजधानी क्या है?","options":["जयपुर","जोधपुर","उदयपुर","कोटा"],"correctAnswer":"जयपुर"}
+      ],
+      "Reasoning": [
+        {"question":"2, 4, 8, 16, ?","options":["18","24","32","36"],"correctAnswer":"32"}
+      ]
+    }
+  }
 }</pre>
   </section>
 
@@ -356,6 +374,112 @@ const saveQuestionGroups = async (groups, rawMeta = {}) => {
   return saved;
 };
 
+const isLikelyTestObject = (value = {}) => Boolean(
+  value && typeof value === "object" && !Array.isArray(value) &&
+  (Array.isArray(value.questions) || value.categories || value.date || value.category || value.subject)
+);
+
+const buildScheduledTest = ({ date, category, questions, meta = {}, title = "" }) => {
+  const label = getCategoryLabel(category || meta.category || $("categoryInput").value || "Rajasthan GK");
+  const rows = normalizeQuestions({ questions });
+  return {
+    title:String(title || meta.title || `Daily Mock Test - ${label}`).trim(),
+    category:label,
+    subject:label,
+    timeLimit:Number(meta.timeLimit || 20),
+    totalQuestions:rows.length,
+    status:String(meta.status || $("statusInput").value || "active").trim().toLowerCase(),
+    date:String(date || meta.date || $("dateInput").value || todayISO()).trim(),
+    questions:rows
+  };
+};
+
+const collectTestsFromSchedule = (raw, parentMeta = {}) => {
+  const tests = [];
+  const meta = { ...parentMeta, ...(raw && typeof raw === "object" && !Array.isArray(raw) ? raw : {}) };
+  const pushTest = (test) => {
+    const normalized = normalizeTest({ ...meta, ...test });
+    if(normalized.questions.length){ tests.push(normalized); }
+  };
+  const pushCategoryMap = (date, categoriesMap = {}, localMeta = {}) => {
+    Object.entries(categoriesMap || {}).forEach(([category, value]) => {
+      const categoryMeta = value && typeof value === "object" && !Array.isArray(value) ? value : {};
+      const questions = Array.isArray(value) ? value : (Array.isArray(categoryMeta.questions) ? categoryMeta.questions : []);
+      const test = buildScheduledTest({
+        date,
+        category,
+        questions,
+        meta:{ ...meta, ...localMeta, ...categoryMeta },
+        title:categoryMeta.title || localMeta.title || ""
+      });
+      if(test.questions.length){ tests.push(test); }
+    });
+  };
+
+  if(Array.isArray(raw)){
+    raw.forEach((item) => {
+      if(!item || typeof item !== "object"){ return; }
+      if(item.categories && item.date){ pushCategoryMap(item.date, item.categories, item); return; }
+      if(isLikelyTestObject(item)){ pushTest(item); }
+    });
+    return tests;
+  }
+
+  if(!raw || typeof raw !== "object"){ return tests; }
+  if(Array.isArray(raw.tests)){ tests.push(...collectTestsFromSchedule(raw.tests, meta)); }
+  if(Array.isArray(raw.days)){ tests.push(...collectTestsFromSchedule(raw.days, meta)); }
+  if(Array.isArray(raw.schedule)){ tests.push(...collectTestsFromSchedule(raw.schedule, meta)); }
+  if(raw.categories && raw.date){ pushCategoryMap(raw.date, raw.categories, raw); }
+  if(raw.dates && typeof raw.dates === "object"){
+    Object.entries(raw.dates).forEach(([date, value]) => {
+      if(Array.isArray(value)){ tests.push(...collectTestsFromSchedule(value.map((item) => ({ ...item, date })), meta)); return; }
+      if(value && typeof value === "object"){
+        if(value.categories){ pushCategoryMap(date, value.categories, value); }
+        else { pushCategoryMap(date, value, raw); }
+      }
+    });
+  }
+  Object.entries(raw).forEach(([key, value]) => {
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(key) || !value || typeof value !== "object"){ return; }
+    if(value.categories){ pushCategoryMap(key, value.categories, value); }
+    else { pushCategoryMap(key, value, raw); }
+  });
+  if(!tests.length && Array.isArray(raw.questions)){ pushTest(raw); }
+  return tests;
+};
+
+const saveScheduledTests = async (tests = []) => {
+  const valid = tests.filter((test) => test.questions && test.questions.length && test.date);
+  if(!valid.length){ throw new Error("30 din schedule me valid date/category/questions nahi mile."); }
+  const now = Date.now();
+  const saved = [];
+  for(const test of valid){
+    const id = categoryTestId(test.category, test.date);
+    const duplicateReport = getDuplicateQuestionReport(test.questions);
+    if(duplicateReport.duplicates.length){
+      throw new Error(`${test.date} ${test.category}: ${duplicateMessage(duplicateReport.duplicates)}`);
+    }
+    await set(ref(db, "mockTests/" + id), {
+      ...test,
+      totalQuestions:test.questions.length,
+      updatedAt:now,
+      createdAt:Number(test.createdAt || now)
+    });
+    saved.push(`${test.date} ${test.category}: ${test.questions.length}Q`);
+  }
+  return saved;
+};
+
+const hasScheduleShape = (raw) => Boolean(
+  (Array.isArray(raw) && raw.some(isLikelyTestObject)) ||
+  (raw && typeof raw === "object" && !Array.isArray(raw) && (raw.tests || raw.days || raw.schedule || raw.dates || raw.categories))
+);
+
+const importScheduleFromRaw = async (raw) => {
+  const tests = collectTestsFromSchedule(raw);
+  return saveScheduledTests(tests);
+};
+
 const normalizeTest = (raw) => {
   const now = Date.now();
   const title = String(raw.title || "Daily Mock Test").trim();
@@ -466,6 +590,12 @@ window.saveFullTest = async () => {
   try{
     requireAdmin();
     const raw = parseJson();
+    if(hasScheduleShape(raw)){
+      $("saveStatus").innerText = "Date/category schedule import ho raha hai...";
+      const saved = await importScheduleFromRaw(raw);
+      $("saveStatus").innerText = `${saved.length} test save/update ho gaye. ${saved.slice(0, 8).join(" | ")}${saved.length > 8 ? " ..." : ""}`;
+      return;
+    }
     if(Array.isArray(raw)){
       $("saveStatus").innerText = "Category wise questions add ho rahe hain...";
       const saved = await saveQuestionGroups(groupQuestionsByCategory(raw), raw);
@@ -535,6 +665,18 @@ window.autoAddQuestionsByCategory = async () => {
     $("saveStatus").innerText = "Category wise questions add ho rahe hain...";
     const saved = await saveQuestionGroups(groupQuestionsByCategory(raw), raw);
     $("saveStatus").innerText = saved.join(" | ");
+  }catch(error){
+    $("saveStatus").innerText = error.message;
+  }
+};
+
+window.importMonthlyTests = async () => {
+  try{
+    requireAdmin();
+    const raw = parseJson();
+    $("saveStatus").innerText = "30 din/category wise schedule import ho raha hai...";
+    const saved = await importScheduleFromRaw(raw);
+    $("saveStatus").innerText = `${saved.length} test save/update ho gaye. ${saved.slice(0, 8).join(" | ")}${saved.length > 8 ? " ..." : ""}`;
   }catch(error){
     $("saveStatus").innerText = error.message;
   }

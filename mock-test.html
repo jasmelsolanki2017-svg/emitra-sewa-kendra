@@ -199,6 +199,7 @@ const auth = getAuth(app);
 const db = getDatabase(app);
 const categories = ["All","Rajasthan GK","Reasoning","SSC Level Math","English"];
 const themeStorageKey = "emitraTheme";
+const visiblePastDays = 7;
 let currentUser = null;
 let allTests = [];
 let historyRows = [];
@@ -267,6 +268,20 @@ const shiftDate = (dateValue, days) => {
   const base = dateValue ? new Date(`${dateValue}T00:00:00`) : new Date();
   base.setDate(base.getDate() + days);
   return dateInputValue(base);
+};
+const compareDateValue = (a = "", b = "") => String(normalizeDateValue(a)).localeCompare(String(normalizeDateValue(b)));
+const minVisibleDate = () => shiftDate(dateInputValue(), -visiblePastDays);
+const maxVisibleDate = () => dateInputValue();
+const isDateInVisibleWindow = (dateValue = "") => {
+  const date = normalizeDateValue(dateValue);
+  if(!date){ return false; }
+  return compareDateValue(date, minVisibleDate()) >= 0 && compareDateValue(date, maxVisibleDate()) <= 0;
+};
+const clampVisibleDate = (dateValue = "") => {
+  const date = normalizeDateValue(dateValue) || maxVisibleDate();
+  if(compareDateValue(date, minVisibleDate()) < 0){ return minVisibleDate(); }
+  if(compareDateValue(date, maxVisibleDate()) > 0){ return maxVisibleDate(); }
+  return date;
 };
 const formatDisplayDate = (dateValue) => {
   const normalized = normalizeDateValue(dateValue);
@@ -383,7 +398,14 @@ const renderCategories = () => {
   ).join("");
 };
 const renderDateFilter = () => {
+  const minDate = minVisibleDate();
+  const maxDate = maxVisibleDate();
+  if(!isDateInVisibleWindow(selectedDate)){ selectedDate = clampVisibleDate(selectedDate); }
   $("testDatePicker").value = selectedDate;
+  $("testDatePicker").min = minDate;
+  $("testDatePicker").max = maxDate;
+  $("prevDateBtn").disabled = compareDateValue(selectedDate, minDate) <= 0;
+  $("nextDateBtn").disabled = compareDateValue(selectedDate, maxDate) >= 0;
   $("selectedDateText").textContent = formatDisplayDate(selectedDate);
 };
 
@@ -392,18 +414,20 @@ const renderTests = () => {
   renderDateFilter();
   const selectedCategory = activeCategory;
   const selectedSlug = getCategorySlug(selectedCategory);
-  const filteredTests = allTests.filter((test) => {
+  const visibleTests = allTests.filter((test) => isDateInVisibleWindow(test.date));
+  const filteredTests = visibleTests.filter((test) => {
     if(!test.questions.length){ return false; }
     if(!testMatchesSelectedDate(test)){ return false; }
     if(selectedSlug === "all"){ return true; }
     const testSlug = getTestCategorySlug(test, test.id);
     return testSlug === selectedSlug;
   });
-  const linkedTest = linkedTestId ? allTests.find((test) => test.questions.length && testMatchesDirectSlug(test, linkedTestId)) : null;
+  const linkedTest = linkedTestId ? visibleTests.find((test) => test.questions.length && testMatchesDirectSlug(test, linkedTestId)) : null;
   const visible = linkedTest ? [linkedTest] : filteredTests;
   const directNote = linkedTest ? `<div class="message direct-test-note">Direct test link open hai: ${escapeHTML(linkedTest.category)}. <a href="mock-test.html">All Tests Dekhein</a></div>` : "";
-  const missingDirectNote = linkedTestId && !linkedTest ? `<div class="message direct-test-note">Is direct link ka test active nahi mila. Neeche available tests dikha rahe hain. <a href="mock-test.html">All Tests Dekhein</a></div>` : "";
-  let cardsHtml = directNote || missingDirectNote;
+  const missingDirectNote = linkedTestId && !linkedTest ? `<div class="message direct-test-note">Is direct link ka test available window me nahi mila. Future tests hidden hain aur sirf today + pichhle ${visiblePastDays} din ke tests dikhte hain. <a href="mock-test.html">All Tests Dekhein</a></div>` : "";
+  const windowNote = `<div class="message direct-test-note">Sirf today aur pichhle ${visiblePastDays} din ke active tests available hain. Future tests date aane par automatically show honge.</div>`;
+  let cardsHtml = (directNote || missingDirectNote) + (linkedTest ? "" : windowNote);
   if(visible.length){
     visible.forEach((test) => {
       cardsHtml += `
@@ -603,7 +627,7 @@ $("categoryTabs").addEventListener("click", (event) => {
 });
 
 const setSelectedDate = (dateValue) => {
-  selectedDate = normalizeDateValue(dateValue) || dateInputValue();
+  selectedDate = clampVisibleDate(dateValue);
   linkedTestId = "";
   if(location.search.includes("test=")){
     history.replaceState(null, "", location.pathname);
