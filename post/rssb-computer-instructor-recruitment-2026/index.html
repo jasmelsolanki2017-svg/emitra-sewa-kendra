@@ -98,18 +98,34 @@
         },
         {
           "@type": "Question",
-          "name": "RSSB Computer Instructor Recruitment 2026 ke liye eligibility kya hai?",
+          "name": "RSSB Computer Instructor Recruitment 2026 kis department se related hai?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Senior Computer Instructor: M.E./M.Tech / M.Sc. / MCA / B Level / C Level in relevant computer/IT fields. Basic Computer Instructor: Graduate with A Level / PGDCA / B.E./B.Tech / B.Sc. / BCA in relevant fields. Hindi Devanagari script and Rajasthan culture knowledge required.\n\nPost Name: Basic Computer Instructor\nQualification: Candidates must be a graduate with ‘A’ Level or PGDCA (minimum 1 year), or hold a B.E./B.Tech degree in Computer Science, IT, ECE, EE, EEE, EIC, or TIE, or a B.Sc. in Computer Science/IT, or a BCA from a recognized university. Any equivalent or higher qualification recognized by the Government is also acceptable. Candidates should also have working knowledge of Hindi written in Devanagari script and knowledge of Rajasthani culture.\n\nPost Name: Senior Computer Instructor\nQualification: Candidates must have an M.E./M.Tech degree in Computer  Science, IT, ECE, EE, EEE, ETE, or EIE; or an M.Sc. in Computer Science/IT; or MCA/’B’ Level/’C’ Level qualification, or any equivalent/higher qualification recognized by the Government. Candidates should also have working knowledge of Hindi written in Devanagari script and knowledge of Rajasthani culture."
+            "text": "Ye update Rajasthan Staff Selection Board (RSSB) se related hai."
           }
         },
         {
           "@type": "Question",
-          "name": "RSSB Computer Instructor Recruitment 2026 ka apply kaise karein?",
+          "name": "RSSB Computer Instructor Recruitment 2026 ka apply link kahan milega?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Candidates can apply online through RSSB official website or SSO Rajasthan portal.\nBefore applying, candidates should carefully read the official notification.\nFill the online application form before the last date 23 June 2026.\nPay the application fee through online mode and submit the form.\nTake a printout of the final submitted application form for future use."
+            "text": "Apply Online link Important Links section me diya gaya hai."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "RSSB Computer Instructor Recruitment 2026 ka official notification kahan milega?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Official detail link update hone par isi page par add kiya jayega."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "RSSB Computer Instructor Recruitment 2026 kis category ka update hai?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Ye online form category ka update hai."
           }
         }
       ]
@@ -872,23 +888,45 @@ const renderSidebarLinks = (items = []) => {
   const html = items.map((item) => buildButton(item, item.className || "")).filter(Boolean).join("");
   box.innerHTML = html || '<a class="btn notification" href="job-form.html">Latest Jobs</a>';
 };
+const normalizeFaqItems = (items = []) => (Array.isArray(items) ? items : []).map((item) => {
+  if(!item || typeof item === "string"){ return null; }
+  const question = String(item.question || item.q || item.title || "").trim();
+  const answer = String(item.answer || item.a || item.text || item.content || "").trim();
+  if(!question || !answer){ return null; }
+  return { question, answer };
+}).filter(Boolean);
+const buildDefaultFaqItems = (job = {}, title = "Job Update") => {
+  const lastDate = job.lastApplyDate || job.lastDate || "Official notification ke according check karein.";
+  const department = job.department || "official department";
+  const postTarget = normalizePostTarget(job.postTarget);
+  const targetLabel = {
+    latestJob:"online form",
+    notification:"notification",
+    admitCard:"admit card",
+    result:"result",
+    syllabus:"syllabus",
+    answerKey:"answer key",
+    admission:"admission form"
+  }[postTarget] || "update";
+  const applyText = safeUrl(job.applyLink) !== "#"
+    ? "Apply Online link Important Links section me diya gaya hai."
+    : "Apply link update hone par Important Links section me show hoga.";
+  const detailText = safeUrl(job.detailLink) !== "#"
+    ? "Official notification/detail link Important Links section me available hai."
+    : "Official detail link update hone par isi page par add kiya jayega.";
+  return [
+    { question:`${title} ki last date kya hai?`, answer:lastDate },
+    { question:`${title} kis department se related hai?`, answer:`Ye update ${department} se related hai.` },
+    { question:`${title} ka apply link kahan milega?`, answer:applyText },
+    { question:`${title} ka official notification kahan milega?`, answer:detailText },
+    { question:`${title} kis category ka update hai?`, answer:`Ye ${targetLabel} category ka update hai.` }
+  ];
+};
 const renderFaqSection = (job = {}, title = "Job Update") => {
   const faqBox = document.getElementById("faqContent");
   const faqPanel = document.getElementById("faqPanel");
-  const incomingFaq = Array.isArray(job.faq) ? job.faq : [];
-  const autoFaq = [
-    { q:`${title} ki last date kya hai?`, a:job.lastApplyDate || job.lastDate || "Official notification ke according check karein." },
-    { q:`${title} ke liye eligibility kya hai?`, a:job.qualification || "Qualification section me updated details dekhein." },
-    { q:`${title} ka apply kaise karein?`, a:job.howToApply || "How to Apply section me step-by-step process diya gaya hai." }
-  ];
-  const faqs = [...incomingFaq, ...autoFaq].map((item) => {
-    if(!item){ return null; }
-    if(typeof item === "string"){ return null; }
-    const question = String(item.question || item.q || "").trim();
-    const answer = String(item.answer || item.a || "").trim();
-    if(!question || !answer){ return null; }
-    return { question, answer };
-  }).filter(Boolean);
+  const manualFaqs = normalizeFaqItems(job.faq);
+  const faqs = manualFaqs.length ? manualFaqs : buildDefaultFaqItems(job, title);
   if(!faqs.length){
     faqBox.innerHTML = "";
     faqPanel.style.display = "none";

@@ -98,18 +98,34 @@
         },
         {
           "@type": "Question",
-          "name": "JHTET Jharkhand Online Form 2026 ke liye eligibility kya hai?",
+          "name": "JHTET Jharkhand Online Form 2026 kis department se related hai?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Primary Level Teachers (Class 1 to 5): Candidates must have passed 10+2 / Intermediate with at least 50% marks or 45% as per NCTE rules along with passed or appearing in 2-year Diploma in Elementary Education (BTC / D.El.Ed), OR 4-year B.El.Ed, OR 2-year Diploma in Special Education. Candidates with Bachelor's Degree and passed or appearing in 2-year Diploma in Elementary Education are also eligible.\n\nUpper Primary Teacher (Class 6 to 8): Candidates must have Bachelor's Degree with passed or appearing in 2-year Diploma in Elementary Education (BTC / D.El.Ed), OR Bachelor's Degree with at least 50% marks or 45% as per NCTE rules and B.Ed / L.T. / Shiksha Shastri, OR 10+2 with at least 50% marks and 4-year B.El.Ed / B.A.Ed / B.Sc.Ed, OR Bachelor's Degree with at least 50% marks and B.Ed Special Education, OR Master's Degree with 55% marks and 3-year integrated B.Ed-M.Ed course."
+            "text": "Ye update Jharkhand Academic Council, Ranchi (JAC) se related hai."
           }
         },
         {
           "@type": "Question",
-          "name": "JHTET Jharkhand Online Form 2026 ka apply kaise karein?",
+          "name": "JHTET Jharkhand Online Form 2026 ka apply link kahan milega?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Candidates can apply online through JHTET apply link or official JAC exam portal before the last date. Candidates should fill the online form carefully, upload required documents, pay the application fee and submit the final form. Before applying, candidates must read the official notification carefully."
+            "text": "Apply Online link Important Links section me diya gaya hai."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "JHTET Jharkhand Online Form 2026 ka official notification kahan milega?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Official notification/detail link Important Links section me available hai."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "JHTET Jharkhand Online Form 2026 kis category ka update hai?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Ye online form category ka update hai."
           }
         }
       ]
@@ -868,23 +884,45 @@ const renderSidebarLinks = (items = []) => {
   const html = items.map((item) => buildButton(item, item.className || "")).filter(Boolean).join("");
   box.innerHTML = html || '<a class="btn notification" href="job-form.html">Latest Jobs</a>';
 };
+const normalizeFaqItems = (items = []) => (Array.isArray(items) ? items : []).map((item) => {
+  if(!item || typeof item === "string"){ return null; }
+  const question = String(item.question || item.q || item.title || "").trim();
+  const answer = String(item.answer || item.a || item.text || item.content || "").trim();
+  if(!question || !answer){ return null; }
+  return { question, answer };
+}).filter(Boolean);
+const buildDefaultFaqItems = (job = {}, title = "Job Update") => {
+  const lastDate = job.lastApplyDate || job.lastDate || "Official notification ke according check karein.";
+  const department = job.department || "official department";
+  const postTarget = normalizePostTarget(job.postTarget);
+  const targetLabel = {
+    latestJob:"online form",
+    notification:"notification",
+    admitCard:"admit card",
+    result:"result",
+    syllabus:"syllabus",
+    answerKey:"answer key",
+    admission:"admission form"
+  }[postTarget] || "update";
+  const applyText = safeUrl(job.applyLink) !== "#"
+    ? "Apply Online link Important Links section me diya gaya hai."
+    : "Apply link update hone par Important Links section me show hoga.";
+  const detailText = safeUrl(job.detailLink) !== "#"
+    ? "Official notification/detail link Important Links section me available hai."
+    : "Official detail link update hone par isi page par add kiya jayega.";
+  return [
+    { question:`${title} ki last date kya hai?`, answer:lastDate },
+    { question:`${title} kis department se related hai?`, answer:`Ye update ${department} se related hai.` },
+    { question:`${title} ka apply link kahan milega?`, answer:applyText },
+    { question:`${title} ka official notification kahan milega?`, answer:detailText },
+    { question:`${title} kis category ka update hai?`, answer:`Ye ${targetLabel} category ka update hai.` }
+  ];
+};
 const renderFaqSection = (job = {}, title = "Job Update") => {
   const faqBox = document.getElementById("faqContent");
   const faqPanel = document.getElementById("faqPanel");
-  const incomingFaq = Array.isArray(job.faq) ? job.faq : [];
-  const autoFaq = [
-    { q:`${title} ki last date kya hai?`, a:job.lastApplyDate || job.lastDate || "Official notification ke according check karein." },
-    { q:`${title} ke liye eligibility kya hai?`, a:job.qualification || "Qualification section me updated details dekhein." },
-    { q:`${title} ka apply kaise karein?`, a:job.howToApply || "How to Apply section me step-by-step process diya gaya hai." }
-  ];
-  const faqs = [...incomingFaq, ...autoFaq].map((item) => {
-    if(!item){ return null; }
-    if(typeof item === "string"){ return null; }
-    const question = String(item.question || item.q || "").trim();
-    const answer = String(item.answer || item.a || "").trim();
-    if(!question || !answer){ return null; }
-    return { question, answer };
-  }).filter(Boolean);
+  const manualFaqs = normalizeFaqItems(job.faq);
+  const faqs = manualFaqs.length ? manualFaqs : buildDefaultFaqItems(job, title);
   if(!faqs.length){
     faqBox.innerHTML = "";
     faqPanel.style.display = "none";

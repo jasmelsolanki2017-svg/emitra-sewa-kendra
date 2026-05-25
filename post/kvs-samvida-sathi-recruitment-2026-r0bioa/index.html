@@ -98,18 +98,34 @@
         },
         {
           "@type": "Question",
-          "name": "KVS Samvida Sathi Recruitment 2026 ke liye eligibility kya hai?",
+          "name": "KVS Samvida Sathi Recruitment 2026 kis department se related hai?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "PGT (Post Graduate Teacher): Candidates should have Post Graduate Degree in related subject with minimum 50% marks from a recognized university and B.Ed degree. Subject-wise eligibility should be checked from the official notification.\n\nTGT (Trained Graduate Teacher): Candidates should have Graduation with minimum 50% marks from a recognized university, B.Ed degree and CTET Level 2 passed.\n\nPRT (Primary Teacher): Candidates should have passed 12th / Senior Secondary with minimum 50% marks, D.El.Ed and CTET Level 1 passed.\n\nComputer Instructor: Candidates should have B.Tech / BCA / MCA / PGDCA or equivalent qualification in Computer Science.\n\nOther Posts: Qualification will be applicable as per post and KVS rules."
+            "text": "Ye update Kendriya Vidyalaya Sangathan (KVS) se related hai."
           }
         },
         {
           "@type": "Question",
-          "name": "KVS Samvida Sathi Recruitment 2026 ka apply kaise karein?",
+          "name": "KVS Samvida Sathi Recruitment 2026 ka apply link kahan milega?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Candidates should visit the official KVS Samvida Sathi Portal. Click on New Registration / Register, read the instructions carefully, accept the instructions and fill the registration form. Enter name, mobile number, email ID and password to complete registration. After successful registration, login with mobile number and password, fill the complete application form, enter educational qualification, experience and other details, upload required documents, check all details carefully and submit the form. Candidates should save or print the final submitted form for future use."
+            "text": "Apply Online link Important Links section me diya gaya hai."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "KVS Samvida Sathi Recruitment 2026 ka official notification kahan milega?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Official notification/detail link Important Links section me available hai."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "KVS Samvida Sathi Recruitment 2026 kis category ka update hai?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Ye notification category ka update hai."
           }
         }
       ]
@@ -874,23 +890,45 @@ const renderSidebarLinks = (items = []) => {
   const html = items.map((item) => buildButton(item, item.className || "")).filter(Boolean).join("");
   box.innerHTML = html || '<a class="btn notification" href="job-form.html">Latest Jobs</a>';
 };
+const normalizeFaqItems = (items = []) => (Array.isArray(items) ? items : []).map((item) => {
+  if(!item || typeof item === "string"){ return null; }
+  const question = String(item.question || item.q || item.title || "").trim();
+  const answer = String(item.answer || item.a || item.text || item.content || "").trim();
+  if(!question || !answer){ return null; }
+  return { question, answer };
+}).filter(Boolean);
+const buildDefaultFaqItems = (job = {}, title = "Job Update") => {
+  const lastDate = job.lastApplyDate || job.lastDate || "Official notification ke according check karein.";
+  const department = job.department || "official department";
+  const postTarget = normalizePostTarget(job.postTarget);
+  const targetLabel = {
+    latestJob:"online form",
+    notification:"notification",
+    admitCard:"admit card",
+    result:"result",
+    syllabus:"syllabus",
+    answerKey:"answer key",
+    admission:"admission form"
+  }[postTarget] || "update";
+  const applyText = safeUrl(job.applyLink) !== "#"
+    ? "Apply Online link Important Links section me diya gaya hai."
+    : "Apply link update hone par Important Links section me show hoga.";
+  const detailText = safeUrl(job.detailLink) !== "#"
+    ? "Official notification/detail link Important Links section me available hai."
+    : "Official detail link update hone par isi page par add kiya jayega.";
+  return [
+    { question:`${title} ki last date kya hai?`, answer:lastDate },
+    { question:`${title} kis department se related hai?`, answer:`Ye update ${department} se related hai.` },
+    { question:`${title} ka apply link kahan milega?`, answer:applyText },
+    { question:`${title} ka official notification kahan milega?`, answer:detailText },
+    { question:`${title} kis category ka update hai?`, answer:`Ye ${targetLabel} category ka update hai.` }
+  ];
+};
 const renderFaqSection = (job = {}, title = "Job Update") => {
   const faqBox = document.getElementById("faqContent");
   const faqPanel = document.getElementById("faqPanel");
-  const incomingFaq = Array.isArray(job.faq) ? job.faq : [];
-  const autoFaq = [
-    { q:`${title} ki last date kya hai?`, a:job.lastApplyDate || job.lastDate || "Official notification ke according check karein." },
-    { q:`${title} ke liye eligibility kya hai?`, a:job.qualification || "Qualification section me updated details dekhein." },
-    { q:`${title} ka apply kaise karein?`, a:job.howToApply || "How to Apply section me step-by-step process diya gaya hai." }
-  ];
-  const faqs = [...incomingFaq, ...autoFaq].map((item) => {
-    if(!item){ return null; }
-    if(typeof item === "string"){ return null; }
-    const question = String(item.question || item.q || "").trim();
-    const answer = String(item.answer || item.a || "").trim();
-    if(!question || !answer){ return null; }
-    return { question, answer };
-  }).filter(Boolean);
+  const manualFaqs = normalizeFaqItems(job.faq);
+  const faqs = manualFaqs.length ? manualFaqs : buildDefaultFaqItems(job, title);
   if(!faqs.length){
     faqBox.innerHTML = "";
     faqPanel.style.display = "none";

@@ -518,12 +518,39 @@ const isoDateOrUndefined = (value = "") => {
   return Number.isNaN(date.getTime()) ? undefined : date.toISOString();
 };
 
-const jobSchemaGraph = ({ id = "", job = {}, title = "Job Update", description = "", canonicalUrl = "" }) => {
-  const faqItems = [
+const normalizeFaqItems = (items = []) => (Array.isArray(items) ? items : [])
+  .map((item) => {
+    if (!item || typeof item === "string") {
+      return null;
+    }
+    const question = toText(item.question || item.q || item.title);
+    const answer = toText(item.answer || item.a || item.text || item.content);
+    return question && answer ? { question, answer } : null;
+  })
+  .filter(Boolean);
+
+const buildDefaultFaqItems = (job = {}, title = "Job Update") => {
+  const targetLabel = ({
+    latestJob: "online form",
+    notification: "notification",
+    admitCard: "admit card",
+    result: "result",
+    syllabus: "syllabus",
+    answerKey: "answer key",
+    admission: "admission form"
+  }[job.postTarget || "latestJob"] || "update");
+  return [
     { question: `${title} ki last date kya hai?`, answer: toText(job.lastApplyDate || job.lastDate || "Official notification ke according check karein.") },
-    { question: `${title} ke liye eligibility kya hai?`, answer: toText(job.qualification || "Qualification section me updated details dekhein.") },
-    { question: `${title} ka apply kaise karein?`, answer: toText(job.howToApply || "How to Apply section me step-by-step process diya gaya hai.") }
+    { question: `${title} kis department se related hai?`, answer: `Ye update ${toText(job.department || "official department")} se related hai.` },
+    { question: `${title} ka apply link kahan milega?`, answer: toText(job.applyLink) && toText(job.applyLink) !== "#" ? "Apply Online link Important Links section me diya gaya hai." : "Apply link update hone par Important Links section me show hoga." },
+    { question: `${title} ka official notification kahan milega?`, answer: toText(job.detailLink) && toText(job.detailLink) !== "#" ? "Official notification/detail link Important Links section me available hai." : "Official detail link update hone par isi page par add kiya jayega." },
+    { question: `${title} kis category ka update hai?`, answer: `Ye ${targetLabel} category ka update hai.` }
   ];
+};
+
+const jobSchemaGraph = ({ id = "", job = {}, title = "Job Update", description = "", canonicalUrl = "" }) => {
+  const manualFaqs = normalizeFaqItems(job.faq);
+  const faqItems = manualFaqs.length ? manualFaqs : buildDefaultFaqItems(job, title);
   const publisher = { "@type": "Organization", name: "E-MITRA WALA", url: `${SITE_BASE_URL}/` };
   return {
     "@context": "https://schema.org",

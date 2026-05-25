@@ -99,14 +99,41 @@ const buildSeoFields = (job = {}, id = "") => {
   };
 };
 
+const normalizeFaqItems = (items = []) => (Array.isArray(items) ? items : [])
+  .map((item) => {
+    if (!item || typeof item === "string") {
+      return null;
+    }
+    const question = String(item.question || item.q || item.title || "").trim();
+    const answer = String(item.answer || item.a || item.text || item.content || "").trim();
+    return question && answer ? { question, answer } : null;
+  })
+  .filter(Boolean);
+
+const buildDefaultFaqItems = (job = {}, title = "Job Update") => {
+  const targetLabel = ({
+    latestJob: "online form",
+    notification: "notification",
+    admitCard: "admit card",
+    result: "result",
+    syllabus: "syllabus",
+    answerKey: "answer key",
+    admission: "admission form"
+  }[job.postTarget || "latestJob"] || "update");
+  return [
+    { question: `${title} ki last date kya hai?`, answer: String(job.lastApplyDate || job.lastDate || "Official notification ke according check karein.") },
+    { question: `${title} kis department se related hai?`, answer: `Ye update ${String(job.department || "official department")} se related hai.` },
+    { question: `${title} ka apply link kahan milega?`, answer: job.applyLink && job.applyLink !== "#" ? "Apply Online link Important Links section me diya gaya hai." : "Apply link update hone par Important Links section me show hoga." },
+    { question: `${title} ka official notification kahan milega?`, answer: job.detailLink && job.detailLink !== "#" ? "Official notification/detail link Important Links section me available hai." : "Official detail link update hone par isi page par add kiya jayega." },
+    { question: `${title} kis category ka update hai?`, answer: `Ye ${targetLabel} category ka update hai.` }
+  ];
+};
+
 const buildSchemaGraph = ({ id = "", job = {}, canonicalUrl = "" }) => {
   const seo = buildSeoFields(job, id);
   const publisher = { "@type": "Organization", "name": "E-MITRA WALA", "url": `${SITE_BASE_URL}/` };
-  const faqItems = [
-    { question: `${seo.title} ki last date kya hai?`, answer: String(job.lastApplyDate || job.lastDate || "Official notification ke according check karein.") },
-    { question: `${seo.title} ke liye eligibility kya hai?`, answer: String(job.qualification || "Qualification section me updated details dekhein.") },
-    { question: `${seo.title} ka apply kaise karein?`, answer: String(job.howToApply || "How to Apply section me step-by-step process diya gaya hai.") }
-  ];
+  const manualFaqs = normalizeFaqItems(job.faq);
+  const faqItems = manualFaqs.length ? manualFaqs : buildDefaultFaqItems(job, seo.title);
   return {
     "@context": "https://schema.org",
     "@graph": [

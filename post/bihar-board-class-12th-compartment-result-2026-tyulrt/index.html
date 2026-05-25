@@ -98,18 +98,34 @@
         },
         {
           "@type": "Question",
-          "name": "Bihar Board Class 12th Compartment Result 2026 ke liye eligibility kya hai?",
+          "name": "Bihar Board Class 12th Compartment Result 2026 kis department se related hai?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Update Soon"
+            "text": "Ye update Bihar School Examination Board (BSEB) se related hai."
           }
         },
         {
           "@type": "Question",
-          "name": "Bihar Board Class 12th Compartment Result 2026 ka apply kaise karein?",
+          "name": "Bihar Board Class 12th Compartment Result 2026 ka apply link kahan milega?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "How to Apply section me step-by-step process diya gaya hai."
+            "text": "Apply link update hone par Important Links section me show hoga."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Bihar Board Class 12th Compartment Result 2026 ka official notification kahan milega?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Official detail link update hone par isi page par add kiya jayega."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Bihar Board Class 12th Compartment Result 2026 kis category ka update hai?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Ye result category ka update hai."
           }
         }
       ]
@@ -866,23 +882,45 @@ const renderSidebarLinks = (items = []) => {
   const html = items.map((item) => buildButton(item, item.className || "")).filter(Boolean).join("");
   box.innerHTML = html || '<a class="btn notification" href="job-form.html">Latest Jobs</a>';
 };
+const normalizeFaqItems = (items = []) => (Array.isArray(items) ? items : []).map((item) => {
+  if(!item || typeof item === "string"){ return null; }
+  const question = String(item.question || item.q || item.title || "").trim();
+  const answer = String(item.answer || item.a || item.text || item.content || "").trim();
+  if(!question || !answer){ return null; }
+  return { question, answer };
+}).filter(Boolean);
+const buildDefaultFaqItems = (job = {}, title = "Job Update") => {
+  const lastDate = job.lastApplyDate || job.lastDate || "Official notification ke according check karein.";
+  const department = job.department || "official department";
+  const postTarget = normalizePostTarget(job.postTarget);
+  const targetLabel = {
+    latestJob:"online form",
+    notification:"notification",
+    admitCard:"admit card",
+    result:"result",
+    syllabus:"syllabus",
+    answerKey:"answer key",
+    admission:"admission form"
+  }[postTarget] || "update";
+  const applyText = safeUrl(job.applyLink) !== "#"
+    ? "Apply Online link Important Links section me diya gaya hai."
+    : "Apply link update hone par Important Links section me show hoga.";
+  const detailText = safeUrl(job.detailLink) !== "#"
+    ? "Official notification/detail link Important Links section me available hai."
+    : "Official detail link update hone par isi page par add kiya jayega.";
+  return [
+    { question:`${title} ki last date kya hai?`, answer:lastDate },
+    { question:`${title} kis department se related hai?`, answer:`Ye update ${department} se related hai.` },
+    { question:`${title} ka apply link kahan milega?`, answer:applyText },
+    { question:`${title} ka official notification kahan milega?`, answer:detailText },
+    { question:`${title} kis category ka update hai?`, answer:`Ye ${targetLabel} category ka update hai.` }
+  ];
+};
 const renderFaqSection = (job = {}, title = "Job Update") => {
   const faqBox = document.getElementById("faqContent");
   const faqPanel = document.getElementById("faqPanel");
-  const incomingFaq = Array.isArray(job.faq) ? job.faq : [];
-  const autoFaq = [
-    { q:`${title} ki last date kya hai?`, a:job.lastApplyDate || job.lastDate || "Official notification ke according check karein." },
-    { q:`${title} ke liye eligibility kya hai?`, a:job.qualification || "Qualification section me updated details dekhein." },
-    { q:`${title} ka apply kaise karein?`, a:job.howToApply || "How to Apply section me step-by-step process diya gaya hai." }
-  ];
-  const faqs = [...incomingFaq, ...autoFaq].map((item) => {
-    if(!item){ return null; }
-    if(typeof item === "string"){ return null; }
-    const question = String(item.question || item.q || "").trim();
-    const answer = String(item.answer || item.a || "").trim();
-    if(!question || !answer){ return null; }
-    return { question, answer };
-  }).filter(Boolean);
+  const manualFaqs = normalizeFaqItems(job.faq);
+  const faqs = manualFaqs.length ? manualFaqs : buildDefaultFaqItems(job, title);
   if(!faqs.length){
     faqBox.innerHTML = "";
     faqPanel.style.display = "none";
