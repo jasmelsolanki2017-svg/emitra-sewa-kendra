@@ -2,6 +2,8 @@ name: Update SEO post pages
 
 on:
   workflow_dispatch:
+  repository_dispatch:
+    types: [seo-posts-update]
   schedule:
     - cron: "*/30 * * * *"
 
@@ -34,4 +36,4 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Update generated SEO post pages"
-          file_pattern: "sitemap.xml sitemap-jobs.xml index.html post/**"
+          file_pattern: "404.html sitemap.xml sitemap-jobs.xml index.html post/**"

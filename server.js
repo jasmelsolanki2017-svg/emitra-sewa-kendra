@@ -63,12 +63,16 @@ const GEMINI_API_KEY = String(process.env.GEMINI_API_KEY || "").trim();
 const GEMINI_MODEL = String(process.env.GEMINI_MODEL || "gemini-2.5-flash").trim();
 const OPENAI_API_KEY = String(process.env.OPENAI_API_KEY || "").trim();
 const OPENAI_MODEL = String(process.env.OPENAI_MODEL || "").trim();
+const GITHUB_TOKEN = String(process.env.GITHUB_TOKEN || process.env.SEO_GITHUB_TOKEN || "").trim();
+const GITHUB_REPOSITORY = String(process.env.GITHUB_REPOSITORY || process.env.SEO_GITHUB_REPOSITORY || "jasmelsolanki2017-svg/emitra-sewa-kendra").trim();
+const GITHUB_DISPATCH_EVENT = String(process.env.SEO_GITHUB_DISPATCH_EVENT || "seo-posts-update").trim();
 const DEFAULT_MEMBER_PASSWORD = "User@123";
 const CHECKER_INTERVAL_MS = Number(process.env.AUTO_JOB_CHECKER_INTERVAL_MS || 60 * 60 * 1000);
 const BACKUP_INTERVAL_MS = Number(process.env.AUTO_BACKUP_INTERVAL_MS || 24 * 60 * 60 * 1000);
 const execFileAsync = promisify(execFile);
 let adminDb = null;
 let autoCheckerRunning = false;
+let lastSeoWorkflowDispatchAt = 0;
 
 function normalizeMobile(value = "") {
   const digits = String(value || "").replace(/\D/g, "");
@@ -418,7 +422,7 @@ const buildSlug = (title = "", id = "") => {
 
 const getPublicJobUrl = (id = "", job = {}) => {
   const slug = toText(job.slug) || buildSlug(job.title || "job-update", id);
-  return `${SITE_BASE_URL}/post/${encodeURIComponent(slug)}`;
+  return `${SITE_BASE_URL}/post/${encodeURIComponent(slug)}/`;
 };
 
 const xmlEscape = (value = "") => String(value || "")
@@ -752,6 +756,65 @@ const normalizeLatestJobsSeo = async (db, onlyJobId = "") => {
   };
 };
 
+const triggerSeoPostsWorkflow = async ({ jobId = "", reason = "admin-save" } = {}) => {
+  const now = Date.now();
+  if (!GITHUB_TOKEN || !GITHUB_REPOSITORY) {
+    return {
+      ok: false,
+      configured: false,
+      skipped: true,
+      reason: "GitHub token/repository env missing"
+    };
+  }
+  if (now - lastSeoWorkflowDispatchAt < 30000) {
+    return {
+      ok: true,
+      configured: true,
+      skipped: true,
+      reason: "Recent SEO workflow dispatch already sent"
+    };
+  }
+
+  const response = await fetch(`https://api.github.com/repos/${GITHUB_REPOSITORY}/dispatches`, {
+    method: "POST",
+    headers: {
+      "Accept": "application/vnd.github+json",
+      "Authorization": `Bearer ${GITHUB_TOKEN}`,
+      "Content-Type": "application/json",
+      "User-Agent": "emitra-seo-publisher"
+    },
+    body: JSON.stringify({
+      event_type: GITHUB_DISPATCH_EVENT,
+      client_payload: {
+        jobId,
+        reason,
+        source: "admin-portal",
+        requestedAt: new Date(now).toISOString()
+      }
+    })
+  });
+
+  if (!response.ok) {
+    const body = await response.text().catch(() => "");
+    return {
+      ok: false,
+      configured: true,
+      skipped: false,
+      status: response.status,
+      error: body.slice(0, 240) || `GitHub dispatch failed (${response.status})`
+    };
+  }
+
+  lastSeoWorkflowDispatchAt = now;
+  return {
+    ok: true,
+    configured: true,
+    skipped: false,
+    repository: GITHUB_REPOSITORY,
+    event: GITHUB_DISPATCH_EVENT
+  };
+};
+
 const compactLine = (label, value) => {
   const text = toText(value);
   return text ? `${label}: ${text}` : "";
@@ -792,7 +855,7 @@ const buildSeoFields = (job = {}, id = "") => {
   const metaDescription = toText(job.metaDescription || descParts.join(", ")).slice(0, 160);
   return {
     slug: toText(job.slug) || buildSlug(title, id),
-    canonicalUrl: toText(job.canonicalUrl) || getPublicJobUrl(id, { ...job, slug: toText(job.slug) || buildSlug(title, id) }),
+    canonicalUrl: getPublicJobUrl(id, { ...job, slug: toText(job.slug) || buildSlug(title, id) }),
     seoTitle,
     metaDescription
   };
@@ -2342,11 +2405,16 @@ app.post("/admin/seo/normalize", async (req, res) => {
     const jobId = toText(req.body?.jobId);
     const result = await normalizeLatestJobsSeo(db, jobId);
     const sitemap = await buildCombinedSitemap();
+    const shouldPublish = req.body?.publishStatic !== false && Boolean(jobId || req.body?.publishStatic);
+    const publish = shouldPublish
+      ? await triggerSeoPostsWorkflow({ jobId, reason: "admin-seo-normalize" })
+      : { ok: true, configured: Boolean(GITHUB_TOKEN && GITHUB_REPOSITORY), skipped: true, reason: "Static publish not requested" };
     return res.json({
       ...result,
       jobId: jobId || "",
       sitemapUrl: `${SITE_BASE_URL}/sitemap.xml`,
-      sitemapBytes: Buffer.byteLength(sitemap, "utf8")
+      sitemapBytes: Buffer.byteLength(sitemap, "utf8"),
+      publish
     });
   } catch (err) {
     return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
@@ -2860,7 +2928,8 @@ app.post("/admin/auto-job-checker/publish", async (req, res) => {
       return res.status(400).json({ ok: false, error: "Draft ID required" });
     }
     const result = await publishAutoJobDraft(db, draftId, req.body || {});
-    return res.json(result);
+    const publish = await triggerSeoPostsWorkflow({ jobId: result.jobId || "", reason: "auto-checker-publish" });
+    return res.json({ ...result, publish });
   } catch (err) {
     return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
   }
@@ -2896,11 +2965,13 @@ app.post("/admin/auto-job-checker/bulk-publish", async (req, res) => {
       level: published === results.length ? "success" : "warning",
       message: `Bulk approve: ${published}/${results.length} drafts published`
     });
+    const publish = published ? await triggerSeoPostsWorkflow({ reason: "auto-checker-bulk-publish" }) : null;
     return res.json({
       ok: true,
       published,
       failed: results.length - published,
-      results
+      results,
+      publish
     });
   } catch (err) {
     return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
