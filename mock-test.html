@@ -365,6 +365,7 @@ const categoryLabelMap = {
   "english": "English"
 };
 const getCategoryLabel = (test, testId = "") => categoryLabelMap[getTestCategorySlug(test, testId)] || String(test.category || test.subject || "General").trim() || "General";
+const getTimeLimitForCategory = (category = "", fallback = 20) => getCategorySlug(category) === "english" ? 10 : Number(fallback || 20);
 const testMatchesDirectSlug = (test, directValue = linkedTestId) => {
   const selectedSlug = getCategorySlug(directValue);
   return normalizeText(test.id) === normalizeText(directValue) || getTestCategorySlug(test, test.id) === selectedSlug;
@@ -407,18 +408,21 @@ const flattenMockTests = (node = {}, prefix = "") => {
   return rows;
 };
 
-const normalizeTest = (id, value = {}) => ({
-  id,
-  title:String(value.title || "Daily Mock Test").trim(),
-  category:getCategoryLabel(value, id),
-  subject:value.subject || "",
-  timeLimit:Number(value.timeLimit || 20),
-  totalQuestions:Number(value.totalQuestions || normalizeQuestionList(value.questions).length),
-  status:value.status ?? "active",
-  date:String(value.date || value.publishDate || "").trim(),
-  publishDate:String(value.publishDate || value.date || "").trim(),
-  questions:normalizeQuestionList(value.questions)
-});
+const normalizeTest = (id, value = {}) => {
+  const category = getCategoryLabel(value, id);
+  return {
+    id,
+    title:String(value.title || "Daily Mock Test").trim(),
+    category,
+    subject:value.subject || "",
+    timeLimit:getTimeLimitForCategory(category, value.timeLimit),
+    totalQuestions:Number(value.totalQuestions || normalizeQuestionList(value.questions).length),
+    status:value.status ?? "active",
+    date:String(value.date || value.publishDate || "").trim(),
+    publishDate:String(value.publishDate || value.date || "").trim(),
+    questions:normalizeQuestionList(value.questions)
+  };
+};
 const renderCategories = () => {
   $("categoryTabs").innerHTML = categories.map((category) =>
     `<button type="button" class="${activeCategory === category ? "active" : ""}" data-category="${escapeHTML(category)}">${escapeHTML(category)}</button>`
