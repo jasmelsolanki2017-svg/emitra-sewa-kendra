@@ -36,7 +36,7 @@
     "mockTests": {
       ".read": true,
       ".write": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'",
-      ".indexOn": ["status", "category", "date"]
+      ".indexOn": ["status", "category", "date", "publishDate"]
     },
 
     "mockResults": {

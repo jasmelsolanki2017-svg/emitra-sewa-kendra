@@ -182,7 +182,7 @@ body.dark-mode .theme-toggle{background:#f8fafc;color:#111827;border-color:#cbd5
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-import { getDatabase, ref, onValue, push, set, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+import { getDatabase, ref, onValue, get, push, set, query, orderByChild, equalTo, limitToLast } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey:"AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",
@@ -210,6 +210,8 @@ let timerId = null;
 let startedAt = 0;
 let remainingSeconds = 0;
 let linkedTestId = new URLSearchParams(location.search).get("test") || "";
+let testsLoading = false;
+let testsLoadToken = 0;
 
 const schema = {
   "@context":"https://schema.org",
@@ -324,6 +326,12 @@ function getCategorySlug(value = "") {
   return map[key] || key;
 }
 
+const categoryDateTestId = (category = "", date = "") => {
+  const slug = getCategorySlug(category);
+  const datePart = normalizeDateValue(date);
+  return slug && datePart ? `${slug}-${datePart}` : "";
+};
+
 function isActiveTest(test) {
   const status = String(test.status || "").toLowerCase().trim();
   return test.status === true || status === "active" || status === "scheduled";
@@ -390,7 +398,8 @@ const normalizeTest = (id, value = {}) => ({
   timeLimit:Number(value.timeLimit || 20),
   totalQuestions:Number(value.totalQuestions || normalizeQuestionList(value.questions).length),
   status:value.status ?? "active",
-  date:String(value.date || "").trim(),
+  date:String(value.date || value.publishDate || "").trim(),
+  publishDate:String(value.publishDate || value.date || "").trim(),
   questions:normalizeQuestionList(value.questions)
 });
 const renderCategories = () => {
@@ -413,6 +422,11 @@ const renderDateFilter = () => {
 const renderTests = () => {
   renderCategories();
   renderDateFilter();
+  if(testsLoading){
+    $("testCards").innerHTML = `<div class="message">Selected date/category ke mock tests load ho rahe hain...</div>`;
+    renderHistory();
+    return;
+  }
   const selectedCategory = activeCategory;
   const selectedSlug = getCategorySlug(selectedCategory);
   const visibleTests = allTests.filter((test) => isDateInVisibleWindow(test.date));
@@ -623,7 +637,7 @@ $("categoryTabs").addEventListener("click", (event) => {
   if(location.search.includes("test=")){
     history.replaceState(null, "", location.pathname);
   }
-  renderTests();
+  loadTestsForSelectedScope();
   renderHistory();
 });
 
@@ -633,7 +647,7 @@ const setSelectedDate = (dateValue) => {
   if(location.search.includes("test=")){
     history.replaceState(null, "", location.pathname);
   }
-  renderTests();
+  loadTestsForSelectedScope();
 };
 
 $("testDatePicker").addEventListener("change", (event) => {
@@ -689,17 +703,61 @@ onAuthStateChanged(auth, (user) => {
 });
 
 renderCategories();
-onValue(ref(db, "mockTests"), (snapshot) => {
-  const data = snapshot.val() || {};
-  const savedTests = flattenMockTests(data);
-  allTests = savedTests
+
+const setLoadedTests = (rows = []) => {
+  allTests = rows
     .map((test) => normalizeTest(test.id, test))
-    .filter((test) => isActiveTest(test));
-  allTests.sort((a,b) => String(b.date || "").localeCompare(String(a.date || "")) || a.title.localeCompare(b.title));
+    .filter((test) => isActiveTest(test))
+    .sort((a,b) => String(b.date || "").localeCompare(String(a.date || "")) || a.title.localeCompare(b.title));
+};
+
+const readDirectTest = async (id) => {
+  const snap = await get(ref(db, `mockTests/${id}`));
+  return snap.exists() ? [{ id, ...(snap.val() || {}) }] : [];
+};
+
+const readDateTests = async (date) => {
+  const rows = new Map();
+  const addSnapshotRows = (snap) => {
+    if(snap.exists()){
+      snap.forEach((child) => rows.set(child.key, { id:child.key, ...(child.val() || {}) }));
+    }
+  };
+  addSnapshotRows(await get(query(ref(db, "mockTests"), orderByChild("date"), equalTo(date))));
+  addSnapshotRows(await get(query(ref(db, "mockTests"), orderByChild("publishDate"), equalTo(date))));
+  return Array.from(rows.values());
+};
+
+const loadTestsForSelectedScope = async () => {
+  const token = ++testsLoadToken;
+  testsLoading = true;
   renderTests();
-}, (error) => {
-  $("testCards").innerHTML = `<div class="message">Mock tests load nahi ho paye: ${escapeHTML(error.message)}</div>`;
-});
+  try{
+    let rows = [];
+    if(linkedTestId){
+      rows = await readDirectTest(linkedTestId);
+    }else{
+      const selectedSlug = getCategorySlug(activeCategory);
+      if(selectedSlug && selectedSlug !== "all"){
+        const directId = categoryDateTestId(activeCategory, selectedDate);
+        rows = directId ? await readDirectTest(directId) : [];
+      }else{
+        rows = await readDateTests(selectedDate);
+      }
+    }
+    if(token !== testsLoadToken){ return; }
+    setLoadedTests(rows);
+    testsLoading = false;
+    renderTests();
+  }catch(error){
+    if(token !== testsLoadToken){ return; }
+    testsLoading = false;
+    allTests = [];
+    $("testCards").innerHTML = `<div class="message">Mock tests load nahi ho paye: ${escapeHTML(error.message)}</div>`;
+  }
+};
+
+loadTestsForSelectedScope();
 </script>
 </body>
 </html>

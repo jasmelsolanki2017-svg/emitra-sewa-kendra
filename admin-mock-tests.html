@@ -53,12 +53,13 @@ button.secondary{background:#eaf4ff;color:var(--blue);border:1px solid #bdd0e5}
 .test-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
 .bulk-toolbar{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:#eef7ff;border:1px solid var(--line);border-radius:8px;padding:9px 10px;margin-bottom:10px}
 .bulk-toolbar strong{color:var(--blue);font-size:13px}
+.admin-list-controls{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:10px 0}
 .date-select-label{display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
 .date-select-label input{width:16px;height:16px;accent-color:var(--blue)}
 .public-link{display:block;color:var(--blue);font-weight:900;font-size:12px;margin-top:5px;overflow-wrap:anywhere;text-decoration:underline}
 .pill{display:inline-flex;background:var(--soft);border:1px solid #d8e6f5;color:var(--blue);border-radius:999px;padding:3px 8px;margin-top:6px;font-size:11px;font-weight:900}
 .empty{padding:18px;text-align:center;color:var(--muted);font-weight:800}
-@media(max-width:800px){nav{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap}nav a,nav button{white-space:nowrap}.form-grid{grid-template-columns:1fr}.test-card{grid-template-columns:auto minmax(0,1fr)}.test-actions{grid-column:1/-1;justify-content:flex-start}textarea{min-height:260px}}
+@media(max-width:800px){nav{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap}nav a,nav button{white-space:nowrap}.form-grid,.admin-list-controls{grid-template-columns:1fr}.test-card{grid-template-columns:auto minmax(0,1fr)}.test-actions{grid-column:1/-1;justify-content:flex-start}textarea{min-height:260px}}
 </style>
 </head>
 <body>
@@ -164,8 +165,36 @@ button.secondary{background:#eaf4ff;color:var(--blue);border:1px solid #bdd0e5}
   <section class="panel">
     <h2>Saved Mock Tests</h2>
     <div id="listStatus" class="status">Loading tests...</div>
+    <div class="admin-list-controls">
+      <label>Month
+        <input id="adminMonthInput" type="month">
+      </label>
+      <label>Category
+        <select id="adminCategoryFilter">
+          <option value="all">All Categories</option>
+          <option>Rajasthan GK</option>
+          <option>Reasoning</option>
+          <option>SSC Level Math</option>
+          <option>English</option>
+        </select>
+      </label>
+      <label>Per Page
+        <select id="adminPageSizeInput">
+          <option value="20">20 tests</option>
+          <option value="40">40 tests</option>
+          <option value="80">80 tests</option>
+        </select>
+      </label>
+      <label>Page
+        <div class="actions" style="margin-top:0">
+          <button type="button" class="secondary" id="adminPrevPageBtn">Prev</button>
+          <button type="button" class="secondary" id="adminNextPageBtn">Next</button>
+        </div>
+      </label>
+    </div>
     <div class="bulk-toolbar">
       <strong id="selectedCount">Selected: 0</strong>
+      <strong id="adminPageInfo">Page 1</strong>
       <div class="actions" style="margin-top:0">
         <button type="button" class="secondary" onclick="selectAllVisibleTests()">Select Visible</button>
         <button type="button" class="secondary" onclick="clearSelectedTests()">Clear Selection</button>
@@ -185,7 +214,7 @@ setInterval(updateLiveTime,1000);
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-import { getDatabase, ref, onValue, get, set, update, remove, push } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+import { getDatabase, ref, onValue, get, set, update, remove, push, query, orderByChild, startAt, endAt } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey:"AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",
@@ -205,6 +234,9 @@ const testsRef = ref(db, "mockTests");
 let adminAllowed = false;
 let testsCache = {};
 let selectedTestIds = new Set();
+let adminRows = [];
+let adminPage = 1;
+let adminUnsubscribe = null;
 
 const $ = (id) => document.getElementById(id);
 const escapeHTML = (value = "") => String(value)
@@ -394,7 +426,7 @@ const saveQuestionGroups = async (groups, rawMeta = {}) => {
   const entries = Object.entries(groups).filter(([, questions]) => questions.length);
   if(!entries.length){ throw new Error("Valid categorized questions nahi mili."); }
   const now = Date.now();
-  const date = String(rawMeta.date || $("dateInput").value || todayISO()).trim();
+  const date = String(rawMeta.date || rawMeta.publishDate || $("dateInput").value || todayISO()).trim();
   const status = String(rawMeta.status || $("statusInput").value || "active").trim().toLowerCase();
   const allowDuplicates = allowDuplicateQuestions();
   const saved = [];
@@ -416,6 +448,7 @@ const saveQuestionGroups = async (groups, rawMeta = {}) => {
       totalQuestions:nextQuestions.length,
       status:String(oldTest.status || status || "active").trim().toLowerCase(),
       date:String(oldTest.date || date).trim(),
+      publishDate:String(oldTest.publishDate || oldTest.date || date).trim(),
       questions:nextQuestions,
       updatedAt:now,
       createdAt:Number(oldTest.createdAt || now)
@@ -443,6 +476,7 @@ const buildScheduledTest = ({ date, category, questions, meta = {}, title = "" }
     totalQuestions:rows.length,
     status:rawStatus === "scheduled" ? "active" : rawStatus,
     date:String(date || meta.publishDate || meta.date || $("dateInput").value || todayISO()).trim(),
+    publishDate:String(date || meta.publishDate || meta.date || $("dateInput").value || todayISO()).trim(),
     questions:rows
   };
 };
@@ -563,7 +597,8 @@ const normalizeTest = (raw) => {
     timeLimit:Number(raw.timeLimit || 20),
     totalQuestions:Number(raw.totalQuestions || questions.length),
     status:String(raw.status || $("statusInput").value || "active").trim().toLowerCase(),
-    date:String(raw.date || $("dateInput").value || new Date().toISOString().slice(0,10)).trim(),
+    date:String(raw.date || raw.publishDate || $("dateInput").value || new Date().toISOString().slice(0,10)).trim(),
+    publishDate:String(raw.publishDate || raw.date || $("dateInput").value || new Date().toISOString().slice(0,10)).trim(),
     questions,
     updatedAt:now,
     createdAt:Number(raw.createdAt || now)
@@ -582,6 +617,17 @@ const requireAdmin = () => {
 };
 
 const todayISO = () => new Date().toISOString().slice(0,10);
+const currentMonthValue = () => todayISO().slice(0, 7);
+const monthRange = (monthValue = currentMonthValue()) => {
+  const month = /^\d{4}-\d{2}$/.test(monthValue) ? monthValue : currentMonthValue();
+  const [year, monthNumber] = month.split("-").map(Number);
+  const lastDate = new Date(year, monthNumber, 0).getDate();
+  return {
+    month,
+    start:`${month}-01`,
+    end:`${month}-${String(lastDate).padStart(2, "0")}`
+  };
+};
 
 const sampleByCategory = (category = "Rajasthan GK") => {
   const today = $("dateInput").value || todayISO();
@@ -623,6 +669,7 @@ const sampleByCategory = (category = "Rajasthan GK") => {
     totalQuestions:1,
     status:"active",
     date:today,
+    publishDate:today,
     questions:[{
       question:item.question,
       options:item.options,
@@ -907,37 +954,37 @@ $("testsList").addEventListener("change", (event) => {
   }
 });
 
-onAuthStateChanged(auth, (user) => {
-  if(user && user.email === adminEmail){
-    adminAllowed = true;
-    $("accessTitle").innerText = "Admin Access Verified";
-    $("adminEmailText").innerText = user.email;
-  }else{
-    location.href = "index.html";
-  }
-});
+const getAdminFilteredRows = () => {
+  const selectedCategory = $("adminCategoryFilter")?.value || "all";
+  const selectedSlug = getCategorySlug(selectedCategory);
+  return adminRows
+    .filter((test) => selectedSlug === "all" || getCategorySlug(test.category || test.subject || test.id) === selectedSlug)
+    .sort((a,b) => String(b.date || b.publishDate || "").localeCompare(String(a.date || a.publishDate || "")) || String(a.title || "").localeCompare(String(b.title || "")));
+};
 
-onValue(testsRef, (snapshot) => {
+const renderAdminTests = () => {
   const list = $("testsList");
   testsCache = {};
-  const rows = [];
-  if(snapshot.exists()){
-    snapshot.forEach((child) => {
-      const data = child.val() || {};
-      rows.push({ id:child.key, ...data });
-      testsCache[child.key] = data;
-    });
-  }
-  rows.sort((a,b) => String(b.date || "").localeCompare(String(a.date || "")) || String(a.title || "").localeCompare(String(b.title || "")));
-  $("listStatus").innerText = `Firebase se ${rows.length} mock test load hue.`;
+  const filteredRows = getAdminFilteredRows();
+  filteredRows.forEach((test) => { testsCache[test.id] = test; });
+  const pageSize = Number($("adminPageSizeInput")?.value || 20);
+  const totalPages = Math.max(1, Math.ceil(filteredRows.length / pageSize));
+  adminPage = Math.min(Math.max(1, adminPage), totalPages);
+  const startIndex = (adminPage - 1) * pageSize;
+  const pageRows = filteredRows.slice(startIndex, startIndex + pageSize);
+  const range = monthRange($("adminMonthInput")?.value || currentMonthValue());
+  $("listStatus").innerText = `${range.start} se ${range.end} tak ${adminRows.length} test load hue. Filter ke baad ${filteredRows.length}.`;
+  $("adminPageInfo").innerText = `Page ${adminPage}/${totalPages}`;
+  $("adminPrevPageBtn").disabled = adminPage <= 1;
+  $("adminNextPageBtn").disabled = adminPage >= totalPages;
   pruneSelectedTests();
-  if(!rows.length){
-    list.innerHTML = '<div class="empty">Abhi koi mock test save nahi hai.</div>';
+  if(!pageRows.length){
+    list.innerHTML = '<div class="empty">Is month/category me koi mock test nahi hai.</div>';
     updateSelectedCount();
     return;
   }
-  const grouped = rows.reduce((groups, test) => {
-    const key = testDateKey(test.date);
+  const grouped = pageRows.reduce((groups, test) => {
+    const key = testDateKey(test.date || test.publishDate);
     if(!groups[key]){ groups[key] = []; }
     groups[key].push(test);
     return groups;
@@ -960,9 +1007,63 @@ onValue(testsRef, (snapshot) => {
     </details>
   `).join("");
   updateSelectedCount();
-}, (error) => {
-  $("listStatus").innerText = "Mock tests load nahi hue: " + error.message;
-  $("testsList").innerHTML = '<div class="empty">Firebase se data load nahi ho paya.</div>';
+};
+
+const loadAdminTestsForMonth = () => {
+  if(adminUnsubscribe){ adminUnsubscribe(); }
+  selectedTestIds.clear();
+  adminRows = [];
+  testsCache = {};
+  adminPage = 1;
+  const range = monthRange($("adminMonthInput")?.value || currentMonthValue());
+  $("adminMonthInput").value = range.month;
+  $("listStatus").innerText = `${range.start} se ${range.end} tak tests load ho rahe hain...`;
+  $("testsList").innerHTML = '<div class="empty">Loading selected month...</div>';
+  const monthQuery = query(testsRef, orderByChild("date"), startAt(range.start), endAt(range.end));
+  adminUnsubscribe = onValue(monthQuery, (snapshot) => {
+    adminRows = [];
+    if(snapshot.exists()){
+      snapshot.forEach((child) => {
+        const data = child.val() || {};
+        adminRows.push({ id:child.key, ...data });
+      });
+    }
+    renderAdminTests();
+  }, (error) => {
+    $("listStatus").innerText = "Mock tests load nahi hue: " + error.message;
+    $("testsList").innerHTML = '<div class="empty">Firebase se selected month data load nahi ho paya.</div>';
+  });
+};
+
+$("adminMonthInput").value = currentMonthValue();
+$("adminMonthInput").addEventListener("change", loadAdminTestsForMonth);
+$("adminCategoryFilter").addEventListener("change", () => {
+  selectedTestIds.clear();
+  adminPage = 1;
+  renderAdminTests();
+});
+$("adminPageSizeInput").addEventListener("change", () => {
+  adminPage = 1;
+  renderAdminTests();
+});
+$("adminPrevPageBtn").addEventListener("click", () => {
+  adminPage = Math.max(1, adminPage - 1);
+  renderAdminTests();
+});
+$("adminNextPageBtn").addEventListener("click", () => {
+  adminPage += 1;
+  renderAdminTests();
+});
+
+onAuthStateChanged(auth, (user) => {
+  if(user && user.email === adminEmail){
+    adminAllowed = true;
+    $("accessTitle").innerText = "Admin Access Verified";
+    $("adminEmailText").innerText = user.email;
+    loadAdminTestsForMonth();
+  }else{
+    location.href = "index.html";
+  }
 });
 
 window.logoutUser = () => signOut(auth).then(() => { location.href = "index.html"; });
