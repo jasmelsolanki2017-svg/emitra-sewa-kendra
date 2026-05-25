@@ -114,7 +114,7 @@ const buildSchemaGraph = ({ id = "", job = {}, canonicalUrl = "" }) => {
         "@type": "BreadcrumbList",
         "@id": `${canonicalUrl}#breadcrumb`,
         "itemListElement": [
-          { "@type": "ListItem", "position": 1, "name": "Home", "item": `${SITE_BASE_URL}/index.html` },
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": `${SITE_BASE_URL}/` },
           { "@type": "ListItem", "position": 2, "name": "Latest Jobs", "item": `${SITE_BASE_URL}/job-form.html` },
           { "@type": "ListItem", "position": 3, "name": seo.title, "item": canonicalUrl }
         ]
