@@ -564,6 +564,7 @@ const normalizeComparableUrl = (value = "") => {
 
 const shouldRedirectToCanonical = (targetUrl = "") => {
   const params = new URLSearchParams(window.location.search || "");
+  if(params.get("fallback") === "1" || params.get("noRedirect") === "1"){ return false; }
   const isOldQueryUrl = /\/job-detail\.html$/i.test(location.pathname || "") && (params.get("id") || params.get("post") || params.get("slug"));
   if(!isOldQueryUrl){ return false; }
   return normalizeComparableUrl(location.href) !== normalizeComparableUrl(targetUrl);

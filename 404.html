@@ -27,7 +27,8 @@
       "rrb-alp-online-form-2026-11-127-posts",
       "rssb-computer-instructor-recruitment-2026",
       "sbi-apprentice-online-form-2026-oba8wq",
-      "ssc-gd-constable-admit-card-2026-0h7hn2"
+      "ssc-gd-constable-admit-card-2026-0h7hn2",
+      "x-socqk7"
     ];
     var postSlugAliases = {
       "central-teacher-eligibility-test-ctet-september-2026-apply-online-form-tthxuz": "job-1779730227353",
@@ -45,7 +46,7 @@
       return;
     }
     if(!matchedSlug){
-      window.location.replace(window.location.origin + "/job-detail.html?slug=" + encodeURIComponent(requestedSlug));
+      window.location.replace(window.location.origin + "/job-detail.html?slug=" + encodeURIComponent(requestedSlug) + "&fallback=1");
     }
   }
 })();

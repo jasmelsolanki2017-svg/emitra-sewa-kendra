@@ -15,9 +15,9 @@
 <meta property="og:type" content="article">
 <meta property="og:title" content="CTET September 2026 Online Form Apply, Last Date, Fee, Eligibility">
 <meta property="og:description" content="CTET September 2026 Online Form शुरू, आवेदन 11 मई से 10 जून 2026 तक। Exam date 06 September 2026, fee, eligibility, important links और apply online details देखे">
-<meta property="og:url" content="https://emitrawala.online/post/job-1779730227353">
+<meta property="og:url" content="https://emitrawala.online/post/job-1779730227353/">
 <meta name="twitter:card" content="summary">
-<link rel="canonical" href="https://emitrawala.online/post/job-1779730227353">
+<link rel="canonical" href="https://emitrawala.online/post/job-1779730227353/">
 <script>
 (function(){
   var params = new URLSearchParams(window.location.search || "");
@@ -49,7 +49,7 @@
   "@graph": [
     {
       "@type": "BreadcrumbList",
-      "@id": "https://emitrawala.online/post/job-1779730227353#breadcrumb",
+      "@id": "https://emitrawala.online/post/job-1779730227353/#breadcrumb",
       "itemListElement": [
         {
           "@type": "ListItem",
@@ -67,7 +67,7 @@
           "@type": "ListItem",
           "position": 3,
           "name": "CTET September 2026 Online Form",
-          "item": "https://emitrawala.online/post/job-1779730227353"
+          "item": "https://emitrawala.online/post/job-1779730227353/"
         }
       ]
     },
@@ -76,12 +76,12 @@
         "Article",
         "JobPosting"
       ],
-      "@id": "https://emitrawala.online/post/job-1779730227353#article",
+      "@id": "https://emitrawala.online/post/job-1779730227353/#article",
       "headline": "CTET September 2026 Online Form Apply, Last Date, Fee, Eligibility",
       "title": "CTET September 2026 Online Form",
       "description": "CTET September 2026 Online Form शुरू, आवेदन 11 मई से 10 जून 2026 तक। Exam date 06 September 2026, fee, eligibility, important links और apply online details देखे",
-      "url": "https://emitrawala.online/post/job-1779730227353",
-      "mainEntityOfPage": "https://emitrawala.online/post/job-1779730227353",
+      "url": "https://emitrawala.online/post/job-1779730227353/",
+      "mainEntityOfPage": "https://emitrawala.online/post/job-1779730227353/",
       "employmentType": "Online Form",
       "datePosted": "10-May-2026",
       "validThrough": "10-Jun-2026",
@@ -91,7 +91,7 @@
         "url": "https://emitrawala.online/"
       },
       "datePublished": "2026-05-25T17:32:12.664Z",
-      "dateModified": "2026-05-25T17:32:12.322Z",
+      "dateModified": "2026-05-25T19:56:17.847Z",
       "publisher": {
         "@type": "Organization",
         "name": "E-MITRA WALA",
@@ -100,7 +100,7 @@
     },
     {
       "@type": "FAQPage",
-      "@id": "https://emitrawala.online/post/job-1779730227353#faq",
+      "@id": "https://emitrawala.online/post/job-1779730227353/#faq",
       "mainEntity": [
         {
           "@type": "Question",
@@ -296,7 +296,7 @@ body.dark-mode .mcq-answer,body.dark-mode .mcq-explanation{color:#e8f1ff!importa
             <div class="content-box">
               <p>CTET September 2026 Online Form शुरू, आवेदन 11 मई से 10 जून 2026 तक। Exam date 06 September 2026, fee, eligibility, important links और apply online details देखे</p>
               <table class="detail-table"><tbody><tr><th>Post Name</th><td>CTET September 2026 Online Form</td></tr><tr><th>Last Date</th><td>10-Jun-2026</td></tr><tr><th>Qualification</th><td>Update Soon</td></tr><tr><th>Location</th><td>All India</td></tr></tbody></table>
-              <p><a class="auto-link" href="https://emitrawala.online/post/job-1779730227353">Canonical job detail link</a> | <a class="auto-link" href="../../job-form.html">All Latest Jobs</a></p>
+              <p><a class="auto-link" href="https://emitrawala.online/post/job-1779730227353/">Canonical job detail link</a> | <a class="auto-link" href="../../job-form.html">All Latest Jobs</a></p>
             </div>
         </section>
         <section class="panel" id="shortInfoPanel" style="display:none;">
@@ -615,6 +615,7 @@ const normalizeComparableUrl = (value = "") => {
 
 const shouldRedirectToCanonical = (targetUrl = "") => {
   const params = new URLSearchParams(window.location.search || "");
+  if(params.get("fallback") === "1" || params.get("noRedirect") === "1"){ return false; }
   const isOldQueryUrl = /\/job-detail\.html$/i.test(location.pathname || "") && (params.get("id") || params.get("post") || params.get("slug"));
   if(!isOldQueryUrl){ return false; }
   return normalizeComparableUrl(location.href) !== normalizeComparableUrl(targetUrl);
