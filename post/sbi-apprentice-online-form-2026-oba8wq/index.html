@@ -181,6 +181,10 @@ main{max-width:1180px;margin:auto;padding:26px 3% 42px;}
 .content-table th,.content-table td{border:1px solid #d8e5f3;padding:9px 10px;text-align:left;vertical-align:middle;color:#1f2937;}
 .content-table th{font-weight:900;background:#f1f7ff;color:var(--deep);}
 .content-table ul{text-align:left;padding:0 0 0 18px;}
+.qualification-grid{display:grid;gap:10px;}
+.qualification-card{display:grid;grid-template-columns:minmax(140px,32%) minmax(0,1fr);border:1px solid #d8e5f3;border-radius:8px;overflow:hidden;background:#fff;}
+.qualification-post{background:#f1f7ff;color:var(--deep);font-weight:900;padding:12px;border-right:1px solid #d8e5f3;}
+.qualification-text{color:#1f2937;font-weight:600;padding:12px;white-space:pre-line;}
 .community-table{font-size:17px;margin:0;}
 .community-table td{padding:16px 10px;font-weight:900;text-align:center;}
 .community-label{color:#00897b;}
@@ -219,7 +223,10 @@ body.dark-mode .detail-table th,body.dark-mode .detail-table td,body.dark-mode .
 body.dark-mode .detail-table td,body.dark-mode .content-table td{background:#101b2d!important;}
 body.dark-mode .text-highlight{background:#ffd35a!important;color:#1f1600!important;}
 body.dark-mode .auto-link{color:#8ec5ff!important;}
-@media(max-width:920px){.layout{grid-template-columns:1fr}.detail-sidebar{position:static;top:auto}.hero{padding:24px 5% 26px}main{padding:18px 3% 34px}.detail-table th,.detail-table td{display:block;width:100%;}.detail-table th{border-bottom:0}.panel h2,.sarkari-section-title{font-size:17px}.actions{grid-template-columns:1fr}.content-table{font-size:12px}.content-table th,.content-table td{padding:7px 6px}.theme-toggle{right:16px;bottom:16px;width:50px;height:50px;}nav{flex-direction:column;align-items:flex-start}}
+body.dark-mode .qualification-card{background:#101b2d!important;border-color:#24405f!important;}
+body.dark-mode .qualification-post{background:#0b2749!important;color:#ffb15c!important;border-color:#24405f!important;}
+body.dark-mode .qualification-text{color:#e8f1ff!important;}
+@media(max-width:920px){.layout{grid-template-columns:1fr}.detail-sidebar{position:static;top:auto}.hero{padding:24px 5% 26px}main{padding:18px 3% 34px}.detail-table th,.detail-table td{display:block;width:100%;}.detail-table th{border-bottom:0}.panel h2,.sarkari-section-title{font-size:17px}.actions{grid-template-columns:1fr}.content-table{font-size:12px}.content-table th,.content-table td{padding:7px 6px}.qualification-card{grid-template-columns:1fr}.qualification-post{border-right:0;border-bottom:1px solid #d8e5f3}.theme-toggle{right:16px;bottom:16px;width:50px;height:50px;}nav{flex-direction:column;align-items:flex-start}}
 </style>
 </head>
 <body>
@@ -704,7 +711,7 @@ const renderList = (listId, panelId, rows) => {
   if(!list || !panel){ return false; }
   const html = rows
     .filter((row) => isFilledValue(row.value, row.options))
-    .map((row) => `<tr><th scope="row">${escapeHTML(row.label)}</th><td class="${row.className || ""}">${renderFormattedText(row.value)}</td></tr>`)
+    .map((row) => `<tr><th scope="row">${escapeHTML(row.label)}</th><td class="${row.className || ""}">${row.htmlValue || renderFormattedText(row.value)}</td></tr>`)
     .join("");
   list.innerHTML = html;
   const tableWrap = list.closest(".table-wrap");
@@ -712,6 +719,58 @@ const renderList = (listId, panelId, rows) => {
   panel.style.display = html ? "block" : "none";
   return Boolean(html);
 };
+
+const parsePostWiseQualifications = (value = "") => {
+  const blocks = String(value || "")
+    .split(/\n\s*\n/)
+    .map((block) => block.trim())
+    .filter(Boolean);
+  const rows = blocks.map((block) => {
+    const lines = block.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+    let post = "";
+    const qualificationLines = [];
+    lines.forEach((line) => {
+      const match = line.match(/^([^:|]+)\s*[:|]\s*(.*)$/);
+      if(match){
+        const label = match[1].trim().toLowerCase();
+        const text = match[2].trim();
+        if(/^(post|post name|name|पद|पद नाम)$/.test(label)){
+          post = text;
+          return;
+        }
+        if(/^(qualification|education qualification|eligibility|योग्यता|शैक्षणिक योग्यता)$/.test(label)){
+          if(text){ qualificationLines.push(text); }
+          return;
+        }
+      }
+      qualificationLines.push(line);
+    });
+    if(!post && qualificationLines.length > 1 && /^post name/i.test(qualificationLines[0])){
+      post = qualificationLines.shift().replace(/^post name\s*[:|-]\s*/i, "").trim();
+    }
+    const qualification = qualificationLines.join("\n").trim();
+    return post && qualification ? { post, qualification } : null;
+  }).filter(Boolean);
+  return rows.length >= 1 && rows.every((row) => row.post && row.qualification) ? rows : [];
+};
+
+const renderQualificationValue = (value = "") => {
+  const rows = parsePostWiseQualifications(value);
+  if(!rows.length){ return renderFormattedText(value); }
+  return `<div class="qualification-grid">${rows.map((row) => `
+    <div class="qualification-card">
+      <div class="qualification-post">${renderFormattedText(row.post)}</div>
+      <div class="qualification-text">${renderFormattedText(row.qualification)}</div>
+    </div>
+  `).join("")}</div>`;
+};
+
+const renderEligibilityList = (job = {}) => renderList("eligibilityList", "eligibilityPanel", [
+  { label:"Education Qualification", value:job.qualification, htmlValue:renderQualificationValue(job.qualification) },
+  { label:"Experience", value:job.experience },
+  { label:"Required Documents", value:job.requiredDocuments },
+  { label:"Physical Eligibility", value:job.physicalEligibility }
+]);
 
 const renderLabeledLine = (line = "") => {
   const text = String(line || "").trim();
@@ -1057,12 +1116,7 @@ const renderJobDetail = (jobId, rawJob) => {
     ]);
     renderManualContent("vacancyManual", "vacancyPanel", job.vacancyDetailsManual, "Other Vacancy Details");
 
-    renderList("eligibilityList", "eligibilityPanel", [
-      { label:"Education Qualification", value:job.qualification },
-      { label:"Experience", value:job.experience },
-      { label:"Required Documents", value:job.requiredDocuments },
-      { label:"Physical Eligibility", value:job.physicalEligibility }
-    ]);
+    renderEligibilityList(job);
     renderManualContent("eligibilityManual", "eligibilityPanel", job.eligibilityManual, "Other Eligibility Details");
 
     renderTextBlock("selectionContent", "selectionPanel", job.selectionProcess);
