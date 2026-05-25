@@ -253,9 +253,22 @@ const categoryTestId = (value = "", date = "") => {
 const parseJson = () => {
   const text = $("jsonInput").value.trim();
   if(!text){ throw new Error("JSON data paste karein."); }
+  const cleanText = text
+    .replace(/^```(?:json)?/i, "")
+    .replace(/```$/i, "")
+    .trim();
   try{
-    return JSON.parse(text);
+    return JSON.parse(cleanText);
   }catch(error){
+    const firstObject = cleanText.search(/[\[{]/);
+    const lastObject = Math.max(cleanText.lastIndexOf("}"), cleanText.lastIndexOf("]"));
+    if(firstObject >= 0 && lastObject > firstObject){
+      try{
+        return JSON.parse(cleanText.slice(firstObject, lastObject + 1));
+      }catch(innerError){
+        throw new Error("JSON valid nahi hai: " + innerError.message);
+      }
+    }
     throw new Error("JSON valid nahi hai: " + error.message);
   }
 };
@@ -382,14 +395,15 @@ const isLikelyTestObject = (value = {}) => Boolean(
 const buildScheduledTest = ({ date, category, questions, meta = {}, title = "" }) => {
   const label = getCategoryLabel(category || meta.category || $("categoryInput").value || "Rajasthan GK");
   const rows = normalizeQuestions({ questions });
+  const rawStatus = String(meta.status || $("statusInput").value || "active").trim().toLowerCase();
   return {
     title:String(title || meta.title || `Daily Mock Test - ${label}`).trim(),
     category:label,
     subject:label,
-    timeLimit:Number(meta.timeLimit || 20),
+    timeLimit:Number(meta.timeLimit || meta.durationMinutes || 20),
     totalQuestions:rows.length,
-    status:String(meta.status || $("statusInput").value || "active").trim().toLowerCase(),
-    date:String(date || meta.date || $("dateInput").value || todayISO()).trim(),
+    status:rawStatus === "scheduled" ? "active" : rawStatus,
+    date:String(date || meta.publishDate || meta.date || $("dateInput").value || todayISO()).trim(),
     questions:rows
   };
 };
@@ -398,19 +412,35 @@ const collectTestsFromSchedule = (raw, parentMeta = {}) => {
   const tests = [];
   const meta = { ...parentMeta, ...(raw && typeof raw === "object" && !Array.isArray(raw) ? raw : {}) };
   const pushTest = (test) => {
-    const normalized = normalizeTest({ ...meta, ...test });
+    const normalized = normalizeTest({ ...meta, ...test, date:test.date || test.publishDate || meta.date || meta.publishDate });
+    if(String(normalized.status || "").toLowerCase() === "scheduled"){ normalized.status = "active"; }
     if(normalized.questions.length){ tests.push(normalized); }
   };
   const pushCategoryMap = (date, categoriesMap = {}, localMeta = {}) => {
+    if(Array.isArray(categoriesMap)){
+      categoriesMap.forEach((categoryItem) => {
+        if(!categoryItem || typeof categoryItem !== "object"){ return; }
+        const categoryName = categoryItem.categoryName || categoryItem.category || categoryItem.subject || "Rajasthan GK";
+        const test = buildScheduledTest({
+          date,
+          category:categoryName,
+          questions:Array.isArray(categoryItem.questions) ? categoryItem.questions : [],
+          meta:{ ...meta, ...localMeta, ...categoryItem },
+          title:categoryItem.testTitle || categoryItem.title || ""
+        });
+        if(test.questions.length){ tests.push(test); }
+      });
+      return;
+    }
     Object.entries(categoriesMap || {}).forEach(([category, value]) => {
       const categoryMeta = value && typeof value === "object" && !Array.isArray(value) ? value : {};
       const questions = Array.isArray(value) ? value : (Array.isArray(categoryMeta.questions) ? categoryMeta.questions : []);
       const test = buildScheduledTest({
         date,
-        category,
+        category:categoryMeta.categoryName || categoryMeta.category || category,
         questions,
         meta:{ ...meta, ...localMeta, ...categoryMeta },
-        title:categoryMeta.title || localMeta.title || ""
+        title:categoryMeta.testTitle || categoryMeta.title || localMeta.title || ""
       });
       if(test.questions.length){ tests.push(test); }
     });
@@ -419,7 +449,7 @@ const collectTestsFromSchedule = (raw, parentMeta = {}) => {
   if(Array.isArray(raw)){
     raw.forEach((item) => {
       if(!item || typeof item !== "object"){ return; }
-      if(item.categories && item.date){ pushCategoryMap(item.date, item.categories, item); return; }
+      if(item.categories && (item.date || item.publishDate)){ pushCategoryMap(item.date || item.publishDate, item.categories, item); return; }
       if(isLikelyTestObject(item)){ pushTest(item); }
     });
     return tests;
@@ -429,7 +459,8 @@ const collectTestsFromSchedule = (raw, parentMeta = {}) => {
   if(Array.isArray(raw.tests)){ tests.push(...collectTestsFromSchedule(raw.tests, meta)); }
   if(Array.isArray(raw.days)){ tests.push(...collectTestsFromSchedule(raw.days, meta)); }
   if(Array.isArray(raw.schedule)){ tests.push(...collectTestsFromSchedule(raw.schedule, meta)); }
-  if(raw.categories && raw.date){ pushCategoryMap(raw.date, raw.categories, raw); }
+  if(Array.isArray(raw.dailyTests)){ tests.push(...collectTestsFromSchedule(raw.dailyTests, meta)); }
+  if(raw.categories && (raw.date || raw.publishDate)){ pushCategoryMap(raw.date || raw.publishDate, raw.categories, raw); }
   if(raw.dates && typeof raw.dates === "object"){
     Object.entries(raw.dates).forEach(([date, value]) => {
       if(Array.isArray(value)){ tests.push(...collectTestsFromSchedule(value.map((item) => ({ ...item, date })), meta)); return; }
@@ -472,7 +503,7 @@ const saveScheduledTests = async (tests = []) => {
 
 const hasScheduleShape = (raw) => Boolean(
   (Array.isArray(raw) && raw.some(isLikelyTestObject)) ||
-  (raw && typeof raw === "object" && !Array.isArray(raw) && (raw.tests || raw.days || raw.schedule || raw.dates || raw.categories))
+  (raw && typeof raw === "object" && !Array.isArray(raw) && (raw.tests || raw.days || raw.schedule || raw.dailyTests || raw.dates || raw.categories))
 );
 
 const importScheduleFromRaw = async (raw) => {

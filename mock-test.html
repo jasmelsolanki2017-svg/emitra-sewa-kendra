@@ -325,7 +325,8 @@ function getCategorySlug(value = "") {
 }
 
 function isActiveTest(test) {
-  return test.status === true || String(test.status || "").toLowerCase().trim() === "active";
+  const status = String(test.status || "").toLowerCase().trim();
+  return test.status === true || status === "active" || status === "scheduled";
 }
 
 function getTestCategorySlug(test, testId = "") {
