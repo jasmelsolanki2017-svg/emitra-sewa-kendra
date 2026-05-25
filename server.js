@@ -29,7 +29,10 @@ app.use((req, res, next) => {
   if (publicPath === "/sitemap.xml" || publicPath === "/sitemap-jobs.xml" || publicPath === "/robots.txt") {
     return next();
   }
-  if (publicPath === "/job-detail.html" && req.query?.id) {
+  if (publicPath.startsWith("/post/")) {
+    return next();
+  }
+  if (publicPath === "/job-detail.html" && (req.query?.id || req.query?.post || req.query?.slug)) {
     return next();
   }
   return staticMiddleware(req, res, next);
@@ -593,11 +596,34 @@ const jobSchemaGraph = ({ id = "", job = {}, title = "Job Update", description =
   };
 };
 
+const buildSeoStorageFields = (id = "", job = {}) => {
+  const seo = buildSeoFields(job, id);
+  const title = toText(job.title || "Job Update");
+  const canonicalUrl = seo.canonicalUrl || getPublicJobUrl(id, { ...job, slug: seo.slug });
+  const faq = normalizeFaqItems(job.faq);
+  const faqItems = faq.length ? faq : buildDefaultFaqItems(job, title);
+  const jsonLd = jobSchemaGraph({
+    id,
+    job: { ...job, slug: seo.slug, seoTitle: seo.seoTitle, metaDescription: seo.metaDescription, faq: faqItems },
+    title,
+    description: seo.metaDescription,
+    canonicalUrl
+  });
+  return {
+    slug: seo.slug,
+    canonicalUrl,
+    seoTitle: seo.seoTitle,
+    metaDescription: seo.metaDescription,
+    faq: faqItems,
+    jsonLd
+  };
+};
+
 const renderPrerenderedJobDetail = (id = "", job = {}) => {
   const seo = buildSeoFields(job, id);
   const title = toText(job.title || "Job Update");
   const description = seo.metaDescription;
-  const canonicalUrl = getPublicJobUrl(id, { ...job, slug: seo.slug });
+  const canonicalUrl = seo.canonicalUrl || getPublicJobUrl(id, { ...job, slug: seo.slug });
   const html = fs.readFileSync(path.join(__dirname, "job-detail.html"), "utf8");
   const summaryRows = [
     ["Department", job.department],
@@ -670,6 +696,56 @@ const buildCombinedSitemap = async () => {
   return staticXml.replace("</urlset>", `${jobEntries.join("\n")}\n</urlset>`);
 };
 
+const normalizeLatestJobsSeo = async (db, onlyJobId = "") => {
+  const updates = {};
+  const now = nowStamp();
+  const processJob = (id, job = {}) => {
+    if (!job || String(job.postStatus || "published").toLowerCase() === "draft") {
+      return;
+    }
+    const seo = buildSeoStorageFields(id, job);
+    const patch = {};
+    ["slug", "canonicalUrl", "seoTitle", "metaDescription"].forEach((key) => {
+      if (toText(job[key]) !== toText(seo[key])) {
+        patch[key] = seo[key];
+      }
+    });
+    if (JSON.stringify(normalizeFaqItems(job.faq)) !== JSON.stringify(seo.faq)) {
+      patch.faq = seo.faq;
+    }
+    if (JSON.stringify(job.jsonLd || null) !== JSON.stringify(seo.jsonLd)) {
+      patch.jsonLd = seo.jsonLd;
+    }
+    if (Object.keys(patch).length) {
+      patch.seoUpdatedAt = now;
+      Object.entries(patch).forEach(([key, value]) => {
+        updates[`LatestJobs/${id}/${key}`] = value;
+      });
+    }
+  };
+
+  if (onlyJobId) {
+    const snapshot = await db.ref(`LatestJobs/${onlyJobId}`).get();
+    if (snapshot.exists()) {
+      processJob(onlyJobId, snapshot.val() || {});
+    }
+  } else {
+    const snapshot = await db.ref("LatestJobs").get();
+    if (snapshot.exists()) {
+      snapshot.forEach((child) => processJob(child.key, child.val() || {}));
+    }
+  }
+
+  if (Object.keys(updates).length) {
+    await db.ref().update(updates);
+  }
+  return {
+    ok: true,
+    normalizedPosts: new Set(Object.keys(updates).map((key) => key.split("/")[1])).size,
+    updatedFields: Object.keys(updates).length
+  };
+};
+
 const compactLine = (label, value) => {
   const text = toText(value);
   return text ? `${label}: ${text}` : "";
@@ -710,6 +786,7 @@ const buildSeoFields = (job = {}, id = "") => {
   const metaDescription = toText(job.metaDescription || descParts.join(", ")).slice(0, 160);
   return {
     slug: toText(job.slug) || buildSlug(title, id),
+    canonicalUrl: toText(job.canonicalUrl) || getPublicJobUrl(id, { ...job, slug: toText(job.slug) || buildSlug(title, id) }),
     seoTitle,
     metaDescription
   };
@@ -1979,6 +2056,7 @@ async function publishAutoJobDraft(db, draftId, payload = {}) {
   const jobRef = db.ref("LatestJobs").push();
   const jobId = jobRef.key;
   const seo = buildSeoFields(draft, jobId);
+  const seoStorage = buildSeoStorageFields(jobId, { ...draft, ...seo });
   const autoSendChannels = Array.isArray(payload.autoSendChannels) ? payload.autoSendChannels.map((item) => String(item || "").toLowerCase()) : [];
   const job = {
     title: toText(draft.title),
@@ -1999,9 +2077,7 @@ async function publishAutoJobDraft(db, draftId, payload = {}) {
     postTarget: target,
     postStatus: "published",
     displayOrder: "1",
-    slug: seo.slug,
-    seoTitle: seo.seoTitle,
-    metaDescription: seo.metaDescription,
+    ...seoStorage,
     notificationSummary: String(draft.notificationSummary || "").trim() || buildNotificationSummary(draft),
     whatsappPostText: String(draft.whatsappPostText || "").trim(),
     detailLayout: toText(draft.detailLayout || "table"),
@@ -2190,6 +2266,18 @@ app.get("/robots.txt", (req, res) => {
 
 app.get("/job-detail.html", async (req, res, next) => {
   const id = toText(req.query?.id);
+  const slug = toText(req.query?.post || req.query?.slug);
+  if (!id && slug) {
+    try {
+      const found = await findPublishedJobBySlug(slug);
+      if (!found) {
+        return next();
+      }
+      return res.redirect(301, getPublicJobUrl(found.id, found.job));
+    } catch (err) {
+      return next();
+    }
+  }
   if (!id) {
     return next();
   }
@@ -2211,7 +2299,7 @@ app.get("/post/:slug", async (req, res, next) => {
       return next();
     }
     const canonicalPath = new URL(getPublicJobUrl(found.id, found.job)).pathname;
-    if (req.path !== canonicalPath) {
+    if (req.path !== canonicalPath || Object.keys(req.query || {}).length) {
       return res.redirect(301, canonicalPath);
     }
     return res.type("html").send(renderPrerenderedJobDetail(found.id, found.job));
@@ -2238,6 +2326,23 @@ app.post("/admin/status", async (req, res) => {
       databaseConnected: false,
       error: err.message
     }));
+  }
+});
+
+app.post("/admin/seo/normalize", async (req, res) => {
+  try {
+    const { db } = await requireAdmin(req);
+    const jobId = toText(req.body?.jobId);
+    const result = await normalizeLatestJobsSeo(db, jobId);
+    const sitemap = await buildCombinedSitemap();
+    return res.json({
+      ...result,
+      jobId: jobId || "",
+      sitemapUrl: `${SITE_BASE_URL}/sitemap.xml`,
+      sitemapBytes: Buffer.byteLength(sitemap, "utf8")
+    });
+  } catch (err) {
+    return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
   }
 });
 

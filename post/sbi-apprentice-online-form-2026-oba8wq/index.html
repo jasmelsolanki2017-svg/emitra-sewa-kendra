@@ -1070,6 +1070,13 @@ const renderJobDetail = (jobId, rawJob) => {
     if(metaDescription){ metaDescription.setAttribute("content", description.slice(0, 160)); }
     const canonicalUrl = canonicalJobUrl(jobId, job);
     setCanonical(canonicalUrl);
+    try{
+      const canonicalPath = new URL(canonicalUrl).pathname;
+      if((location.pathname !== canonicalPath || location.search) && /^https?:$/i.test(location.protocol)){
+        location.replace(canonicalUrl);
+        return;
+      }
+    }catch(_error){}
     setMeta('meta[property="og:title"]', "content", job.seoTitle || title);
     setMeta('meta[property="og:description"]', "content", description);
     setMeta('meta[property="og:url"]', "content", canonicalUrl);

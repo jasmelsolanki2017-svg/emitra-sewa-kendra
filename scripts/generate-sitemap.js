@@ -94,6 +94,7 @@ const buildSeoFields = (job = {}, id = "") => {
   return {
     title,
     slug,
+    canonicalUrl: String(job.canonicalUrl || jobUrl(id, { ...job, slug })).trim(),
     seoTitle: String(job.seoTitle || `${title} | E-MITRA WALA`).replace(/\s+/g, " ").trim().slice(0, 70),
     metaDescription: String(job.metaDescription || job.notificationSummary || job.shortInfo || descParts.join(", ")).replace(/\s+/g, " ").trim().slice(0, 160)
   };
@@ -177,7 +178,7 @@ const buildSchemaGraph = ({ id = "", job = {}, canonicalUrl = "" }) => {
 
 const renderStaticPostHtml = (id = "", job = {}) => {
   const seo = buildSeoFields(job, id);
-  const canonicalUrl = jobUrl(id, { ...job, slug: seo.slug });
+  const canonicalUrl = seo.canonicalUrl || jobUrl(id, { ...job, slug: seo.slug });
   const summaryRows = [
     ["Department", job.department],
     ["Post Name", job.postName || seo.title],

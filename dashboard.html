@@ -659,6 +659,7 @@ Cook | 1426 |"></textarea>
     }
     return data;
   };
+  const refreshSeoAfterSave = (jobId) => callAdminApi("/admin/seo/normalize", { jobId }).catch(() => null);
 
   const cleanDisplayOrder = (value) => {
     const number = Number(String(value || "").replace(/[^\d]/g, ""));
@@ -687,6 +688,30 @@ Cook | 1426 |"></textarea>
     const base = String(data.title || data.text || "job-update").toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/['"]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 90) || "job-update";
     const suffix = String(id || "").replace(/[^a-zA-Z0-9]/g, "").slice(-6).toLowerCase();
     return suffix ? `${base}-${suffix}` : base;
+  };
+  const buildSeoFaq = (data = {}, title = "Job Update") => Array.isArray(data.faq) && data.faq.length ? data.faq : [
+    { question:`${title} ki last date kya hai?`, answer:String(data.lastApplyDate || data.lastDate || "Official notification ke according check karein.") },
+    { question:`${title} ka apply link kahan milega?`, answer:hasRealLink(data.applyLink) ? "Apply Online link Important Links section me diya gaya hai." : "Apply link update hone par Important Links section me show hoga." },
+    { question:`${title} ka official notification kahan milega?`, answer:hasRealLink(data.detailLink) ? "Official notification/detail link Important Links section me available hai." : "Official detail link update hone par isi page par add kiya jayega." }
+  ];
+  const buildSeoDefaults = (id, data = {}) => {
+    const title = String(data.title || data.text || "Job Update").replace(/\s+/g, " ").trim() || "Job Update";
+    const descParts = [
+      title,
+      data.department,
+      data.totalPosts ? `${data.totalPosts} posts` : "",
+      data.lastApplyDate || data.lastDate ? `Last date ${data.lastApplyDate || data.lastDate}` : "",
+      "apply link, qualification and important dates"
+    ].filter(Boolean);
+    const slug = buildCanonicalSlug(id, data);
+    const canonicalUrl = `${siteBaseUrl()}/post/${encodeURIComponent(slug)}`;
+    return {
+      slug,
+      canonicalUrl,
+      seoTitle:String(data.seoTitle || `${title} | E-MITRA WALA`).replace(/\s+/g, " ").trim().slice(0, 70),
+      metaDescription:String(data.metaDescription || data.notificationSummary || data.shortInfo || descParts.join(", ")).replace(/\s+/g, " ").trim().slice(0, 160),
+      faq:buildSeoFaq(data, title)
+    };
   };
   const jobDetailUrl = (id, data = {}) => `${siteBaseUrl()}/post/${encodeURIComponent(buildCanonicalSlug(id, data))}`;
   const portalSectionMap = { notification:"notification", admitCard:"admitCard", result:"results", syllabus:"syllabus", answerKey:"answerKey", admission:"admission" };
@@ -964,6 +989,7 @@ Cook | 1426 |"></textarea>
       adminAllowed = true;
       document.querySelector(".admin-info h3").innerText = "Admin Access Verified";
       document.getElementById("adminEmailText").innerText = user.email;
+      refreshSeoAfterSave("");
 
     } else {
       adminAllowed = false;
@@ -1428,6 +1454,14 @@ Cook | 1426 |"></textarea>
 
     const targetRef = editingJobId ? ref(db, "LatestJobs/" + editingJobId) : push(jobsRef);
     const targetId = editingJobId || targetRef.key;
+    const seoDefaults = buildSeoDefaults(targetId, { ...existingJob, ...jobData });
+    Object.assign(jobData, {
+      slug:seoDefaults.slug,
+      canonicalUrl:seoDefaults.canonicalUrl,
+      seoTitle:seoDefaults.seoTitle,
+      metaDescription:seoDefaults.metaDescription,
+      faq:seoDefaults.faq
+    });
     applyDashboardDisplayOrderShift(targetId, { ...existingJob, ...jobData }).then((orderResult) => {
       const orderedJobData = orderResult.data;
       const saveTask = editingJobId
@@ -1435,6 +1469,7 @@ Cook | 1426 |"></textarea>
         : set(targetRef, { ...orderedJobData, createdAt:Date.now() });
       return saveTask
         .then(() => syncDisplayOrderToPortal(targetId, { ...existingJob, ...orderedJobData }))
+        .then(() => refreshSeoAfterSave(targetId))
         .then(() => orderResult);
     }).then((orderResult) => {
       document.getElementById("jobStatus").innerText = (editingJobId ? "Job Updated Successfully!" : "Job Added Successfully!") + (orderResult.data.displayOrder ? ` No ${orderResult.data.displayOrder} set hua.` : "") + (orderResult.shifted ? ` ${orderResult.shifted} post aage shift hui.` : "");

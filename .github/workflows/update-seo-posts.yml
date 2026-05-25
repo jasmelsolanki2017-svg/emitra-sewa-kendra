@@ -27,6 +27,9 @@ jobs:
       - name: Generate canonical post pages and sitemaps
         run: npm run sitemap
 
+      - name: SEO smoke test
+        run: npm run seo:smoke
+
       - name: Commit generated SEO files
         uses: stefanzweifel/git-auto-commit-action@v5
         with:

@@ -8,7 +8,8 @@
     "dev": "node server.js",
     "safety": "node scripts/check-git-safety.js",
     "backup": "node scripts/backup-firebase.js",
-    "sitemap": "node scripts/generate-sitemap.js"
+    "sitemap": "node scripts/generate-sitemap.js",
+    "seo:smoke": "node scripts/seo-smoke-test.js"
   },
   "dependencies": {
     "@supabase/ssr": "^0.8.0",
