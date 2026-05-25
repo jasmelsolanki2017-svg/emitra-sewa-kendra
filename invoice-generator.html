@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Invoice Generator | E-MITRA WALA</title>
+<link rel="icon" type="image/png" sizes="512x512" href="favicon.png">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="shortcut icon" href="favicon.ico">
+<link rel="apple-touch-icon" href="favicon.png">
+<meta name="description" content="Free blank invoice generator. Apni shop, customer, items aur amount fill karke multiple invoice formats me print-ready bill banaye.">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://emitrawala.online/invoice-generator.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root{--blue:#0057a8;--deep:#03224d;--orange:#ff7a00;--bg:#f7fbff;--line:#d8e0f0;--text:#172033;--muted:#5a6678;--accent:#0057a8;}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins','Noto Sans Devanagari',sans-serif;}
+html{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+body{background:var(--bg);color:var(--text);line-height:1.55;}
+a{color:inherit;}
+nav{background:var(--blue);padding:14px 6%;display:flex;justify-content:space-between;align-items:center;gap:18px;position:sticky;top:0;z-index:20;box-shadow:0 4px 15px rgba(0,0,0,.14);}
+.logo{display:inline-flex;align-items:center;line-height:0;text-decoration:none;flex-shrink:0;}
+.logo img{width:min(246px,54vw);max-height:62px;height:auto;display:block;border-radius:8px;}
+nav ul{display:flex;list-style:none;gap:18px;flex-wrap:wrap;justify-content:flex-end;}
+nav a{color:white;text-decoration:none;font-weight:700;}
+nav a:hover{color:var(--orange);}
+.hero{background:linear-gradient(135deg,var(--blue),var(--deep));color:white;padding:40px 6%;}
+.hero-inner{max-width:1180px;margin:auto;}
+.hero h1{font-size:clamp(28px,5vw,44px);line-height:1.15;color:var(--orange);margin-bottom:8px;}
+.hero p{max-width:780px;color:#fff1df;font-weight:600;}
+main{max-width:1280px;margin:auto;padding:24px 4%;display:grid;grid-template-columns:minmax(310px,430px) minmax(0,1fr);gap:18px;align-items:start;}
+.panel,.invoice-sheet{background:white;border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 24px rgba(8,31,74,.08);}
+.panel{padding:16px;position:sticky;top:92px;max-height:calc(100vh - 110px);overflow:auto;}
+.panel h2{color:var(--blue);font-size:22px;margin-bottom:10px;}
+.group-title{margin:14px 0 8px;color:#26354b;font-size:13px;font-weight:900;text-transform:uppercase;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.field{display:flex;flex-direction:column;gap:5px;}
+.field.full{grid-column:1/-1;}
+label{font-size:12px;font-weight:800;color:#344158;}
+input,textarea,select{width:100%;border:1px solid #bdd0e5;border-radius:6px;padding:9px 10px;font-size:13px;outline:none;background:white;color:var(--text);}
+textarea{min-height:70px;resize:vertical;}
+input:focus,textarea:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,87,168,.12);}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+button{border:0;border-radius:6px;padding:10px 12px;font-size:13px;font-weight:900;cursor:pointer;background:var(--blue);color:white;}
+button:hover{background:var(--orange);color:var(--deep);}
+.secondary{background:#4d5d72;}
+.danger{background:#c62828;}
+.line-editor{display:grid;grid-template-columns:1.3fr .55fr .75fr 38px;gap:7px;margin-bottom:7px;align-items:center;}
+.line-editor button{padding:9px 0;background:#c62828;}
+.status{margin-top:10px;font-size:12px;font-weight:800;color:var(--blue);background:#eef6ff;border:1px solid #d8e6f5;border-radius:6px;padding:8px 10px;}
+.preview-wrap{overflow:auto;}
+.invoice-sheet{width:min(100%,794px);min-height:1123px;margin:auto;padding:38px 42px;color:#111;background:white;}
+.invoice-top{display:grid;grid-template-columns:1.2fr .8fr;gap:18px;align-items:start;border-bottom:3px solid var(--accent);padding-bottom:16px;margin-bottom:18px;}
+.brand-name{font-size:28px;line-height:1.14;font-weight:900;color:var(--accent);overflow-wrap:anywhere;}
+.brand-meta,.client-meta,.invoice-meta,.notes{font-size:12px;color:#354054;white-space:pre-line;overflow-wrap:anywhere;}
+.invoice-title{text-align:right;font-size:34px;line-height:1;font-weight:900;color:#111;text-transform:uppercase;}
+.invoice-meta{text-align:right;margin-top:10px;}
+.bill-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;}
+.block-label{font-size:12px;font-weight:900;color:var(--accent);text-transform:uppercase;margin-bottom:5px;}
+.client-name{font-size:18px;font-weight:900;color:#111;overflow-wrap:anywhere;}
+.item-table{width:100%;border-collapse:collapse;margin:12px 0 14px;font-size:12px;}
+.item-table th{background:var(--accent);color:white;text-align:left;padding:9px;border:1px solid var(--accent);}
+.item-table td{border:1px solid #d4dce8;padding:8px;vertical-align:top;}
+.item-table td:nth-child(2),.item-table td:nth-child(3),.item-table td:nth-child(4),.item-table th:nth-child(2),.item-table th:nth-child(3),.item-table th:nth-child(4){text-align:right;}
+.totals{margin-left:auto;width:min(100%,330px);font-size:13px;}
+.total-row{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid #e2e8f1;}
+.grand{font-size:18px;font-weight:900;color:var(--accent);border-bottom:0;border-top:3px solid var(--accent);margin-top:5px;padding-top:10px;}
+.invoice-foot{display:grid;grid-template-columns:1fr 220px;gap:28px;margin-top:32px;align-items:end;}
+.sign-box{text-align:center;border-top:1px solid #111;padding-top:8px;font-size:12px;font-weight:800;}
+.invoice-professional{border-top:12px solid var(--accent);}
+.invoice-professional .invoice-top{background:#eef6ff;border:0;border-radius:7px;padding:18px;}
+.invoice-professional .invoice-title{color:var(--accent);}
+.invoice-compact{padding:30px 32px;min-height:900px;}
+.invoice-compact .invoice-top{grid-template-columns:1fr 170px;margin-bottom:12px;padding-bottom:10px;}
+.invoice-compact .brand-name{font-size:24px;}
+.invoice-compact .invoice-title{font-size:26px;}
+.invoice-compact .item-table th,.invoice-compact .item-table td{padding:6px;}
+.invoice-gst{border:2px solid #111;padding:34px;}
+.invoice-gst .invoice-title{text-align:center;background:#111;color:white;padding:8px;font-size:24px;margin-bottom:12px;}
+.invoice-gst .invoice-top{display:block;border-bottom:2px solid #111;}
+.invoice-gst .invoice-meta{text-align:left;}
+.invoice-gst .item-table th{background:#111;border-color:#111;}
+.invoice-gst .grand{color:#111;border-top-color:#111;}
+.invoice-receipt{min-height:720px;width:min(100%,560px);padding:30px;border:2px dashed var(--accent);}
+.invoice-receipt .invoice-top{display:block;text-align:center;border-bottom:1px dashed var(--accent);}
+.invoice-receipt .invoice-title{text-align:center;font-size:26px;margin-top:12px;color:var(--accent);}
+.invoice-receipt .invoice-meta{text-align:center;}
+.invoice-receipt .bill-grid{grid-template-columns:1fr;text-align:center;}
+.invoice-receipt .invoice-foot{grid-template-columns:1fr;text-align:center;}
+.invoice-receipt .totals{margin:auto;}
+.invoice-format1,.invoice-format2,.invoice-format3,.invoice-format4{--accent:#111;border:1px solid #111;border-radius:0;box-shadow:none;color:#111;font-family:Arial,'Noto Sans Devanagari',sans-serif;padding:28px;background:white;}
+.invoice-format1 *,.invoice-format2 *,.invoice-format3 *,.invoice-format4 *{font-family:Arial,'Noto Sans Devanagari',sans-serif;}
+.memo-frame{border:1px solid #222;padding:10px 12px;margin-bottom:12px;}
+.memo-line{display:flex;justify-content:space-between;gap:12px;font-size:16px;}
+.memo-heading{text-align:center;font-size:20px;font-weight:700;line-height:1.1;}
+.memo-business{text-align:center;font-size:42px;line-height:1.05;font-weight:900;letter-spacing:2px;margin:5px 0;text-transform:uppercase;}
+.memo-prop{display:inline-block;background:#111;color:white;border-radius:50%;padding:3px 22px;font-size:17px;font-style:italic;font-weight:700;}
+.memo-subtitle{text-align:center;font-size:18px;line-height:1.4;}
+.dotted-row{display:flex;gap:8px;align-items:flex-end;margin-top:12px;font-size:15px;}
+.dotted-row span{white-space:nowrap;}
+.dotted-line{flex:1;border-bottom:1px dotted #111;min-height:20px;}
+.memo-table,.export-table,.tax-table,.dd-table,.summary-table{width:100%;border-collapse:collapse;font-size:13px;}
+.memo-table th,.memo-table td,.export-table th,.export-table td,.tax-table th,.tax-table td,.dd-table th,.dd-table td,.summary-table th,.summary-table td{border:1px solid #111;padding:5px;vertical-align:top;}
+.memo-table th{font-size:17px;font-weight:400;text-align:center;}
+.memo-table .blank-cell{height:470px;}
+.memo-table .word-cell{height:74px;font-size:15px;}
+.memo-table .total-label{font-size:25px;font-weight:900;text-align:center;}
+.memo-signs{display:flex;justify-content:space-between;gap:40px;margin-top:34px;font-size:16px;font-style:italic;}
+.memo-signs div{width:220px;text-align:center;border-top:1px dotted #111;padding-top:7px;}
+.invoice-format2,.invoice-format3,.invoice-format4{font-size:12px;padding:30px 28px;}
+.export-title,.tax-title{text-align:center;font-size:16px;font-weight:900;text-transform:uppercase;margin-bottom:4px;}
+.export-grid,.tax-head-grid,.dd-top-grid{display:grid;grid-template-columns:1.1fr .9fr;border:1px solid #111;border-bottom:0;}
+.export-grid>div,.tax-head-grid>div,.dd-top-grid>div{border-right:1px solid #111;border-bottom:1px solid #111;padding:5px;min-height:30px;}
+.export-grid>div:nth-child(2n),.tax-head-grid>div:nth-child(2n),.dd-top-grid>div:nth-child(2n){border-right:0;}
+.export-small{font-size:10px;text-transform:uppercase;}
+.export-strong,.tax-strong{font-weight:900;font-size:13px;white-space:pre-line;}
+.export-table th,.export-table td,.tax-table th,.tax-table td,.dd-table th,.dd-table td{font-size:12px;}
+.export-table .goods-cell{height:350px;}
+.right{text-align:right;}
+.center{text-align:center;}
+.bold{font-weight:900;}
+.tax-head-grid{grid-template-columns:1fr 1fr;margin-top:18px;}
+.tax-meta-grid{display:grid;grid-template-columns:1fr 1fr 1fr;}
+.tax-meta-grid div{border-right:1px solid #111;border-bottom:1px solid #111;padding:4px;min-height:38px;}
+.tax-meta-grid div:nth-child(3n){border-right:0;}
+.tax-table .goods-area{height:230px;}
+.tax-summary{display:grid;grid-template-columns:1fr 1fr;margin-top:0;border-left:1px solid #111;border-right:1px solid #111;}
+.tax-summary>div{border-bottom:1px solid #111;padding:5px;}
+.tax-summary>div:nth-child(odd){border-right:1px solid #111;}
+.dd-title{text-align:center;border:1px solid #111;border-bottom:0;padding:3px;font-size:18px;text-transform:uppercase;}
+.dd-business{text-align:center;border:1px solid #111;border-bottom:0;padding:5px 8px;}
+.dd-business h2{font-size:28px;line-height:1.05;margin:0;text-transform:uppercase;}
+.dd-business p{font-size:13px;line-height:1.35;margin:4px 0 0;}
+.dd-top-grid{grid-template-columns:1fr 1.1fr 1.1fr;}
+.dd-top-grid>div:nth-child(2n){border-right:1px solid #111;}
+.dd-top-grid>div:nth-child(3n){border-right:0;}
+.dd-table .main-area{height:500px;}
+.dd-bottom{display:grid;grid-template-columns:1fr 1fr;border:1px solid #111;border-top:0;}
+.dd-bottom>div{min-height:126px;padding:7px;border-right:1px solid #111;}
+.dd-bottom>div:last-child{border-right:0;text-align:center;}
+.signature-script{font-family:cursive;font-size:42px;margin-top:26px;}
+.whatsapp{position:fixed;right:22px;bottom:22px;width:56px;height:56px;border-radius:50%;background:#25d366;color:white;display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:28px;box-shadow:0 8px 22px rgba(37,211,102,.35);z-index:30;}
+footer{background:var(--blue);color:white;text-align:center;padding:22px 6%;margin-top:20px;}
+footer a{color:var(--orange);text-decoration:none;font-weight:800;margin:0 7px;display:inline-block;}
+@media(max-width:980px){main{grid-template-columns:1fr}.panel{position:static;max-height:none}.invoice-sheet{min-height:auto}.bill-grid,.invoice-foot{grid-template-columns:1fr}.invoice-title,.invoice-meta{text-align:left}.form-grid{grid-template-columns:1fr;}.line-editor{grid-template-columns:1fr .55fr .75fr 38px;}}
+@media(max-width:560px){nav{flex-direction:column;align-items:flex-start}nav ul{gap:12px}.hero{padding:34px 4%}main{padding:16px 3%}.invoice-sheet{padding:24px 16px}.invoice-top{grid-template-columns:1fr}.brand-name{font-size:23px}.invoice-title{font-size:26px}.line-editor{grid-template-columns:1fr 1fr}.line-editor input:first-child{grid-column:1/-1}.whatsapp{right:15px;bottom:15px;width:52px;height:52px;font-size:25px}}
+@media print{
+  body{background:white;}
+  nav,.hero,.panel,.whatsapp,footer{display:none!important;}
+  main{display:block;padding:0;max-width:none;}
+  .preview-wrap{overflow:visible;}
+  .invoice-sheet{width:210mm;min-height:297mm;border-radius:0;box-shadow:none;margin:0;padding:14mm 16mm;}
+  .invoice-receipt{width:148mm;min-height:210mm;margin:0 auto;}
+  @page{size:A4;margin:0;}
+}
+</style>
+</head>
+<body>
+<nav>
+  <a class="logo" href="index.html"><img src="site-logo.svg" alt="E-MITRA WALA"></a>
+  <ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="OFFLINEFORM.HTML">PDF Forms</a></li>
+    <li><a href="job-form.html">Latest Jobs</a></li>
+    <li><a href="useful-pages.html">Useful Pages</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <h1>Invoice Generator</h1>
+    <p>Blank invoice me apni shop, customer, item, tax aur note fill karein. Multiple formats me preview dekhein aur Print / Save PDF se invoice nikal lein.</p>
+  </div>
+</section>
+
+<main>
+  <section class="panel">
+    <h2>Invoice Details</h2>
+    <div class="form-grid">
+      <div class="field full"><label>Invoice Format</label><select id="invoiceFormat"><option value="simple">Simple Invoice</option><option value="professional">Professional Invoice</option><option value="compact">Compact Invoice</option><option value="gst">Tax / GST Style</option><option value="receipt">Receipt Style</option><option value="format1">1</option><option value="format2">2</option><option value="format3">3</option><option value="format4">4</option></select></div>
+      <div class="field"><label>Theme Color</label><input id="themeColor" type="color" value="#0057a8"></div>
+      <div class="field"><label>Currency</label><select id="currency"><option value="₹" selected>₹ INR</option><option value="$">$ USD</option><option value="€">€ EUR</option><option value="">No Symbol</option></select></div>
+      <div class="field full"><label>Business / Shop Name</label><input id="businessName" value="Your Business Name" placeholder="Business name"></div>
+      <div class="field full"><label>Business Details</label><textarea id="businessDetails">Address line, City, Rajasthan
+Mobile: 00000 00000
+Email: yourmail@example.com
+GSTIN / Udyam: Optional</textarea></div>
+      <div class="field"><label>Invoice No.</label><input id="invoiceNo" value="INV-001" placeholder="INV-001"></div>
+      <div class="field"><label>Invoice Date</label><input id="invoiceDate" type="date"></div>
+      <div class="field"><label>Due Date</label><input id="dueDate" type="date"></div>
+      <div class="field"><label>Payment Mode</label><input id="paymentMode" value="Cash / UPI" placeholder="Cash / UPI"></div>
+      <div class="field full"><label>Customer Name</label><input id="clientName" value="Customer Name" placeholder="Customer name"></div>
+      <div class="field full"><label>Customer Details</label><textarea id="clientDetails">Customer address / mobile / email</textarea></div>
+    </div>
+
+    <div class="group-title">Items</div>
+    <div id="lineItems"></div>
+    <div class="actions">
+      <button type="button" onclick="addLineItem()"><i class="fa-solid fa-plus"></i> Add Item</button>
+      <button class="secondary" type="button" onclick="updateInvoice()"><i class="fa-solid fa-rotate"></i> Update</button>
+    </div>
+
+    <div class="group-title">Totals & Notes</div>
+    <div class="form-grid">
+      <div class="field"><label>Tax Label</label><input id="taxLabel" value="Tax" placeholder="GST / Tax"></div>
+      <div class="field"><label>Tax %</label><input id="taxRate" type="number" value="0" min="0" step="0.01"></div>
+      <div class="field"><label>Discount</label><input id="discount" type="number" value="0" min="0" step="0.01"></div>
+      <div class="field"><label>Paid Amount</label><input id="paidAmount" type="number" value="0" min="0" step="0.01"></div>
+      <div class="field full"><label>Notes / Terms</label><textarea id="notes">Thank you for your business.
+Goods once sold will not be taken back.</textarea></div>
+      <div class="field full"><label>Signature Text</label><input id="signatureText" value="Authorised Signature" placeholder="Authorised Signature"></div>
+    </div>
+    <div class="actions">
+      <button type="button" onclick="window.print()"><i class="fa-solid fa-print"></i> Print / Save PDF</button>
+      <button class="danger" type="button" onclick="clearInvoice()"><i class="fa-solid fa-trash"></i> Blank Invoice</button>
+    </div>
+    <div class="status">Fields blank bhi chhod sakte hain. Jitna data fill karenge, invoice utna customize ho jayega.</div>
+  </section>
+
+  <section class="preview-wrap" aria-label="Invoice preview">
+    <article class="invoice-sheet invoice-simple" id="invoiceSheet">
+      <div class="invoice-top">
+        <div>
+          <div class="brand-name" id="previewBusinessName"></div>
+          <div class="brand-meta" id="previewBusinessDetails"></div>
+        </div>
+        <div>
+          <div class="invoice-title">Invoice</div>
+          <div class="invoice-meta" id="previewInvoiceMeta"></div>
+        </div>
+      </div>
+
+      <div class="bill-grid">
+        <div>
+          <div class="block-label">Bill To</div>
+          <div class="client-name" id="previewClientName"></div>
+          <div class="client-meta" id="previewClientDetails"></div>
+        </div>
+        <div>
+          <div class="block-label">Payment</div>
+          <div class="client-meta" id="previewPaymentMeta"></div>
+        </div>
+      </div>
+
+      <table class="item-table">
+        <thead>
+          <tr><th>Item / Description</th><th>Qty</th><th>Rate</th><th>Amount</th></tr>
+        </thead>
+        <tbody id="previewItems"></tbody>
+      </table>
+
+      <div class="totals" id="previewTotals"></div>
+
+      <div class="invoice-foot">
+        <div>
+          <div class="block-label">Notes</div>
+          <div class="notes" id="previewNotes"></div>
+        </div>
+        <div class="sign-box" id="previewSignature"></div>
+      </div>
+    </article>
+  </section>
+</main>
+
+<a class="whatsapp" href="https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp channel"><i class="fa-brands fa-whatsapp"></i></a>
+
+<footer>
+  <p>© 2026 E-MITRA WALA | Invoice Generator</p>
+  <p><a href="privacy-policy.html">Privacy Policy</a><a href="about.html">About</a><a href="contact.html">Contact</a><a href="disclaimer.html">Disclaimer</a><a href="terms-and-conditions.html">Terms & Conditions</a></p>
+</footer>
+
+<script>
+const itemWrap = document.getElementById("lineItems");
+const moneyFields = ["taxRate","discount","paidAmount"];
+
+function escapeHTML(value = ""){
+  return String(value).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+}
+
+function inputValue(id){
+  return document.getElementById(id).value.trim();
+}
+
+function numberValue(value){
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function formatMoney(amount){
+  const symbol = document.getElementById("currency").value;
+  return `${symbol}${numberValue(amount).toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+}
+
+function todayValue(){
+  const date = new Date();
+  const mm = String(date.getMonth() + 1).padStart(2,"0");
+  const dd = String(date.getDate()).padStart(2,"0");
+  return `${date.getFullYear()}-${mm}-${dd}`;
+}
+
+function displayDate(value){
+  if(!value){ return "Not set"; }
+  const date = new Date(`${value}T00:00:00`);
+  return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString("hi-IN");
+}
+
+function addLineItem(item = {}){
+  const row = document.createElement("div");
+  row.className = "line-editor";
+  row.innerHTML = `
+    <input class="item-desc" value="${escapeHTML(item.desc || "")}" placeholder="Item / work description">
+    <input class="item-qty" type="number" value="${escapeHTML(item.qty ?? 1)}" min="0" step="0.01" placeholder="Qty">
+    <input class="item-rate" type="number" value="${escapeHTML(item.rate ?? 0)}" min="0" step="0.01" placeholder="Rate">
+    <button type="button" title="Remove item" aria-label="Remove item"><i class="fa-solid fa-xmark"></i></button>
+  `;
+  row.querySelector("button").addEventListener("click", () => {
+    if(itemWrap.children.length > 1){ row.remove(); updateInvoice(); }
+  });
+  row.querySelectorAll("input").forEach((input) => input.addEventListener("input", updateInvoice));
+  itemWrap.appendChild(row);
+  updateInvoice();
+}
+
+function getItems(){
+  return Array.from(itemWrap.querySelectorAll(".line-editor")).map((row) => {
+    const desc = row.querySelector(".item-desc").value.trim();
+    const qty = numberValue(row.querySelector(".item-qty").value);
+    const rate = numberValue(row.querySelector(".item-rate").value);
+    return { desc, qty, rate, amount: qty * rate };
+  });
+}
+
+function getInvoiceData(){
+  const items = getItems();
+  const subtotal = items.reduce((sum,item) => sum + item.amount, 0);
+  const taxRate = numberValue(inputValue("taxRate"));
+  const taxAmount = subtotal * taxRate / 100;
+  const discount = numberValue(inputValue("discount"));
+  const grandTotal = Math.max(0, subtotal + taxAmount - discount);
+  const paid = numberValue(inputValue("paidAmount"));
+  const balance = Math.max(0, grandTotal - paid);
+  const businessDetails = inputValue("businessDetails");
+  const mobile = (businessDetails.match(/(?:mobile|mob|phone)[:\s-]*([+\d\s-]{7,})/i) || [,""])[1].trim();
+  return {
+    format:inputValue("invoiceFormat") || "simple",
+    businessName:inputValue("businessName") || "Your Business Name",
+    businessDetails,
+    clientName:inputValue("clientName") || "Customer Name",
+    clientDetails:inputValue("clientDetails"),
+    invoiceNo:inputValue("invoiceNo") || "-",
+    invoiceDate:displayDate(inputValue("invoiceDate")),
+    dueDate:displayDate(inputValue("dueDate")),
+    paymentMode:inputValue("paymentMode") || "-",
+    taxLabel:inputValue("taxLabel") || "Tax",
+    taxRate,
+    taxAmount,
+    discount,
+    paid,
+    balance,
+    subtotal,
+    grandTotal,
+    items,
+    notes:inputValue("notes"),
+    signatureText:inputValue("signatureText") || "Authorised Signature",
+    mobile
+  };
+}
+
+function renderStandardInvoice(data){
+  return `
+    <div class="invoice-top">
+      <div>
+        <div class="brand-name">${escapeHTML(data.businessName)}</div>
+        <div class="brand-meta">${escapeHTML(data.businessDetails)}</div>
+      </div>
+      <div>
+        <div class="invoice-title">Invoice</div>
+        <div class="invoice-meta">${escapeHTML([`Invoice No: ${data.invoiceNo}`,`Date: ${data.invoiceDate}`,`Due Date: ${data.dueDate}`].join("\n"))}</div>
+      </div>
+    </div>
+    <div class="bill-grid">
+      <div>
+        <div class="block-label">Bill To</div>
+        <div class="client-name">${escapeHTML(data.clientName)}</div>
+        <div class="client-meta">${escapeHTML(data.clientDetails)}</div>
+      </div>
+      <div>
+        <div class="block-label">Payment</div>
+        <div class="client-meta">Payment Mode: ${escapeHTML(data.paymentMode)}</div>
+      </div>
+    </div>
+    <table class="item-table">
+      <thead><tr><th>Item / Description</th><th>Qty</th><th>Rate</th><th>Amount</th></tr></thead>
+      <tbody>${data.items.map((item) => `<tr><td>${escapeHTML(item.desc || "Blank item")}</td><td>${escapeHTML(item.qty)}</td><td>${escapeHTML(formatMoney(item.rate))}</td><td>${escapeHTML(formatMoney(item.amount))}</td></tr>`).join("")}</tbody>
+    </table>
+    <div class="totals">${renderTotals(data)}</div>
+    <div class="invoice-foot">
+      <div><div class="block-label">Notes</div><div class="notes">${escapeHTML(data.notes)}</div></div>
+      <div class="sign-box">${escapeHTML(data.signatureText)}</div>
+    </div>
+  `;
+}
+
+function renderTotals(data){
+  return `
+    <div class="total-row"><span>Subtotal</span><strong>${escapeHTML(formatMoney(data.subtotal))}</strong></div>
+    <div class="total-row"><span>${escapeHTML(data.taxLabel)} (${escapeHTML(data.taxRate)}%)</span><strong>${escapeHTML(formatMoney(data.taxAmount))}</strong></div>
+    <div class="total-row"><span>Discount</span><strong>${escapeHTML(formatMoney(data.discount))}</strong></div>
+    <div class="total-row grand"><span>Total</span><strong>${escapeHTML(formatMoney(data.grandTotal))}</strong></div>
+    <div class="total-row"><span>Paid</span><strong>${escapeHTML(formatMoney(data.paid))}</strong></div>
+    <div class="total-row"><span>Balance</span><strong>${escapeHTML(formatMoney(data.balance))}</strong></div>
+  `;
+}
+
+function itemRows(data, minRows = 6, cells = (item, index) => [
+  index + 1,
+  item.desc || "Blank item",
+  item.qty,
+  formatMoney(item.rate),
+  formatMoney(item.amount)
+]){
+  const rows = data.items.map((item,index) => cells(item,index));
+  while(rows.length < minRows){ rows.push(["","","","",""]); }
+  return rows;
+}
+
+function renderFormat1(data){
+  const rows = itemRows(data, 8, (item,index) => [index + 1, item.desc || "Blank item", item.qty, formatMoney(item.rate), formatMoney(item.amount), ""]);
+  return `
+    <div class="memo-frame">
+      <div class="memo-line"><span>No - ${escapeHTML(data.invoiceNo)}</span><span class="memo-heading">Bill/Cash Memo</span><span>Mob - ${escapeHTML(data.mobile || "0000000000")}</span></div>
+      <div class="memo-business">${escapeHTML(data.businessName)}</div>
+      <div class="center"><span class="memo-prop">${escapeHTML(data.signatureText)}</span></div>
+      <div class="memo-subtitle">${escapeHTML(data.businessDetails)}</div>
+      <div class="dotted-row"><span>Customer's Name</span><div class="dotted-line">${escapeHTML(data.clientName)}</div></div>
+      <div class="dotted-row"><span>Address</span><div class="dotted-line">${escapeHTML(data.clientDetails)}</div></div>
+      <div class="dotted-row"><span>Lorry No.</span><div class="dotted-line"></div><span>Date</span><div class="dotted-line">${escapeHTML(data.invoiceDate)}</div></div>
+    </div>
+    <table class="memo-table">
+      <thead><tr><th>SL.No</th><th>Particulars</th><th>Quantity</th><th>Rate</th><th colspan="2">Amount<br>Rs. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; P</th></tr></thead>
+      <tbody>
+        ${rows.map((row) => `<tr><td class="center">${escapeHTML(row[0])}</td><td>${escapeHTML(row[1])}</td><td class="center">${escapeHTML(row[2])}</td><td class="right">${escapeHTML(row[3])}</td><td class="right">${escapeHTML(row[4])}</td><td>${escapeHTML(row[5])}</td></tr>`).join("")}
+        <tr><td colspan="3" class="word-cell">Amount in Word ....................................<br><br>...................................................</td><td class="total-label">Total</td><td class="right bold">${escapeHTML(formatMoney(data.grandTotal))}</td><td></td></tr>
+      </tbody>
+    </table>
+    <div class="memo-signs"><div>Signature of Customer's</div><div>Signature of Proprietor</div></div>
+  `;
+}
+
+function renderFormat2(data){
+  const rows = itemRows(data, 7, (item,index) => [`${index + 1}`, item.desc || "Blank item", item.qty, formatMoney(item.rate), formatMoney(item.amount)]);
+  return `
+    <div class="export-title">Invoice</div>
+    <div class="export-grid">
+      <div><div class="export-small">Exporter & Manufacturer</div><div class="export-strong">${escapeHTML(data.businessName)}</div><div>${escapeHTML(data.businessDetails)}</div></div>
+      <div><div class="export-small">Invoice No & Date</div><div class="bold">${escapeHTML(data.invoiceNo)} &nbsp; ${escapeHTML(data.invoiceDate)}</div><hr><div class="export-small">Exporter's Ref.</div><div>${escapeHTML(data.paymentMode)}</div></div>
+      <div><div class="export-small">Consignee</div><br>${escapeHTML(data.clientName)}<br>${escapeHTML(data.clientDetails)}</div>
+      <div><div class="export-small">Buyer (if other than consignee)</div><br>${escapeHTML(data.clientName)}<br>${escapeHTML(data.clientDetails)}<br><br><div class="center bold">IE CODE NO.</div></div>
+      <div><span class="export-small">Pre Carried by</span><br><b>BY ROAD</b></div>
+      <div><span class="export-small">Country of Origin of Goods</span><br><b>INDIA</b><br><span class="export-small">Terms Of Delivery and Payment</span><br>${escapeHTML(data.notes)}</div>
+    </div>
+    <table class="export-table">
+      <thead><tr><th>Marks & Nos.</th><th>Description of Goods</th><th>Quantity</th><th>Rate</th><th>Amount</th></tr></thead>
+      <tbody>
+        ${rows.map((row) => `<tr><td>${escapeHTML(row[0])}</td><td>${escapeHTML(row[1])}</td><td class="right">${escapeHTML(row[2])}</td><td class="right">${escapeHTML(row[3])}</td><td class="right">${escapeHTML(row[4])}</td></tr>`).join("")}
+        <tr><td colspan="2" class="goods-cell"><b>NET WT P/PS</b></td><td></td><td class="right bold">Total</td><td class="right bold">${escapeHTML(formatMoney(data.grandTotal))}</td></tr>
+      </tbody>
+    </table>
+    <table class="summary-table"><tr><td>Amount Chargeable<br>(in words)</td><td class="bold">C & F VALUE ${escapeHTML(formatMoney(data.grandTotal))}</td><td class="right">Signature & Date<br><br><br>${escapeHTML(data.signatureText)}</td></tr></table>
+  `;
+}
+
+function renderFormat3(data){
+  const rows = itemRows(data, 6, (item,index) => [index + 1, item.desc || "Blank item", "", item.qty, formatMoney(item.rate), "pcs", formatMoney(item.amount)]);
+  return `
+    <div class="tax-title">Tax Invoice</div>
+    <div class="tax-head-grid">
+      <div><div class="tax-strong">${escapeHTML(data.businessName)}</div>${escapeHTML(data.businessDetails)}</div>
+      <div class="tax-meta-grid">
+        <div>Invoice No.<br><b>${escapeHTML(data.invoiceNo)}</b></div><div>e-Way Bill No.</div><div>Dated<br><b>${escapeHTML(data.invoiceDate)}</b></div>
+        <div>Delivery Note</div><div>Mode/Terms of Payment<br>${escapeHTML(data.paymentMode)}</div><div>Other Reference(s)</div>
+        <div>Buyer's Order No.</div><div>Dated</div><div>Destination</div>
+      </div>
+      <div><b>Buyer</b><br><div class="tax-strong">${escapeHTML(data.clientName)}</div>${escapeHTML(data.clientDetails)}</div>
+      <div>Terms of Delivery<br>${escapeHTML(data.notes)}</div>
+    </div>
+    <table class="tax-table">
+      <thead><tr><th>Sl<br>No.</th><th>Description of Goods</th><th>HSN/SAC</th><th>Quantity</th><th>Rate</th><th>per</th><th>Amount</th></tr></thead>
+      <tbody>
+        ${rows.map((row) => `<tr><td>${escapeHTML(row[0])}</td><td class="bold">${escapeHTML(row[1])}</td><td>${escapeHTML(row[2])}</td><td class="right bold">${escapeHTML(row[3])}</td><td class="right">${escapeHTML(row[4])}</td><td>${escapeHTML(row[5])}</td><td class="right bold">${escapeHTML(row[6])}</td></tr>`).join("")}
+        <tr><td colspan="2" class="goods-area right bold">${escapeHTML(data.taxLabel)}</td><td></td><td></td><td></td><td></td><td class="right bold">${escapeHTML(formatMoney(data.taxAmount))}</td></tr>
+        <tr><td colspan="3" class="right bold">Total</td><td class="right bold">${escapeHTML(data.items.reduce((sum,item) => sum + item.qty, 0))} pcs</td><td></td><td></td><td class="right bold">${escapeHTML(formatMoney(data.grandTotal))}</td></tr>
+      </tbody>
+    </table>
+    <div class="tax-summary"><div>Amount Chargeable (in words)<br><b>${escapeHTML(formatMoney(data.grandTotal))} Only</b></div><div class="right">E. & O.E</div><div>Tax Amount (in words): <b>${escapeHTML(formatMoney(data.taxAmount))} Only</b></div><div class="right"><b>for ${escapeHTML(data.businessName)}</b><br><br><br>${escapeHTML(data.signatureText)}</div></div>
+    <div class="center">This is a Computer Generated Invoice</div>
+  `;
+}
+
+function renderFormat4(data){
+  const rows = itemRows(data, 6, (item) => [item.desc || "Blank item", "", item.qty, "pcs", formatMoney(item.rate), formatMoney(item.amount)]);
+  return `
+    <div class="dd-title">Tax Invoice</div>
+    <div class="dd-business"><h2>${escapeHTML(data.businessName)}</h2><p>${escapeHTML(data.businessDetails)}</p></div>
+    <div class="dd-top-grid">
+      <div>Bill to<br><br><b>${escapeHTML(data.clientName)}</b><br><br>${escapeHTML(data.clientDetails)}</div>
+      <div>Place of Supply<br><br><b>${escapeHTML(data.clientName)}</b><br>${escapeHTML(data.clientDetails)}</div>
+      <div class="center"><b>INVOICE No</b><br><br>${escapeHTML(data.invoiceNo)}<br><br><b>Dated</b><br>${escapeHTML(data.invoiceDate)}</div>
+    </div>
+    <table class="dd-table">
+      <thead><tr><th>Description of Goods</th><th>HSN CODE</th><th>QTY</th><th>Units</th><th>RATE</th><th>Amount</th></tr></thead>
+      <tbody>
+        ${rows.map((row) => `<tr><td>${escapeHTML(row[0])}</td><td class="right">${escapeHTML(row[1])}</td><td class="right">${escapeHTML(row[2])}</td><td>${escapeHTML(row[3])}</td><td class="right">${escapeHTML(row[4])}</td><td class="right">${escapeHTML(row[5])}</td></tr>`).join("")}
+        <tr><td class="main-area"><b>Total</b><br><br>Less Discount<br><br>Taxable Value<br><br>ADD ${escapeHTML(data.taxLabel)} ${escapeHTML(data.taxRate)}%</td><td></td><td></td><td></td><td class="right"><br><br><br><br><br><br>${escapeHTML(data.taxRate)}%</td><td class="right bold">${escapeHTML(formatMoney(data.subtotal))}<br><br>${escapeHTML(formatMoney(data.discount))}<br><br>${escapeHTML(formatMoney(data.subtotal - data.discount))}<br><br>${escapeHTML(formatMoney(data.taxAmount))}</td></tr>
+        <tr><td colspan="5">Total</td><td class="right bold">${escapeHTML(formatMoney(data.grandTotal))}</td></tr>
+      </tbody>
+    </table>
+    <div class="dd-bottom"><div>Amount Chargeable (in words)<br><b>${escapeHTML(formatMoney(data.grandTotal))} only</b><br><br>Company's PAN: __________<br><br>${escapeHTML(data.notes)}</div><div>For ${escapeHTML(data.businessName)}<div class="signature-script">Signature</div>${escapeHTML(data.signatureText)}</div></div>
+  `;
+}
+
+function updateInvoice(){
+  const accent = document.getElementById("themeColor").value || "#0057a8";
+  document.documentElement.style.setProperty("--accent", accent);
+  const sheet = document.getElementById("invoiceSheet");
+  const data = getInvoiceData();
+  sheet.className = `invoice-sheet invoice-${data.format}`;
+  const renderers = { format1:renderFormat1, format2:renderFormat2, format3:renderFormat3, format4:renderFormat4 };
+  sheet.innerHTML = (renderers[data.format] || renderStandardInvoice)(data);
+}
+
+function clearInvoice(){
+  document.querySelectorAll("input,textarea").forEach((field) => {
+    if(field.type === "color"){ field.value = "#0057a8"; return; }
+    if(field.type === "date"){ field.value = ""; return; }
+    if(field.id === "taxRate" || field.id === "discount" || field.id === "paidAmount"){ field.value = "0"; return; }
+    field.value = "";
+  });
+  document.getElementById("currency").value = "₹";
+  document.getElementById("invoiceFormat").value = "simple";
+  itemWrap.innerHTML = "";
+  addLineItem({ desc:"", qty:1, rate:0 });
+  updateInvoice();
+}
+
+document.querySelectorAll("input,textarea,select").forEach((field) => field.addEventListener("input", updateInvoice));
+document.getElementById("invoiceDate").value = todayValue();
+addLineItem({ desc:"Service / Product", qty:1, rate:0 });
+addLineItem({ desc:"Additional work", qty:1, rate:0 });
+moneyFields.forEach((id) => document.getElementById(id).addEventListener("change", updateInvoice));
+updateInvoice();
+</script>
+</body>
+</html>
