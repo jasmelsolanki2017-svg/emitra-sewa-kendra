@@ -704,7 +704,7 @@ Cook | 1426 |"></textarea>
       "apply link, qualification and important dates"
     ].filter(Boolean);
     const slug = buildCanonicalSlug(id, data);
-    const canonicalUrl = `${siteBaseUrl()}/post/${encodeURIComponent(slug)}`;
+    const canonicalUrl = `${siteBaseUrl()}/post/${encodeURIComponent(slug)}/`;
     return {
       slug,
       canonicalUrl,
@@ -713,7 +713,7 @@ Cook | 1426 |"></textarea>
       faq:buildSeoFaq(data, title)
     };
   };
-  const jobDetailUrl = (id, data = {}) => `${siteBaseUrl()}/post/${encodeURIComponent(buildCanonicalSlug(id, data))}`;
+  const jobDetailUrl = (id, data = {}) => `${siteBaseUrl()}/post/${encodeURIComponent(buildCanonicalSlug(id, data))}/`;
   const portalSectionMap = { notification:"notification", admitCard:"admitCard", result:"results", syllabus:"syllabus", answerKey:"answerKey", admission:"admission" };
   const jobPostPageUrl = (id, data = {}) => {
     const target = data.postTarget || "latestJob";

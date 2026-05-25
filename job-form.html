@@ -509,7 +509,7 @@ const buildCanonicalSlug = (id, job = {}) => {
   const suffix = String(id || "").replace(/[^a-zA-Z0-9]/g, "").slice(-6).toLowerCase();
   return suffix ? `${base}-${suffix}` : base;
 };
-const canonicalPostHref = (id, job = {}) => `post/${encodeURIComponent(buildCanonicalSlug(id, job))}`;
+const canonicalPostHref = (id, job = {}) => `post/${encodeURIComponent(buildCanonicalSlug(id, job))}/`;
 const portalItemHref = (item) => item && item.sourceJobId ? canonicalPostHref(item.sourceJobId, item) : safeUrl(item && item.url);
 const jobDetailHref = (id, job = {}) => canonicalPostHref(id, job);
 let jobRowsCache = [];

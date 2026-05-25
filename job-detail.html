@@ -548,7 +548,7 @@ const isMatchingJobSlug = (requestedSlug = "", job = {}, fallbackId = "") => {
   ));
 };
 
-const canonicalJobHref = (id = "", job = {}) => `post/${encodeURIComponent(buildCanonicalSlug(job, id))}`;
+const canonicalJobHref = (id = "", job = {}) => `post/${encodeURIComponent(buildCanonicalSlug(job, id))}/`;
 
 const canonicalJobUrl = (id = "", job = {}) => `${location.origin}/${canonicalJobHref(id, job)}`;
 

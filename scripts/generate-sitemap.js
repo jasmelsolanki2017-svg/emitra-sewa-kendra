@@ -62,7 +62,7 @@ const fetchJson = (url) => new Promise((resolve, reject) => {
 
 const jobUrl = (id, job = {}) => {
   const slug = String(job.slug || buildSlug(job.title, id)).trim();
-  return `${SITE_BASE_URL}/post/${encodeURIComponent(slug)}`;
+  return `${SITE_BASE_URL}/post/${encodeURIComponent(slug)}/`;
 };
 
 const sitemapEntry = ({ loc, lastmod, changefreq = "daily", priority = "0.8" }) => `  <url>

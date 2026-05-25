@@ -87,7 +87,7 @@ const slugify = (title = "", id = "") => {
   const suffix = String(id || "").replace(/[^a-zA-Z0-9]/g,"").slice(-6).toLowerCase();
   return suffix ? `${base}-${suffix}` : base;
 };
-const postHref = (id, job = {}) => `post/${encodeURIComponent(String(job.slug || "").trim() || slugify(job.title || job.text, id))}`;
+const postHref = (id, job = {}) => `post/${encodeURIComponent(String(job.slug || "").trim() || slugify(job.title || job.text, id))}/`;
 const render = () => {
   const query = searchInput.value.trim().toLowerCase();
   const filtered = query ? rows.filter(({ job }) => `${job.title || ""} ${job.shortInfo || ""} ${job.metaDescription || ""}`.toLowerCase().includes(query)) : rows;

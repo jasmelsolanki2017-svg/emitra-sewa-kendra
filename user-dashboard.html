@@ -2826,7 +2826,7 @@ body.dark-mode .nav-logo img {
               <p><b>Qualification:</b> ${escapeHTML(job.qualification || "Update Soon")}</p>
               <p><b>Location:</b> ${escapeHTML(job.location || "All India")}</p>
               <a href="${safeUrl(job.applyLink)}" target="_blank" rel="noopener noreferrer">Apply Now</a>
-              <a class="detail-link" href="post/${encodeURIComponent((job.slug || String(job.title || job.text || "job-update").toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/['"]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 90) || "job-update"))}">View Details</a>
+              <a class="detail-link" href="post/${encodeURIComponent((job.slug || String(job.title || job.text || "job-update").toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/['"]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 90) || "job-update"))}/">View Details</a>
             </div>
           `;
         }
