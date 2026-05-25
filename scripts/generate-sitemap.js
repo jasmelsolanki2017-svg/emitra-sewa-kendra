@@ -290,11 +290,23 @@ const update404PostRedirects = (rows = []) => {
     .filter(Boolean)
     .sort();
   const replacement = `var knownPostSlugs = [\n${slugs.map((slug) => `      ${JSON.stringify(slug)}`).join(",\n")}\n    ];`;
-  const nextHtml = html.replace(/var knownPostSlugs = \[[\s\S]*?\n    \];/, replacement);
-  if (nextHtml === html) {
+  const pattern = /var knownPostSlugs = \[[\s\S]*?\n    \];/;
+  if (!pattern.test(html)) {
     throw new Error("404.html knownPostSlugs block not found");
   }
+  const nextHtml = html.replace(pattern, replacement);
   fs.writeFileSync(NOT_FOUND_PATH, nextHtml, "utf8");
+};
+
+const patch404SlugMatching = () => {
+  const html = fs.readFileSync(NOT_FOUND_PATH, "utf8");
+  const nextHtml = html.replace(
+    "return slug === requestedSlug || slug.indexOf(requestedSlug + \"-\") === 0;",
+    "return slug === requestedSlug || slug.indexOf(requestedSlug + \"-\") === 0 || requestedSlug.indexOf(slug + \"-\") === 0;"
+  );
+  if (nextHtml !== html) {
+    fs.writeFileSync(NOT_FOUND_PATH, nextHtml, "utf8");
+  }
 };
 
 async function main() {
@@ -322,6 +334,7 @@ ${entries.join("\n")}
   updateIndexFallback(rows);
   updateStaticPostPages(rows);
   update404PostRedirects(rows);
+  patch404SlugMatching();
   console.log(`sitemap.xml, sitemap-jobs.xml, index.html fallback, 404 redirects and post pages updated with ${entries.length} dynamic LatestJobs URLs`);
 }
 

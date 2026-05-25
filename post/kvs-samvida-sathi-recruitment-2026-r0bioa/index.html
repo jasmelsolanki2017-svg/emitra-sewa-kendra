@@ -210,6 +210,13 @@ main{max-width:1180px;margin:auto;padding:26px 3% 42px;}
 .content-section ul{padding:12px 18px 2px 34px;font-size:15px;font-weight:500;}
 .content-section li{margin:6px 0;}
 .content-section p{padding:10px 0;font-size:15px;font-weight:500;}
+.mcq-list{display:grid;gap:12px;}
+.mcq-card{border:1px solid #d8e5f3;border-radius:8px;background:#fff;overflow:hidden;}
+.mcq-question{background:#f1f7ff;color:var(--deep);font-weight:900;padding:12px 14px;}
+.mcq-options{display:grid;gap:7px;padding:12px 14px;}
+.mcq-option{border:1px solid #d8e5f3;border-radius:6px;padding:8px 10px;font-weight:700;color:#26364d;background:#fff;}
+.mcq-option.correct{border-color:#138a36;background:#ecfff3;color:#075a27;}
+.mcq-answer,.mcq-explanation{padding:0 14px 12px;color:#1f2937;font-weight:600;}
 .content-table{width:100%;border-collapse:collapse;font-size:14px;margin:10px 0 2px;}
 .content-table th,.content-table td{border:1px solid #d8e5f3;padding:9px 10px;text-align:left;vertical-align:middle;color:#1f2937;}
 .content-table th{font-weight:900;background:#f1f7ff;color:var(--deep);}
@@ -259,6 +266,10 @@ body.dark-mode .auto-link{color:#8ec5ff!important;}
 body.dark-mode .qualification-card{background:#101b2d!important;border-color:#24405f!important;}
 body.dark-mode .qualification-post{background:#0b2749!important;color:#ffb15c!important;border-color:#24405f!important;}
 body.dark-mode .qualification-text{color:#e8f1ff!important;}
+body.dark-mode .mcq-card,body.dark-mode .mcq-option{background:#101b2d!important;border-color:#24405f!important;color:#e8f1ff!important;}
+body.dark-mode .mcq-question{background:#0b2749!important;color:#ffb15c!important;}
+body.dark-mode .mcq-option.correct{background:#0d3322!important;border-color:#21a760!important;color:#c8f7d8!important;}
+body.dark-mode .mcq-answer,body.dark-mode .mcq-explanation{color:#e8f1ff!important;}
 @media(max-width:920px){.layout{grid-template-columns:1fr}.detail-sidebar{position:static;top:auto}.hero{padding:24px 5% 26px}main{padding:18px 3% 34px}.detail-table th,.detail-table td{display:block;width:100%;}.detail-table th{border-bottom:0}.panel h2,.sarkari-section-title{font-size:17px}.actions{grid-template-columns:1fr}.content-table{font-size:12px}.content-table th,.content-table td{padding:7px 6px}.manual-pair{grid-template-columns:1fr;gap:3px}.qualification-card{grid-template-columns:1fr}.qualification-post{border-right:0;border-bottom:1px solid #d8e5f3}.theme-toggle{right:16px;bottom:16px;width:50px;height:50px;}nav{flex-direction:column;align-items:flex-start}}
 </style>
 </head>
@@ -268,6 +279,7 @@ body.dark-mode .qualification-text{color:#e8f1ff!important;}
   <ul>
     <li><a href="index.html">Home</a></li>
     <li><a href="job-form.html">Latest Jobs</a></li>
+    <li><a href="current-affairs.html">Current Affairs</a></li>
     <li><a href="OFFLINEFORM.HTML">PDF Forms</a></li>
     <li><a href="about.html">About</a></li>
     <li><a href="contact.html">Contact</a></li>
@@ -419,6 +431,11 @@ Other Posts: Qualification will be applicable as per post and KVS rules.</td></t
           <div class="content-box" id="faqContent"></div>
         </section>
 
+        <section class="panel" id="mcqPanel" style="display:none;">
+          <h2>MCQ Practice</h2>
+          <div class="content-box" id="mcqContent"></div>
+        </section>
+
         <section class="panel" id="pageContentPanel" style="display:none;">
           <div id="pageContent" class="content-box"></div>
         </section>
@@ -444,6 +461,7 @@ Other Posts: Qualification will be applicable as per post and KVS rules.</td></t
         <h3>Latest Updates / Related Jobs</h3>
         <div class="related-list" id="relatedJobs">
           <a href="job-form.html">Latest Jobs</a>
+          <a href="current-affairs.html">Current Affairs</a>
           <a href="job-form.html#notification">Notifications</a>
           <a href="job-form.html#result">Results</a>
           <a href="job-form.html#admitcard">Admit Cards</a>
@@ -455,7 +473,7 @@ Other Posts: Qualification will be applicable as per post and KVS rules.</td></t
 
 <footer>
   <p>© 2026 E-MITRA WALA | Job Details</p>
-  <p><a href="privacy-policy.html">Privacy Policy</a><a href="about.html">About Us</a><a href="contact.html">Contact Us</a><a href="disclaimer.html">Disclaimer</a><a href="terms-and-conditions.html">Terms & Conditions</a></p>
+  <p><a href="privacy-policy.html">Privacy Policy</a><a href="about.html">About Us</a><a href="current-affairs.html">Current Affairs</a><a href="contact.html">Contact Us</a><a href="disclaimer.html">Disclaimer</a><a href="terms-and-conditions.html">Terms & Conditions</a></p>
 </footer>
 
 <button class="theme-toggle" type="button" aria-label="Toggle dark mode" title="Dark mode" onclick="toggleDarkMode()"><span class="theme-symbol" aria-hidden="true">☾</span></button>
@@ -565,6 +583,45 @@ const buildCanonicalSlug = (job = {}, fallbackId = "") => {
   return suffix ? `${title}-${suffix}` : title;
 };
 
+const normalizeSlugValue = (value = "") => String(value || "")
+  .toLowerCase()
+  .trim()
+  .replace(/^\/+|\/+$/g, "");
+
+const slugFromUrlPath = (value = "") => {
+  try{
+    const url = new URL(value, location.origin);
+    const match = url.pathname.match(/\/post\/([^/?#]+)/);
+    return match && match[1] ? decodeURIComponent(match[1]) : "";
+  }catch(_error){
+    return "";
+  }
+};
+
+const collectJobSlugs = (job = {}, fallbackId = "") => {
+  const article = job.advancedArticleData && typeof job.advancedArticleData === "object" ? job.advancedArticleData : {};
+  return [
+    job.slug,
+    article.slug,
+    slugFromUrlPath(job.canonicalUrl),
+    buildCanonicalSlug({ ...job, slug:"" }, fallbackId),
+    buildCanonicalSlug(job, fallbackId)
+  ].map(normalizeSlugValue).filter(Boolean);
+};
+
+const isMatchingJobSlug = (requestedSlug = "", job = {}, fallbackId = "") => {
+  const requested = normalizeSlugValue(requestedSlug);
+  if(!requested){ return false; }
+  const legacySlugAliases = {
+    "central-teacher-eligibility-test-ctet-september-2026-apply-online-form-tthxuz": "job-1779730227353",
+    "rrb-alp-online-form-2026-11-127-posts-kfcxav": "rrb-alp-online-form-2026-11-127-posts"
+  };
+  const aliasTarget = legacySlugAliases[requested] || "";
+  return collectJobSlugs(job, fallbackId).some((slug) => (
+    slug === requested || slug === aliasTarget || slug.indexOf(requested + "-") === 0 || requested.indexOf(slug + "-") === 0
+  ));
+};
+
 const canonicalJobHref = (id = "", job = {}) => `post/${encodeURIComponent(buildCanonicalSlug(job, id))}`;
 
 const canonicalJobUrl = (id = "", job = {}) => `${location.origin}/${canonicalJobHref(id, job)}`;
@@ -658,7 +715,7 @@ const buildJobSchemaGraph = ({ job = {}, title = "Job Update", description = "",
 
 const normalizePostTarget = (value = "") => {
   const key = String(value || "").toLowerCase().replace(/[^a-z0-9]/g, "");
-  const map = { latestjob:"latestJob", jobs:"latestJob", job:"latestJob", notification:"notification", admitcard:"admitCard", result:"result", syllabus:"syllabus", answerkey:"answerKey", admission:"admission" };
+  const map = { latestjob:"latestJob", jobs:"latestJob", job:"latestJob", notification:"notification", admitcard:"admitCard", result:"result", syllabus:"syllabus", answerkey:"answerKey", admission:"admission", currentaffairs:"currentAffairs", currentaffair:"currentAffairs", current:"currentAffairs", ca:"currentAffairs" };
   return map[key] || "latestJob";
 };
 const slugifyText = (value = "") => String(value || "").toLowerCase().replace(/['"]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 120) || `job-${Date.now()}`;
@@ -705,6 +762,7 @@ const normalizeJobToArticle = (input = {}) => {
   const overview = Array.isArray(base.overview) ? base.overview : (Array.isArray(article.overview) ? article.overview : buildOverviewRows(base));
   const importantLinks = Array.isArray(base.importantLinks) ? base.importantLinks : (Array.isArray(article.importantLinks) ? article.importantLinks : buildImportantLinks(base));
   const faq = Array.isArray(base.faq) ? base.faq : (Array.isArray(article.faq) ? article.faq : []);
+  const mcqs = Array.isArray(base.mcqs) ? base.mcqs : (Array.isArray(article.mcqs) ? article.mcqs : []);
   return {
     ...base,
     title,
@@ -716,7 +774,8 @@ const normalizeJobToArticle = (input = {}) => {
     overview,
     importantLinks,
     faq,
-    advancedArticleData:{ ...article, title, shortInfo, sections, intro, overview, importantLinks, faq }
+    mcqs,
+    advancedArticleData:{ ...article, title, shortInfo, sections, intro, overview, importantLinks, faq, mcqs }
   };
 };
 const normalizeJob = (value) => normalizeJobToArticle(value);
@@ -981,7 +1040,8 @@ const buildDefaultFaqItems = (job = {}, title = "Job Update") => {
     result:"result",
     syllabus:"syllabus",
     answerKey:"answer key",
-    admission:"admission form"
+    admission:"admission form",
+    currentAffairs:"current affairs"
   }[postTarget] || "update";
   const applyText = safeUrl(job.applyLink) !== "#"
     ? "Apply Online link Important Links section me diya gaya hai."
@@ -1010,6 +1070,38 @@ const renderFaqSection = (job = {}, title = "Job Update") => {
   faqBox.innerHTML = faqs.map((item) => `<div class="content-section"><h2 class="sarkari-section-title">${escapeHTML(item.question)}</h2><p>${renderFormattedText(item.answer)}</p></div>`).join("");
   faqPanel.style.display = "block";
   return faqs;
+};
+
+const normalizeMcqItems = (items = []) => (Array.isArray(items) ? items : []).map((item) => {
+  if(!item || typeof item !== "object"){ return null; }
+  const question = String(item.question || item.q || item.title || "").trim();
+  const rawOptions = Array.isArray(item.options) ? item.options : [item.optionA || item.a, item.optionB || item.b, item.optionC || item.c, item.optionD || item.d];
+  const options = rawOptions.map((option) => String(option || "").trim()).filter(Boolean);
+  const answer = String(item.correctAnswer || item.answer || item.correct || item.correct_option || "").trim();
+  const explanation = String(item.explanation || item.reason || item.solution || "").trim();
+  return question && options.length ? { question, options, answer, explanation } : null;
+}).filter(Boolean);
+
+const renderMcqSection = (job = {}) => {
+  const mcqBox = document.getElementById("mcqContent");
+  const mcqPanel = document.getElementById("mcqPanel");
+  const mcqs = normalizeMcqItems(job.mcqs);
+  if(!mcqs.length){
+    mcqBox.innerHTML = "";
+    mcqPanel.style.display = "none";
+    return;
+  }
+  mcqBox.innerHTML = `<div class="mcq-list">${mcqs.map((item, index) => {
+    const correct = item.answer.toLowerCase();
+    const optionsHtml = item.options.map((option, optionIndex) => {
+      const optionLabel = String.fromCharCode(65 + optionIndex);
+      const optionText = `${optionLabel}. ${option}`;
+      const isCorrect = correct && (option.toLowerCase() === correct || optionText.toLowerCase() === correct || optionLabel.toLowerCase() === correct);
+      return `<div class="mcq-option ${isCorrect ? "correct" : ""}">${renderFormattedText(optionText)}</div>`;
+    }).join("");
+    return `<article class="mcq-card"><div class="mcq-question">Q${index + 1}. ${renderFormattedText(item.question)}</div><div class="mcq-options">${optionsHtml}</div>${item.answer ? `<div class="mcq-answer"><span class="manual-label">Correct Answer:</span> ${renderFormattedText(item.answer)}</div>` : ""}${item.explanation ? `<div class="mcq-explanation"><span class="manual-label">Explanation:</span> ${renderFormattedText(item.explanation)}</div>` : ""}</article>`;
+  }).join("")}</div>`;
+  mcqPanel.style.display = "block";
 };
 
 const splitTableCells = (line) => line
@@ -1119,7 +1211,7 @@ const renderPageContent = (content, title) => {
 const id = new URLSearchParams(window.location.search).get("id");
 const slugParam = new URLSearchParams(window.location.search).get("slug");
 const postParam = new URLSearchParams(window.location.search).get("post");
-const pathSlug = decodeURIComponent((location.pathname.match(/^\/post\/([^/?#]+)/) || [])[1] || postParam || "").trim();
+const pathSlug = decodeURIComponent((location.pathname.match(/^\/post\/([^/?#]+)/) || [])[1] || postParam || slugParam || "").trim();
 const message = document.getElementById("jobMessage");
 const wrap = document.getElementById("jobDetailWrap");
 
@@ -1162,6 +1254,7 @@ const renderJobDetail = (jobId, rawJob) => {
     setMeta('meta[name="twitter:title"]', "content", job.seoTitle || title);
     setMeta('meta[name="twitter:description"]', "content", description);
     const faqItems = renderFaqSection(job, title);
+    renderMcqSection(job);
     setJsonLd(buildJobSchemaGraph({ job, title, description, canonicalUrl, faqItems }));
     document.getElementById("jobType").textContent = type;
     document.getElementById("jobTitle").textContent = title;
@@ -1186,9 +1279,10 @@ const renderJobDetail = (jobId, rawJob) => {
       { label:"Last Date", value:job.lastApplyDate || job.lastDate, className:"danger-date" },
       { label:"Official Website", value:job.officialWebsite }
     ];
-    const hasDefaultOverview = defaultOverviewRows.some((row) => isFilledValue(row.value, row.options));
     const nestedOverviewRows = articleRowsToTableRows(job.overview);
-    renderList("featureTable", "featurePanel", hasDefaultOverview ? defaultOverviewRows : nestedOverviewRows);
+    const hasDefaultOverview = defaultOverviewRows.some((row) => isFilledValue(row.value, row.options));
+    const useNestedOverview = normalizePostTarget(job.postTarget) === "currentAffairs" && nestedOverviewRows.length;
+    renderList("featureTable", "featurePanel", useNestedOverview ? nestedOverviewRows : (hasDefaultOverview ? defaultOverviewRows : nestedOverviewRows));
 
     renderList("importantList", "importantPanel", [
       { label:"Application Start Date", value:job.startDate },
@@ -1315,7 +1409,7 @@ if(!id && !pathSlug){
       snapshot.forEach((child) => {
         if(match){ return; }
         const job = normalizeJob(child.val());
-        if(buildCanonicalSlug(job, child.key).toLowerCase() === pathSlug.toLowerCase()){
+        if(isMatchingJobSlug(pathSlug, job, child.key)){
           match = { id:child.key, job };
         }
       });

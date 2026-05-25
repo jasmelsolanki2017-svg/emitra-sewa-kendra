@@ -509,6 +509,45 @@ const buildCanonicalSlug = (job = {}, fallbackId = "") => {
   return suffix ? `${title}-${suffix}` : title;
 };
 
+const normalizeSlugValue = (value = "") => String(value || "")
+  .toLowerCase()
+  .trim()
+  .replace(/^\/+|\/+$/g, "");
+
+const slugFromUrlPath = (value = "") => {
+  try{
+    const url = new URL(value, location.origin);
+    const match = url.pathname.match(/\/post\/([^/?#]+)/);
+    return match && match[1] ? decodeURIComponent(match[1]) : "";
+  }catch(_error){
+    return "";
+  }
+};
+
+const collectJobSlugs = (job = {}, fallbackId = "") => {
+  const article = job.advancedArticleData && typeof job.advancedArticleData === "object" ? job.advancedArticleData : {};
+  return [
+    job.slug,
+    article.slug,
+    slugFromUrlPath(job.canonicalUrl),
+    buildCanonicalSlug({ ...job, slug:"" }, fallbackId),
+    buildCanonicalSlug(job, fallbackId)
+  ].map(normalizeSlugValue).filter(Boolean);
+};
+
+const isMatchingJobSlug = (requestedSlug = "", job = {}, fallbackId = "") => {
+  const requested = normalizeSlugValue(requestedSlug);
+  if(!requested){ return false; }
+  const legacySlugAliases = {
+    "central-teacher-eligibility-test-ctet-september-2026-apply-online-form-tthxuz": "job-1779730227353",
+    "rrb-alp-online-form-2026-11-127-posts-kfcxav": "rrb-alp-online-form-2026-11-127-posts"
+  };
+  const aliasTarget = legacySlugAliases[requested] || "";
+  return collectJobSlugs(job, fallbackId).some((slug) => (
+    slug === requested || slug === aliasTarget || slug.indexOf(requested + "-") === 0 || requested.indexOf(slug + "-") === 0
+  ));
+};
+
 const canonicalJobHref = (id = "", job = {}) => `post/${encodeURIComponent(buildCanonicalSlug(job, id))}`;
 
 const canonicalJobUrl = (id = "", job = {}) => `${location.origin}/${canonicalJobHref(id, job)}`;
@@ -1098,7 +1137,7 @@ const renderPageContent = (content, title) => {
 const id = new URLSearchParams(window.location.search).get("id");
 const slugParam = new URLSearchParams(window.location.search).get("slug");
 const postParam = new URLSearchParams(window.location.search).get("post");
-const pathSlug = decodeURIComponent((location.pathname.match(/^\/post\/([^/?#]+)/) || [])[1] || postParam || "").trim();
+const pathSlug = decodeURIComponent((location.pathname.match(/^\/post\/([^/?#]+)/) || [])[1] || postParam || slugParam || "").trim();
 const message = document.getElementById("jobMessage");
 const wrap = document.getElementById("jobDetailWrap");
 
@@ -1296,7 +1335,7 @@ if(!id && !pathSlug){
       snapshot.forEach((child) => {
         if(match){ return; }
         const job = normalizeJob(child.val());
-        if(buildCanonicalSlug(job, child.key).toLowerCase() === pathSlug.toLowerCase()){
+        if(isMatchingJobSlug(pathSlug, job, child.key)){
           match = { id:child.key, job };
         }
       });

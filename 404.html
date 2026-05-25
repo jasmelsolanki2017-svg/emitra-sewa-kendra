@@ -16,21 +16,25 @@
       "bank-of-baroda-bob-apprentices-recruitment-2026-apply-online-for-5000-post-i5xhps",
       "bihar-board-class-10th-compartment-result-2026-7zjazl",
       "bihar-board-class-12th-compartment-result-2026-tyulrt",
-      "central-teacher-eligibility-test-ctet-september-2026-apply-online-form-tthxuz",
       "indian-navy-ssc-executive-it-online-form-2026-cud59n",
       "jhtet-jharkhand-online-form-2026-jqgpqz",
+      "job-1779730227353",
       "join-indian-army-bhartiya-sena-army-10-2-tes-56th-recruitment-2026-army-10-2-technical-ent-5s4kom",
       "kvs-samvida-sathi-recruitment-2026-r0bioa",
       "national-testing-agency-wrpc3l",
       "ncert-non-academic-group-a-group-b-and-group-c-exam-answer-key-2026-gvzcnd",
       "rajasthan-rsmssb-stenographer-and-personal-assistant-pa-grade-ii-skill-test-result-2026-bvlhve",
-      "rrb-alp-online-form-2026-11-127-posts-kfcxav",
+      "rrb-alp-online-form-2026-11-127-posts",
       "rssb-computer-instructor-recruitment-2026",
       "sbi-apprentice-online-form-2026-oba8wq",
       "ssc-gd-constable-admit-card-2026-0h7hn2"
     ];
-    var matchedSlug = knownPostSlugs.find(function(slug){
-      return slug === requestedSlug || slug.indexOf(requestedSlug + "-") === 0;
+    var postSlugAliases = {
+      "central-teacher-eligibility-test-ctet-september-2026-apply-online-form-tthxuz": "job-1779730227353",
+      "rrb-alp-online-form-2026-11-127-posts-kfcxav": "rrb-alp-online-form-2026-11-127-posts"
+    };
+    var matchedSlug = postSlugAliases[requestedSlug] || knownPostSlugs.find(function(slug){
+      return slug === requestedSlug || slug.indexOf(requestedSlug + "-") === 0 || requestedSlug.indexOf(slug + "-") === 0;
     });
     var slug = encodeURIComponent(matchedSlug || requestedSlug);
     var canonical = window.location.origin + "/post/" + slug;
