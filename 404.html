@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,follow">
+<title>Redirecting | E-MITRA WALA</title>
+<script>
+(function(){
+  var path = window.location.pathname || "";
+  var match = path.match(/\/post\/([^/?#]+)/);
+  if(match && match[1]){
+    window.location.replace("/job-detail.html?post=" + encodeURIComponent(decodeURIComponent(match[1])));
+    return;
+  }
+  window.location.replace("/index.html");
+})();
+</script>
+</head>
+<body>
+<p>Redirecting... <a href="/index.html">Go to E-MITRA WALA</a></p>
+</body>
+</html>

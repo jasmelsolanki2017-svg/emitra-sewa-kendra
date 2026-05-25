@@ -7,6 +7,8 @@ const FIREBASE_URL = (process.env.FIREBASE_URL || "https://my-website-73785-defa
 const SITEMAP_PATH = path.join(__dirname, "..", "sitemap.xml");
 const JOB_SITEMAP_PATH = path.join(__dirname, "..", "sitemap-jobs.xml");
 const INDEX_PATH = path.join(__dirname, "..", "index.html");
+const JOB_DETAIL_PATH = path.join(__dirname, "..", "job-detail.html");
+const POST_ROOT = path.join(__dirname, "..", "post");
 
 const xmlEscape = (value = "") => String(value || "")
   .replace(/&/g, "&amp;")
@@ -68,6 +70,114 @@ const sitemapEntry = ({ loc, lastmod, changefreq = "daily", priority = "0.8" }) 
     <changefreq>${xmlEscape(changefreq)}</changefreq>
     <priority>${xmlEscape(priority)}</priority>
   </url>`;
+
+const isoDateOrUndefined = (value = "") => {
+  const text = String(value || "").trim();
+  if (!text) {
+    return undefined;
+  }
+  const number = Number(text);
+  const date = number ? new Date(number) : new Date(text);
+  return Number.isNaN(date.getTime()) ? undefined : date.toISOString();
+};
+
+const buildSeoFields = (job = {}, id = "") => {
+  const title = String(job.title || job.text || "Job Update").replace(/\s+/g, " ").trim();
+  const slug = String(job.slug || buildSlug(title, id)).trim();
+  const descParts = [
+    title,
+    job.department,
+    job.totalPosts ? `${job.totalPosts} posts` : "",
+    job.lastApplyDate || job.lastDate ? `Last date ${job.lastApplyDate || job.lastDate}` : "",
+    "apply link, qualification and important dates"
+  ].filter(Boolean);
+  return {
+    title,
+    slug,
+    seoTitle: String(job.seoTitle || `${title} | E-MITRA WALA`).replace(/\s+/g, " ").trim().slice(0, 70),
+    metaDescription: String(job.metaDescription || job.notificationSummary || job.shortInfo || descParts.join(", ")).replace(/\s+/g, " ").trim().slice(0, 160)
+  };
+};
+
+const buildSchemaGraph = ({ id = "", job = {}, canonicalUrl = "" }) => {
+  const seo = buildSeoFields(job, id);
+  const publisher = { "@type": "Organization", "name": "E-MITRA WALA", "url": `${SITE_BASE_URL}/` };
+  const faqItems = [
+    { question: `${seo.title} ki last date kya hai?`, answer: String(job.lastApplyDate || job.lastDate || "Official notification ke according check karein.") },
+    { question: `${seo.title} ke liye eligibility kya hai?`, answer: String(job.qualification || "Qualification section me updated details dekhein.") },
+    { question: `${seo.title} ka apply kaise karein?`, answer: String(job.howToApply || "How to Apply section me step-by-step process diya gaya hai.") }
+  ];
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${canonicalUrl}#breadcrumb`,
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": `${SITE_BASE_URL}/index.html` },
+          { "@type": "ListItem", "position": 2, "name": "Latest Jobs", "item": `${SITE_BASE_URL}/job-form.html` },
+          { "@type": "ListItem", "position": 3, "name": seo.title, "item": canonicalUrl }
+        ]
+      },
+      {
+        "@type": ["Article", "JobPosting"],
+        "@id": `${canonicalUrl}#article`,
+        "headline": job.seoTitle || seo.title,
+        "title": seo.title,
+        "description": seo.metaDescription,
+        "url": canonicalUrl,
+        "mainEntityOfPage": canonicalUrl,
+        "employmentType": job.type || "Online Form",
+        "datePosted": job.postDate || undefined,
+        "validThrough": job.lastApplyDate || job.lastDate || undefined,
+        "hiringOrganization": job.department ? { "@type": "Organization", "name": job.department } : publisher,
+        "datePublished": isoDateOrUndefined(job.createdAt),
+        "dateModified": isoDateOrUndefined(job.updatedAt) || isoDateOrUndefined(job.createdAt),
+        "publisher": publisher
+      },
+      {
+        "@type": "FAQPage",
+        "@id": `${canonicalUrl}#faq`,
+        "mainEntity": faqItems.map((item) => ({
+          "@type": "Question",
+          "name": item.question,
+          "acceptedAnswer": { "@type": "Answer", "text": item.answer }
+        }))
+      }
+    ]
+  };
+};
+
+const renderStaticPostHtml = (id = "", job = {}) => {
+  const seo = buildSeoFields(job, id);
+  const canonicalUrl = jobUrl(id, { ...job, slug: seo.slug });
+  const summaryRows = [
+    ["Department", job.department],
+    ["Post Name", job.postName || seo.title],
+    ["Total Posts", job.totalPosts || job.totalVacancy],
+    ["Last Date", job.lastApplyDate || job.lastDate],
+    ["Qualification", job.qualification],
+    ["Location", job.location || job.jobLocation]
+  ].filter(([, value]) => String(value || "").trim());
+  const fallbackHtml = `<h2>${htmlEscape(seo.title)}</h2>
+            <div class="content-box">
+              <p>${htmlEscape(seo.metaDescription)}</p>
+              <table class="detail-table"><tbody>${summaryRows.map(([label, value]) => `<tr><th>${htmlEscape(label)}</th><td>${htmlEscape(value)}</td></tr>`).join("")}</tbody></table>
+              <p><a class="auto-link" href="${htmlEscape(canonicalUrl)}">Canonical job detail link</a> | <a class="auto-link" href="../../job-form.html">All Latest Jobs</a></p>
+            </div>`;
+  return fs.readFileSync(JOB_DETAIL_PATH, "utf8")
+    .replace(/<head>/i, "<head>\n<base href=\"../../\">")
+    .replace(/<title>[\s\S]*?<\/title>/i, `<title>${htmlEscape(seo.seoTitle)}</title>`)
+    .replace(/<meta name="description" content="[^"]*">/i, `<meta name="description" content="${htmlEscape(seo.metaDescription)}">`)
+    .replace(/<meta property="og:title" content="[^"]*">/i, `<meta property="og:title" content="${htmlEscape(seo.seoTitle)}">`)
+    .replace(/<meta property="og:description" content="[^"]*">/i, `<meta property="og:description" content="${htmlEscape(seo.metaDescription)}">`)
+    .replace(/<meta property="og:url" content="[^"]*">/i, `<meta property="og:url" content="${htmlEscape(canonicalUrl)}">`)
+    .replace(/<link rel="canonical" href="[^"]*">/i, `<link rel="canonical" href="${htmlEscape(canonicalUrl)}">`)
+    .replace(/<script type="application\/ld\+json" id="jobSchemaJsonLd">[\s\S]*?<\/script>/i, `<script type="application/ld+json" id="jobSchemaJsonLd">\n${JSON.stringify(buildSchemaGraph({ id, job, canonicalUrl }), null, 2)}\n</script>`)
+    .replace(/<h1 id="jobTitle">[\s\S]*?<\/h1>/i, `<h1 id="jobTitle">${htmlEscape(seo.title)}</h1>`)
+    .replace(/<p id="jobIntro">[\s\S]*?<\/p>/i, `<p id="jobIntro">${htmlEscape(seo.metaDescription)}</p>`)
+    .replace(/<section class="panel" id="seoFallbackPanel">[\s\S]*?<\/section>/i, `<section class="panel" id="seoFallbackPanel">\n          ${fallbackHtml}\n        </section>`);
+};
 
 const removeDynamicJobEntries = (xml = "") => String(xml || "")
   .replace(/\s*<url>\s*<loc>https?:\/\/[^<]+\/job-detail\.html<\/loc>[\s\S]*?<\/url>/g, "")
@@ -133,6 +243,16 @@ const updateIndexFallback = (rows = []) => {
   fs.writeFileSync(INDEX_PATH, `${before}\n${buildHomeFallbackHtml(rows)}\n    ${after}`, "utf8");
 };
 
+const updateStaticPostPages = (rows = []) => {
+  fs.rmSync(POST_ROOT, { recursive: true, force: true });
+  rows.forEach(({ id, job }) => {
+    const seo = buildSeoFields(job, id);
+    const dir = path.join(POST_ROOT, seo.slug);
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, "index.html"), renderStaticPostHtml(id, { ...job, slug: seo.slug }), "utf8");
+  });
+};
+
 async function main() {
   const sitemapXml = removeDynamicJobEntries(fs.readFileSync(SITEMAP_PATH, "utf8")).trim();
   const jobs = await fetchJson(`${FIREBASE_URL}/LatestJobs.json`);
@@ -156,7 +276,8 @@ ${entries.join("\n")}
   fs.writeFileSync(SITEMAP_PATH, nextXml, "utf8");
   fs.writeFileSync(JOB_SITEMAP_PATH, jobSitemapXml, "utf8");
   updateIndexFallback(rows);
-  console.log(`sitemap.xml, sitemap-jobs.xml and index.html fallback updated with ${entries.length} dynamic LatestJobs URLs`);
+  updateStaticPostPages(rows);
+  console.log(`sitemap.xml, sitemap-jobs.xml, index.html fallback and post pages updated with ${entries.length} dynamic LatestJobs URLs`);
 }
 
 main().catch((error) => {
