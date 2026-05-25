@@ -135,6 +135,9 @@ main{max-width:1180px;margin:auto;padding:26px 3% 42px;}
 .section-manual:empty{display:none;}
 .manual-lines{display:grid;gap:8px;}
 .manual-line{margin:0;color:#1f2937;font-size:15px;white-space:pre-wrap;}
+.manual-pair{display:grid;grid-template-columns:minmax(160px,34%) 1fr;gap:10px;align-items:start;color:#1f2937;font-size:15px;}
+.manual-pair-label{color:var(--deep);font-weight:900;}
+.manual-pair-value{font-weight:600;white-space:pre-wrap;}
 .manual-label{color:var(--deep);font-weight:900;}
 .content-section{margin-bottom:18px;}
 .content-section:last-child{margin-bottom:0;}
@@ -190,7 +193,7 @@ body.dark-mode .auto-link{color:#8ec5ff!important;}
 body.dark-mode .qualification-card{background:#101b2d!important;border-color:#24405f!important;}
 body.dark-mode .qualification-post{background:#0b2749!important;color:#ffb15c!important;border-color:#24405f!important;}
 body.dark-mode .qualification-text{color:#e8f1ff!important;}
-@media(max-width:920px){.layout{grid-template-columns:1fr}.detail-sidebar{position:static;top:auto}.hero{padding:24px 5% 26px}main{padding:18px 3% 34px}.detail-table th,.detail-table td{display:block;width:100%;}.detail-table th{border-bottom:0}.panel h2,.sarkari-section-title{font-size:17px}.actions{grid-template-columns:1fr}.content-table{font-size:12px}.content-table th,.content-table td{padding:7px 6px}.qualification-card{grid-template-columns:1fr}.qualification-post{border-right:0;border-bottom:1px solid #d8e5f3}.theme-toggle{right:16px;bottom:16px;width:50px;height:50px;}nav{flex-direction:column;align-items:flex-start}}
+@media(max-width:920px){.layout{grid-template-columns:1fr}.detail-sidebar{position:static;top:auto}.hero{padding:24px 5% 26px}main{padding:18px 3% 34px}.detail-table th,.detail-table td{display:block;width:100%;}.detail-table th{border-bottom:0}.panel h2,.sarkari-section-title{font-size:17px}.actions{grid-template-columns:1fr}.content-table{font-size:12px}.content-table th,.content-table td{padding:7px 6px}.manual-pair{grid-template-columns:1fr;gap:3px}.qualification-card{grid-template-columns:1fr}.qualification-post{border-right:0;border-bottom:1px solid #d8e5f3}.theme-toggle{right:16px;bottom:16px;width:50px;height:50px;}nav{flex-direction:column;align-items:flex-start}}
 </style>
 </head>
 <body>
@@ -764,13 +767,53 @@ const renderLabeledLine = (line = "") => {
   return renderFormattedText(text);
 };
 
+const stripManualBullet = (line = "") => String(line || "").replace(/^\s*(?:[-*•]|\d+[.)])\s+/, "").trim();
+
+const extractManualKey = (line = "") => {
+  const match = stripManualBullet(line).match(/^(label|value)\s*[:=-]\s*(.*)$/i);
+  return match ? { key:match[1].toLowerCase(), text:match[2].trim() } : null;
+};
+
+const splitManualPair = (line = "") => {
+  const text = stripManualBullet(line);
+  if(/^https?:\/\//i.test(text)){ return null; }
+  const match = text.match(/^(.{1,70}?)(?:\s*[:=]\s*|\s+-\s+)(.+)$/);
+  if(!match){ return null; }
+  const label = match[1].trim();
+  const value = match[2].trim();
+  return label && value ? { label, value } : null;
+};
+
+const normalizeManualRows = (content = "") => {
+  const lines = String(content || "").split(/\r?\n/).map(stripManualBullet).filter(Boolean);
+  const rows = [];
+  for(let index = 0; index < lines.length; index += 1){
+    const current = extractManualKey(lines[index]);
+    const next = extractManualKey(lines[index + 1]);
+    if(current?.key === "label" && next?.key === "value"){
+      rows.push({ type:"pair", label:current.text, value:next.text });
+      index += 1;
+      continue;
+    }
+    if(current?.key === "label" || current?.key === "value"){
+      rows.push({ type:"text", text:current.text });
+      continue;
+    }
+    const pair = splitManualPair(lines[index]);
+    rows.push(pair ? { type:"pair", ...pair } : { type:"text", text:lines[index] });
+  }
+  return rows;
+};
+
+const renderManualRow = (row = {}) => {
+  if(row.type === "pair"){
+    return `<div class="manual-pair"><span class="manual-pair-label">${renderFormattedText(row.label)}</span><span class="manual-pair-value">${renderFormattedText(row.value)}</span></div>`;
+  }
+  return `<p class="manual-line">${renderLabeledLine(row.text)}</p>`;
+};
+
 const renderManualBlock = (content = "") => {
-  const lines = String(content || "").split(/\r?\n/);
-  const html = lines
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .map((line) => `<p class="manual-line">${renderLabeledLine(line)}</p>`)
-    .join("");
+  const html = normalizeManualRows(content).map(renderManualRow).join("");
   return html ? `<div class="manual-lines">${html}</div>` : "";
 };
 
