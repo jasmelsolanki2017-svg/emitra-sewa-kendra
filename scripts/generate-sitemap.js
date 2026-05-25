@@ -8,6 +8,7 @@ const SITEMAP_PATH = path.join(__dirname, "..", "sitemap.xml");
 const JOB_SITEMAP_PATH = path.join(__dirname, "..", "sitemap-jobs.xml");
 const INDEX_PATH = path.join(__dirname, "..", "index.html");
 const JOB_DETAIL_PATH = path.join(__dirname, "..", "job-detail.html");
+const NOT_FOUND_PATH = path.join(__dirname, "..", "404.html");
 const POST_ROOT = path.join(__dirname, "..", "post");
 
 const xmlEscape = (value = "") => String(value || "")
@@ -282,6 +283,20 @@ const updateStaticPostPages = (rows = []) => {
   });
 };
 
+const update404PostRedirects = (rows = []) => {
+  const html = fs.readFileSync(NOT_FOUND_PATH, "utf8");
+  const slugs = rows
+    .map(({ id, job }) => buildSeoFields(job, id).slug)
+    .filter(Boolean)
+    .sort();
+  const replacement = `var knownPostSlugs = [\n${slugs.map((slug) => `      ${JSON.stringify(slug)}`).join(",\n")}\n    ];`;
+  const nextHtml = html.replace(/var knownPostSlugs = \[[\s\S]*?\n    \];/, replacement);
+  if (nextHtml === html) {
+    throw new Error("404.html knownPostSlugs block not found");
+  }
+  fs.writeFileSync(NOT_FOUND_PATH, nextHtml, "utf8");
+};
+
 async function main() {
   const sitemapXml = removeDynamicJobEntries(fs.readFileSync(SITEMAP_PATH, "utf8")).trim();
   const jobs = await fetchJson(`${FIREBASE_URL}/LatestJobs.json`);
@@ -306,7 +321,8 @@ ${entries.join("\n")}
   fs.writeFileSync(JOB_SITEMAP_PATH, jobSitemapXml, "utf8");
   updateIndexFallback(rows);
   updateStaticPostPages(rows);
-  console.log(`sitemap.xml, sitemap-jobs.xml, index.html fallback and post pages updated with ${entries.length} dynamic LatestJobs URLs`);
+  update404PostRedirects(rows);
+  console.log(`sitemap.xml, sitemap-jobs.xml, index.html fallback, 404 redirects and post pages updated with ${entries.length} dynamic LatestJobs URLs`);
 }
 
 main().catch((error) => {
