@@ -119,7 +119,8 @@ const buildDefaultFaqItems = (job = {}, title = "Job Update") => {
     result: "result",
     syllabus: "syllabus",
     answerKey: "answer key",
-    admission: "admission form"
+    admission: "admission form",
+    currentAffairs: "current affairs"
   }[job.postTarget || "latestJob"] || "update");
   return [
     { question: `${title} ki last date kya hai?`, answer: String(job.lastApplyDate || job.lastDate || "Official notification ke according check karein.") },

@@ -2544,6 +2544,9 @@ body.dark-mode #importantLinksMenuList a:hover {
 <a class="side-menu-row" href="job-form.html#latestJobs">
 <i class="fa-solid fa-briefcase"></i> Latest Jobs
 </a>
+<a class="side-menu-row" href="current-affairs.html">
+<i class="fa-solid fa-newspaper"></i> Current Affairs
+</a>
 <a class="side-menu-row" href="mock-test.html">
 <i class="fa-solid fa-clipboard-check"></i> Daily Mock Test
 </a>
@@ -2563,6 +2566,7 @@ body.dark-mode #importantLinksMenuList a:hover {
 <li><a href="OFFLINEFORM.HTML">PDF FORM</a></li>
 <li><a href="#" onclick="openLogin('user')">Login</a></li>
 <li><a href="job-form.html">Latest Job</a></li>
+<li><a href="current-affairs.html">Current Affairs</a></li>
 <li>
 <details class="nav-tools">
 <summary><i class="fa-solid fa-toolbox"></i> Tools</summary>
@@ -2721,6 +2725,7 @@ Important Links
         <a href="#homePortalResults">Results</a>
         <a href="#homePortalAdmitCard">Admit Card</a>
         <a href="#homePortalAnswerKey">Answer Key</a>
+        <a href="current-affairs.html">Current Affairs</a>
         <a href="government-job-form.html">Form Guide</a>
       </div>
     </div>
@@ -2739,7 +2744,7 @@ Important Links
         <a class="q3" href="#homePortalAdmitCard">Admit Card</a>
         <a class="q4" href="#homePortalAnswerKey">Answer Key</a>
         <a class="q5" href="#homePortalResults">Result</a>
-        <a class="q6" href="government-job-form.html">Job Form Guide</a>
+        <a class="q6" href="current-affairs.html">Current Affairs</a>
         <a class="q7" href="useful-pages.html">Useful Pages</a>
         <a class="q8" href="invoice-generator.html">Invoice Generator</a>
         <a class="q9" href="contact.html">Contact Help</a>
@@ -2780,6 +2785,11 @@ Important Links
         <div class="home-portal-box" id="homePortalAdmission">
           <h3 class="home-portal-title">Admission Form</h3>
           <ul class="home-portal-list" id="homePortalAdmissionList"><li class="home-portal-message">Loading...</li></ul>
+        </div>
+
+        <div class="home-portal-box" id="homePortalCurrentAffairs">
+          <h3 class="home-portal-title">Current Affairs</h3>
+          <ul class="home-portal-list" id="homePortalCurrentAffairsList"><li class="home-portal-message">Loading...</li></ul>
         </div>
       </div>
 
@@ -3061,6 +3071,7 @@ E-MITRA WALA E-Mitra Sewa Kendra ek trusted digital service center hai.
 <p>
 <a href="privacy-policy.html">Privacy Policy</a>
 <a href="about.html">About</a>
+<a href="current-affairs.html">Current Affairs</a>
 <a href="contact.html">Contact</a>
 <a href="disclaimer.html">Disclaimer</a>
 <a href="terms-and-conditions.html">Terms & Conditions</a>
@@ -3525,6 +3536,7 @@ return true;
 };
 
 const isFastLatestJobTarget = (job) => !job.postTarget || job.postTarget === "latestJob";
+const isFastCurrentAffairsTarget = (job) => job.postTarget === "currentAffairs";
 const getFastDisplayOrder = (job) => {
 const number = Number(job && job.displayOrder || 0);
 return number > 0 ? number : Number.POSITIVE_INFINITY;
@@ -3551,19 +3563,20 @@ list.innerHTML = items.length
 
 const renderFastJobs = (values) => {
 const portalJobList = document.getElementById("homePortalJobList");
+const currentAffairsList = document.getElementById("homePortalCurrentAffairsList");
 const box = document.getElementById("homeJobList");
 const rows = Object.entries(values || {})
 .map(([id,value])=>({ id, job:normalizeFastJob(value) }))
 .filter(({ job })=>isFastJobVisible(job));
 const jobs = rows.filter(({ job })=>isFastLatestJobTarget(job));
+const currentAffairs = rows.filter(({ job })=>isFastCurrentAffairsTarget(job));
 sortFastJobRows(jobs);
+sortFastJobRows(currentAffairs);
 
 if(!jobs.length){
 if(portalJobList){ portalJobList.innerHTML = '<li class="home-portal-message">अभी कोई job available नहीं है।</li>'; }
 if(box){ box.innerHTML = '<p class="home-job-message">अभी कोई latest job available नहीं है।</p>'; }
-return;
-}
-
+}else{
 if(portalJobList){
 portalJobList.innerHTML = jobs.map(({ id, job })=>`
   <li class="home-portal-job-card">
@@ -3590,6 +3603,13 @@ box.innerHTML = jobs.map(({ id, job })=>`
     <a href="${fastJobDetailHref(id, job)}">View Details</a>
   </article>
 `).join("");
+}
+}
+
+if(currentAffairsList){
+currentAffairsList.innerHTML = currentAffairs.length
+? currentAffairs.slice(0,10).map(({ id, job })=>`<li><a href="${fastJobDetailHref(id, job)}">${escapeFastHTML(job.title || "Current Affairs Update")}</a></li>`).join("")
+: '<li class="home-portal-message">Abhi koi current affairs post nahi hai.</li>';
 }
 };
 
@@ -4014,6 +4034,7 @@ return true;
 };
 
 const isLatestJobTarget = (job) => !job.postTarget || job.postTarget === "latestJob";
+const isCurrentAffairsTarget = (job) => job.postTarget === "currentAffairs";
 const getJobDisplayOrder = (job) => {
 const number = Number(job && job.displayOrder || 0);
 return number > 0 ? number : Number.POSITIVE_INFINITY;
@@ -4122,7 +4143,9 @@ list.innerHTML = `<li class="home-portal-message">Data load nahi hua: ${escapeHT
 onValue(jobsRef,(snapshot)=>{
 const box = document.getElementById("homeJobList");
 const portalJobList = document.getElementById("homePortalJobList");
+const currentAffairsList = document.getElementById("homePortalCurrentAffairsList");
 const jobs = [];
+const currentAffairs = [];
 
 if(snapshot.exists()){
 snapshot.forEach((child)=>{
@@ -4132,11 +4155,15 @@ const row = { id:child.key, job:job };
 if(isLatestJobTarget(job)){
 jobs.push(row);
 }
+if(isCurrentAffairsTarget(job)){
+currentAffairs.push(row);
+}
 }
 });
 }
 
 sortJobRows(jobs);
+sortJobRows(currentAffairs);
 
 if(jobs.length === 0){
 if(portalJobList){
@@ -4145,10 +4172,9 @@ portalJobList.innerHTML = '<li class="home-portal-message">अभी कोई j
 if(box){
 box.innerHTML = '<p class="home-job-message">अभी कोई latest job available नहीं है।</p>';
 }
-return;
 }
 
-if(portalJobList){
+if(jobs.length && portalJobList){
 portalJobList.innerHTML = jobs.map(({ id, job })=>`
   <li class="home-portal-job-card">
     <span class="badge">${escapeHTML(job.type || "Online Form")}</span>
@@ -4165,10 +4191,7 @@ portalJobList.innerHTML = jobs.map(({ id, job })=>`
 filterHomePortalJobs();
 }
 
-if(!box){
-return;
-}
-
+if(jobs.length && box){
 box.innerHTML = jobs.map(({ id, job })=>`
   <article class="home-job-card">
     <span>${escapeHTML(job.type || "Online Form")}</span>
@@ -4178,6 +4201,12 @@ box.innerHTML = jobs.map(({ id, job })=>`
     <a href="${jobDetailHref(id, job)}">View Details</a>
   </article>
 `).join("");
+}
+if(currentAffairsList){
+currentAffairsList.innerHTML = currentAffairs.length
+? currentAffairs.slice(0,10).map(({ id, job })=>`<li><a href="${jobDetailHref(id, job)}">${escapeHTML(job.title || "Current Affairs Update")}</a></li>`).join("")
+: '<li class="home-portal-message">Abhi koi current affairs post nahi hai.</li>';
+}
 },(error)=>{
 const box = document.getElementById("homeJobList");
 const portalJobList = document.getElementById("homePortalJobList");

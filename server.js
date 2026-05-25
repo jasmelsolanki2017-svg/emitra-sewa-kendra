@@ -246,7 +246,11 @@ const normalizeAutoJobCategory = (value = "") => {
     results: "result",
     answerkey: "answerKey",
     answerkeys: "answerKey",
-    syllabus: "syllabus"
+    syllabus: "syllabus",
+    currentaffairs: "currentAffairs",
+    currentaffair: "currentAffairs",
+    current: "currentAffairs",
+    ca: "currentAffairs"
   };
   return map[key] || "";
 };
@@ -387,6 +391,7 @@ const detectPostTarget = (title = "", link = "", text = "") => {
   if (/(admit\s*card|hall\s*ticket|प्रवेश\s*पत्र)/i.test(haystack)) return "admitCard";
   if (/(result|merit\s*list|परिणाम)/i.test(haystack)) return "result";
   if (/(syllabus|पाठ्यक्रम)/i.test(haystack)) return "syllabus";
+  if (/(current\s*affairs|करंट\s*अफेयर्स|समसामयिकी)/i.test(haystack)) return "currentAffairs";
   return "latestJob";
 };
 
@@ -540,7 +545,8 @@ const buildDefaultFaqItems = (job = {}, title = "Job Update") => {
     result: "result",
     syllabus: "syllabus",
     answerKey: "answer key",
-    admission: "admission form"
+    admission: "admission form",
+    currentAffairs: "current affairs"
   }[job.postTarget || "latestJob"] || "update");
   return [
     { question: `${title} ki last date kya hai?`, answer: toText(job.lastApplyDate || job.lastDate || "Official notification ke according check karein.") },
@@ -798,7 +804,8 @@ const buildWhatsappPostText = (id = "", job = {}) => {
     admitCard: "एडमिट कार्ड अपडेट",
     result: "रिजल्ट अपडेट",
     answerKey: "आंसर की अपडेट",
-    syllabus: "सिलेबस अपडेट"
+    syllabus: "सिलेबस अपडेट",
+    currentAffairs: "करंट अफेयर्स अपडेट"
   };
   const label = targetLabels[job.postTarget || "latestJob"] || "लेटेस्ट अपडेट";
   const qualificationLines = cleanMultiline(job.qualification, 7)
@@ -2073,7 +2080,7 @@ async function publishAutoJobDraft(db, draftId, payload = {}) {
     officialWebsite: toText(draft.officialWebsite || draft.officialLink),
     sourceName: toText(draft.sourceName),
     sourceLink: toText(draft.sourceLink),
-    type: toText(draft.type || "Online Form"),
+    type: toText(draft.type || (target === "currentAffairs" ? "Current Affairs" : "Online Form")),
     postTarget: target,
     postStatus: "published",
     displayOrder: "1",
@@ -2104,7 +2111,7 @@ async function publishAutoJobDraft(db, draftId, payload = {}) {
         const nextOrder = Number(existing.displayOrder || 0) + 1;
         updates[`LatestJobs/${child.key}/displayOrder`] = nextOrder;
         updates[`LatestJobs/${child.key}/updatedAt`] = now;
-        if (target !== "latestJob") {
+        if (target !== "latestJob" && target !== "currentAffairs") {
           updates[`portalItems/${target}/job_${child.key}/displayOrder`] = nextOrder;
           updates[`portalItems/${target}/job_${child.key}/updatedAt`] = now;
         }
@@ -2112,7 +2119,7 @@ async function publishAutoJobDraft(db, draftId, payload = {}) {
     });
   }
   updates[`LatestJobs/${jobId}`] = job;
-  if (target !== "latestJob") {
+  if (target !== "latestJob" && target !== "currentAffairs") {
     updates[`portalItems/${target}/job_${jobId}`] = {
       source: "LatestJobs",
       sourceJobId: jobId,
