@@ -29,6 +29,9 @@ app.use((req, res, next) => {
   if (publicPath === "/sitemap.xml" || publicPath === "/sitemap-jobs.xml" || publicPath === "/robots.txt") {
     return next();
   }
+  if (publicPath === "/job-detail.html" && req.query?.id) {
+    return next();
+  }
   return staticMiddleware(req, res, next);
 });
 
@@ -421,6 +424,13 @@ const xmlEscape = (value = "") => String(value || "")
   .replace(/"/g, "&quot;")
   .replace(/'/g, "&apos;");
 
+const htmlEscape = (value = "") => String(value || "")
+  .replace(/&/g, "&amp;")
+  .replace(/</g, "&lt;")
+  .replace(/>/g, "&gt;")
+  .replace(/"/g, "&quot;")
+  .replace(/'/g, "&#039;");
+
 const sitemapDate = (value = "") => {
   const number = Number(value || 0);
   const date = number ? new Date(number) : new Date(value || Date.now());
@@ -470,7 +480,98 @@ const readStaticSitemap = () => fs.readFileSync(path.join(__dirname, "sitemap.xm
 const readStaticJobSitemap = () => fs.readFileSync(path.join(__dirname, "sitemap-jobs.xml"), "utf8");
 
 const removeDynamicJobEntries = (xml = "") => String(xml || "")
-  .replace(/\s*<url>\s*<loc>https:\/\/emitrawala\.online\/job-detail\.html\?id=[\s\S]*?<\/url>/g, "");
+  .replace(/\s*<url>\s*<loc>https?:\/\/[^<]+\/job-detail\.html\?id=[\s\S]*?<\/url>/g, "");
+
+const isoDateOrUndefined = (value = "") => {
+  const text = toText(value);
+  if (!text) {
+    return undefined;
+  }
+  const number = Number(text);
+  const date = number ? new Date(number) : new Date(text);
+  return Number.isNaN(date.getTime()) ? undefined : date.toISOString();
+};
+
+const jobSchemaGraph = ({ id = "", job = {}, title = "Job Update", description = "", canonicalUrl = "" }) => {
+  const faqItems = [
+    { question: `${title} ki last date kya hai?`, answer: toText(job.lastApplyDate || job.lastDate || "Official notification ke according check karein.") },
+    { question: `${title} ke liye eligibility kya hai?`, answer: toText(job.qualification || "Qualification section me updated details dekhein.") },
+    { question: `${title} ka apply kaise karein?`, answer: toText(job.howToApply || "How to Apply section me step-by-step process diya gaya hai.") }
+  ];
+  const publisher = { "@type": "Organization", name: "E-MITRA WALA", url: `${SITE_BASE_URL}/` };
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${canonicalUrl}#breadcrumb`,
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: `${SITE_BASE_URL}/index.html` },
+          { "@type": "ListItem", position: 2, name: "Latest Jobs", item: `${SITE_BASE_URL}/job-form.html` },
+          { "@type": "ListItem", position: 3, name: title, item: canonicalUrl }
+        ]
+      },
+      {
+        "@type": ["Article", "JobPosting"],
+        "@id": `${canonicalUrl}#article`,
+        headline: job.seoTitle || title,
+        title,
+        description,
+        url: canonicalUrl,
+        mainEntityOfPage: canonicalUrl,
+        employmentType: job.type || "Online Form",
+        datePosted: job.postDate || undefined,
+        validThrough: job.lastApplyDate || job.lastDate || undefined,
+        hiringOrganization: job.department ? { "@type": "Organization", name: job.department } : publisher,
+        datePublished: isoDateOrUndefined(job.createdAt),
+        dateModified: isoDateOrUndefined(job.updatedAt) || isoDateOrUndefined(job.createdAt),
+        publisher
+      },
+      {
+        "@type": "FAQPage",
+        "@id": `${canonicalUrl}#faq`,
+        mainEntity: faqItems.map((item) => ({
+          "@type": "Question",
+          name: item.question,
+          acceptedAnswer: { "@type": "Answer", text: item.answer }
+        }))
+      }
+    ]
+  };
+};
+
+const renderPrerenderedJobDetail = (id = "", job = {}) => {
+  const seo = buildSeoFields(job, id);
+  const title = toText(job.title || "Job Update");
+  const description = seo.metaDescription;
+  const canonicalUrl = getPublicJobUrl(id, { ...job, slug: seo.slug });
+  const html = fs.readFileSync(path.join(__dirname, "job-detail.html"), "utf8");
+  const summaryRows = [
+    ["Department", job.department],
+    ["Post Name", job.postName || title],
+    ["Total Posts", job.totalPosts || job.totalVacancy],
+    ["Last Date", job.lastApplyDate || job.lastDate],
+    ["Qualification", job.qualification],
+    ["Location", job.location || job.jobLocation]
+  ].filter(([, value]) => toText(value));
+  const fallbackHtml = `<h2>${htmlEscape(title)}</h2>
+            <div class="content-box">
+              <p>${htmlEscape(description)}</p>
+              <table class="detail-table"><tbody>${summaryRows.map(([label, value]) => `<tr><th>${htmlEscape(label)}</th><td>${htmlEscape(value)}</td></tr>`).join("")}</tbody></table>
+              <p><a class="auto-link" href="${htmlEscape(canonicalUrl)}">Canonical job detail link</a> | <a class="auto-link" href="job-form.html">All Latest Jobs</a></p>
+            </div>`;
+  return html
+    .replace(/<title>[\s\S]*?<\/title>/i, `<title>${htmlEscape(seo.seoTitle)}</title>`)
+    .replace(/<meta name="description" content="[^"]*">/i, `<meta name="description" content="${htmlEscape(description)}">`)
+    .replace(/<meta property="og:title" content="[^"]*">/i, `<meta property="og:title" content="${htmlEscape(seo.seoTitle)}">`)
+    .replace(/<meta property="og:description" content="[^"]*">/i, `<meta property="og:description" content="${htmlEscape(description)}">`)
+    .replace(/<meta property="og:url" content="[^"]*">/i, `<meta property="og:url" content="${htmlEscape(canonicalUrl)}">`)
+    .replace(/<link rel="canonical" href="[^"]*">/i, `<link rel="canonical" href="${htmlEscape(canonicalUrl)}">`)
+    .replace(/<script type="application\/ld\+json" id="jobSchemaJsonLd">[\s\S]*?<\/script>/i, `<script type="application/ld+json" id="jobSchemaJsonLd">\n${JSON.stringify(jobSchemaGraph({ id, job, title, description, canonicalUrl }), null, 2)}\n</script>`)
+    .replace(/<h1 id="jobTitle">[\s\S]*?<\/h1>/i, `<h1 id="jobTitle">${htmlEscape(title)}</h1>`)
+    .replace(/<p id="jobIntro">[\s\S]*?<\/p>/i, `<p id="jobIntro">${htmlEscape(description)}</p>`)
+    .replace(/<section class="panel" id="seoFallbackPanel">[\s\S]*?<\/section>/i, `<section class="panel" id="seoFallbackPanel">\n          ${fallbackHtml}\n        </section>`);
+};
 
 const buildCombinedSitemap = async () => {
   const originalXml = readStaticSitemap().trim();
@@ -1998,6 +2099,30 @@ ${jobEntries.join("\n")}
 app.get("/robots.txt", (req, res) => {
   const robots = fs.readFileSync(path.join(__dirname, "robots.txt"), "utf8");
   res.type("text/plain").send(robots);
+});
+
+app.get("/job-detail.html", async (req, res, next) => {
+  const id = toText(req.query?.id);
+  if (!id) {
+    return next();
+  }
+  try {
+    const db = getAdminDb();
+    if (!db) {
+      return next();
+    }
+    const snapshot = await db.ref(`LatestJobs/${id}`).get();
+    if (!snapshot.exists()) {
+      return next();
+    }
+    const job = snapshot.val() || {};
+    if (String(job.postStatus || "published").toLowerCase() === "draft") {
+      return next();
+    }
+    res.type("html").send(renderPrerenderedJobDetail(id, job));
+  } catch (err) {
+    return next();
+  }
 });
 
 app.get("/", (req, res) => {

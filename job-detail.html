@@ -17,6 +17,44 @@
 <meta property="og:url" content="https://emitrawala.online/job-detail.html">
 <meta name="twitter:card" content="summary">
 <link rel="canonical" href="https://emitrawala.online/job-detail.html">
+<script type="application/ld+json" id="jobSchemaJsonLd">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://emitrawala.online/job-detail.html#breadcrumb",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://emitrawala.online/index.html" },
+        { "@type": "ListItem", "position": 2, "name": "Latest Jobs", "item": "https://emitrawala.online/job-form.html" },
+        { "@type": "ListItem", "position": 3, "name": "Job Details", "item": "https://emitrawala.online/job-detail.html" }
+      ]
+    },
+    {
+      "@type": ["Article", "JobPosting"],
+      "@id": "https://emitrawala.online/job-detail.html#article",
+      "headline": "Job Details | E-MITRA WALA",
+      "title": "Job Details",
+      "description": "E-MITRA WALA job detail page with important dates, qualification, apply link and custom job information.",
+      "url": "https://emitrawala.online/job-detail.html",
+      "mainEntityOfPage": "https://emitrawala.online/job-detail.html",
+      "employmentType": "Online Form",
+      "publisher": { "@type": "Organization", "name": "E-MITRA WALA", "url": "https://emitrawala.online/" }
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://emitrawala.online/job-detail.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Job details kaise dekhein?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Latest Jobs page se kisi post par click karke important dates, eligibility, fees aur apply links dekhein." }
+        }
+      ]
+    }
+  ]
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -147,14 +185,22 @@ body.dark-mode .auto-link{color:#8ec5ff!important;}
 </header>
 
 <main>
-  <div id="jobMessage" class="message">Job details load ho rahi hain...</div>
-  <div id="jobDetailWrap" class="layout" style="display:none;">
+  <div id="jobMessage" class="message">Latest job details load ho rahi hain. Neeche basic SEO summary aur important internal links available hain.</div>
+  <div id="jobDetailWrap" class="layout">
     <article>
       <div class="detail-sheet">
         <div class="article-head">
           <h2 id="sheetTitle">Job Update</h2>
           <p class="article-intro" id="sheetSubTitle">Important notification details, eligibility, dates aur apply links yahan dekhein.</p>
         </div>
+        <section class="panel" id="seoFallbackPanel">
+          <h2>Latest Job Details</h2>
+          <div class="content-box">
+            <p>E-MITRA WALA par latest government job, admit card, result, answer key aur syllabus updates SEO-friendly article layout me publish hote hain.</p>
+            <p>Is page par job title, important dates, application fee, eligibility, vacancy details, official notification aur apply links load hote hain.</p>
+            <p><a class="auto-link" href="job-form.html">Latest Jobs list dekhein</a> ya <a class="auto-link" href="index.html#homePortalLatestJobs">homepage latest posts</a> par wapas jayein.</p>
+          </div>
+        </section>
         <section class="panel" id="shortInfoPanel" style="display:none;">
           <h2>Short Information</h2>
           <div class="content-box" id="shortInfoContent"></div>
@@ -405,6 +451,65 @@ const setJsonLd = (data = {}) => {
     document.head.appendChild(script);
   }
   script.textContent = JSON.stringify(data);
+};
+
+const isoDateOrUndefined = (value = "") => {
+  const text = String(value || "").trim();
+  if(!text){ return undefined; }
+  const numeric = Number(text);
+  const date = numeric ? new Date(numeric) : new Date(text);
+  return Number.isNaN(date.getTime()) ? undefined : date.toISOString();
+};
+
+const buildBreadcrumbSchema = (title = "Job Details", canonicalUrl = location.href) => ({
+  "@type":"BreadcrumbList",
+  "@id":`${canonicalUrl}#breadcrumb`,
+  "itemListElement":[
+    { "@type":"ListItem", "position":1, "name":"Home", "item":`${location.origin}/index.html` },
+    { "@type":"ListItem", "position":2, "name":"Latest Jobs", "item":`${location.origin}/job-form.html` },
+    { "@type":"ListItem", "position":3, "name":title, "item":canonicalUrl }
+  ]
+});
+
+const buildJobSchemaGraph = ({ job = {}, title = "Job Update", description = "", canonicalUrl = location.href, faqItems = [] }) => {
+  const publisher = {
+    "@type":"Organization",
+    "name":"E-MITRA WALA",
+    "url":`${location.origin}/`
+  };
+  const article = {
+    "@type":["Article","JobPosting"],
+    "@id":`${canonicalUrl}#article`,
+    "headline":job.seoTitle || title,
+    "title":title,
+    "description":description,
+    "url":canonicalUrl,
+    "mainEntityOfPage":canonicalUrl,
+    "employmentType":job.type || "Online Form",
+    "datePosted":job.postDate || undefined,
+    "validThrough":job.lastApplyDate || job.lastDate || undefined,
+    "hiringOrganization":job.department ? { "@type":"Organization", "name":job.department } : publisher,
+    "datePublished":isoDateOrUndefined(job.createdAt) || undefined,
+    "dateModified":isoDateOrUndefined(job.updatedAt) || isoDateOrUndefined(job.createdAt) || undefined,
+    "publisher":publisher
+  };
+  const faqPage = {
+    "@type":"FAQPage",
+    "@id":`${canonicalUrl}#faq`,
+    "mainEntity":faqItems.map((item) => ({
+      "@type":"Question",
+      "name":item.question,
+      "acceptedAnswer":{ "@type":"Answer", "text":item.answer }
+    }))
+  };
+  return {
+    "@context":"https://schema.org",
+    "@graph":[
+      buildBreadcrumbSchema(title, canonicalUrl),
+      article,
+      faqPage
+    ]
+  };
 };
 
 const normalizePostTarget = (value = "") => {
@@ -802,27 +907,7 @@ if(!id){
     setMeta('meta[name="twitter:title"]', "content", job.seoTitle || title);
     setMeta('meta[name="twitter:description"]', "content", description);
     const faqItems = renderFaqSection(job, title);
-    setJsonLd({
-      "@context":"https://schema.org",
-      "@type":["Article","JobPosting"],
-      "headline":job.seoTitle || title,
-      "title":title,
-      "description":description,
-      "url":canonicalUrl,
-      "mainEntityOfPage":canonicalUrl,
-      "employmentType":job.type || "Online Form",
-      "datePosted":job.postDate || undefined,
-      "validThrough":job.lastApplyDate || job.lastDate || undefined,
-      "hiringOrganization":job.department ? { "@type":"Organization", "name":job.department } : undefined,
-      "datePublished":job.createdAt ? new Date(job.createdAt).toISOString() : undefined,
-      "dateModified":job.updatedAt ? new Date(job.updatedAt).toISOString() : undefined,
-      "mainEntity":faqItems.length ? faqItems.map((item) => ({ "@type":"Question", "name":item.question, "acceptedAnswer":{ "@type":"Answer", "text":item.answer } })) : undefined,
-      "publisher":{
-        "@type":"Organization",
-        "name":"E-MITRA WALA",
-        "url":`${location.origin}/`
-      }
-    });
+    setJsonLd(buildJobSchemaGraph({ job, title, description, canonicalUrl, faqItems }));
     document.getElementById("jobType").textContent = type;
     document.getElementById("jobTitle").textContent = title;
     document.getElementById("jobIntro").innerHTML = renderFormattedText(job.shortInfo || `${title} ke important dates, eligibility, fee, vacancy details aur apply links yahan dekhein.`);
@@ -954,6 +1039,8 @@ if(!id){
       document.getElementById("pageContentPanel").style.display = "none";
     }
 
+    const fallbackPanel = document.getElementById("seoFallbackPanel");
+    if(fallbackPanel){ fallbackPanel.style.display = "none"; }
     message.style.display = "none";
     wrap.style.display = "block";
   }, (error) => {
