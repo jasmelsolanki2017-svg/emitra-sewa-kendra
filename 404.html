@@ -42,6 +42,10 @@
     if(link){ link.setAttribute("href", canonical); }
     if(matchedSlug && matchedSlug !== requestedSlug){
       window.location.replace(canonical);
+      return;
+    }
+    if(!matchedSlug){
+      window.location.replace(window.location.origin + "/job-detail.html?slug=" + encodeURIComponent(requestedSlug));
     }
   }
 })();

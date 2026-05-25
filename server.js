@@ -74,6 +74,44 @@ let adminDb = null;
 let autoCheckerRunning = false;
 let lastSeoWorkflowDispatchAt = 0;
 
+const githubApi = async (pathName = "", options = {}) => {
+  const response = await fetch(`https://api.github.com${pathName}`, {
+    ...options,
+    headers: {
+      "Accept": "application/vnd.github+json",
+      "Authorization": `Bearer ${GITHUB_TOKEN}`,
+      "Content-Type": "application/json",
+      "User-Agent": "emitra-seo-publisher",
+      ...(options.headers || {})
+    }
+  });
+  const text = await response.text().catch(() => "");
+  let data = null;
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch (_err) {
+    data = text;
+  }
+  return {
+    ok: response.ok,
+    status: response.status,
+    statusText: response.statusText,
+    data
+  };
+};
+
+const saveSeoPublishLog = async (db, payload = {}) => {
+  if (!db) {
+    return;
+  }
+  try {
+    await db.ref("seoPublishLogs").push({
+      ...payload,
+      createdAt: nowStamp()
+    });
+  } catch (_err) {}
+};
+
 function normalizeMobile(value = "") {
   const digits = String(value || "").replace(/\D/g, "");
   let mobileDigits = digits;
@@ -166,6 +204,9 @@ function buildServerStatus(overrides = {}) {
     whatsappConfigured: Boolean(WHATSAPP_ACCESS_TOKEN && WHATSAPP_PHONE_NUMBER_ID && WHATSAPP_TO_NUMBER),
     aiConfigured: Boolean((GEMINI_API_KEY && GEMINI_MODEL) || (OPENAI_API_KEY && OPENAI_MODEL)),
     aiProvider,
+    githubDispatchConfigured: Boolean(GITHUB_TOKEN && GITHUB_REPOSITORY),
+    githubRepository: GITHUB_REPOSITORY,
+    githubDispatchEvent: GITHUB_DISPATCH_EVENT,
     autoCheckerRunning,
     checkedAt: nowStamp(),
     ...overrides
@@ -756,33 +797,51 @@ const normalizeLatestJobsSeo = async (db, onlyJobId = "") => {
   };
 };
 
-const triggerSeoPostsWorkflow = async ({ jobId = "", reason = "admin-save" } = {}) => {
+const triggerSeoPostsWorkflow = async ({ db = null, jobId = "", reason = "admin-save" } = {}) => {
   const now = Date.now();
+  const baseLog = {
+    jobId,
+    reason,
+    repository: GITHUB_REPOSITORY,
+    event: GITHUB_DISPATCH_EVENT
+  };
   if (!GITHUB_TOKEN || !GITHUB_REPOSITORY) {
-    return {
+    const result = {
       ok: false,
       configured: false,
       skipped: true,
       reason: "GitHub token/repository env missing"
     };
+    await saveSeoPublishLog(db, { ...baseLog, result });
+    return result;
   }
   if (now - lastSeoWorkflowDispatchAt < 30000) {
-    return {
+    const result = {
       ok: true,
       configured: true,
       skipped: true,
       reason: "Recent SEO workflow dispatch already sent"
     };
+    await saveSeoPublishLog(db, { ...baseLog, result });
+    return result;
   }
 
-  const response = await fetch(`https://api.github.com/repos/${GITHUB_REPOSITORY}/dispatches`, {
+  const repoCheck = await githubApi(`/repos/${GITHUB_REPOSITORY}`, { method: "GET" });
+  if (!repoCheck.ok) {
+    const result = {
+      ok: false,
+      configured: true,
+      skipped: false,
+      stage: "repo-access",
+      status: repoCheck.status,
+      error: JSON.stringify(repoCheck.data || {}).slice(0, 320) || `GitHub repo access failed (${repoCheck.status})`
+    };
+    await saveSeoPublishLog(db, { ...baseLog, result });
+    return result;
+  }
+
+  const dispatch = await githubApi(`/repos/${GITHUB_REPOSITORY}/dispatches`, {
     method: "POST",
-    headers: {
-      "Accept": "application/vnd.github+json",
-      "Authorization": `Bearer ${GITHUB_TOKEN}`,
-      "Content-Type": "application/json",
-      "User-Agent": "emitra-seo-publisher"
-    },
     body: JSON.stringify({
       event_type: GITHUB_DISPATCH_EVENT,
       client_payload: {
@@ -794,25 +853,30 @@ const triggerSeoPostsWorkflow = async ({ jobId = "", reason = "admin-save" } = {
     })
   });
 
-  if (!response.ok) {
-    const body = await response.text().catch(() => "");
-    return {
+  if (!dispatch.ok) {
+    const result = {
       ok: false,
       configured: true,
       skipped: false,
-      status: response.status,
-      error: body.slice(0, 240) || `GitHub dispatch failed (${response.status})`
+      stage: "workflow-dispatch",
+      status: dispatch.status,
+      error: JSON.stringify(dispatch.data || {}).slice(0, 320) || `GitHub dispatch failed (${dispatch.status})`
     };
+    await saveSeoPublishLog(db, { ...baseLog, result });
+    return result;
   }
 
   lastSeoWorkflowDispatchAt = now;
-  return {
+  const result = {
     ok: true,
     configured: true,
     skipped: false,
     repository: GITHUB_REPOSITORY,
-    event: GITHUB_DISPATCH_EVENT
+    event: GITHUB_DISPATCH_EVENT,
+    dispatchStatus: dispatch.status
   };
+  await saveSeoPublishLog(db, { ...baseLog, result });
+  return result;
 };
 
 const compactLine = (label, value) => {
@@ -2407,7 +2471,7 @@ app.post("/admin/seo/normalize", async (req, res) => {
     const sitemap = await buildCombinedSitemap();
     const shouldPublish = req.body?.publishStatic !== false && Boolean(jobId || req.body?.publishStatic);
     const publish = shouldPublish
-      ? await triggerSeoPostsWorkflow({ jobId, reason: "admin-seo-normalize" })
+      ? await triggerSeoPostsWorkflow({ db, jobId, reason: "admin-seo-normalize" })
       : { ok: true, configured: Boolean(GITHUB_TOKEN && GITHUB_REPOSITORY), skipped: true, reason: "Static publish not requested" };
     return res.json({
       ...result,
@@ -2416,6 +2480,63 @@ app.post("/admin/seo/normalize", async (req, res) => {
       sitemapBytes: Buffer.byteLength(sitemap, "utf8"),
       publish
     });
+  } catch (err) {
+    return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
+  }
+});
+
+app.post("/admin/seo/debug", async (req, res) => {
+  try {
+    const { db } = await requireAdmin(req);
+    const jobId = toText(req.body?.jobId);
+    const runDispatch = req.body?.dispatch === true;
+    const result = {
+      ok: true,
+      github: {
+        tokenPresent: Boolean(GITHUB_TOKEN),
+        tokenLength: GITHUB_TOKEN ? GITHUB_TOKEN.length : 0,
+        repository: GITHUB_REPOSITORY,
+        event: GITHUB_DISPATCH_EVENT
+      },
+      staticPost: null,
+      repoAccess: null,
+      workflowAccess: null,
+      dispatch: null,
+      recentLogs: []
+    };
+
+    if (jobId) {
+      const snapshot = await db.ref(`LatestJobs/${jobId}`).get();
+      if (snapshot.exists()) {
+        const job = snapshot.val() || {};
+        const slug = toText(job.slug) || buildSlug(job.title || "job-update", jobId);
+        result.staticPost = {
+          jobId,
+          slug,
+          publicUrl: getPublicJobUrl(jobId, { ...job, slug }),
+          fallbackUrl: `${SITE_BASE_URL}/job-detail.html?id=${encodeURIComponent(jobId)}`,
+          repoPath: `post/${slug}/index.html`
+        };
+      } else {
+        result.staticPost = { jobId, error: "LatestJobs record not found" };
+      }
+    }
+
+    if (GITHUB_TOKEN && GITHUB_REPOSITORY) {
+      result.repoAccess = await githubApi(`/repos/${GITHUB_REPOSITORY}`, { method: "GET" });
+      result.workflowAccess = await githubApi(`/repos/${GITHUB_REPOSITORY}/actions/workflows/update-seo-posts.yml`, { method: "GET" });
+      if (runDispatch) {
+        result.dispatch = await triggerSeoPostsWorkflow({ db, jobId, reason: "admin-debug-dispatch" });
+      }
+    }
+
+    const logsSnapshot = await db.ref("seoPublishLogs").orderByChild("createdAt").limitToLast(5).get();
+    if (logsSnapshot.exists()) {
+      logsSnapshot.forEach((child) => {
+        result.recentLogs.push({ id: child.key, ...(child.val() || {}) });
+      });
+    }
+    return res.json(result);
   } catch (err) {
     return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
   }
@@ -2928,7 +3049,7 @@ app.post("/admin/auto-job-checker/publish", async (req, res) => {
       return res.status(400).json({ ok: false, error: "Draft ID required" });
     }
     const result = await publishAutoJobDraft(db, draftId, req.body || {});
-    const publish = await triggerSeoPostsWorkflow({ jobId: result.jobId || "", reason: "auto-checker-publish" });
+    const publish = await triggerSeoPostsWorkflow({ db, jobId: result.jobId || "", reason: "auto-checker-publish" });
     return res.json({ ...result, publish });
   } catch (err) {
     return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
@@ -2965,7 +3086,7 @@ app.post("/admin/auto-job-checker/bulk-publish", async (req, res) => {
       level: published === results.length ? "success" : "warning",
       message: `Bulk approve: ${published}/${results.length} drafts published`
     });
-    const publish = published ? await triggerSeoPostsWorkflow({ reason: "auto-checker-bulk-publish" }) : null;
+    const publish = published ? await triggerSeoPostsWorkflow({ db, reason: "auto-checker-bulk-publish" }) : null;
     return res.json({
       ok: true,
       published,
