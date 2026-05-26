@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Current Affairs Manager | E-MITRA WALA</title>
+<link rel="icon" type="image/png" sizes="512x512" href="favicon.png">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="shortcut icon" href="favicon.ico">
+<link rel="apple-touch-icon" href="favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins','Noto Sans Devanagari',sans-serif}
+body{background:#f7fbff;color:#172033}
+.topbar{background:#043a76;color:#fff;padding:6px 3%;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:12px}
+header{background:linear-gradient(135deg,#0057a8,#03224d);color:#fff;text-align:center;padding:16px 3%;border-bottom:3px solid #ff7a00}
+header h1{color:#ff7a00;font-size:clamp(22px,4vw,32px)}
+nav{background:#fff;padding:8px 3%;display:flex;gap:7px;flex-wrap:wrap;justify-content:center;box-shadow:0 3px 12px rgba(0,0,0,.08);position:sticky;top:0;z-index:10}
+nav a,nav button{background:#0057a8;color:#fff;border:0;text-decoration:none;padding:7px 11px;border-radius:6px;font-weight:700;font-size:12px;cursor:pointer}
+nav a:hover,nav button:hover{background:#ff7a00;color:#03224d}
+main{max-width:1120px;margin:auto;padding:16px 3% 34px}
+.panel{background:#fff;border:1px solid #d8e6f5;border-top:3px solid #ff7a00;border-radius:7px;padding:12px;margin-bottom:14px;box-shadow:0 4px 14px rgba(0,0,0,.07)}
+.admin-info{text-align:center;background:#eaf4ff;border-left:4px solid #ff7a00;border-top:0}
+.panel h2{color:#0057a8;font-size:18px;margin-bottom:8px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+input,select,textarea{width:100%;min-width:0;padding:9px 10px;border:1px solid #bdd0e5;border-radius:6px;font-size:13px;background:#fff}
+textarea{min-height:260px;resize:vertical;font-family:Consolas,'Courier New',monospace}
+.wide{grid-column:1/-1}
+.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+button{border:0;border-radius:6px;padding:8px 11px;font-size:12px;font-weight:800;cursor:pointer;background:#0057a8;color:#fff}
+.delete{background:#d90000}.edit{background:#ff7a00;color:#03224d}.cancel{background:#555}
+.status{font-weight:800;color:#0057a8;margin-top:8px;font-size:12px}
+.row{background:#eaf4ff;border-left:3px solid #0057a8;border-radius:7px;padding:9px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.row strong{color:#0057a8;font-size:14px;line-height:1.35;overflow-wrap:anywhere}.row small{display:block;color:#56677c;font-weight:700;margin-top:2px}
+.row-actions{display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0}.count-pill{display:inline-flex;align-items:center;gap:6px;background:#eaf4ff;color:#0057a8;border:1px solid #bdd0e5;border-radius:999px;padding:5px 9px;font-size:12px;font-weight:900;margin-bottom:10px}
+.empty{padding:18px;text-align:center;color:#55657a;font-weight:700}
+@media(max-width:720px){.grid{grid-template-columns:1fr}.wide{grid-column:auto}.row{align-items:flex-start;flex-direction:column}.row-actions{width:100%}.row-actions button,.row-actions a{flex:1}nav{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap}nav a,nav button{white-space:nowrap}}
+</style>
+</head>
+<body>
+<div class="topbar"><div>Current Affairs Manager</div><div id="liveTime">Loading...</div></div>
+<header><h1>Current Affairs Manager</h1><p>Jobs form se alag Current Affairs JSON import aur publish karein.</p></header>
+<nav>
+  <a href="dashboard.html">Dashboard</a>
+  <a href="admin-jobs.html">Latest Jobs</a>
+  <a href="admin-current-affairs.html">Current Affairs Manager</a>
+  <a href="current-affairs.html">Current Affairs Page</a>
+  <a href="job-form.html">Latest Jobs Page</a>
+  <button onclick="logoutUser()">Logout</button>
+</nav>
+<main>
+  <section class="panel admin-info">
+    <h2 id="accessTitle">Admin Access Checking...</h2>
+    <p id="adminEmailText">Please wait...</p>
+  </section>
+
+  <section class="panel">
+    <h2 id="formTitle">Add Current Affairs</h2>
+    <div class="grid">
+      <input id="caTitle" placeholder="Title override optional">
+      <input id="caDisplayOrder" type="number" min="1" value="1" placeholder="Display No.">
+      <select id="caPostStatus"><option value="published">Published</option><option value="draft">Draft</option></select>
+      <input id="caPostDate" placeholder="Post Date optional">
+      <textarea class="wide" id="caJsonInput" placeholder='Current Affairs JSON paste karein. Supported: {"title":"","content":{"intro":[],"questions":[{"question":"","options":[],"answer":"","explanation":""}]},"faqs":[],"seo":{...}}'></textarea>
+    </div>
+    <div class="actions">
+      <button type="button" onclick="saveCurrentAffairs()">Save Current Affairs</button>
+      <button type="button" class="cancel" onclick="clearCurrentAffairsForm()">Clear</button>
+    </div>
+    <div id="caStatus" class="status"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Current Affairs Posts</h2>
+    <div class="count-pill">Total Current Affairs: <span id="currentAffairsCount">0</span></div>
+    <div id="currentAffairsList"><div class="empty">Loading...</div></div>
+  </section>
+</main>
+
+<script>function updateLiveTime(){document.getElementById("liveTime").innerText=new Date().toLocaleString("hi-IN")}updateLiveTime();setInterval(updateLiveTime,30000)</script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+import { getAuth,onAuthStateChanged,signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+import { getDatabase,ref,push,set,update,remove,onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+
+const firebaseConfig={apiKey:"AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",authDomain:"my-website-73785.firebaseapp.com",databaseURL:"https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app/",projectId:"my-website-73785",storageBucket:"my-website-73785.firebasestorage.app",messagingSenderId:"854088341990",appId:"1:854088341990:web:3211d4ef9fe4b78d025e27"};
+const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getDatabase(app),adminEmail="jasmelsolanki@gmail.com",jobsRef=ref(db,"LatestJobs");
+let adminAllowed=false,editingId="",rows=[],cache={};
+const $=(id)=>document.getElementById(id);
+const status=$("caStatus");
+const escapeHTML=(value="")=>String(value).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+const toText=(value="")=>Array.isArray(value)?value.map(toText).filter(Boolean).join("\n"):(value&&typeof value==="object"?JSON.stringify(value):String(value||"").trim());
+const asArray=(value)=>Array.isArray(value)?value:(toText(value)?[toText(value)]:[]);
+const slugify=(value="",id="")=>{const base=String(value||"current-affairs-update").toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g,"").replace(/['"]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,90)||"current-affairs-update";const suffix=String(id||"").replace(/[^a-zA-Z0-9]/g,"").slice(-6).toLowerCase();return suffix?`${base}-${suffix}`:base};
+const siteBaseUrl=()=>/^https?:\/\//i.test(location.origin||"")?location.origin.replace(/\/+$/,""):"https://emitrawala.online";
+const postHref=(id,data={})=>`post/${encodeURIComponent(data.slug||slugify(data.title,id))}/`;
+const adminServerStorageKey="emitraAdminServerUrl";
+const defaultAdminServerUrl="https://emitra-sewa-kendra.onrender.com";
+const getAdminServerUrl=()=>{const saved=String(localStorage.getItem(adminServerStorageKey)||"").trim().replace(/\/+$/,"");if(saved)return saved;if(location.protocol==="file:"||/^emitrawala\.online$|github\.io$/i.test(location.hostname))return defaultAdminServerUrl;return ""};
+const adminApiUrl=(path)=>{const base=getAdminServerUrl();return base?base+path:path};
+const callAdminApi=async(path,body={})=>{const user=auth.currentUser;if(!user)throw new Error("Admin login missing");const token=await user.getIdToken();const response=await fetch(adminApiUrl(path),{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},body:JSON.stringify(body)});const data=await response.json().catch(()=>({}));if(!response.ok||data.ok===false)throw new Error(data.error||`Server action failed (${response.status})`);return data};
+const normalizeQuestion=(item={})=>{const options=Array.isArray(item.options)?item.options:[item.optionA||item.a,item.optionB||item.b,item.optionC||item.c,item.optionD||item.d].filter(Boolean);return {question:toText(item.question||item.q||item.title),options:options.map(toText).filter(Boolean),answer:toText(item.answer||item.correctAnswer||item.correct||item.correct_option),explanation:toText(item.explanation||item.reason||item.solution)}};
+const normalizeFaq=(item={})=>({question:toText(item.question||item.q||item.title),answer:toText(item.answer||item.a||item.text||item.content)});
+const parseJsonInput=()=>{const raw=String($("caJsonInput").value||"").trim().replace(/^```(?:json)?/i,"").replace(/```$/,"").trim();if(!raw)throw new Error("Current Affairs JSON paste karein.");return JSON.parse(raw)};
+const buildCurrentAffairsData=(source,id)=>{const data=source.currentAffairs||source.current_affairs||source.data||source;const content=data.content&&typeof data.content==="object"?data.content:{};const seo=data.seo&&typeof data.seo==="object"?data.seo:{};const questions=asArray(content.questions||data.questions||data.mcqs).map(normalizeQuestion).filter((item)=>item.question&&item.options.length);const faqs=asArray(data.faqs||data.faq||content.faqs).map(normalizeFaq).filter((item)=>item.question&&item.answer);const title=toText($("caTitle").value)||toText(data.title||content.title||seo.title||seo.seoTitle)||"Current Affairs Update";const slug=toText(data.slug||seo.slug)||slugify(title,id);const intro=asArray(content.intro||data.intro||data.overview);const overview=Array.isArray(data.overview)?data.overview:(intro.length?intro.map((line)=>({label:"Point",value:line})):[]);const shortInfo=toText(data.shortInfo||data.summary||seo.description||seo.metaDescription||intro[0]||"Important current affairs questions, answers and explanations.");return {...data,content:{...content,intro,questions},currentAffairsData:data,title,slug,canonicalUrl:`${siteBaseUrl()}/post/${encodeURIComponent(slug)}/`,postTarget:"currentAffairs",type:"Current Affairs",postStatus:$("caPostStatus").value||data.postStatus||"published",displayOrder:String($("caDisplayOrder").value||data.displayOrder||""),postDate:toText($("caPostDate").value)||toText(data.postDate||content.date),shortInfo,seoTitle:toText(seo.seoTitle||seo.title||data.seoTitle)||`${title} | E-MITRA WALA`,metaDescription:toText(seo.metaDescription||seo.description||data.metaDescription)||shortInfo,seo,faqs,faq:faqs,mcqs:questions,questions,sections:Array.isArray(data.sections)?data.sections:(Array.isArray(content.sections)?content.sections:[]),intro,overview,advancedArticleData:{...(data.advancedArticleData||{}),title,slug,postTarget:"currentAffairs",shortInfo,intro,overview,sections:Array.isArray(data.sections)?data.sections:(Array.isArray(content.sections)?content.sections:[]),faq:faqs,faqs,mcqs:questions,questions,content:{...content,intro,questions},seo},updatedAt:Date.now()}};
+const refreshSeoAfterSave=(jobId)=>callAdminApi("/admin/seo/normalize",{jobId}).catch((error)=>({ok:false,error:error.message}));
+const clearCurrentAffairsForm=()=>{editingId="";$("formTitle").innerText="Add Current Affairs";$("caTitle").value="";$("caDisplayOrder").value="1";$("caPostStatus").value="published";$("caPostDate").value="";$("caJsonInput").value="";status.innerText=""};
+window.clearCurrentAffairsForm=clearCurrentAffairsForm;
+window.saveCurrentAffairs=async()=>{if(!adminAllowed){alert("Admin verify nahi hua.");return}try{const parsed=parseJsonInput();const targetRef=editingId?ref(db,`LatestJobs/${editingId}`):push(jobsRef);const targetId=editingId||targetRef.key;const payload=buildCurrentAffairsData(parsed,targetId);status.innerText=editingId?"Current Affairs update ho raha hai...":"Current Affairs save ho raha hai...";if(editingId){await update(targetRef,payload)}else{await set(targetRef,{...payload,createdAt:Date.now()})}const seo=await refreshSeoAfterSave(targetId);status.innerText=(editingId?"Current Affairs updated.":"Current Affairs saved.")+` Read Article: ${postHref(targetId,payload)}`+(seo&&seo.error?` Static/sitemap trigger warning: ${seo.error}`:" Static post/sitemap update trigger ho gaya.");clearCurrentAffairsForm()}catch(error){status.innerText="Current Affairs save nahi hua: "+error.message}};
+window.editCurrentAffairs=(id)=>{const data=cache[id];if(!data){alert("Post data nahi mila.");return}editingId=id;$("formTitle").innerText="Edit Current Affairs";$("caTitle").value=data.title||"";$("caDisplayOrder").value=data.displayOrder||"1";$("caPostStatus").value=data.postStatus||"published";$("caPostDate").value=data.postDate||"";$("caJsonInput").value=JSON.stringify(data.currentAffairsData||data.content||data,null,2);status.innerText="Edit mode active. JSON review karke Save karein.";scrollTo({top:0,behavior:"smooth"})};
+window.deleteCurrentAffairs=async(id)=>{if(!adminAllowed){alert("Admin verify nahi hua.");return}if(!confirm("Ye Current Affairs post delete karni hai?"))return;try{await remove(ref(db,`LatestJobs/${id}`));status.innerText="Current Affairs delete ho gaya."}catch(error){status.innerText="Delete fail: "+error.message}};
+const renderList=()=>{const box=$("currentAffairsList");$("currentAffairsCount").innerText=String(rows.length);if(!rows.length){box.innerHTML='<div class="empty">Abhi koi Current Affairs post save nahi hai.</div>';return}box.innerHTML=rows.map(({id,data})=>{const hidden=String(data.postStatus||"published").toLowerCase()==="draft";const qCount=Array.isArray(data.mcqs)?data.mcqs.length:(Array.isArray(data.content?.questions)?data.content.questions.length:0);return `<div class="row"><div><strong>${escapeHTML(data.title||"Current Affairs Update")}</strong><small>${hidden?"Draft":"Published"} | No: ${escapeHTML(data.displayOrder||"Auto")} | Questions: ${qCount} | Date: ${escapeHTML(data.postDate||"Not set")}</small><small>Read Article: <a href="${postHref(id,data)}" target="_blank" rel="noopener noreferrer">${postHref(id,data)}</a></small></div><div class="row-actions"><button class="edit" onclick="editCurrentAffairs('${id}')">Edit</button><button class="delete" onclick="deleteCurrentAffairs('${id}')">Delete</button></div></div>`}).join("")};
+onAuthStateChanged(auth,(user)=>{if(user&&user.email===adminEmail){adminAllowed=true;$("accessTitle").innerText="Admin Verified";$("adminEmailText").innerText=user.email}else{adminAllowed=false;$("accessTitle").innerText="Access Denied";$("adminEmailText").innerText="Admin login required";setTimeout(()=>location.href="index.html",1200)}});
+onValue(jobsRef,(snapshot)=>{rows=[];cache={};if(snapshot.exists()){snapshot.forEach((child)=>{const data=child.val()||{};if((data.postTarget||data.advancedArticleData?.postTarget)==="currentAffairs"){cache[child.key]=data;rows.push({id:child.key,data})}})}rows.sort((a,b)=>Number(a.data.displayOrder||999999)-Number(b.data.displayOrder||999999)||Number(b.data.createdAt||0)-Number(a.data.createdAt||0));renderList()});
+window.logoutUser=()=>signOut(auth).then(()=>location.href="index.html");
+</script>
+</body>
+</html>

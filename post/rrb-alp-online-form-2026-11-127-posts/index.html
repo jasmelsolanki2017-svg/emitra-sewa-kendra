@@ -84,7 +84,7 @@
       "mainEntityOfPage": "https://emitrawala.online/post/rrb-alp-online-form-2026-11-127-posts/",
       "employmentType": "ONLINE",
       "datePosted": "2026-05-15",
-      "validThrough": "2026-06-14",
+      "validThrough": "2026-06-13",
       "hiringOrganization": {
         "@type": "Organization",
         "name": "E-MITRA WALA",
@@ -257,7 +257,7 @@ body.dark-mode .mcq-option.correct{background:#0d3322!important;border-color:#21
 body.dark-mode .mcq-answer,body.dark-mode .mcq-explanation{color:#e8f1ff!important;}
 @media(max-width:920px){.layout{grid-template-columns:1fr}.detail-sidebar{position:static;top:auto}.hero{padding:24px 5% 26px}main{padding:18px 3% 34px}.detail-table th,.detail-table td{display:block;width:100%;}.detail-table th{border-bottom:0}.panel h2,.sarkari-section-title{font-size:17px}.actions{grid-template-columns:1fr}.content-table{font-size:12px}.content-table th,.content-table td{padding:7px 6px}.manual-pair{grid-template-columns:1fr;gap:3px}.qualification-card{grid-template-columns:1fr}.qualification-post{border-right:0;border-bottom:1px solid #d8e5f3}.theme-toggle{right:16px;bottom:16px;width:50px;height:50px;}nav{flex-direction:column;align-items:flex-start}}
 </style>
-<link rel="stylesheet" href="../../mobile-responsive-fix.css">
+<link rel="stylesheet" href="mobile-responsive-fix.css">
 </head>
 <body>
 <nav>
@@ -757,27 +757,31 @@ const buildOverviewRows = (job = {}) => [
 const normalizeJobToArticle = (input = {}) => {
   const base = typeof input === "string" ? { title:input, type:"Online Form" } : ((input && typeof input === "object") ? { ...input } : {});
   const article = base.advancedArticleData && typeof base.advancedArticleData === "object" ? { ...base.advancedArticleData } : {};
-  const title = String(base.title || article.title || "").trim();
-  const shortInfo = String(base.shortInfo || article.shortInfo || "").trim();
+  const content = base.content && typeof base.content === "object" ? base.content : (article.content && typeof article.content === "object" ? article.content : {});
+  const seo = base.seo && typeof base.seo === "object" ? base.seo : (article.seo && typeof article.seo === "object" ? article.seo : {});
+  const title = String(base.title || article.title || content.title || seo.title || "").trim();
+  const shortInfo = String(base.shortInfo || article.shortInfo || seo.metaDescription || seo.description || "").trim();
   const sections = Array.isArray(base.sections) ? base.sections : (Array.isArray(article.sections) ? article.sections : []);
-  const intro = Array.isArray(base.intro) ? base.intro : (Array.isArray(article.intro) ? article.intro : (shortInfo ? [shortInfo] : []));
+  const intro = Array.isArray(base.intro) ? base.intro : (Array.isArray(article.intro) ? article.intro : (Array.isArray(content.intro) ? content.intro : (shortInfo ? [shortInfo] : [])));
   const overview = Array.isArray(base.overview) ? base.overview : (Array.isArray(article.overview) ? article.overview : buildOverviewRows(base));
   const importantLinks = Array.isArray(base.importantLinks) ? base.importantLinks : (Array.isArray(article.importantLinks) ? article.importantLinks : buildImportantLinks(base));
-  const faq = Array.isArray(base.faq) ? base.faq : (Array.isArray(article.faq) ? article.faq : []);
-  const mcqs = Array.isArray(base.mcqs) ? base.mcqs : (Array.isArray(article.mcqs) ? article.mcqs : []);
+  const faq = Array.isArray(base.faq) ? base.faq : (Array.isArray(base.faqs) ? base.faqs : (Array.isArray(article.faq) ? article.faq : (Array.isArray(article.faqs) ? article.faqs : (Array.isArray(content.faqs) ? content.faqs : []))));
+  const mcqs = Array.isArray(base.mcqs) ? base.mcqs : (Array.isArray(base.questions) ? base.questions : (Array.isArray(article.mcqs) ? article.mcqs : (Array.isArray(article.questions) ? article.questions : (Array.isArray(content.questions) ? content.questions : []))));
   return {
     ...base,
     title,
     shortInfo,
     slug:String(base.slug || article.slug || slugifyText(title)).trim(),
     postTarget:normalizePostTarget(base.postTarget || article.postTarget),
+    seoTitle:base.seoTitle || seo.seoTitle || seo.title,
+    metaDescription:base.metaDescription || seo.metaDescription || seo.description || shortInfo,
     sections,
     intro,
     overview,
     importantLinks,
     faq,
     mcqs,
-    advancedArticleData:{ ...article, title, shortInfo, sections, intro, overview, importantLinks, faq, mcqs }
+    advancedArticleData:{ ...article, title, shortInfo, sections, intro, overview, importantLinks, faq, faqs:faq, mcqs, questions:mcqs, content:{ ...content, intro, questions:mcqs }, seo }
   };
 };
 const normalizeJob = (value) => normalizeJobToArticle(value);

@@ -965,10 +965,11 @@ const buildNotificationSummary = (job = {}) => {
 };
 
 const buildSeoFields = (job = {}, id = "") => {
-  const title = toText(job.title || "Job Update");
+  const seo = job.seo && typeof job.seo === "object" ? job.seo : {};
+  const title = toText(job.title || seo.title || "Job Update");
   const department = toText(job.department);
   const suffix = job.postTarget && job.postTarget !== "latestJob" ? ` ${job.postTarget}` : "";
-  const seoTitle = toText(job.seoTitle || `${title}${suffix} | E-MITRA WALA`).slice(0, 70);
+  const seoTitle = toText(job.seoTitle || seo.seoTitle || seo.title || `${title}${suffix} | E-MITRA WALA`).slice(0, 70);
   const descParts = [
     title,
     department,
@@ -976,10 +977,10 @@ const buildSeoFields = (job = {}, id = "") => {
     job.lastApplyDate || job.lastDate ? `Last date ${job.lastApplyDate || job.lastDate}` : "",
     "apply link, qualification and important dates"
   ].filter(Boolean);
-  const metaDescription = toText(job.metaDescription || descParts.join(", ")).slice(0, 160);
+  const metaDescription = toText(job.metaDescription || seo.metaDescription || seo.description || descParts.join(", ")).slice(0, 160);
   return {
-    slug: toText(job.slug) || buildSlug(title, id),
-    canonicalUrl: getPublicJobUrl(id, { ...job, slug: toText(job.slug) || buildSlug(title, id) }),
+    slug: toText(job.slug || seo.slug) || buildSlug(title, id),
+    canonicalUrl: getPublicJobUrl(id, { ...job, slug: toText(job.slug || seo.slug) || buildSlug(title, id) }),
     seoTitle,
     metaDescription
   };

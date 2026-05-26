@@ -89,6 +89,12 @@ const slugify = (title = "", id = "") => {
   return suffix ? `${base}-${suffix}` : base;
 };
 const postHref = (id, job = {}) => `post/${encodeURIComponent(String(job.slug || "").trim() || slugify(job.title || job.text, id))}/`;
+const questionCount = (job = {}) => {
+  if(Array.isArray(job.mcqs)){ return job.mcqs.length; }
+  if(Array.isArray(job.questions)){ return job.questions.length; }
+  if(Array.isArray(job.content && job.content.questions)){ return job.content.questions.length; }
+  return 0;
+};
 const render = () => {
   const query = searchInput.value.trim().toLowerCase();
   const filtered = query ? rows.filter(({ job }) => `${job.title || ""} ${job.shortInfo || ""} ${job.metaDescription || ""}`.toLowerCase().includes(query)) : rows;
@@ -98,7 +104,8 @@ const render = () => {
   }
   list.innerHTML = filtered.map(({ id, job }) => {
     const title = job.title || job.text || "Current Affairs Update";
-    return `<article class="card"><div class="meta"><span>${escapeHTML(job.type || "Current Affairs")}</span>${job.postDate ? `<span>${escapeHTML(job.postDate)}</span>` : ""}${Array.isArray(job.mcqs) && job.mcqs.length ? `<span>${job.mcqs.length} MCQ</span>` : ""}</div><h2><a href="${postHref(id, job)}">${escapeHTML(title)}</a></h2><p>${escapeHTML(job.shortInfo || job.metaDescription || "Important facts, MCQ aur explanation detail page par padhein.")}</p><a class="read" href="${postHref(id, job)}">Read Article <i class="fa-solid fa-arrow-right"></i></a></article>`;
+    const mcqCount = questionCount(job);
+    return `<article class="card"><div class="meta"><span>${escapeHTML(job.type || "Current Affairs")}</span>${job.postDate ? `<span>${escapeHTML(job.postDate)}</span>` : ""}${mcqCount ? `<span>${mcqCount} MCQ</span>` : ""}</div><h2><a href="${postHref(id, job)}">${escapeHTML(title)}</a></h2><p>${escapeHTML(job.shortInfo || job.metaDescription || "Important facts, MCQ aur explanation detail page par padhein.")}</p><a class="read" href="${postHref(id, job)}">Read Article <i class="fa-solid fa-arrow-right"></i></a></article>`;
   }).join("");
 };
 

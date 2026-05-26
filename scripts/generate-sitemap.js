@@ -110,8 +110,9 @@ const schemaDateOrUndefined = (value = "") => {
 };
 
 const buildSeoFields = (job = {}, id = "") => {
-  const title = String(job.title || job.text || "Job Update").replace(/\s+/g, " ").trim();
-  const slug = String(job.slug || buildSlug(title, id)).trim();
+  const seoData = job.seo && typeof job.seo === "object" ? job.seo : {};
+  const title = String(job.title || seoData.title || job.text || "Job Update").replace(/\s+/g, " ").trim();
+  const slug = String(job.slug || seoData.slug || buildSlug(title, id)).trim();
   const descParts = [
     title,
     job.department,
@@ -123,8 +124,8 @@ const buildSeoFields = (job = {}, id = "") => {
     title,
     slug,
     canonicalUrl: String(job.canonicalUrl || jobUrl(id, { ...job, slug })).trim(),
-    seoTitle: String(job.seoTitle || `${title} | E-MITRA WALA`).replace(/\s+/g, " ").trim().slice(0, 70),
-    metaDescription: String(job.metaDescription || job.notificationSummary || job.shortInfo || descParts.join(", ")).replace(/\s+/g, " ").trim().slice(0, 160)
+    seoTitle: String(job.seoTitle || seoData.seoTitle || seoData.title || `${title} | E-MITRA WALA`).replace(/\s+/g, " ").trim().slice(0, 70),
+    metaDescription: String(job.metaDescription || seoData.metaDescription || seoData.description || job.notificationSummary || job.shortInfo || descParts.join(", ")).replace(/\s+/g, " ").trim().slice(0, 160)
   };
 };
 
