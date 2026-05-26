@@ -856,38 +856,6 @@ color:#222;
 line-height:1.5;
 }
 
-/* SEARCH */
-
-.search-section{
-background:#0057a8;
-padding:45px 6%;
-text-align:center;
-}
-
-.search-section h2{
-color:#ff7a00;
-font-size:36px;
-margin-bottom:20px;
-}
-
-.search-section input{
-width:90%;
-max-width:650px;
-padding:16px 20px;
-border-radius:50px;
-border:none;
-outline:none;
-font-size:17px;
-box-shadow:0 5px 20px rgba(0,0,0,0.2);
-}
-
-#noResult{
-display:none;
-color:white;
-margin-top:15px;
-font-weight:600;
-}
-
 .home-portal{
 background:#f3f8ff;
 padding:0 6% 46px;
@@ -2341,7 +2309,6 @@ body.dark-mode footer,
 body.dark-mode header,
 body.dark-mode .hero,
 body.dark-mode .special,
-body.dark-mode .search-section,
 body.dark-mode .news-head {
   background: linear-gradient(135deg,#06101f,#0b2749) !important;
   color: #f4f8ff !important;
@@ -2722,20 +2689,6 @@ Important Links
 <div id="importantLinksList">
   <span style="color:#0057a8;font-weight:700;">Loading Links...</span>
 </div>
-
-</section>
-
-<!-- SEARCH -->
-
-<section class="search-section">
-
-<h2>Search Services / Forms</h2>
-
-<input type="text" id="searchInput" placeholder="Search here...">
-
-<p id="noResult">
-कोई result नहीं मिला
-</p>
 
 </section>
 
@@ -3450,34 +3403,6 @@ if(signupButton){
 signupButton.style.display = isSignup ? "block" : "none";
 }
 }
-
-const searchInput = document.getElementById("searchInput");
-const searchableCards = document.querySelectorAll(".feature-box, .service-card");
-const noResultText = document.getElementById("noResult");
-
-searchInput.addEventListener("input",()=>{
-const query = searchInput.value.trim().toLowerCase();
-let found = false;
-
-searchableCards.forEach((card)=>{
-const parentLink = card.closest("a");
-const isMatch = card.innerText.toLowerCase().includes(query);
-const displayValue = query === "" || isMatch ? "" : "none";
-
-if(parentLink){
-parentLink.style.display = displayValue;
-}
-else{
-card.style.display = displayValue;
-}
-
-if(query !== "" && isMatch){
-found = true;
-}
-});
-
-noResultText.style.display = query !== "" && !found ? "block" : "none";
-});
 
 const documentData = {
 income:{
