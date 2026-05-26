@@ -315,6 +315,7 @@ const renderStaticPostHtml = (id = "", job = {}) => {
               <table class="detail-table"><tbody>${summaryRows.map(([label, value]) => `<tr><th>${htmlEscape(label)}</th><td>${htmlEscape(value)}</td></tr>`).join("")}</tbody></table>
               <p><a class="auto-link" href="${htmlEscape(canonicalUrl)}">Canonical job detail link</a> | <a class="auto-link" href="../../job-form.html">All Latest Jobs</a></p>
             </div>`;
+  const staticPayload = `<script>window.__EMITRA_STATIC_POST__=${JSON.stringify({ id, job: { ...job, slug: seo.slug, canonicalUrl } }).replace(/</g, "\\u003c")};</script>`;
   return fs.readFileSync(JOB_DETAIL_PATH, "utf8")
     .replace(/<head>/i, "<head>\n<base href=\"../../\">")
     .replace(/<title>[\s\S]*?<\/title>/i, `<title>${htmlEscape(seo.seoTitle)}</title>`)
@@ -327,6 +328,7 @@ const renderStaticPostHtml = (id = "", job = {}) => {
     .replace(/<h1 id="jobTitle">[\s\S]*?<\/h1>/i, `<h1 id="jobTitle">${htmlEscape(seo.title)}</h1>`)
     .replace(/<p id="jobIntro">[\s\S]*?<\/p>/i, `<p id="jobIntro">${htmlEscape(seo.metaDescription)}</p>`)
     .replace(/<aside class="detail-sidebar"/i, currentAffairs ? `<aside class="detail-sidebar" style="display:none;"` : `<aside class="detail-sidebar"`)
+    .replace(/<script type="module">/i, `${staticPayload}\n<script type="module">`)
     .replace(/<section class="panel" id="seoFallbackPanel">[\s\S]*?<\/section>/i, `<section class="panel" id="seoFallbackPanel">\n          ${fallbackHtml}\n        </section>`);
 };
 
@@ -367,6 +369,61 @@ const dedupeJobRows = (rows = []) => {
     seen.add(key);
     return true;
   });
+};
+
+const portalCategoryLabels = {
+  admitCard: "Admit Card",
+  result: "Result",
+  answerKey: "Answer Key",
+  syllabus: "Syllabus",
+  admission: "Admission",
+  notification: "Notification"
+};
+
+const portalItemToJobRow = (category = "", id = "", item = {}) => {
+  const title = String(item.title || item.jobTitle || item.text || "Update").trim();
+  if (!title) return null;
+  const target = normalizePostTarget(category || item.postTarget || item.category);
+  const slug = String(item.slug || buildSlug(title, `${category}-${id}`)).trim();
+  const url = String(item.url || item.sourceLink || item.detailLink || "").trim();
+  const now = item.updatedAt || item.createdAt || Date.now();
+  return {
+    id: `portal-${target}-${id}`,
+    job: {
+      ...item,
+      title,
+      slug,
+      postTarget: target,
+      type: portalCategoryLabels[target] || "Update",
+      postStatus: item.postStatus || "published",
+      detailLink: item.detailLink || url || "#",
+      sourceLink: item.sourceLink || url || "#",
+      shortInfo: item.shortInfo || `${title} ${portalCategoryLabels[target] || "update"} details.`,
+      metaDescription: item.metaDescription || `${title} ${portalCategoryLabels[target] || "update"} details, link and latest information.`,
+      createdAt: item.createdAt || now,
+      updatedAt: now
+    }
+  };
+};
+
+const buildAllStaticRows = (latestRows = [], portalData = {}) => {
+  const rows = [...latestRows];
+  const latestIds = new Set(latestRows.map(({ id }) => String(id)));
+  const latestSlugs = new Set(latestRows.map(({ id, job }) => buildSeoFields(job, id).slug.toLowerCase()));
+  Object.entries(portalData || {}).forEach(([category, items]) => {
+    if (!items || typeof items !== "object") return;
+    Object.entries(items).forEach(([id, item]) => {
+      item = item || {};
+      if (item.sourceJobId && latestIds.has(String(item.sourceJobId))) return;
+      const row = portalItemToJobRow(category, id, item);
+      if (!row || !isPublishedJob(row.job)) return;
+      const slug = buildSeoFields(row.job, row.id).slug.toLowerCase();
+      if (latestSlugs.has(slug)) return;
+      latestSlugs.add(slug);
+      rows.push(row);
+    });
+  });
+  return rows;
 };
 
 const buildHomeFallbackHtml = (rows = []) => {
@@ -446,9 +503,11 @@ const patch404SlugMatching = () => {
 async function main() {
   const sitemapXml = removeDynamicJobEntries(fs.readFileSync(SITEMAP_PATH, "utf8")).trim();
   const jobs = await fetchJson(`${FIREBASE_URL}/LatestJobs.json`);
-  const rows = Object.entries(jobs || {})
+  const portalData = await fetchJson(`${FIREBASE_URL}/portalItems.json`).catch(() => ({}));
+  const latestRows = Object.entries(jobs || {})
     .map(([id, value]) => ({ id, job: normalizeJob(value) }))
     .filter(({ job }) => isPublishedJob(job));
+  const rows = buildAllStaticRows(latestRows, portalData);
   const entries = rows
     .map(({ id, job }) => sitemapEntry({
       loc: jobUrl(id, job),

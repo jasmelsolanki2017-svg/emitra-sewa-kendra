@@ -1226,6 +1226,7 @@ const postParam = new URLSearchParams(window.location.search).get("post");
 const pathSlug = decodeURIComponent((location.pathname.match(/^\/post\/([^/?#]+)/) || [])[1] || postParam || slugParam || "").trim();
 const message = document.getElementById("jobMessage");
 const wrap = document.getElementById("jobDetailWrap");
+const staticPost = window.__EMITRA_STATIC_POST__ && typeof window.__EMITRA_STATIC_POST__ === "object" ? window.__EMITRA_STATIC_POST__ : null;
 
 const renderJobDetail = (jobId, rawJob) => {
     const job = normalizeJob(rawJob);
@@ -1441,6 +1442,10 @@ if(!id && !pathSlug){
       });
     }
     if(!match){
+      if(staticPost && staticPost.job){
+        renderJobDetail(staticPost.id || pathSlug, staticPost.job);
+        return;
+      }
       message.textContent = "Job detail nahi mili ya delete ho chuki hai.";
       wrap.style.display = "none";
       return;
