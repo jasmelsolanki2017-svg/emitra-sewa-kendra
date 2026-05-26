@@ -46,7 +46,7 @@
     .stat-card strong{display:block;color:#0057a8;font-size:22px;line-height:1.1;margin-top:3px;}
     .stat-card.hot strong{color:#d90000;}
     .stat-card.visitor-card{display:grid;gap:5px;align-content:start;}
-    .stat-card.visitor-card img{max-width:150px;width:100%;height:auto;background:#fff;border:1px solid #d8e7f7;border-radius:5px;padding:4px;margin-top:2px;}
+    .visitor-counter-number{display:inline-flex;align-items:center;justify-content:center;background:#fff;border:1px solid #d8e7f7;border-radius:5px;padding:4px 8px;margin-top:2px;font-family:"Courier New",monospace;font-size:24px;font-weight:900;letter-spacing:3px;color:#111;box-shadow:inset 0 0 0 2px #f1f5fb;}
     .stat-card.visitor-card em{font-style:normal;color:#66748a;font-size:10px;font-weight:700;}
 
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;}
@@ -346,8 +346,8 @@ body.dark-mode .nav-logo img {
     <div class="stat-card"><small>Service Pages</small><strong id="serviceGuidesCount">0</strong></div>
     <div class="stat-card visitor-card">
       <small>Website Visitors</small>
-      <img src="https://hitwebcounter.com/counter/counter.php?page=21421561&style=0006&nbdigits=6&type=page&initCount=0" alt="Website visitor counter">
-      <em>Admin only</em>
+      <strong class="visitor-counter-number" id="websiteVisitorsCount">000000</strong>
+      <em>Admin only · Unique device count</em>
     </div>
   </div>
 
@@ -605,6 +605,7 @@ Cook | 1426 |"></textarea>
   const db = getDatabase(app);
 
   const adminEmail = "jasmelsolanki@gmail.com";
+  const visitorStatsPath = "visitorStatsV2";
   const adminServerStorageKey = "emitraAdminServerUrl";
   const defaultAdminServerUrl = "https://emitra-sewa-kendra.onrender.com";
   let adminAllowed = false;
@@ -626,6 +627,20 @@ Cook | 1426 |"></textarea>
     const url = String(value || "").trim();
     return /^https?:\/\//i.test(url) && url !== "#";
   };
+
+  const formatVisitorCount = (value = 0) => String(Math.max(0, Number(value) || 0)).padStart(6, "0");
+
+  const watchVisitorCount = () => {
+    const counter = document.getElementById("websiteVisitorsCount");
+    if(!counter){ return; }
+    onValue(ref(db, `${visitorStatsPath}/total`), (snapshot) => {
+      counter.textContent = formatVisitorCount(snapshot.val());
+    }, () => {
+      counter.textContent = formatVisitorCount(0);
+    });
+  };
+
+  watchVisitorCount();
 
   const getAdminServerUrl = () => {
     const saved = String(localStorage.getItem(adminServerStorageKey) || "").trim().replace(/\/+$/, "");

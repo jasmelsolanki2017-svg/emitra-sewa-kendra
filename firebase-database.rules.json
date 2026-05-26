@@ -28,6 +28,19 @@
       ".write": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'"
     },
 
+    "visitorStatsV2": {
+      "total": {
+        ".read": true,
+        ".write": "newData.isNumber() && ((!data.exists() && newData.val() == 1) || (data.exists() && newData.val() == data.val() + 1))"
+      },
+      "devices": {
+        "$deviceId": {
+          ".read": true,
+          ".write": "!data.exists() && newData.exists() && newData.child('deviceId').val() == $deviceId && newData.child('firstSeenAt').isNumber() && newData.child('lastSeenAt').isNumber() && newData.child('page').isString() && newData.child('userAgent').isString()"
+        }
+      }
+    },
+
     "serviceGuides": {
       ".read": true,
       ".write": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'"

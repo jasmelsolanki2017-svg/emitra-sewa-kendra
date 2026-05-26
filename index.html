@@ -3061,10 +3061,6 @@ E-MITRA WALA E-Mitra Sewa Kendra ek trusted digital service center hai.
 
 </section>
 
-<div class="visitor-tracker" aria-hidden="true">
-<img src="https://hitwebcounter.com/counter/counter.php?page=21421561&style=0006&nbdigits=6&type=page&initCount=0" alt="">
-</div>
-
 <!-- FOOTER -->
 
 <footer>
@@ -3663,7 +3659,8 @@ push,
 set,
 update,
 get,
-onValue
+onValue,
+runTransaction
 }
 from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
@@ -3690,6 +3687,43 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
 const db = getDatabase(app);
+
+const visitorStatsPath = "visitorStatsV2";
+const visitorDeviceKey = "emitraVisitorDeviceId";
+
+const getVisitorDeviceId = () => {
+let saved = localStorage.getItem(visitorDeviceKey);
+if(saved){ return saved; }
+const randomPart = (crypto && crypto.randomUUID)
+? crypto.randomUUID()
+: `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+saved = `device-${randomPart}`.replace(/[^a-zA-Z0-9_-]/g, "");
+localStorage.setItem(visitorDeviceKey, saved);
+return saved;
+};
+
+const trackUniqueVisitor = async () => {
+try{
+const deviceId = getVisitorDeviceId();
+const deviceRef = ref(db, `${visitorStatsPath}/devices/${deviceId}`);
+const snapshot = await get(deviceRef);
+if(snapshot.exists()){ return; }
+const now = Date.now();
+await set(deviceRef, {
+deviceId,
+firstSeenAt: now,
+lastSeenAt: now,
+page: location.pathname || "/",
+userAgent: navigator.userAgent.slice(0, 180)
+});
+await runTransaction(ref(db, `${visitorStatsPath}/total`), (current) => (Number(current) || 0) + 1);
+}
+catch(error){
+console.warn("Visitor tracking skipped", error);
+}
+};
+
+trackUniqueVisitor();
 
 const safeUrl = (value = "#") => {
 const url = String(value || "#").trim();
