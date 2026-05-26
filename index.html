@@ -69,10 +69,13 @@
 <link rel="apple-touch-icon" href="favicon.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
-
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="image" href="site-logo.svg" fetchpriority="high">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet"></noscript>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"></noscript>
 <style>
 
 *{
@@ -85,6 +88,19 @@ font-family:'Poppins',sans-serif;
 body{
 background:#f7fbff;
 overflow-x:hidden;
+}
+
+.home-job-portal,
+.features,
+.business-strip,
+.process-section,
+.services,
+.document-help,
+.about,
+.contact,
+footer{
+content-visibility:auto;
+contain-intrinsic-size:1px 620px;
 }
 
 html{
@@ -2252,8 +2268,23 @@ font-size:26px;
     }
   </style>
 
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8516573589974708"
-     crossorigin="anonymous"></script>
+<script>
+(function(){
+  const loadAds = () => {
+    if(document.querySelector('script[data-emitra-adsense]')){ return; }
+    const script = document.createElement('script');
+    script.async = true;
+    script.crossOrigin = 'anonymous';
+    script.dataset.emitraAdsense = 'true';
+    script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8516573589974708';
+    document.head.appendChild(script);
+  };
+  window.addEventListener('load', () => {
+    if('requestIdleCallback' in window){ requestIdleCallback(loadAds, { timeout: 3000 }); }
+    else { setTimeout(loadAds, 1500); }
+  }, { once:true });
+})();
+</script>
 
 <style id="emitra-theme-css">
 .theme-toggle {
@@ -2533,7 +2564,7 @@ body.dark-mode #importantLinksMenuList a:hover {
 
 <div class="brand-menu" id="importantMenu">
 
-<a class="logo" href="index.html"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MjAgMTUwIiByb2xlPSJpbWciIGFyaWEtbGFiZWxsZWRieT0idGl0bGUgZGVzYyI+CiAgPHRpdGxlIGlkPSJ0aXRsZSI+RS1NSVRSQSBXQUxBIGxvZ288L3RpdGxlPgogIDxkZXNjIGlkPSJkZXNjIj5CbHVlIGFuZCBvcmFuZ2UgZS1NaXRyYSBzZXJ2aWNlIGxvZ28gd2l0aCBjb21wdXRlciBhbmQgZG9jdW1lbnQgbWFyay48L2Rlc2M+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImJsdWUiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjMDAzYThjIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzAwNzhjOCIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0ib3JhbmdlIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iI2ZmNmIwMCIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmZjlkMWYiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJzb2Z0U2hhZG93IiB4PSItMjAlIiB5PSItMjAlIiB3aWR0aD0iMTQwJSIgaGVpZ2h0PSIxNDAlIj4KICAgICAgPGZlRHJvcFNoYWRvdyBkeD0iMCIgZHk9IjUiIHN0ZERldmlhdGlvbj0iNSIgZmxvb2QtY29sb3I9IiMwODJiNWYiIGZsb29kLW9wYWNpdHk9Ii4xOCIvPgogICAgPC9maWx0ZXI+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSI1MjAiIGhlaWdodD0iMTUwIiByeD0iMjQiIGZpbGw9IiNmZmZmZmYiLz4KICA8ZyBmaWx0ZXI9InVybCgjc29mdFNoYWRvdykiPgogICAgPHBhdGggZD0iTTM1IDg4QzI1IDQ5IDU0IDE4IDk1IDE1YzI5LTIgNTQgMTEgNjggMzItMTktMTQtNDEtMTktNjQtMTQtMzIgNy01MyAzMi00NyA2MiA2IDMzIDM5IDUyIDc1IDQyLTM5IDIxLTgyIDEtOTItNDlaIiBmaWxsPSJ1cmwoI29yYW5nZSkiLz4KICAgIDxwYXRoIGQ9Ik00MSA5OWMxOCAzNSA2MiA0OCAxMDEgMjgtMjkgMzMtODggMjYtMTE1LTEzLTMtNS0xLTExIDUtMTNsOS0yWiIgZmlsbD0idXJsKCNibHVlKSIvPgogICAgPHBhdGggZD0iTTc2IDQ1aDY2YzggMCAxNCA3IDEzIDE1bC05IDUxYy0xIDgtOCAxNC0xNiAxNEg2MWMtOCAwLTE0LTctMTMtMTVsMTAtNTFjMS04IDgtMTQgMTgtMTRaIiBmaWxsPSIjZmZmZmZmIiBzdHJva2U9InVybCgjYmx1ZSkiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogICAgPHBhdGggZD0iTTg3IDYyaDQzIiBzdHJva2U9InVybCgjYmx1ZSkiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgICA8cGF0aCBkPSJNODQgODBoMzUiIHN0cm9rZT0idXJsKCNibHVlKSIgc3Ryb2tlLXdpZHRoPSI4IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICAgIDx0ZXh0IHg9Ijg0IiB5PSIxMDgiIGZvbnQtZmFtaWx5PSJBcmlhbCwgSGVsdmV0aWNhLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjU0IiBmb250LXdlaWdodD0iOTAwIiBmaWxsPSJ1cmwoI2JsdWUpIj5FPC90ZXh0PgogICAgPHBhdGggZD0iTTEyNiA4N2gyNCIgc3Ryb2tlPSJ1cmwoI29yYW5nZSkiIHN0cm9rZS13aWR0aD0iOSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgICA8Y2lyY2xlIGN4PSIxNjciIGN5PSI5MyIgcj0iMTMiIGZpbGw9InVybCgjYmx1ZSkiLz4KICAgIDxwYXRoIGQ9Ik0xMTkgMTE4aDMxbDE2IDE1SDk5bDEzLTE1WiIgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSJ1cmwoI2JsdWUpIiBzdHJva2Utd2lkdGg9IjUiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KICAgIDxwYXRoIGQ9Ik0xNDUgOTVoMzhsMTkgMTl2NDNoLTU3Vjk1WiIgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSJ1cmwoI2JsdWUpIiBzdHJva2Utd2lkdGg9IjUiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KICAgIDxwYXRoIGQ9Ik0xODMgOTZ2MTloMTgiIGZpbGw9Im5vbmUiIHN0cm9rZT0idXJsKCNibHVlKSIgc3Ryb2tlLXdpZHRoPSI1IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CiAgICA8cGF0aCBkPSJNMTU2IDEyM2gzNE0xNTYgMTM2aDM0TTE1NiAxNDloMjQiIHN0cm9rZT0iIzY2N2I5YiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICAgIDxwYXRoIGQ9Ik0xNDYgMTQ1YzE0LTIgMjYtOCAzOC0yMiA4IDEwIDE4IDEzIDMxIDEwLTE2IDE5LTQ0IDI5LTY5IDEyWiIgZmlsbD0iIzFhYTg1YSIvPgogIDwvZz4KICA8ZyBmb250LWZhbWlseT0iQXJpYWwsIEhlbHZldGljYSwgc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9IjkwMCI+CiAgICA8dGV4dCB4PSIyMjAiIHk9IjczIiBmb250LXNpemU9IjQ4IiBmaWxsPSJ1cmwoI2JsdWUpIj5FLU1JVFJBPC90ZXh0PgogICAgPHRleHQgeD0iMjIwIiB5PSIxMjIiIGZvbnQtc2l6ZT0iNDgiIGZpbGw9InVybCgjb3JhbmdlKSI+V0FMQTwvdGV4dD4KICA8L2c+CiAgPHBhdGggZD0iTTMwNiA4NmgyNiIgc3Ryb2tlPSJ1cmwoI29yYW5nZSkiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPHBhdGggZD0iTTIyNCAxMzRoMjM1IiBzdHJva2U9InVybCgjb3JhbmdlKSIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8dGV4dCB4PSIyNjYiIHk9IjE0NCIgZm9udC1mYW1pbHk9IkFyaWFsLCBIZWx2ZXRpY2EsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTUiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiMxNzNhNjgiPkFhcGtpIHN1dmlkaGEsIGhhbWFyYSBwcmF5YXM8L3RleHQ+Cjwvc3ZnPgo=" alt="E-MITRA WALA"></a>
+<a class="logo" href="index.html"><img src="site-logo.svg" width="520" height="150" decoding="async" fetchpriority="high" alt="E-MITRA WALA"></a>
 
 <div class="important-menu-panel">
 <a class="side-menu-row" href="#importantLinksList">
@@ -2587,7 +2618,7 @@ body.dark-mode #importantLinksMenuList a:hover {
 </nav>
 
 <button type="button" class="side-menu-trigger" onclick="toggleImportantMenu()" aria-label="Open quick menu">
-<i class="fa-solid fa-bars"></i>
+<span aria-hidden="true">☰</span>
 </button>
 
 <!-- IMPORTANT LINKS -->
@@ -3152,7 +3183,7 @@ getTimeGreeting(now);
 
 updateLiveTime();
 
-setInterval(updateLiveTime,1000);
+setInterval(updateLiveTime,30000);
 
 const weatherInfo = document.getElementById("weatherInfo");
 const weatherText = {
@@ -3192,8 +3223,14 @@ weatherInfo.innerText = "Weather unavailable";
 });
 }
 
+window.addEventListener("load", () => {
+const startWeather = () => {
 updateWeather();
 setInterval(updateWeather,10 * 60 * 1000);
+};
+if("requestIdleCallback" in window){ requestIdleCallback(startWeather, { timeout: 2500 }); }
+else { setTimeout(startWeather, 1200); }
+}, { once:true });
 
 function calculateAge(){
 const textInput = document.getElementById("ageDobText");
@@ -3476,171 +3513,18 @@ renderDocumentChecklist();
 
 </script>
 
-<script>
-(function(){
-const databaseURL = "https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app";
-const portalCategoryMap = {
-notification:"homePortalNotificationList",
-result:"homePortalResultList",
-admitCard:"homePortalAdmitCardList",
-answerKey:"homePortalAnswerKeyList",
-syllabus:"homePortalSyllabusList",
-admission:"homePortalAdmissionList"
-};
-const escapeFastHTML = (value = "") => String(value)
-.replace(/&/g,"&amp;")
-.replace(/</g,"&lt;")
-.replace(/>/g,"&gt;")
-.replace(/"/g,"&quot;")
-.replace(/'/g,"&#039;");
-
-const safeFastUrl = (value = "#") => {
-const url = String(value || "#").trim();
-return /^https?:\/\//i.test(url) ? url : "#";
-};
-const buildFastCanonicalSlug = (id, job = {}) => {
-const storedSlug = String(job.slug || "").trim();
-if(storedSlug){ return storedSlug; }
-const base = String(job.title || job.text || "job-update").toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g,"").replace(/['"]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,90) || "job-update";
-const suffix = String(id || "").replace(/[^a-zA-Z0-9]/g,"").slice(-6).toLowerCase();
-return suffix ? `${base}-${suffix}` : base;
-};
-const fastCanonicalPostHref = (id, job = {}) => `post/${encodeURIComponent(buildFastCanonicalSlug(id, job))}/`;
-const fastPortalHref = (item) => item && item.sourceJobId ? fastCanonicalPostHref(item.sourceJobId, item) : safeFastUrl(item && item.url);
-const fastJobDetailHref = (id, job = {}) => fastCanonicalPostHref(id, job);
-
-const normalizeFastJob = (value) => {
-if(typeof value === "string"){
-return { title:value, type:"Online Form", createdAt:0 };
-}
-return value && typeof value === "object" ? value : {};
-};
-
-const parseFastJobLastDate = (value = "") => {
-const text = String(value || "").trim();
-if(!text || /update soon/i.test(text)){ return null; }
-let match = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
-if(match){ return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]), 23, 59, 59, 999); }
-match = text.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/);
-if(match){ return new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1]), 23, 59, 59, 999); }
-const parsed = new Date(text);
-return Number.isNaN(parsed.getTime()) ? null : new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate(), 23, 59, 59, 999);
-};
-
-const isFastJobVisible = (job) => {
-if(String(job.postStatus || "published").toLowerCase() === "draft"){ return false; }
-return true;
-};
-
-const isFastLatestJobTarget = (job) => !job.postTarget || job.postTarget === "latestJob";
-const isFastCurrentAffairsTarget = (job) => job.postTarget === "currentAffairs";
-const getFastDisplayOrder = (job) => {
-const number = Number(job && job.displayOrder || 0);
-return number > 0 ? number : Number.POSITIVE_INFINITY;
-};
-const sortFastJobRows = (rows) => rows.sort((a,b) => {
-const orderDiff = getFastDisplayOrder(a.job) - getFastDisplayOrder(b.job);
-return orderDiff || Number(b.job.createdAt || 0) - Number(a.job.createdAt || 0);
-});
-const dedupeFastJobRows = (rows = []) => {
-const seen = new Set();
-return rows.filter(({ id, job }) => {
-const key = String(buildFastCanonicalSlug(id, job) || job.title || id).toLowerCase();
-if(seen.has(key)){ return false; }
-seen.add(key);
-return true;
-});
-};
-const sortFastPortalItems = (items) => items.sort((a,b) => {
-const orderDiff = getFastDisplayOrder(a) - getFastDisplayOrder(b);
-return orderDiff || Number(b.createdAt || 0) - Number(a.createdAt || 0);
-});
-
-const renderFastPortalItems = (category, values) => {
-const list = document.getElementById(portalCategoryMap[category]);
-if(!list){ return; }
-const items = Object.values(values || {})
-.filter((item)=>item && item.title);
-sortFastPortalItems(items);
-list.innerHTML = items.length
-? items.map((item)=>`<li><a href="${fastPortalHref(item)}">${escapeFastHTML(item.title || "Update")}</a></li>`).join("")
-: '<li class="home-portal-message">Abhi koi update nahi hai.</li>';
-};
-
-const renderFastJobs = (values) => {
-const portalJobList = document.getElementById("homePortalJobList");
-const currentAffairsList = document.getElementById("homePortalCurrentAffairsList");
-const box = document.getElementById("homeJobList");
-const rows = Object.entries(values || {})
-.map(([id,value])=>({ id, job:normalizeFastJob(value) }))
-.filter(({ job })=>isFastJobVisible(job));
-const jobs = dedupeFastJobRows(rows.filter(({ job })=>isFastLatestJobTarget(job)));
-const currentAffairs = dedupeFastJobRows(rows.filter(({ job })=>isFastCurrentAffairsTarget(job)));
-sortFastJobRows(jobs);
-sortFastJobRows(currentAffairs);
-
-if(!jobs.length){
-if(portalJobList){ portalJobList.innerHTML = '<li class="home-portal-message">अभी कोई job available नहीं है।</li>'; }
-if(box){ box.innerHTML = '<p class="home-job-message">अभी कोई latest job available नहीं है।</p>'; }
-}else{
-if(portalJobList){
-portalJobList.innerHTML = jobs.map(({ id, job })=>`
-  <li class="home-portal-job-card">
-    <span class="badge">${escapeFastHTML(job.type || "Online Form")}</span>
-    <h3><a href="${fastJobDetailHref(id, job)}">${escapeFastHTML(job.title || job.text || "Job Update")}</a></h3>
-    <p>Start: ${escapeFastHTML(job.startDate || "Update Soon")} | Last: <span class="last-date">${escapeFastHTML(job.lastDate || job.lastApplyDate || "Update Soon")}</span></p>
-    <p>Qualification: ${escapeFastHTML(job.qualification || "Update Soon")}</p>
-    <p>Location: ${escapeFastHTML(job.location || "All India")}</p>
-    <div class="job-actions">
-      <a href="${safeFastUrl(job.applyLink)}" target="_blank" rel="noopener noreferrer">Apply</a>
-      <a class="detail" href="${fastJobDetailHref(id, job)}">Details</a>
-    </div>
-  </li>
-`).join("");
-}
-
-if(box){
-box.innerHTML = jobs.map(({ id, job })=>`
-  <article class="home-job-card">
-    <span>${escapeFastHTML(job.type || "Online Form")}</span>
-    <h3><a href="${fastJobDetailHref(id, job)}">${escapeFastHTML(job.title || "Job Update")}</a></h3>
-    <p>Last Date: <span class="last-date">${escapeFastHTML(job.lastDate || job.lastApplyDate || "Update Soon")}</span></p>
-    <p>Location: ${escapeFastHTML(job.location || "All India")}</p>
-    <a href="${fastJobDetailHref(id, job)}">View Details</a>
-  </article>
-`).join("");
-}
-}
-
-if(currentAffairsList){
-currentAffairsList.innerHTML = uniqueCurrentAffairs.length
-? currentAffairs.slice(0,10).map(({ id, job })=>`<li><a href="${fastJobDetailHref(id, job)}">${escapeFastHTML(job.title || "Current Affairs Update")}</a></li>`).join("")
-: '<li class="home-portal-message">Abhi koi current affairs post nahi hai.</li>';
-}
-};
-
-fetch(`${databaseURL}/portalItems.json`)
-.then((response)=>response.ok ? response.json() : null)
-.then((data)=>{
-Object.keys(portalCategoryMap).forEach((category)=>renderFastPortalItems(category, data && data[category]));
-})
-.catch(()=>{});
-
-fetch(`${databaseURL}/LatestJobs.json`)
-.then((response)=>response.ok ? response.json() : null)
-.then((data)=>renderFastJobs(data))
-.catch(()=>{});
-})();
-</script>
-
 <!-- FIREBASE -->
 
-<script type="module">
+<script>
+const initHomepageFirebase = async () => {
+const [appModule, authModule, dbModule] = await Promise.all([
+import("https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js"),
+import("https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js"),
+import("https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js")
+]);
 
-import { initializeApp }
-from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-
-import {
+const { initializeApp } = appModule;
+const {
 getAuth,
 setPersistence,
 browserLocalPersistence,
@@ -3649,20 +3533,17 @@ signInWithEmailAndPassword,
 sendEmailVerification,
 signOut,
 deleteUser
-}
-from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+} = authModule;
 
-import {
+const {
 getDatabase,
 ref,
 push,
 set,
 update,
 get,
-onValue,
 runTransaction
-}
-from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+} = dbModule;
 
 const firebaseConfig = {
 
@@ -3982,7 +3863,7 @@ menu.classList.remove("open");
 
 const linksRef = ref(db,"importantLinks");
 
-onValue(linksRef,(snapshot)=>{
+get(linksRef).then((snapshot)=>{
 
 const boxes = ["importantLinksMenuList","importantLinksList"]
 .map((id)=>document.getElementById(id))
@@ -4167,7 +4048,7 @@ const canonicalPostHref = (id, job = {}) => `post/${encodeURIComponent(buildCano
 const portalItemHref = (item) => item && item.sourceJobId ? canonicalPostHref(item.sourceJobId, item) : safeUrl(item && item.url);
 const jobDetailHref = (id, job = {}) => canonicalPostHref(id, job);
 
-onValue(portalItemsRef,(snapshot)=>{
+get(portalItemsRef).then((snapshot)=>{
 Object.keys(homePortalCategoryMap).forEach((category)=>{
 const categorySnapshot = snapshot.child(category);
 const items = [];
@@ -4184,7 +4065,7 @@ items.push(item);
 sortPortalItems(items);
 renderHomePortalItems(category, items);
 });
-},(error)=>{
+}).catch((error)=>{
 Object.keys(homePortalCategoryMap).forEach((category)=>{
 const list = document.getElementById(homePortalCategoryMap[category]);
 if(list){
@@ -4193,7 +4074,7 @@ list.innerHTML = `<li class="home-portal-message">Data load nahi hua: ${escapeHT
 });
 });
 
-onValue(jobsRef,(snapshot)=>{
+get(jobsRef).then((snapshot)=>{
 const box = document.getElementById("homeJobList");
 const portalJobList = document.getElementById("homePortalJobList");
 const currentAffairsList = document.getElementById("homePortalCurrentAffairsList");
@@ -4230,7 +4111,7 @@ box.innerHTML = '<p class="home-job-message">अभी कोई latest job avai
 }
 
 if(uniqueJobs.length && portalJobList){
-portalJobList.innerHTML = uniqueJobs.map(({ id, job })=>`
+portalJobList.innerHTML = uniqueJobs.slice(0,20).map(({ id, job })=>`
   <li class="home-portal-job-card">
     <span class="badge">${escapeHTML(job.type || "Online Form")}</span>
     <h3><a href="${jobDetailHref(id, job)}">${escapeHTML(job.title || job.text || "Job Update")}</a></h3>
@@ -4247,7 +4128,7 @@ filterHomePortalJobs();
 }
 
 if(uniqueJobs.length && box){
-box.innerHTML = uniqueJobs.map(({ id, job })=>`
+box.innerHTML = uniqueJobs.slice(0,8).map(({ id, job })=>`
   <article class="home-job-card">
     <span>${escapeHTML(job.type || "Online Form")}</span>
     <h3><a href="${jobDetailHref(id, job)}">${escapeHTML(job.title || "Job Update")}</a></h3>
@@ -4258,11 +4139,11 @@ box.innerHTML = uniqueJobs.map(({ id, job })=>`
 `).join("");
 }
 if(currentAffairsList){
-currentAffairsList.innerHTML = currentAffairs.length
+currentAffairsList.innerHTML = uniqueCurrentAffairs.length
 ? uniqueCurrentAffairs.slice(0,10).map(({ id, job })=>`<li><a href="${jobDetailHref(id, job)}">${escapeHTML(job.title || "Current Affairs Update")}</a></li>`).join("")
 : '<li class="home-portal-message">Abhi koi current affairs post nahi hai.</li>';
 }
-},(error)=>{
+}).catch((error)=>{
 const box = document.getElementById("homeJobList");
 const portalJobList = document.getElementById("homePortalJobList");
 if(box){
@@ -4271,12 +4152,6 @@ box.innerHTML = `<p class="home-job-message">Latest jobs load nahi ho payi: ${es
 if(portalJobList){
 portalJobList.innerHTML = `<li class="home-portal-message">Jobs load nahi ho payi: ${escapeHTML(error.message)}</li>`;
 }
-Object.values(homeSpecialSourceMap).forEach((listId)=>{
-const list = document.getElementById(listId);
-if(list){
-list.innerHTML = `<li class="home-portal-message">Source updates load nahi ho payi: ${escapeHTML(error.message)}</li>`;
-}
-});
 });
 
 /* ADVERTISEMENT */
@@ -4304,7 +4179,7 @@ img.dataset.extIndex = String(currentIndex);
 img.src = adPhotoSrc(photoName,currentIndex);
 };
 
-onValue(adsRef,(snapshot)=>{
+get(adsRef).then((snapshot)=>{
 const section = document.getElementById("advertisementSection");
 const box = document.getElementById("advertisementBox");
 const ads = [];
@@ -4333,9 +4208,9 @@ section.style.display = "block";
 box.innerHTML = ads.map((ad)=>{
 const cleanPhotoName = cleanAdPhotoName(ad.photoName || "");
 const imageHtml = cleanPhotoName
-? `<img src="${adPhotoSrc(cleanPhotoName)}" data-photo-name="${escapeHTML(cleanPhotoName)}" data-ext-index="0" onerror="loadNextAdPhoto(this)" alt="${escapeHTML(ad.title || "Advertisement")}">`
+? `<img src="${adPhotoSrc(cleanPhotoName)}" width="260" height="220" loading="lazy" decoding="async" data-photo-name="${escapeHTML(cleanPhotoName)}" data-ext-index="0" onerror="loadNextAdPhoto(this)" alt="${escapeHTML(ad.title || "Advertisement")}">`
 : safeUrl(ad.imageUrl) !== "#"
-? `<img src="${safeUrl(ad.imageUrl)}" alt="${escapeHTML(ad.title || "Advertisement")}">`
+? `<img src="${safeUrl(ad.imageUrl)}" width="260" height="220" loading="lazy" decoding="async" alt="${escapeHTML(ad.title || "Advertisement")}">`
 : `<i class="fa-solid fa-rectangle-ad ad-placeholder"></i>`;
 
 const linkHtml = safeUrl(ad.linkUrl) !== "#"
@@ -4452,7 +4327,7 @@ window.openNewsBox();
 }
 });
 
-onValue(updatesRef,(snapshot)=>{
+get(updatesRef).then((snapshot)=>{
 
 latestNewsItems = getUpdateRows(snapshot).map((item)=>item.text);
 
@@ -4460,6 +4335,20 @@ renderNewsRows();
 renderNewsModal();
 
 });
+
+};
+
+const scheduleHomepageFirebase = () => {
+const start = () => initHomepageFirebase().catch((error) => console.warn("Homepage Firebase init skipped", error));
+if("requestIdleCallback" in window){ requestIdleCallback(start, { timeout: 1800 }); }
+else { setTimeout(start, 500); }
+};
+
+if(document.readyState === "loading"){
+document.addEventListener("DOMContentLoaded", scheduleHomepageFirebase, { once:true });
+} else {
+scheduleHomepageFirebase();
+}
 
 </script>
 

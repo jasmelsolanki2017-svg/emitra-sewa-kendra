@@ -20,7 +20,7 @@
     ],
     "headers": [
       {
-        "source": "**/*.@(html|js|css)",
+        "source": "**/*.html",
         "headers": [
           {
             "key": "Cache-Control",
@@ -29,11 +29,20 @@
         ]
       },
       {
-        "source": "**/*.@(png|jpg|jpeg|svg|ico)",
+        "source": "**/*.@(css|js)",
         "headers": [
           {
             "key": "Cache-Control",
-            "value": "public, max-age=86400"
+            "value": "public, max-age=3600"
+          }
+        ]
+      },
+      {
+        "source": "**/*.@(png|jpg|jpeg|svg|ico|webp)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=2592000, immutable"
           }
         ]
       }
