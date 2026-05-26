@@ -24,18 +24,24 @@
       "national-testing-agency-wrpc3l",
       "ncert-non-academic-group-a-group-b-and-group-c-exam-answer-key-2026-gvzcnd",
       "rajasthan-rsmssb-stenographer-and-personal-assistant-pa-grade-ii-skill-test-result-2026-bvlhve",
+      "rpsc-school-lecturer-special-recruitment-2026",
       "rrb-alp-online-form-2026-11-127-posts",
       "rssb-computer-instructor-recruitment-2026",
       "sbi-apprentice-online-form-2026-oba8wq",
-      "ssc-gd-constable-admit-card-2026-0h7hn2",
-      "x-socqk7"
+      "ssc-gd-constable-admit-card-2026-0h7hn2"
     ];
     var postSlugAliases = {
       "central-teacher-eligibility-test-ctet-september-2026-apply-online-form-tthxuz": "job-1779730227353",
       "rrb-alp-online-form-2026-11-127-posts-kfcxav": "rrb-alp-online-form-2026-11-127-posts"
     };
-    var matchedSlug = postSlugAliases[requestedSlug] || knownPostSlugs.find(function(slug){
-      return slug === requestedSlug || slug.indexOf(requestedSlug + "-") === 0 || requestedSlug.indexOf(slug + "-") === 0;
+    var normalizeSlug = function(value){
+      return String(value || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+    };
+    var requestedKey = normalizeSlug(requestedSlug);
+    var aliasTarget = postSlugAliases[requestedSlug] || postSlugAliases[requestedKey] || "";
+    var matchedSlug = aliasTarget || knownPostSlugs.find(function(slug){
+      var slugKey = normalizeSlug(slug);
+      return slugKey === requestedKey || slugKey.indexOf(requestedKey + "-") === 0 || requestedKey.indexOf(slugKey + "-") === 0;
     });
     var slug = encodeURIComponent(matchedSlug || requestedSlug);
     var canonical = window.location.origin + "/post/" + slug;

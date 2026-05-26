@@ -83,13 +83,14 @@
       "url": "https://emitrawala.online/post/indian-navy-ssc-executive-it-online-form-2026-cud59n/",
       "mainEntityOfPage": "https://emitrawala.online/post/indian-navy-ssc-executive-it-online-form-2026-cud59n/",
       "employmentType": "Defence Job",
-      "validThrough": "2026-06-01",
+      "datePosted": "2026-05-18",
+      "validThrough": "2026-05-31",
       "hiringOrganization": {
         "@type": "Organization",
         "name": "The Indian Navy"
       },
       "datePublished": "2026-05-18T10:19:42.406Z",
-      "dateModified": "2026-05-25T19:56:17.847Z",
+      "dateModified": "2026-05-26T02:06:49.800Z",
       "publisher": {
         "@type": "Organization",
         "name": "E-MITRA WALA",
@@ -577,7 +578,9 @@ const buildCanonicalSlug = (job = {}, fallbackId = "") => {
 const normalizeSlugValue = (value = "") => String(value || "")
   .toLowerCase()
   .trim()
-  .replace(/^\/+|\/+$/g, "");
+  .replace(/^\/+|\/+$/g, "")
+  .replace(/[^a-z0-9]+/g, "-")
+  .replace(/^-+|-+$/g, "");
 
 const slugFromUrlPath = (value = "") => {
   try{
@@ -646,12 +649,33 @@ const setJsonLd = (data = {}) => {
   script.textContent = JSON.stringify(data);
 };
 
-const isoDateOrUndefined = (value = "") => {
+const parseLooseDate = (value = "") => {
   const text = String(value || "").trim();
-  if(!text){ return undefined; }
+  if(!text){ return null; }
   const numeric = Number(text);
-  const date = numeric ? new Date(numeric) : new Date(text);
-  return Number.isNaN(date.getTime()) ? undefined : date.toISOString();
+  if(numeric){
+    const date = new Date(numeric);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+  const months = { jan:0, january:0, feb:1, february:1, mar:2, march:2, apr:3, april:3, may:4, jun:5, june:5, jul:6, july:6, aug:7, august:7, sep:8, sept:8, september:8, oct:9, october:9, nov:10, november:10, dec:11, december:11 };
+  let match = text.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})$/);
+  if(match){ return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3])); }
+  match = text.match(/^(\d{1,2})[-/.\s]+(\d{1,2})[-/.\s]+(\d{4})$/);
+  if(match){ return new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1])); }
+  match = text.match(/^(\d{1,2})[-/.\s]+([a-zA-Z]+)[-/.\s]+(\d{4})$/);
+  if(match && months[match[2].toLowerCase()] !== undefined){ return new Date(Number(match[3]), months[match[2].toLowerCase()], Number(match[1])); }
+  const date = new Date(text);
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
+const isoDateOrUndefined = (value = "") => {
+  const date = parseLooseDate(value);
+  return date ? date.toISOString() : undefined;
+};
+
+const schemaDateOrUndefined = (value = "") => {
+  const date = parseLooseDate(value);
+  return date ? date.toISOString().slice(0, 10) : undefined;
 };
 
 const buildBreadcrumbSchema = (title = "Job Details", canonicalUrl = location.href) => ({
@@ -679,8 +703,8 @@ const buildJobSchemaGraph = ({ job = {}, title = "Job Update", description = "",
     "url":canonicalUrl,
     "mainEntityOfPage":canonicalUrl,
     "employmentType":job.type || "Online Form",
-    "datePosted":job.postDate || undefined,
-    "validThrough":job.lastApplyDate || job.lastDate || undefined,
+    "datePosted":schemaDateOrUndefined(job.postDate) || schemaDateOrUndefined(job.createdAt),
+    "validThrough":schemaDateOrUndefined(job.lastApplyDate || job.lastDate),
     "hiringOrganization":job.department ? { "@type":"Organization", "name":job.department } : publisher,
     "datePublished":isoDateOrUndefined(job.createdAt) || undefined,
     "dateModified":isoDateOrUndefined(job.updatedAt) || isoDateOrUndefined(job.createdAt) || undefined,

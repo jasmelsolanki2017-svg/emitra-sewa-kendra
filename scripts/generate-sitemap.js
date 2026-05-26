@@ -72,14 +72,41 @@ const sitemapEntry = ({ loc, lastmod, changefreq = "daily", priority = "0.8" }) 
     <priority>${xmlEscape(priority)}</priority>
   </url>`;
 
-const isoDateOrUndefined = (value = "") => {
+const parseLooseDate = (value = "") => {
   const text = String(value || "").trim();
   if (!text) {
-    return undefined;
+    return null;
   }
   const number = Number(text);
-  const date = number ? new Date(number) : new Date(text);
-  return Number.isNaN(date.getTime()) ? undefined : date.toISOString();
+  if (number) {
+    const date = new Date(number);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+  const months = { jan: 0, january: 0, feb: 1, february: 1, mar: 2, march: 2, apr: 3, april: 3, may: 4, jun: 5, june: 5, jul: 6, july: 6, aug: 7, august: 7, sep: 8, sept: 8, september: 8, oct: 9, october: 9, nov: 10, november: 10, dec: 11, december: 11 };
+  let match = text.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})$/);
+  if (match) {
+    return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  }
+  match = text.match(/^(\d{1,2})[-/.\s]+(\d{1,2})[-/.\s]+(\d{4})$/);
+  if (match) {
+    return new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1]));
+  }
+  match = text.match(/^(\d{1,2})[-/.\s]+([a-zA-Z]+)[-/.\s]+(\d{4})$/);
+  if (match && months[match[2].toLowerCase()] !== undefined) {
+    return new Date(Number(match[3]), months[match[2].toLowerCase()], Number(match[1]));
+  }
+  const date = new Date(text);
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
+const isoDateOrUndefined = (value = "") => {
+  const date = parseLooseDate(value);
+  return date ? date.toISOString() : undefined;
+};
+
+const schemaDateOrUndefined = (value = "") => {
+  const date = parseLooseDate(value);
+  return date ? date.toISOString().slice(0, 10) : undefined;
 };
 
 const buildSeoFields = (job = {}, id = "") => {
@@ -158,8 +185,8 @@ const buildSchemaGraph = ({ id = "", job = {}, canonicalUrl = "" }) => {
         "url": canonicalUrl,
         "mainEntityOfPage": canonicalUrl,
         "employmentType": job.type || "Online Form",
-        "datePosted": job.postDate || undefined,
-        "validThrough": job.lastApplyDate || job.lastDate || undefined,
+        "datePosted": schemaDateOrUndefined(job.postDate) || schemaDateOrUndefined(job.createdAt),
+        "validThrough": schemaDateOrUndefined(job.lastApplyDate || job.lastDate),
         "hiringOrganization": job.department ? { "@type": "Organization", "name": job.department } : publisher,
         "datePublished": isoDateOrUndefined(job.createdAt),
         "dateModified": isoDateOrUndefined(job.updatedAt) || isoDateOrUndefined(job.createdAt),
@@ -235,8 +262,21 @@ const sortJobs = (rows = []) => rows.sort((a, b) => {
   return orderDiff || Number(b.job.createdAt || 0) - Number(a.job.createdAt || 0);
 });
 
+const dedupeJobRows = (rows = []) => {
+  const seen = new Set();
+  return rows.filter(({ id, job }) => {
+    const seo = buildSeoFields(job, id);
+    const key = (seo.slug || cleanSlug(seo.title) || id).toLowerCase();
+    if (seen.has(key)) {
+      return false;
+    }
+    seen.add(key);
+    return true;
+  });
+};
+
 const buildHomeFallbackHtml = (rows = []) => {
-  const topRows = sortJobs(rows.filter(({ job }) => isPublishedJob(job) && isLatestJobTarget(job))).slice(0, 9);
+  const topRows = dedupeJobRows(sortJobs(rows.filter(({ job }) => isPublishedJob(job) && isLatestJobTarget(job)))).slice(0, 9);
   if (!topRows.length) {
     return `    <article class="home-job-card">
       <span>Latest Jobs</span>

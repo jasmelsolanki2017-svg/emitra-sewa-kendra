@@ -561,14 +561,51 @@ const getPublishedJobById = async (id = "") => {
   return { id: cleanId, job };
 };
 
-const isoDateOrUndefined = (value = "") => {
+const LEGACY_POST_SLUG_ALIASES = {
+  "central-teacher-eligibility-test-ctet-september-2026-apply-online-form-tthxuz": "job-1779730227353",
+  "rrb-alp-online-form-2026-11-127-posts-kfcxav": "rrb-alp-online-form-2026-11-127-posts"
+};
+
+const normalizeSlugKey = (value = "") => toText(value)
+  .toLowerCase()
+  .replace(/[^a-z0-9]+/g, "-")
+  .replace(/^-+|-+$/g, "");
+
+const parseLooseDate = (value = "") => {
   const text = toText(value);
   if (!text) {
-    return undefined;
+    return null;
   }
   const number = Number(text);
-  const date = number ? new Date(number) : new Date(text);
-  return Number.isNaN(date.getTime()) ? undefined : date.toISOString();
+  if (number) {
+    const date = new Date(number);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+  const months = { jan: 0, january: 0, feb: 1, february: 1, mar: 2, march: 2, apr: 3, april: 3, may: 4, jun: 5, june: 5, jul: 6, july: 6, aug: 7, august: 7, sep: 8, sept: 8, september: 8, oct: 9, october: 9, nov: 10, november: 10, dec: 11, december: 11 };
+  let match = text.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})$/);
+  if (match) {
+    return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  }
+  match = text.match(/^(\d{1,2})[-/.\s]+(\d{1,2})[-/.\s]+(\d{4})$/);
+  if (match) {
+    return new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1]));
+  }
+  match = text.match(/^(\d{1,2})[-/.\s]+([a-zA-Z]+)[-/.\s]+(\d{4})$/);
+  if (match && months[match[2].toLowerCase()] !== undefined) {
+    return new Date(Number(match[3]), months[match[2].toLowerCase()], Number(match[1]));
+  }
+  const date = new Date(text);
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
+const isoDateOrUndefined = (value = "") => {
+  const date = parseLooseDate(value);
+  return date ? date.toISOString() : undefined;
+};
+
+const schemaDateOrUndefined = (value = "") => {
+  const date = parseLooseDate(value);
+  return date ? date.toISOString().slice(0, 10) : undefined;
 };
 
 const normalizeFaqItems = (items = []) => (Array.isArray(items) ? items : [])
@@ -627,8 +664,8 @@ const jobSchemaGraph = ({ id = "", job = {}, title = "Job Update", description =
         url: canonicalUrl,
         mainEntityOfPage: canonicalUrl,
         employmentType: job.type || "Online Form",
-        datePosted: job.postDate || undefined,
-        validThrough: job.lastApplyDate || job.lastDate || undefined,
+        datePosted: schemaDateOrUndefined(job.postDate) || schemaDateOrUndefined(job.createdAt),
+        validThrough: schemaDateOrUndefined(job.lastApplyDate || job.lastDate),
         hiringOrganization: job.department ? { "@type": "Organization", name: job.department } : publisher,
         datePublished: isoDateOrUndefined(job.createdAt),
         dateModified: isoDateOrUndefined(job.updatedAt) || isoDateOrUndefined(job.createdAt),
@@ -720,10 +757,11 @@ const renderPrerenderedJobDetail = (id = "", job = {}) => {
 };
 
 const findPublishedJobBySlug = async (slug = "") => {
-  const targetSlug = toText(decodeURIComponent(slug)).toLowerCase();
+  const targetSlug = normalizeSlugKey(decodeURIComponent(slug));
   if (!targetSlug) {
     return null;
   }
+  const aliasTargetSlug = normalizeSlugKey(LEGACY_POST_SLUG_ALIASES[targetSlug] || "");
   const db = getAdminDb();
   let jobs = null;
   if (db) {
@@ -744,7 +782,13 @@ const findPublishedJobBySlug = async (slug = "") => {
       return false;
     }
     const canonicalSlug = toText(job.slug) || buildSlug(job.title || "job-update", id);
-    if (canonicalSlug.toLowerCase() === targetSlug) {
+    const canonicalKey = normalizeSlugKey(canonicalSlug);
+    if (
+      canonicalKey === targetSlug ||
+      canonicalKey === aliasTargetSlug ||
+      canonicalKey.indexOf(`${targetSlug}-`) === 0 ||
+      targetSlug.indexOf(`${canonicalKey}-`) === 0
+    ) {
       found = { id, job: { ...job, slug: canonicalSlug } };
       return true;
     }

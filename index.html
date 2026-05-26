@@ -2809,13 +2809,6 @@ Important Links
     <!-- SEO_LATEST_JOBS_START -->
     <article class="home-job-card">
       <span>Online Form</span>
-      <h3><a href="post/x-socqk7/">X</a></h3>
-      <p>Last Date: <span class="last-date">Update Soon</span></p>
-      <p>Location: All India</p>
-      <a href="post/x-socqk7/">View Details</a>
-    </article>
-    <article class="home-job-card">
-      <span>Online Form</span>
       <h3><a href="post/rssb-computer-instructor-recruitment-2026/">RSSB Computer Instructor Recruitment 2026</a></h3>
       <p>Last Date: <span class="last-date">23-Jun-2026</span></p>
       <p>Location: Rajasthan</p>
@@ -3552,6 +3545,15 @@ const sortFastJobRows = (rows) => rows.sort((a,b) => {
 const orderDiff = getFastDisplayOrder(a.job) - getFastDisplayOrder(b.job);
 return orderDiff || Number(b.job.createdAt || 0) - Number(a.job.createdAt || 0);
 });
+const dedupeFastJobRows = (rows = []) => {
+const seen = new Set();
+return rows.filter(({ id, job }) => {
+const key = String(buildFastCanonicalSlug(id, job) || job.title || id).toLowerCase();
+if(seen.has(key)){ return false; }
+seen.add(key);
+return true;
+});
+};
 const sortFastPortalItems = (items) => items.sort((a,b) => {
 const orderDiff = getFastDisplayOrder(a) - getFastDisplayOrder(b);
 return orderDiff || Number(b.createdAt || 0) - Number(a.createdAt || 0);
@@ -3575,8 +3577,8 @@ const box = document.getElementById("homeJobList");
 const rows = Object.entries(values || {})
 .map(([id,value])=>({ id, job:normalizeFastJob(value) }))
 .filter(({ job })=>isFastJobVisible(job));
-const jobs = rows.filter(({ job })=>isFastLatestJobTarget(job));
-const currentAffairs = rows.filter(({ job })=>isFastCurrentAffairsTarget(job));
+const jobs = dedupeFastJobRows(rows.filter(({ job })=>isFastLatestJobTarget(job)));
+const currentAffairs = dedupeFastJobRows(rows.filter(({ job })=>isFastCurrentAffairsTarget(job)));
 sortFastJobRows(jobs);
 sortFastJobRows(currentAffairs);
 
@@ -3614,7 +3616,7 @@ box.innerHTML = jobs.map(({ id, job })=>`
 }
 
 if(currentAffairsList){
-currentAffairsList.innerHTML = currentAffairs.length
+currentAffairsList.innerHTML = uniqueCurrentAffairs.length
 ? currentAffairs.slice(0,10).map(({ id, job })=>`<li><a href="${fastJobDetailHref(id, job)}">${escapeFastHTML(job.title || "Current Affairs Update")}</a></li>`).join("")
 : '<li class="home-portal-message">Abhi koi current affairs post nahi hai.</li>';
 }
@@ -4050,6 +4052,15 @@ const sortJobRows = (rows) => rows.sort((a,b) => {
 const orderDiff = getJobDisplayOrder(a.job) - getJobDisplayOrder(b.job);
 return orderDiff || Number(b.job.createdAt || 0) - Number(a.job.createdAt || 0);
 });
+const dedupeJobRows = (rows = []) => {
+const seen = new Set();
+return rows.filter(({ id, job }) => {
+const key = String(buildCanonicalSlug(id, job) || job.title || id).toLowerCase();
+if(seen.has(key)){ return false; }
+seen.add(key);
+return true;
+});
+};
 const sortPortalItems = (items) => items.sort((a,b) => {
 const orderDiff = getJobDisplayOrder(a) - getJobDisplayOrder(b);
 return orderDiff || Number(b.createdAt || 0) - Number(a.createdAt || 0);
@@ -4169,10 +4180,12 @@ currentAffairs.push(row);
 });
 }
 
-sortJobRows(jobs);
-sortJobRows(currentAffairs);
+const uniqueJobs = dedupeJobRows(jobs);
+const uniqueCurrentAffairs = dedupeJobRows(currentAffairs);
+sortJobRows(uniqueJobs);
+sortJobRows(uniqueCurrentAffairs);
 
-if(jobs.length === 0){
+if(uniqueJobs.length === 0){
 if(portalJobList){
 portalJobList.innerHTML = '<li class="home-portal-message">अभी कोई job available नहीं है।</li>';
 }
@@ -4181,8 +4194,8 @@ box.innerHTML = '<p class="home-job-message">अभी कोई latest job avai
 }
 }
 
-if(jobs.length && portalJobList){
-portalJobList.innerHTML = jobs.map(({ id, job })=>`
+if(uniqueJobs.length && portalJobList){
+portalJobList.innerHTML = uniqueJobs.map(({ id, job })=>`
   <li class="home-portal-job-card">
     <span class="badge">${escapeHTML(job.type || "Online Form")}</span>
     <h3><a href="${jobDetailHref(id, job)}">${escapeHTML(job.title || job.text || "Job Update")}</a></h3>
@@ -4198,8 +4211,8 @@ portalJobList.innerHTML = jobs.map(({ id, job })=>`
 filterHomePortalJobs();
 }
 
-if(jobs.length && box){
-box.innerHTML = jobs.map(({ id, job })=>`
+if(uniqueJobs.length && box){
+box.innerHTML = uniqueJobs.map(({ id, job })=>`
   <article class="home-job-card">
     <span>${escapeHTML(job.type || "Online Form")}</span>
     <h3><a href="${jobDetailHref(id, job)}">${escapeHTML(job.title || "Job Update")}</a></h3>
@@ -4211,7 +4224,7 @@ box.innerHTML = jobs.map(({ id, job })=>`
 }
 if(currentAffairsList){
 currentAffairsList.innerHTML = currentAffairs.length
-? currentAffairs.slice(0,10).map(({ id, job })=>`<li><a href="${jobDetailHref(id, job)}">${escapeHTML(job.title || "Current Affairs Update")}</a></li>`).join("")
+? uniqueCurrentAffairs.slice(0,10).map(({ id, job })=>`<li><a href="${jobDetailHref(id, job)}">${escapeHTML(job.title || "Current Affairs Update")}</a></li>`).join("")
 : '<li class="home-portal-message">Abhi koi current affairs post nahi hai.</li>';
 }
 },(error)=>{
