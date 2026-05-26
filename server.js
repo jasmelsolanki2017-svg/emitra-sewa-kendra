@@ -1030,6 +1030,28 @@ const buildWhatsappPostText = (id = "", job = {}) => {
   return lines.filter(Boolean).join("\n");
 };
 
+const getJobCategoryLabel = (target = "") => ({
+  latestJob: "Latest Job",
+  notification: "Notification",
+  admitCard: "Admit Card",
+  result: "Result",
+  answerKey: "Answer Key",
+  syllabus: "Syllabus",
+  admission: "Admission",
+  currentAffairs: "Current Affairs"
+}[target || "latestJob"] || "Latest Job");
+
+const buildTelegramPostText = (id = "", job = {}) => {
+  const detailsLink = getPublicJobUrl(id, job);
+  return [
+    `Title: ${toText(job.title || job.text || "Job Update")}`,
+    `Start Date: ${toText(job.startDate || job.postDate || "Update Soon")}`,
+    `Last Date: ${toText(job.lastApplyDate || job.lastDate || "Update Soon")}`,
+    `Category: ${getJobCategoryLabel(job.postTarget || "latestJob")}`,
+    `Full Details Link: ${detailsLink}`
+  ].join("\n");
+};
+
 const generateJobJsonFromText = (text = "", base = {}) => {
   const body = String(text || "");
   const title = toText(base.title) || findFirstMatchLine(body, [
@@ -2358,7 +2380,7 @@ async function publishAutoJobDraft(db, draftId, payload = {}) {
   for (const channel of autoSendChannels) {
     try {
       if (channel === "telegram") {
-        await sendTelegramMessage(job.whatsappPostText);
+        await sendTelegramMessage(buildTelegramPostText(jobId, job));
         sent.push({ channel, ok: true });
       } else if (channel === "whatsapp") {
         await sendWhatsappMessage(job.whatsappPostText);
@@ -3077,7 +3099,10 @@ app.post("/admin/auto-job-checker/share/send", async (req, res) => {
         await db.ref(`LatestJobs/${jobId}`).update(updateFields);
       }
     }
-    text = text || item.whatsappPostText || buildWhatsappPostText(shareId, enrichJobAutomation(item, shareId));
+    const enrichedShareItem = enrichJobAutomation(item, shareId);
+    text = channel === "telegram"
+      ? buildTelegramPostText(shareId, enrichedShareItem)
+      : (text || item.whatsappPostText || buildWhatsappPostText(shareId, enrichedShareItem));
     if (!text) {
       return res.status(400).json({ ok: false, error: "Share text missing" });
     }
