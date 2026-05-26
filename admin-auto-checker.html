@@ -214,7 +214,6 @@
         <textarea class="wide" id="draftWhatsappPostText" placeholder="Auto WhatsApp post text"></textarea>
         <textarea class="wide" id="draftPageContent" placeholder="Extra page content / PDF extracted text"></textarea>
         <textarea class="wide" id="draftGeneratedJson" placeholder="Auto generated JSON preview"></textarea>
-        <label class="check-item"><input type="checkbox" id="draftAutoSendTelegram"> Publish ke baad Telegram auto send</label>
         <label class="check-item"><input type="checkbox" id="draftAutoSendWhatsapp"> Publish ke baad WhatsApp API auto send</label>
       </div>
       <div class="buttons">
@@ -768,7 +767,6 @@
           draftId:activeDraftId,
           draft:data,
           autoSendChannels:[
-            $("draftAutoSendTelegram").checked?"telegram":"",
             $("draftAutoSendWhatsapp").checked?"whatsapp":""
           ].filter(Boolean)
         });
@@ -810,7 +808,6 @@
           draftId:id,
           draft:{...data,postTarget:target},
           autoSendChannels:[
-            $("draftAutoSendTelegram").checked?"telegram":"",
             $("draftAutoSendWhatsapp").checked?"whatsapp":""
           ].filter(Boolean)
         });
@@ -837,7 +834,6 @@
         const result=await callAdminApi("/admin/auto-job-checker/bulk-publish",{
           draftIds:ids,
           autoSendChannels:[
-            $("draftAutoSendTelegram").checked?"telegram":"",
             $("draftAutoSendWhatsapp").checked?"whatsapp":""
           ].filter(Boolean)
         });

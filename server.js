@@ -300,6 +300,12 @@ const normalizeAutoJobCategory = (value = "") => {
   return map[key] || "";
 };
 
+const isCurrentAffairsPost = (job = {}) => {
+  const article = job.advancedArticleData && typeof job.advancedArticleData === "object" ? job.advancedArticleData : {};
+  return [job.postTarget, job.postType, article.postTarget, article.postType, job.category, job.type]
+    .some((value) => normalizeAutoJobCategory(value) === "currentAffairs");
+};
+
 const parseAutoJobCategories = (value) => {
   if (Array.isArray(value)) {
     const parsed = value.map(normalizeAutoJobCategory).filter(Boolean);
@@ -619,6 +625,11 @@ const normalizeFaqItems = (items = []) => (Array.isArray(items) ? items : [])
   })
   .filter(Boolean);
 
+const normalizeCurrentAffairsFaqItems = (items = []) => normalizeFaqItems(items).filter((item) => {
+  const question = item.question.toLowerCase();
+  return !/(last date|department|apply link|official notification|category|अंतिम\s*तिथि|विभाग)/i.test(question);
+});
+
 const buildDefaultFaqItems = (job = {}, title = "Job Update") => {
   const targetLabel = ({
     latestJob: "online form",
@@ -640,9 +651,28 @@ const buildDefaultFaqItems = (job = {}, title = "Job Update") => {
 };
 
 const jobSchemaGraph = ({ id = "", job = {}, title = "Job Update", description = "", canonicalUrl = "" }) => {
-  const manualFaqs = normalizeFaqItems(job.faq);
-  const faqItems = manualFaqs.length ? manualFaqs : buildDefaultFaqItems(job, title);
+  const currentAffairs = isCurrentAffairsPost(job);
+  const manualFaqs = currentAffairs ? normalizeCurrentAffairsFaqItems(job.faq) : normalizeFaqItems(job.faq);
+  const faqItems = manualFaqs.length ? manualFaqs : (currentAffairs ? [] : buildDefaultFaqItems(job, title));
   const publisher = { "@type": "Organization", name: "E-MITRA WALA", url: `${SITE_BASE_URL}/` };
+  const article = {
+    "@type": currentAffairs ? "Article" : ["Article", "JobPosting"],
+    "@id": `${canonicalUrl}#article`,
+    headline: job.seoTitle || title,
+    title,
+    description,
+    url: canonicalUrl,
+    mainEntityOfPage: canonicalUrl,
+    datePublished: isoDateOrUndefined(job.createdAt),
+    dateModified: isoDateOrUndefined(job.updatedAt) || isoDateOrUndefined(job.createdAt),
+    publisher
+  };
+  if (!currentAffairs) {
+    article.employmentType = job.type || "Online Form";
+    article.datePosted = schemaDateOrUndefined(job.postDate) || schemaDateOrUndefined(job.createdAt);
+    article.validThrough = schemaDateOrUndefined(job.lastApplyDate || job.lastDate);
+    article.hiringOrganization = job.department ? { "@type": "Organization", name: job.department } : publisher;
+  }
   return removeUndefinedDeep({
     "@context": "https://schema.org",
     "@graph": [
@@ -655,23 +685,8 @@ const jobSchemaGraph = ({ id = "", job = {}, title = "Job Update", description =
           { "@type": "ListItem", position: 3, name: title, item: canonicalUrl }
         ]
       },
-      {
-        "@type": ["Article", "JobPosting"],
-        "@id": `${canonicalUrl}#article`,
-        headline: job.seoTitle || title,
-        title,
-        description,
-        url: canonicalUrl,
-        mainEntityOfPage: canonicalUrl,
-        employmentType: job.type || "Online Form",
-        datePosted: schemaDateOrUndefined(job.postDate) || schemaDateOrUndefined(job.createdAt),
-        validThrough: schemaDateOrUndefined(job.lastApplyDate || job.lastDate),
-        hiringOrganization: job.department ? { "@type": "Organization", name: job.department } : publisher,
-        datePublished: isoDateOrUndefined(job.createdAt),
-        dateModified: isoDateOrUndefined(job.updatedAt) || isoDateOrUndefined(job.createdAt),
-        publisher
-      },
-      {
+      article,
+      faqItems.length ? {
         "@type": "FAQPage",
         "@id": `${canonicalUrl}#faq`,
         mainEntity: faqItems.map((item) => ({
@@ -679,7 +694,7 @@ const jobSchemaGraph = ({ id = "", job = {}, title = "Job Update", description =
           name: item.question,
           acceptedAnswer: { "@type": "Answer", text: item.answer }
         }))
-      }
+      } : undefined
     ]
   });
 };
@@ -704,8 +719,9 @@ const buildSeoStorageFields = (id = "", job = {}) => {
   const seo = buildSeoFields(job, id);
   const title = toText(job.title || "Job Update");
   const canonicalUrl = seo.canonicalUrl || getPublicJobUrl(id, { ...job, slug: seo.slug });
-  const faq = normalizeFaqItems(job.faq);
-  const faqItems = faq.length ? faq : buildDefaultFaqItems(job, title);
+  const currentAffairs = isCurrentAffairsPost(job);
+  const faq = currentAffairs ? normalizeCurrentAffairsFaqItems(job.faq) : normalizeFaqItems(job.faq);
+  const faqItems = faq.length ? faq : (currentAffairs ? [] : buildDefaultFaqItems(job, title));
   const jsonLd = jobSchemaGraph({
     id,
     job: { ...job, slug: seo.slug, seoTitle: seo.seoTitle, metaDescription: seo.metaDescription, faq: faqItems },
@@ -723,12 +739,67 @@ const buildSeoStorageFields = (id = "", job = {}) => {
   };
 };
 
+const getCurrentAffairsQuestions = (job = {}) => {
+  const article = job.advancedArticleData && typeof job.advancedArticleData === "object" ? job.advancedArticleData : {};
+  const content = job.content && typeof job.content === "object" ? job.content : (article.content && typeof article.content === "object" ? article.content : {});
+  const items = Array.isArray(job.mcqs) ? job.mcqs
+    : (Array.isArray(job.questions) ? job.questions
+      : (Array.isArray(article.mcqs) ? article.mcqs
+        : (Array.isArray(article.questions) ? article.questions
+          : (Array.isArray(content.questions) ? content.questions : []))));
+  return items.map((item) => {
+    if (!item || typeof item !== "object") return null;
+    const question = toText(item.question || item.q || item.title);
+    const options = (Array.isArray(item.options) ? item.options : [item.optionA || item.a, item.optionB || item.b, item.optionC || item.c, item.optionD || item.d])
+      .map((option) => toText(option))
+      .filter(Boolean);
+    const answer = toText(item.correctAnswer || item.answer || item.correct || item.correct_option);
+    const explanation = toText(item.explanation || item.reason || item.solution);
+    return question && options.length ? { question, options, answer, explanation } : null;
+  }).filter(Boolean);
+};
+
+const getCurrentAffairsIntro = (job = {}, description = "") => {
+  const article = job.advancedArticleData && typeof job.advancedArticleData === "object" ? job.advancedArticleData : {};
+  const content = job.content && typeof job.content === "object" ? job.content : (article.content && typeof article.content === "object" ? article.content : {});
+  const intro = Array.isArray(job.intro) ? job.intro : (Array.isArray(article.intro) ? article.intro : (Array.isArray(content.intro) ? content.intro : []));
+  return intro.map((item) => toText(item)).filter(Boolean).join("\n\n") || toText(job.shortInfo || description);
+};
+
+const renderCurrentAffairsFallbackHtml = (job = {}, title = "Current Affairs", description = "") => {
+  const intro = getCurrentAffairsIntro(job, description);
+  const dateText = toText(job.postDate || job.date || job.content?.date || job.createdAt);
+  const questions = getCurrentAffairsQuestions(job);
+  const faqs = normalizeCurrentAffairsFaqItems(job.faq);
+  const questionHtml = questions.map((item, index) => `<article class="mcq-card">
+                <div class="mcq-question">Q${index + 1}. ${htmlEscape(item.question)}</div>
+                <div class="mcq-options">${item.options.map((option, optionIndex) => `<div class="mcq-option">${String.fromCharCode(65 + optionIndex)}. ${htmlEscape(option)}</div>`).join("")}</div>
+                ${item.answer ? `<div class="mcq-answer"><span class="manual-label">Correct Answer:</span> ${htmlEscape(item.answer)}</div>` : ""}
+                ${item.explanation ? `<div class="mcq-explanation"><span class="manual-label">Explanation:</span> ${htmlEscape(item.explanation)}</div>` : ""}
+              </article>`).join("");
+  const faqHtml = faqs.length ? `<section class="panel">
+              <h2>FAQ</h2>
+              <div class="content-box">${faqs.map((item) => `<div class="content-section"><h2 class="sarkari-section-title">${htmlEscape(item.question)}</h2><p>${htmlEscape(item.answer)}</p></div>`).join("")}</div>
+            </section>` : "";
+  return `<h2>${htmlEscape(title)}</h2>
+            <div class="content-box">
+              ${intro ? `<p>${htmlEscape(intro)}</p>` : ""}
+              ${dateText ? `<table class="detail-table"><tbody><tr><th>Date</th><td>${htmlEscape(dateText)}</td></tr></tbody></table>` : ""}
+            </div>
+            <section class="panel">
+              <h2>Questions</h2>
+              <div class="content-box"><div class="mcq-list">${questionHtml}</div></div>
+            </section>
+            ${faqHtml}`;
+};
+
 const renderPrerenderedJobDetail = (id = "", job = {}) => {
   const seo = buildSeoFields(job, id);
   const title = toText(job.title || "Job Update");
   const description = seo.metaDescription;
   const canonicalUrl = seo.canonicalUrl || getPublicJobUrl(id, { ...job, slug: seo.slug });
   const html = fs.readFileSync(path.join(__dirname, "job-detail.html"), "utf8");
+  const currentAffairs = isCurrentAffairsPost(job);
   const summaryRows = [
     ["Department", job.department],
     ["Post Name", job.postName || title],
@@ -737,7 +808,7 @@ const renderPrerenderedJobDetail = (id = "", job = {}) => {
     ["Qualification", job.qualification],
     ["Location", job.location || job.jobLocation]
   ].filter(([, value]) => toText(value));
-  const fallbackHtml = `<h2>${htmlEscape(title)}</h2>
+  const fallbackHtml = currentAffairs ? renderCurrentAffairsFallbackHtml(job, title, description) : `<h2>${htmlEscape(title)}</h2>
             <div class="content-box">
               <p>${htmlEscape(description)}</p>
               <table class="detail-table"><tbody>${summaryRows.map(([label, value]) => `<tr><th>${htmlEscape(label)}</th><td>${htmlEscape(value)}</td></tr>`).join("")}</tbody></table>
@@ -753,6 +824,7 @@ const renderPrerenderedJobDetail = (id = "", job = {}) => {
     .replace(/<script type="application\/ld\+json" id="jobSchemaJsonLd">[\s\S]*?<\/script>/i, `<script type="application/ld+json" id="jobSchemaJsonLd">\n${JSON.stringify(jobSchemaGraph({ id, job, title, description, canonicalUrl }), null, 2)}\n</script>`)
     .replace(/<h1 id="jobTitle">[\s\S]*?<\/h1>/i, `<h1 id="jobTitle">${htmlEscape(title)}</h1>`)
     .replace(/<p id="jobIntro">[\s\S]*?<\/p>/i, `<p id="jobIntro">${htmlEscape(description)}</p>`)
+    .replace(/<aside class="detail-sidebar"/i, currentAffairs ? `<aside class="detail-sidebar" style="display:none;"` : `<aside class="detail-sidebar"`)
     .replace(/<section class="panel" id="seoFallbackPanel">[\s\S]*?<\/section>/i, `<section class="panel" id="seoFallbackPanel">\n          ${fallbackHtml}\n        </section>`);
 };
 
@@ -1044,13 +1116,24 @@ const getJobCategoryLabel = (target = "") => ({
 
 const buildTelegramPostText = (id = "", job = {}) => {
   const detailsLink = getPublicJobUrl(id, job);
-  return [
-    `Title: ${toText(job.title || job.text || "Job Update")}`,
-    `Start Date: ${toText(job.startDate || job.postDate || "Update Soon")}`,
-    `Last Date: ${toText(job.lastApplyDate || job.lastDate || "Update Soon")}`,
-    `Category: ${getJobCategoryLabel(job.postTarget || "latestJob")}`,
-    `Full Details Link: ${detailsLink}`
-  ].join("\n");
+  const title = toText(job.title || job.text || "Job Update");
+  const summary = toText(job.telegramSummary || job.customSummary || job.notificationSummary || job.shortInfo || job.summary || job.description);
+  const lines = [
+    "📢 लेटेस्ट जॉब अपडेट – E-Mitra Wala",
+    "",
+    `📌 ${title}`,
+    ...(summary ? [summary] : []),
+    "",
+    `🗓️ आवेदन शुरू: ${toText(job.startDate || job.postDate || "Update Soon")}`,
+    `⏳ अंतिम तिथि: ${toText(job.lastApplyDate || job.lastDate || "Update Soon")}`,
+    `📂 कैटेगरी: ${getJobCategoryLabel(job.postTarget || "latestJob")}`,
+    "",
+    "🔗 पूरी जानकारी देखें:",
+    detailsLink,
+    "",
+    "✅ ऐसे ही अपडेट के लिए चैनल से जुड़े रहें।"
+  ];
+  return lines.join("\n");
 };
 
 const generateJobJsonFromText = (text = "", base = {}) => {
@@ -2274,7 +2357,9 @@ async function publishAutoJobDraft(db, draftId, payload = {}) {
   const jobId = jobRef.key;
   const seo = buildSeoFields(draft, jobId);
   const seoStorage = buildSeoStorageFields(jobId, { ...draft, ...seo });
-  const autoSendChannels = Array.isArray(payload.autoSendChannels) ? payload.autoSendChannels.map((item) => String(item || "").toLowerCase()) : [];
+  const autoSendChannels = Array.isArray(payload.autoSendChannels)
+    ? payload.autoSendChannels.map((item) => String(item || "").toLowerCase()).filter((channel) => channel !== "telegram")
+    : [];
   const job = {
     title: toText(draft.title),
     department: toText(draft.department),

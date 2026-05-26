@@ -1492,23 +1492,8 @@ Cook | 1426 |"></textarea>
         .then(() => syncDisplayOrderToPortal(targetId, { ...existingJob, ...orderedJobData }))
         .then(() => refreshSeoAfterSave(targetId))
         .then(() => orderResult);
-    }).then(async (orderResult) => {
-      let statusText = (editingJobId ? "Job Updated Successfully!" : "Job Added Successfully!") + (orderResult.data.displayOrder ? ` No ${orderResult.data.displayOrder} set hua.` : "") + (orderResult.shifted ? ` ${orderResult.shifted} post aage shift hui.` : "");
-      const wasDraft = editingJobId && String(existingJob.postStatus || "published").toLowerCase() === "draft";
-      const isPublished = String(orderResult.data.postStatus || "published").toLowerCase() !== "draft";
-      if(isPublished && (!editingJobId || wasDraft)){
-        document.getElementById("jobStatus").innerText = statusText + " Telegram auto send ho raha hai...";
-        try{
-          await callAdminApi("/admin/auto-job-checker/share/send", {
-            channel:"telegram",
-            jobId:targetId,
-            draft:{ ...existingJob, ...orderResult.data, sourceLink:getSharePostUrl(targetId, orderResult.data) }
-          });
-          statusText += " Telegram auto post send ho gayi.";
-        }catch(error){
-          statusText += " Telegram auto post fail: " + error.message;
-        }
-      }
+    }).then((orderResult) => {
+      const statusText = (editingJobId ? "Job Updated Successfully!" : "Job Added Successfully!") + (orderResult.data.displayOrder ? ` No ${orderResult.data.displayOrder} set hua.` : "") + (orderResult.shifted ? ` ${orderResult.shifted} post aage shift hui.` : "");
       document.getElementById("jobStatus").innerText = statusText;
       window.cancelJobEdit();
 
@@ -1574,22 +1559,8 @@ Cook | 1426 |"></textarea>
     const status = document.getElementById("jobStatus");
     status.innerText = nextStatus === "published" ? "Post publish ho rahi hai..." : "Post hide ho rahi hai...";
     update(ref(db, "LatestJobs/" + id), { postStatus:nextStatus, updatedAt:Date.now() })
-    .then(async () => {
-      if(nextStatus === "published"){
-        status.innerText = "Post published. Telegram auto send ho raha hai...";
-        try{
-          await callAdminApi("/admin/auto-job-checker/share/send", {
-            channel:"telegram",
-            jobId:id,
-            draft:{ ...data, postStatus:nextStatus, sourceLink:getSharePostUrl(id, data) }
-          });
-          status.innerText = "Post published. Telegram auto post send ho gayi.";
-        }catch(error){
-          status.innerText = "Post published. Telegram auto post fail: " + error.message;
-        }
-      }else{
-        status.innerText = "Post hide ho gayi.";
-      }
+    .then(() => {
+      status.innerText = nextStatus === "published" ? "Post published. Telegram bhejne ke liye Telegram Post button use karein." : "Post hide ho gayi.";
     })
     .catch((error) => {
       status.innerText = "Publish status update fail: " + error.message;

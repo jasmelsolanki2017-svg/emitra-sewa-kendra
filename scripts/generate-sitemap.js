@@ -39,6 +39,34 @@ const buildSlug = (title = "", id = "") => {
   return suffix ? `${base}-${suffix}` : base;
 };
 
+const normalizePostTarget = (value = "") => {
+  const key = String(value || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  const map = {
+    latestjob: "latestJob",
+    latestjobs: "latestJob",
+    job: "latestJob",
+    jobs: "latestJob",
+    onlineform: "latestJob",
+    notification: "notification",
+    admitcard: "admitCard",
+    result: "result",
+    syllabus: "syllabus",
+    answerkey: "answerKey",
+    admission: "admission",
+    currentaffairs: "currentAffairs",
+    currentaffair: "currentAffairs",
+    current: "currentAffairs",
+    ca: "currentAffairs"
+  };
+  return map[key] || "latestJob";
+};
+
+const isCurrentAffairsPost = (job = {}) => {
+  const article = job.advancedArticleData && typeof job.advancedArticleData === "object" ? job.advancedArticleData : {};
+  return [job.postTarget, job.postType, article.postTarget, article.postType, job.category, job.type]
+    .some((value) => normalizePostTarget(value) === "currentAffairs");
+};
+
 const sitemapDate = (value = "") => {
   const number = Number(value || 0);
   const date = number ? new Date(number) : new Date(value || Date.now());
@@ -140,6 +168,11 @@ const normalizeFaqItems = (items = []) => (Array.isArray(items) ? items : [])
   })
   .filter(Boolean);
 
+const normalizeCurrentAffairsFaqItems = (items = []) => normalizeFaqItems(items).filter((item) => {
+  const question = item.question.toLowerCase();
+  return !/(last date|department|apply link|official notification|category|अंतिम\s*तिथि|विभाग)/i.test(question);
+});
+
 const buildDefaultFaqItems = (job = {}, title = "Job Update") => {
   const targetLabel = ({
     latestJob: "online form",
@@ -163,8 +196,27 @@ const buildDefaultFaqItems = (job = {}, title = "Job Update") => {
 const buildSchemaGraph = ({ id = "", job = {}, canonicalUrl = "" }) => {
   const seo = buildSeoFields(job, id);
   const publisher = { "@type": "Organization", "name": "E-MITRA WALA", "url": `${SITE_BASE_URL}/` };
-  const manualFaqs = normalizeFaqItems(job.faq);
-  const faqItems = manualFaqs.length ? manualFaqs : buildDefaultFaqItems(job, seo.title);
+  const currentAffairs = isCurrentAffairsPost(job);
+  const manualFaqs = currentAffairs ? normalizeCurrentAffairsFaqItems(job.faq) : normalizeFaqItems(job.faq);
+  const faqItems = manualFaqs.length ? manualFaqs : (currentAffairs ? [] : buildDefaultFaqItems(job, seo.title));
+  const article = {
+    "@type": currentAffairs ? "Article" : ["Article", "JobPosting"],
+    "@id": `${canonicalUrl}#article`,
+    "headline": job.seoTitle || seo.title,
+    "title": seo.title,
+    "description": seo.metaDescription,
+    "url": canonicalUrl,
+    "mainEntityOfPage": canonicalUrl,
+    "datePublished": isoDateOrUndefined(job.createdAt),
+    "dateModified": isoDateOrUndefined(job.updatedAt) || isoDateOrUndefined(job.createdAt),
+    "publisher": publisher
+  };
+  if (!currentAffairs) {
+    article.employmentType = job.type || "Online Form";
+    article.datePosted = schemaDateOrUndefined(job.postDate) || schemaDateOrUndefined(job.createdAt);
+    article.validThrough = schemaDateOrUndefined(job.lastApplyDate || job.lastDate);
+    article.hiringOrganization = job.department ? { "@type": "Organization", "name": job.department } : publisher;
+  }
   return {
     "@context": "https://schema.org",
     "@graph": [
@@ -177,23 +229,8 @@ const buildSchemaGraph = ({ id = "", job = {}, canonicalUrl = "" }) => {
           { "@type": "ListItem", "position": 3, "name": seo.title, "item": canonicalUrl }
         ]
       },
-      {
-        "@type": ["Article", "JobPosting"],
-        "@id": `${canonicalUrl}#article`,
-        "headline": job.seoTitle || seo.title,
-        "title": seo.title,
-        "description": seo.metaDescription,
-        "url": canonicalUrl,
-        "mainEntityOfPage": canonicalUrl,
-        "employmentType": job.type || "Online Form",
-        "datePosted": schemaDateOrUndefined(job.postDate) || schemaDateOrUndefined(job.createdAt),
-        "validThrough": schemaDateOrUndefined(job.lastApplyDate || job.lastDate),
-        "hiringOrganization": job.department ? { "@type": "Organization", "name": job.department } : publisher,
-        "datePublished": isoDateOrUndefined(job.createdAt),
-        "dateModified": isoDateOrUndefined(job.updatedAt) || isoDateOrUndefined(job.createdAt),
-        "publisher": publisher
-      },
-      {
+      article,
+      faqItems.length ? {
         "@type": "FAQPage",
         "@id": `${canonicalUrl}#faq`,
         "mainEntity": faqItems.map((item) => ({
@@ -201,14 +238,69 @@ const buildSchemaGraph = ({ id = "", job = {}, canonicalUrl = "" }) => {
           "name": item.question,
           "acceptedAnswer": { "@type": "Answer", "text": item.answer }
         }))
-      }
-    ]
+      } : null
+    ].filter(Boolean)
   };
+};
+
+const getCurrentAffairsQuestions = (job = {}) => {
+  const article = job.advancedArticleData && typeof job.advancedArticleData === "object" ? job.advancedArticleData : {};
+  const content = job.content && typeof job.content === "object" ? job.content : (article.content && typeof article.content === "object" ? article.content : {});
+  const items = Array.isArray(job.mcqs) ? job.mcqs
+    : (Array.isArray(job.questions) ? job.questions
+      : (Array.isArray(article.mcqs) ? article.mcqs
+        : (Array.isArray(article.questions) ? article.questions
+          : (Array.isArray(content.questions) ? content.questions : []))));
+  return items.map((item) => {
+    if (!item || typeof item !== "object") return null;
+    const question = String(item.question || item.q || item.title || "").trim();
+    const options = (Array.isArray(item.options) ? item.options : [item.optionA || item.a, item.optionB || item.b, item.optionC || item.c, item.optionD || item.d])
+      .map((option) => String(option || "").trim())
+      .filter(Boolean);
+    const answer = String(item.correctAnswer || item.answer || item.correct || item.correct_option || "").trim();
+    const explanation = String(item.explanation || item.reason || item.solution || "").trim();
+    return question && options.length ? { question, options, answer, explanation } : null;
+  }).filter(Boolean);
+};
+
+const getCurrentAffairsIntro = (job = {}, description = "") => {
+  const article = job.advancedArticleData && typeof job.advancedArticleData === "object" ? job.advancedArticleData : {};
+  const content = job.content && typeof job.content === "object" ? job.content : (article.content && typeof article.content === "object" ? article.content : {});
+  const intro = Array.isArray(job.intro) ? job.intro : (Array.isArray(article.intro) ? article.intro : (Array.isArray(content.intro) ? content.intro : []));
+  return intro.map((item) => String(item || "").trim()).filter(Boolean).join("\n\n") || String(job.shortInfo || description || "").trim();
+};
+
+const renderCurrentAffairsFallbackHtml = (job = {}, title = "Current Affairs", description = "") => {
+  const intro = getCurrentAffairsIntro(job, description);
+  const dateText = String(job.postDate || job.date || job.content?.date || job.createdAt || "").trim();
+  const questions = getCurrentAffairsQuestions(job);
+  const faqs = normalizeCurrentAffairsFaqItems(job.faq);
+  const questionHtml = questions.map((item, index) => `<article class="mcq-card">
+                <div class="mcq-question">Q${index + 1}. ${htmlEscape(item.question)}</div>
+                <div class="mcq-options">${item.options.map((option, optionIndex) => `<div class="mcq-option">${String.fromCharCode(65 + optionIndex)}. ${htmlEscape(option)}</div>`).join("")}</div>
+                ${item.answer ? `<div class="mcq-answer"><span class="manual-label">Correct Answer:</span> ${htmlEscape(item.answer)}</div>` : ""}
+                ${item.explanation ? `<div class="mcq-explanation"><span class="manual-label">Explanation:</span> ${htmlEscape(item.explanation)}</div>` : ""}
+              </article>`).join("");
+  const faqHtml = faqs.length ? `<section class="panel">
+              <h2>FAQ</h2>
+              <div class="content-box">${faqs.map((item) => `<div class="content-section"><h2 class="sarkari-section-title">${htmlEscape(item.question)}</h2><p>${htmlEscape(item.answer)}</p></div>`).join("")}</div>
+            </section>` : "";
+  return `<h2>${htmlEscape(title)}</h2>
+            <div class="content-box">
+              ${intro ? `<p>${htmlEscape(intro)}</p>` : ""}
+              ${dateText ? `<table class="detail-table"><tbody><tr><th>Date</th><td>${htmlEscape(dateText)}</td></tr></tbody></table>` : ""}
+            </div>
+            <section class="panel">
+              <h2>Questions</h2>
+              <div class="content-box"><div class="mcq-list">${questionHtml}</div></div>
+            </section>
+            ${faqHtml}`;
 };
 
 const renderStaticPostHtml = (id = "", job = {}) => {
   const seo = buildSeoFields(job, id);
   const canonicalUrl = seo.canonicalUrl || jobUrl(id, { ...job, slug: seo.slug });
+  const currentAffairs = isCurrentAffairsPost(job);
   const summaryRows = [
     ["Department", job.department],
     ["Post Name", job.postName || seo.title],
@@ -217,7 +309,7 @@ const renderStaticPostHtml = (id = "", job = {}) => {
     ["Qualification", job.qualification],
     ["Location", job.location || job.jobLocation]
   ].filter(([, value]) => String(value || "").trim());
-  const fallbackHtml = `<h2>${htmlEscape(seo.title)}</h2>
+  const fallbackHtml = currentAffairs ? renderCurrentAffairsFallbackHtml(job, seo.title, seo.metaDescription) : `<h2>${htmlEscape(seo.title)}</h2>
             <div class="content-box">
               <p>${htmlEscape(seo.metaDescription)}</p>
               <table class="detail-table"><tbody>${summaryRows.map(([label, value]) => `<tr><th>${htmlEscape(label)}</th><td>${htmlEscape(value)}</td></tr>`).join("")}</tbody></table>
@@ -234,6 +326,7 @@ const renderStaticPostHtml = (id = "", job = {}) => {
     .replace(/<script type="application\/ld\+json" id="jobSchemaJsonLd">[\s\S]*?<\/script>/i, `<script type="application/ld+json" id="jobSchemaJsonLd">\n${JSON.stringify(buildSchemaGraph({ id, job, canonicalUrl }), null, 2)}\n</script>`)
     .replace(/<h1 id="jobTitle">[\s\S]*?<\/h1>/i, `<h1 id="jobTitle">${htmlEscape(seo.title)}</h1>`)
     .replace(/<p id="jobIntro">[\s\S]*?<\/p>/i, `<p id="jobIntro">${htmlEscape(seo.metaDescription)}</p>`)
+    .replace(/<aside class="detail-sidebar"/i, currentAffairs ? `<aside class="detail-sidebar" style="display:none;"` : `<aside class="detail-sidebar"`)
     .replace(/<section class="panel" id="seoFallbackPanel">[\s\S]*?<\/section>/i, `<section class="panel" id="seoFallbackPanel">\n          ${fallbackHtml}\n        </section>`);
 };
 
