@@ -51,9 +51,6 @@
       window.location.replace(canonical);
       return;
     }
-    if(!matchedSlug){
-      window.location.replace(window.location.origin + "/job-detail.html?slug=" + encodeURIComponent(requestedSlug) + "&fallback=1");
-    }
   }
 })();
 </script>
