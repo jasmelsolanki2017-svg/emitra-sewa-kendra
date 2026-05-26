@@ -2280,8 +2280,12 @@ font-size:26px;
     document.head.appendChild(script);
   };
   window.addEventListener('load', () => {
-    if('requestIdleCallback' in window){ requestIdleCallback(loadAds, { timeout: 3000 }); }
-    else { setTimeout(loadAds, 1500); }
+    const scheduleAds = () => {
+      if('requestIdleCallback' in window){ requestIdleCallback(loadAds, { timeout: 8000 }); }
+      else { setTimeout(loadAds, 5000); }
+    };
+    if('requestIdleCallback' in window){ requestIdleCallback(scheduleAds, { timeout: 5000 }); }
+    else { setTimeout(scheduleAds, 3000); }
   }, { once:true });
 })();
 </script>
@@ -3228,8 +3232,8 @@ const startWeather = () => {
 updateWeather();
 setInterval(updateWeather,10 * 60 * 1000);
 };
-if("requestIdleCallback" in window){ requestIdleCallback(startWeather, { timeout: 2500 }); }
-else { setTimeout(startWeather, 1200); }
+if("requestIdleCallback" in window){ requestIdleCallback(startWeather, { timeout: 8000 }); }
+else { setTimeout(startWeather, 5000); }
 }, { once:true });
 
 function calculateAge(){
@@ -3323,28 +3327,10 @@ tillCalendarInput.value = formatDateForInput(currentDate);
 }
 }
 
-function openAgeCalculator(){
-const modal = document.getElementById("ageModal");
-setDefaultAgeTillDate();
-modal.classList.add("open");
-setTimeout(()=>document.getElementById("ageDobText").focus(),50);
-}
-
-function closeAgeCalculator(){
-document.getElementById("ageModal").classList.remove("open");
-}
-
-function clearAgeCalculator(){
-document.getElementById("ageDobText").value = "";
-document.getElementById("ageDobCalendar").value = "";
-document.getElementById("ageTillText").value = "";
-document.getElementById("ageTillCalendar").value = "";
-document.getElementById("ageYears").innerText = "0";
-document.getElementById("ageMonths").innerText = "0";
-document.getElementById("ageDays").innerText = "0";
-document.getElementById("ageStatus").innerText = "";
-document.getElementById("ageDobText").focus();
-}
+let ageCalculatorEventsBound = false;
+function bindAgeCalculatorEvents(){
+if(ageCalculatorEventsBound){ return; }
+ageCalculatorEventsBound = true;
 
 document.getElementById("ageDobCalendar").addEventListener("change",(event)=>{
 const value = event.target.value;
@@ -3375,6 +3361,31 @@ if(event.target.id === "ageModal"){
 closeAgeCalculator();
 }
 });
+}
+
+function openAgeCalculator(){
+const modal = document.getElementById("ageModal");
+bindAgeCalculatorEvents();
+setDefaultAgeTillDate();
+modal.classList.add("open");
+setTimeout(()=>document.getElementById("ageDobText").focus(),50);
+}
+
+function closeAgeCalculator(){
+document.getElementById("ageModal").classList.remove("open");
+}
+
+function clearAgeCalculator(){
+document.getElementById("ageDobText").value = "";
+document.getElementById("ageDobCalendar").value = "";
+document.getElementById("ageTillText").value = "";
+document.getElementById("ageTillCalendar").value = "";
+document.getElementById("ageYears").innerText = "0";
+document.getElementById("ageMonths").innerText = "0";
+document.getElementById("ageDays").innerText = "0";
+document.getElementById("ageStatus").innerText = "";
+document.getElementById("ageDobText").focus();
+}
 
 function formatDateTyping(input){
 let value = input.replace(/\D/g,"").slice(0,8);
@@ -3517,34 +3528,6 @@ renderDocumentChecklist();
 
 <script>
 const initHomepageFirebase = async () => {
-const [appModule, authModule, dbModule] = await Promise.all([
-import("https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js"),
-import("https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js"),
-import("https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js")
-]);
-
-const { initializeApp } = appModule;
-const {
-getAuth,
-setPersistence,
-browserLocalPersistence,
-createUserWithEmailAndPassword,
-signInWithEmailAndPassword,
-sendEmailVerification,
-signOut,
-deleteUser
-} = authModule;
-
-const {
-getDatabase,
-ref,
-push,
-set,
-update,
-get,
-runTransaction
-} = dbModule;
-
 const firebaseConfig = {
 
 apiKey: "AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",
@@ -3563,11 +3546,39 @@ appId: "1:854088341990:web:3211d4ef9fe4b78d025e27"
 
 };
 
-const app = initializeApp(firebaseConfig);
+const firebaseDbBaseUrl = firebaseConfig.databaseURL.replace(/\/+$/,"");
+const firebaseRestUrl = (path) => `${firebaseDbBaseUrl}/${String(path || "").replace(/^\/+/,"")}.json`;
+const firebaseRestGet = async (path) => {
+const response = await fetch(firebaseRestUrl(path), { cache:"no-store" });
+if(!response.ok){ throw new Error(`Firebase ${response.status}`); }
+return response.json();
+};
+const firebaseRestSet = async (path, value) => {
+const response = await fetch(firebaseRestUrl(path), {
+method:"PUT",
+headers:{ "Content-Type":"application/json" },
+body:JSON.stringify(value)
+});
+if(!response.ok){ throw new Error(`Firebase ${response.status}`); }
+return response.json();
+};
 
-const auth = getAuth(app);
-
-const db = getDatabase(app);
+let firebaseAuthBundlePromise = null;
+const loadFirebaseAuthBundle = async () => {
+if(firebaseAuthBundlePromise){ return firebaseAuthBundlePromise; }
+firebaseAuthBundlePromise = Promise.all([
+import("https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js"),
+import("https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js"),
+import("https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js")
+]).then(([appModule, authModule, dbModule])=>{
+const app = appModule.initializeApp(firebaseConfig);
+const auth = authModule.getAuth(app);
+const db = dbModule.getDatabase(app);
+authModule.setPersistence(auth, authModule.browserLocalPersistence).catch(() => {});
+return { auth, db, authModule, dbModule };
+});
+return firebaseAuthBundlePromise;
+};
 
 const visitorStatsPath = "visitorStatsV2";
 const visitorDeviceKey = "emitraVisitorDeviceId";
@@ -3586,25 +3597,43 @@ return saved;
 const trackUniqueVisitor = async () => {
 try{
 const deviceId = getVisitorDeviceId();
-const deviceRef = ref(db, `${visitorStatsPath}/devices/${deviceId}`);
-const snapshot = await get(deviceRef);
-if(snapshot.exists()){ return; }
+const devicePath = `${visitorStatsPath}/devices/${deviceId}`;
+const existingDevice = await firebaseRestGet(devicePath);
+if(existingDevice){ return; }
 const now = Date.now();
-await set(deviceRef, {
+await firebaseRestSet(devicePath, {
 deviceId,
 firstSeenAt: now,
 lastSeenAt: now,
 page: location.pathname || "/",
 userAgent: navigator.userAgent.slice(0, 180)
 });
-await runTransaction(ref(db, `${visitorStatsPath}/total`), (current) => (Number(current) || 0) + 1);
+const currentTotal = await firebaseRestGet(`${visitorStatsPath}/total`).catch(() => 0);
+await firebaseRestSet(`${visitorStatsPath}/total`, (Number(currentTotal) || 0) + 1);
 }
 catch(error){
 console.warn("Visitor tracking skipped", error);
 }
 };
 
-trackUniqueVisitor();
+const scheduleDataTask = (task, timeout = 2500) => {
+const runTask = () => {
+try{
+task();
+}
+catch(error){
+console.warn("Homepage task skipped", error);
+}
+};
+if("requestIdleCallback" in window){
+requestIdleCallback(runTask, { timeout });
+}
+else{
+setTimeout(runTask, Math.min(timeout, 1600));
+}
+};
+
+scheduleDataTask(trackUniqueVisitor, 6000);
 
 const safeUrl = (value = "#") => {
 const url = String(value || "#").trim();
@@ -3643,8 +3672,6 @@ else{
 window.location.href = "user-dashboard.html";
 }
 };
-
-setPersistence(auth,browserLocalPersistence).catch(() => {});
 
 window.setAuthView = (view = "login", forceAdmin = currentLoginMode === "admin")=>{
 authPanelView = forceAdmin ? "login" : (view === "signup" ? "signup" : "login");
@@ -3693,6 +3720,13 @@ signupButton.style.display = isSignup ? "block" : "none";
 
 window.openLogin = (mode = "user")=>{
 currentLoginMode = mode === "admin" ? "admin" : "user";
+const isAdmin = currentLoginMode === "admin";
+
+window.setAuthView("login", isAdmin);
+
+document.getElementById("loginModal").style.display = "flex";
+
+loadFirebaseAuthBundle().then(({ auth })=>{
 const currentUser = auth.currentUser;
 
 if(currentLoginMode === "admin" && currentUser && currentUser.email === adminEmail){
@@ -3702,14 +3736,8 @@ return;
 
 if(currentLoginMode === "user" && currentUser && currentUser.email !== adminEmail && hasActiveUserSession()){
 redirectByRole(currentUser.email);
-return;
 }
-
-const isAdmin = currentLoginMode === "admin";
-
-window.setAuthView("login", isAdmin);
-
-document.getElementById("loginModal").style.display = "flex";
+}).catch((error)=>console.warn("Login module load skipped", error));
 };
 
 /* LOGIN */
@@ -3740,8 +3768,15 @@ return;
 }
 
 let createdUser = null;
+let signOutCreatedUser = null;
+let deleteCreatedUser = null;
 
 try{
+const { auth, db, authModule, dbModule } = await loadFirebaseAuthBundle();
+const { createUserWithEmailAndPassword, sendEmailVerification, signOut, deleteUser } = authModule;
+const { ref, set } = dbModule;
+signOutCreatedUser = () => signOut(auth);
+deleteCreatedUser = (user) => deleteUser(user);
 const userCredential = await createUserWithEmailAndPassword(auth,email,password);
 createdUser = userCredential.user;
 await sendEmailVerification(createdUser);
@@ -3768,8 +3803,8 @@ await signOut(auth);
 alert("Account create ho gaya. Email par verification link bheja gaya hai. Email verify karne ke baad login hoga.");
 }catch(error){
 if(createdUser){
-await deleteUser(createdUser).catch(() => {});
-await signOut(auth).catch(() => {});
+if(deleteCreatedUser){ await deleteCreatedUser(createdUser).catch(() => {}); }
+if(signOutCreatedUser){ await signOutCreatedUser().catch(() => {}); }
 }
 alert("Account create nahi hua: " + error.message);
 }
@@ -3804,6 +3839,9 @@ return;
 }
 
 try{
+const { auth, db, authModule, dbModule } = await loadFirebaseAuthBundle();
+const { signInWithEmailAndPassword, sendEmailVerification, signOut } = authModule;
+const { ref, get, update } = dbModule;
 const userCredential = await signInWithEmailAndPassword(auth,email,password);
 const userEmail = userCredential.user.email || email;
 const firebaseUser = userCredential.user;
@@ -3861,9 +3899,8 @@ menu.classList.remove("open");
 }
 });
 
-const linksRef = ref(db,"importantLinks");
-
-get(linksRef).then((snapshot)=>{
+scheduleDataTask(() => {
+firebaseRestGet("importantLinks").then((linksData)=>{
 
 const boxes = ["importantLinksMenuList","importantLinksList"]
 .map((id)=>document.getElementById(id))
@@ -3873,11 +3910,11 @@ boxes.forEach((box)=>{
 box.innerHTML = "";
 });
 
-if(snapshot.exists()){
+const linkRows = linksData && typeof linksData === "object" ? Object.values(linksData) : [];
 
-snapshot.forEach((childSnapshot)=>{
+if(linkRows.length){
 
-const data = childSnapshot.val();
+linkRows.forEach((data)=>{
 
 const a = document.createElement("a");
 
@@ -3912,6 +3949,7 @@ box.innerHTML = '<span style="color:#0057a8;font-weight:700;">अभी को�
 }
 
 });
+}, 1800);
 
 /* LATEST JOBS */
 
@@ -3982,9 +4020,6 @@ const orderDiff = getJobDisplayOrder(a) - getJobDisplayOrder(b);
 return orderDiff || Number(b.createdAt || 0) - Number(a.createdAt || 0);
 });
 
-const jobsRef = ref(db,"LatestJobs");
-const portalItemsRef = ref(db,"portalItems");
-
 const homePortalCategoryMap = {
 notification:"homePortalNotificationList",
 result:"homePortalResultList",
@@ -4048,19 +4083,18 @@ const canonicalPostHref = (id, job = {}) => `post/${encodeURIComponent(buildCano
 const portalItemHref = (item) => item && item.sourceJobId ? canonicalPostHref(item.sourceJobId, item) : safeUrl(item && item.url);
 const jobDetailHref = (id, job = {}) => canonicalPostHref(id, job);
 
-get(portalItemsRef).then((snapshot)=>{
+scheduleDataTask(() => {
+firebaseRestGet("portalItems").then((portalData)=>{
 Object.keys(homePortalCategoryMap).forEach((category)=>{
-const categorySnapshot = snapshot.child(category);
+const categoryItems = portalData && portalData[category] && typeof portalData[category] === "object" ? portalData[category] : {};
 const items = [];
 
-if(snapshot.exists() && categorySnapshot.exists()){
-categorySnapshot.forEach((child)=>{
-const item = child.val() || {};
+Object.values(categoryItems).forEach((item)=>{
+item = item || {};
 if(item.title){
 items.push(item);
 }
 });
-}
 
 sortPortalItems(items);
 renderHomePortalItems(category, items);
@@ -4073,19 +4107,21 @@ list.innerHTML = `<li class="home-portal-message">Data load nahi hua: ${escapeHT
 }
 });
 });
+}, 2300);
 
-get(jobsRef).then((snapshot)=>{
+scheduleDataTask(() => {
+firebaseRestGet("LatestJobs").then((jobsData)=>{
 const box = document.getElementById("homeJobList");
 const portalJobList = document.getElementById("homePortalJobList");
 const currentAffairsList = document.getElementById("homePortalCurrentAffairsList");
 const jobs = [];
 const currentAffairs = [];
 
-if(snapshot.exists()){
-snapshot.forEach((child)=>{
-const job = normalizeJob(child.val());
+if(jobsData && typeof jobsData === "object"){
+Object.entries(jobsData).forEach(([id, value])=>{
+const job = normalizeJob(value);
 if(isJobVisible(job)){
-const row = { id:child.key, job:job };
+const row = { id:id, job:job };
 if(isLatestJobTarget(job)){
 jobs.push(row);
 }
@@ -4153,10 +4189,10 @@ if(portalJobList){
 portalJobList.innerHTML = `<li class="home-portal-message">Jobs load nahi ho payi: ${escapeHTML(error.message)}</li>`;
 }
 });
+}, 2800);
 
 /* ADVERTISEMENT */
 
-const adsRef = ref(db,"advertisements");
 const adPhotoExtensions = ["jpeg","jpg","png","webp"];
 
 const cleanAdPhotoName = (value = "") => String(value).trim().replace(/\.[a-zA-Z0-9]+$/,"").replace(/[^a-zA-Z0-9_-]/g,"");
@@ -4179,18 +4215,18 @@ img.dataset.extIndex = String(currentIndex);
 img.src = adPhotoSrc(photoName,currentIndex);
 };
 
-get(adsRef).then((snapshot)=>{
+scheduleDataTask(() => {
+firebaseRestGet("advertisements").then((adsData)=>{
 const section = document.getElementById("advertisementSection");
 const box = document.getElementById("advertisementBox");
 const ads = [];
 
-if(snapshot.exists()){
-snapshot.forEach((child)=>{
-const value = child.val();
+if(adsData && typeof adsData === "object"){
+Object.entries(adsData).forEach(([id, value])=>{
 if(typeof value === "string"){
-ads.push({ id:child.key, title:value, createdAt:0 });
+ads.push({ id:id, title:value, createdAt:0 });
 } else if(value && typeof value === "object"){
-ads.push({ id:child.key, ...value });
+ads.push({ id:id, ...value });
 }
 });
 }
@@ -4233,29 +4269,29 @@ return `
 `;
 }).join("");
 });
+}, 3600);
 
 /* LATEST UPDATES */
 
-const updatesRef = ref(db,"latestUpdates");
 let latestNewsItems = [];
 
-const getUpdateRows = (snapshot) => {
+const getUpdateRows = (value) => {
 const rows = [];
-if(!snapshot.exists()){ return rows; }
+if(!value){ return rows; }
 
-const value = snapshot.val();
 if(value && typeof value === "object" && "text" in value){
 return [value];
 }
 
-snapshot.forEach((child)=>{
-const item = child.val();
+if(value && typeof value === "object"){
+Object.values(value).forEach((item)=>{
 if(typeof item === "string"){
 rows.push({ text:item, createdAt:0 });
 } else if(item && typeof item === "object"){
 rows.push(item);
 }
 });
+}
 
 return rows
 .filter((item)=>String(item.text || "").trim() !== "")
@@ -4327,14 +4363,15 @@ window.openNewsBox();
 }
 });
 
-get(updatesRef).then((snapshot)=>{
+scheduleDataTask(() => {
+firebaseRestGet("latestUpdates").then((updatesData)=>{
 
-latestNewsItems = getUpdateRows(snapshot).map((item)=>item.text);
+latestNewsItems = getUpdateRows(updatesData).map((item)=>item.text);
 
 renderNewsRows();
-renderNewsModal();
 
 });
+}, 3200);
 
 };
 
