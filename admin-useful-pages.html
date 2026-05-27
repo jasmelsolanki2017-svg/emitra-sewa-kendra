@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Useful Pages Manager | E-MITRA WALA</title>
+  <link rel="icon" type="image/png" sizes="512x512" href="favicon.png">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="shortcut icon" href="favicon.ico">
+  <link rel="apple-touch-icon" href="favicon.png">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins','Noto Sans Devanagari',sans-serif}
+    body{background:#f7fbff;color:#172033}.topbar{background:#043a76;color:white;padding:6px 3%;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:12px}
+    header{background:linear-gradient(135deg,#0057a8,#03224d);color:white;text-align:center;padding:16px 3%;border-bottom:3px solid #ff7a00}
+    header h1{color:#ff7a00;font-size:clamp(22px,4vw,32px)}
+    nav{background:white;padding:8px 3%;display:flex;gap:7px;flex-wrap:wrap;justify-content:center;box-shadow:0 3px 12px rgba(0,0,0,.08);position:sticky;top:0;z-index:10}
+    nav a,nav button{background:#0057a8;color:white;border:0;text-decoration:none;padding:7px 11px;border-radius:6px;font-weight:700;font-size:12px;cursor:pointer}
+    nav a:hover,nav button:hover{background:#ff7a00;color:#03224d}
+    main{max-width:1120px;margin:auto;padding:16px 3% 34px}.panel{background:white;border:1px solid #d8e6f5;border-top:3px solid #ff7a00;border-radius:7px;padding:12px;margin-bottom:14px;box-shadow:0 4px 14px rgba(0,0,0,.07)}
+    .admin-info{text-align:center;background:#eaf4ff;border-left:4px solid #ff7a00;border-top:0}.panel h2{color:#0057a8;font-size:18px;margin-bottom:8px}
+    .form{display:grid;grid-template-columns:1fr 1fr 110px 150px;gap:7px;align-items:start}.form input,.form textarea{width:100%;min-width:0;padding:9px 10px;border:1px solid #bdd0e5;border-radius:6px;font-size:12px}.form textarea{grid-column:1/3;min-height:70px;resize:vertical;line-height:1.45}
+    button{border:0;border-radius:6px;padding:8px 11px;font-size:12px;font-weight:800;cursor:pointer;background:#0057a8;color:white}.delete{background:#d90000}.edit{background:#ff7a00;color:#03224d}.hide-btn,.cancel{background:#555}.cancel{display:none}
+    .status{font-weight:800;color:#0057a8;margin-top:8px;font-size:12px}.list-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}.count-pill{background:#eaf4ff;color:#0057a8;border:1px solid #bdd0e5;border-radius:999px;padding:5px 10px;font-size:12px;font-weight:800}
+    .pages-list{display:grid;gap:8px}.page-card{background:#eaf4ff;border:1px solid #d8e6f5;border-left:4px solid #0057a8;border-radius:7px;padding:10px;display:grid;grid-template-columns:52px minmax(0,1fr) 250px;gap:10px;align-items:center}.page-card.is-hidden{opacity:.72;border-left-color:#555}
+    .serial{display:inline-flex;align-items:center;justify-content:center;width:36px;height:28px;border-radius:6px;background:#0057a8;color:white;font-weight:800;font-size:12px}.page-card h3{color:#0057a8;font-size:14px;line-height:1.35}.page-card small{display:block;color:#4d5d72;font-size:11px;overflow-wrap:anywhere}.badge{display:inline-block;background:white;border:1px solid #bdd0e5;border-radius:999px;color:#0057a8;font-size:10px;font-weight:900;padding:2px 7px;margin-top:4px}.actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}.empty{padding:18px;text-align:center;color:#55657a;font-weight:700}
+    @media(max-width:760px){.form{grid-template-columns:1fr}.form textarea{grid-column:auto}.page-card{grid-template-columns:42px minmax(0,1fr)}.actions{grid-column:1/-1;grid-template-columns:1fr 1fr 1fr}nav{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap}nav a,nav button{white-space:nowrap}}
+  </style>
+</head>
+<body>
+  <div class="topbar"><div>Useful Pages Manager</div><div id="liveTime">Loading...</div></div>
+  <header><h1>Useful Pages Manager</h1><p>Useful Content Pages ke cards yahan se live add/edit/hide/delete karein.</p></header>
+  <nav><a href="dashboard.html">Dashboard</a><a href="admin-links.html">Important Links</a><a href="admin-updates.html">Latest Updates</a><a href="admin-jobs.html">Latest Jobs</a><a href="admin-services.html">Services</a><a href="useful-pages.html">Useful Pages</a><button onclick="logoutUser()">Logout</button></nav>
+  <main>
+    <section class="panel admin-info"><h2 id="accessTitle">Admin Access Checking...</h2><p id="adminEmailText">Please wait...</p></section>
+    <section class="panel">
+      <h2 id="formTitle">Add Useful Page</h2>
+      <div class="form">
+        <input id="pageTitle" placeholder="Title jaise आय प्रमाण पत्र">
+        <input id="pageUrl" placeholder="Page URL jaise income-certificate.html">
+        <input id="pageOrder" inputmode="numeric" placeholder="Order No">
+        <button id="savePageBtn" onclick="saveUsefulPage()">Add Page</button>
+        <textarea id="pageDescription" placeholder="Short description yahan likhen."></textarea>
+        <button class="cancel" id="cancelEditBtn" type="button" onclick="cancelUsefulEdit()">Cancel Edit</button>
+      </div>
+      <div id="pageStatus" class="status"></div>
+      <button type="button" style="margin-top:10px;background:#ff7a00;color:#03224d" onclick="seedDefaultUsefulPages()">Import Default Cards</button>
+    </section>
+    <section class="panel">
+      <div class="list-head"><h2>Saved Useful Pages</h2><span class="count-pill">Total: <span id="pagesCount">0</span></span></div>
+      <div id="listStatus" class="status">Loading useful pages...</div>
+      <div id="adminPagesList" class="pages-list"><div class="empty">Loading...</div></div>
+    </section>
+  </main>
+  <script>function updateLiveTime(){liveTime.innerText=new Date().toLocaleString("hi-IN")}updateLiveTime();setInterval(updateLiveTime,1000)</script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+    import { getAuth,onAuthStateChanged,signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+    import { getDatabase,ref,push,set,update,remove,onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+    const firebaseConfig={apiKey:"AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",authDomain:"my-website-73785.firebaseapp.com",databaseURL:"https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app/",projectId:"my-website-73785",storageBucket:"my-website-73785.firebasestorage.app",messagingSenderId:"854088341990",appId:"1:854088341990:web:3211d4ef9fe4b78d025e27"};
+    const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getDatabase(app),adminEmail="jasmelsolanki@gmail.com",pagesRef=ref(db,"usefulContentPages");
+    let adminAllowed=false,editingPageId="",pagesCache={};
+    const $=(id)=>document.getElementById(id);
+    const accessTitle=$("accessTitle"),adminEmailText=$("adminEmailText"),pageTitle=$("pageTitle"),pageUrl=$("pageUrl"),pageOrder=$("pageOrder"),pageDescription=$("pageDescription"),pageStatus=$("pageStatus"),adminPagesList=$("adminPagesList"),pagesCount=$("pagesCount"),listStatus=$("listStatus"),savePageBtn=$("savePageBtn"),cancelEditBtn=$("cancelEditBtn"),formTitle=$("formTitle");
+    const defaultPages=[
+      {title:"आय प्रमाण पत्र",url:"income-certificate.html",description:"Income certificate students, scholarship, schemes aur government services ke liye kaam aata hai."},
+      {title:"जाति प्रमाण पत्र",url:"caste-certificate.html",description:"Caste certificate reservation, scholarship, admission aur government forms me use hota hai."},
+      {title:"मूल निवास प्रमाण पत्र",url:"domicile-certificate.html",description:"Domicile certificate Rajasthan residence proof ke liye important document hai."},
+      {title:"EWS प्रमाण पत्र",url:"ews-certificate.html",description:"EWS certificate economically weaker section category ke benefits ke liye required ho sakta hai."},
+      {title:"राशन कार्ड",url:"ration-card.html",description:"Ration card family identity, food security aur address proof me useful hota hai."},
+      {title:"जन आधार",url:"jan-aadhaar.html",description:"Jan Aadhaar Rajasthan family services, schemes aur e-Mitra work ke liye central identity document hai."},
+      {title:"आधार अपडेट",url:"aadhaar-update.html",description:"Aadhaar me mobile, address, name ya DOB correction ke liye proper proof documents zaruri hote hain."},
+      {title:"पैन कार्ड",url:"pan-card.html",description:"PAN card banking, tax, scholarship aur financial work ke liye important hai."},
+      {title:"वोटर आईडी",url:"voter-id.html",description:"Voter ID new registration, correction aur address change ke liye use hota hai."},
+      {title:"पेंशन फॉर्म",url:"pension-form.html",description:"Old age, widow, disability pension ke liye documents clear hone chahiye."},
+      {title:"जन्म प्रमाण पत्र",url:"birth-certificate.html",description:"Birth certificate school admission, Aadhaar, passport aur government records ke liye useful hai."},
+      {title:"मृत्यु प्रमाण पत्र",url:"death-certificate.html",description:"Death certificate legal, bank, pension aur family record work ke liye required hota hai."},
+      {title:"विवाह प्रमाण पत्र",url:"marriage-certificate.html",description:"Marriage certificate legal proof, passport, bank aur family services me kaam aata hai."},
+      {title:"छात्रवृत्ति फॉर्म",url:"scholarship-form.html",description:"Scholarship forms me documents, bank details aur certificates sahi hone chahiye."},
+      {title:"Resume Format",url:"resume-format.html",description:"Details fill karke print-ready resume banaye aur PDF save karein."},
+      {title:"Invoice Generator",url:"invoice-generator.html",description:"Blank invoice me shop, customer, items aur tax fill karke 5 formats me PDF/print bill banayein."},
+      {title:"सरकारी नौकरी फॉर्म",url:"government-job-form.html",description:"Job form apply karte time dates, qualification, photo, signature aur fees ka dhyan rakhein."},
+      {title:"ड्राइविंग लाइसेंस",url:"driving-license.html",description:"Learner aur driving license ke liye identity, address aur age proof documents chahiye."},
+      {title:"पासपोर्ट सहायता",url:"passport-help.html",description:"Passport application me identity, address aur police verification details important hoti hain."},
+      {title:"पुलिस सत्यापन",url:"police-verification.html",description:"Character, tenant, servant aur private verification forms ke liye identity proof ready rakhein."}
+    ];
+    const escapeHTML=(v="")=>String(v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+    const safeHref=(value="#")=>{const text=String(value||"").trim();return /^https?:\/\//i.test(text)||/^[a-z0-9][a-z0-9_-]*\.html(?:[#?][^"'<>]*)?$/i.test(text)||/^#[-\w]+$/.test(text)?text:"#"};
+    const cleanOrder=(value)=>{const n=Number(String(value||"").replace(/[^\d]/g,""));return n>0?n:""};
+    const slugKey=(value="")=>String(value||"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,80)||`page-${Date.now()}`;
+    const formatDate=(v)=>v?new Date(Number(v)).toLocaleString("hi-IN"):"Not available";
+    const resetForm=()=>{editingPageId="";pageTitle.value="";pageUrl.value="";pageOrder.value="";pageDescription.value="";savePageBtn.innerText="Add Page";cancelEditBtn.style.display="none";formTitle.innerText="Add Useful Page"};
+    onAuthStateChanged(auth,(user)=>{if(user&&user.email===adminEmail){adminAllowed=true;accessTitle.innerText="Admin Access Verified";adminEmailText.innerText=user.email}else{location.href="index.html"}});
+    window.saveUsefulPage=()=>{if(!adminAllowed){alert("Admin verify nahi hua.");return}const title=pageTitle.value.trim(),url=pageUrl.value.trim(),description=pageDescription.value.trim(),displayOrder=cleanOrder(pageOrder.value);if(!title||!url){alert("Title aur URL dono bharen.");return}if(safeHref(url)==="#"){alert("URL valid page.html ya https:// se start hona chahiye.");return}pageStatus.innerText=editingPageId?"Updating...":"Saving...";const data={title,url,description,displayOrder,status:"published",updatedAt:Date.now()};const task=editingPageId?update(ref(db,`usefulContentPages/${editingPageId}`),data):set(push(pagesRef),{...data,createdAt:Date.now()});task.then(()=>{pageStatus.innerText=editingPageId?"Useful page updated.":"Useful page added.";resetForm()}).catch((e)=>pageStatus.innerText="Save error: "+e.message)};
+    window.editUsefulPage=(id)=>{if(!adminAllowed){alert("Admin verify nahi hua.");return}const data=pagesCache[id];if(!data){alert("Page data nahi mila.");return}editingPageId=id;pageTitle.value=data.title||"";pageUrl.value=data.url||"";pageOrder.value=data.displayOrder||"";pageDescription.value=data.description||"";savePageBtn.innerText="Update";cancelEditBtn.style.display="block";formTitle.innerText="Edit Useful Page";pageStatus.innerText="Edit mode active.";scrollTo({top:0,behavior:"smooth"})};
+    window.cancelUsefulEdit=()=>resetForm();
+    window.toggleUsefulPage=(id)=>{if(!adminAllowed){alert("Admin verify nahi hua.");return}const data=pagesCache[id];if(!data){alert("Page data nahi mila.");return}const next=String(data.status||"published").toLowerCase()==="draft"?"published":"draft";update(ref(db,`usefulContentPages/${id}`),{status:next,updatedAt:Date.now()}).then(()=>pageStatus.innerText=next==="draft"?"Page hide ho gayi.":"Page publish ho gayi.").catch((e)=>pageStatus.innerText="Status error: "+e.message)};
+    window.deleteUsefulPage=(id)=>{if(!adminAllowed){alert("Admin verify nahi hua.");return}if(confirm("Ye useful page delete karna hai?"))remove(ref(db,`usefulContentPages/${id}`)).catch((e)=>pageStatus.innerText="Delete error: "+e.message)};
+    window.seedDefaultUsefulPages=async()=>{if(!adminAllowed){alert("Admin verify nahi hua.");return}if(!confirm("Default Useful Pages Firebase me import/update karne hain?"))return;pageStatus.innerText="Default cards import ho rahe hain...";try{const tasks=defaultPages.map((item,index)=>set(ref(db,`usefulContentPages/${slugKey(item.url)}`),{...item,displayOrder:index+1,status:"published",updatedAt:Date.now(),createdAt:pagesCache[slugKey(item.url)]?.createdAt||Date.now()}));await Promise.all(tasks);pageStatus.innerText=`${defaultPages.length} default useful pages import/update ho gayi.`}catch(error){pageStatus.innerText="Import error: "+error.message}};
+    onValue(pagesRef,(snapshot)=>{const rows=[];pagesCache={};if(snapshot.exists()){snapshot.forEach((child)=>{const data=child.val()||{};if(String(data.title||"").trim()){const row={id:child.key,...data};rows.push(row);pagesCache[child.key]=row}})}rows.sort((a,b)=>Number(a.displayOrder||9999)-Number(b.displayOrder||9999)||Number(b.createdAt||0)-Number(a.createdAt||0));pagesCount.innerText=rows.length;listStatus.innerText=`Firebase se ${rows.length} useful page load hui.`;adminPagesList.innerHTML=rows.length?rows.map((data,index)=>{const hidden=String(data.status||"published").toLowerCase()==="draft";return `<article class="page-card ${hidden?"is-hidden":""}"><span class="serial">${escapeHTML(data.displayOrder||index+1)}</span><div><h3>${escapeHTML(data.title||"Useful Page")}</h3><small>${escapeHTML(data.description||"")}</small><small>URL: <a href="${safeHref(data.url)}" target="_blank" rel="noopener noreferrer">${escapeHTML(data.url||"#")}</a></small><small>Updated: ${escapeHTML(formatDate(data.updatedAt||data.createdAt))}</small><span class="badge">${hidden?"Hidden":"Published"}</span></div><div class="actions"><button class="edit" onclick="editUsefulPage('${data.id}')">Edit</button><button class="hide-btn" onclick="toggleUsefulPage('${data.id}')">${hidden?"Publish":"Hide"}</button><button class="delete" onclick="deleteUsefulPage('${data.id}')">Delete</button></div></article>`}).join(""):'<div class="empty">Abhi koi useful page Firebase me save nahi hai. Import Default Cards dabayein.</div>'},(error)=>{listStatus.innerText="Useful pages load nahi hui: "+error.message;adminPagesList.innerHTML='<div class="empty">Firebase load error.</div>'});
+    window.logoutUser=()=>signOut(auth).then(()=>location.href="index.html");
+  </script>
+</body>
+</html>

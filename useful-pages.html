@@ -275,7 +275,7 @@ body.dark-mode .nav-logo img {
 <main>
 <section class="panel"><h2>Free Tools</h2><p>Daily e-Mitra work ke liye ready tools yahan se open karein.</p><p><a class="cta" href="invoice-generator.html">Invoice Generator</a><a class="cta" href="resume-format.html">Resume Builder</a><a class="cta" href="OFFLINEFORM.HTML">PDF Forms</a><a class="cta alt" href="index.html#documentHelp">Document Checklist</a></p></section>
 <section class="panel"><h2>Useful Content Pages</h2><p>Yahan common e-Mitra, certificate, form aur government service guides diye gaye hain. Har page mobile-friendly hai aur related documents/process explain karta hai.</p></section>
-<section class="grid"><a class="card" href="income-certificate.html"><strong>आय प्रमाण पत्र</strong><span>Income certificate students, scholarship, schemes aur government services ke liye kaam aata hai.</span></a>
+<section class="grid" id="usefulPagesGrid"><a class="card" href="income-certificate.html"><strong>आय प्रमाण पत्र</strong><span>Income certificate students, scholarship, schemes aur government services ke liye kaam aata hai.</span></a>
 <a class="card" href="caste-certificate.html"><strong>जाति प्रमाण पत्र</strong><span>Caste certificate reservation, scholarship, admission aur government forms me use hota hai.</span></a>
 <a class="card" href="domicile-certificate.html"><strong>मूल निवास प्रमाण पत्र</strong><span>Domicile certificate Rajasthan residence proof ke liye important document hai.</span></a>
 <a class="card" href="ews-certificate.html"><strong>EWS प्रमाण पत्र</strong><span>EWS certificate economically weaker section category ke benefits ke liye required ho sakta hai.</span></a>
@@ -299,6 +299,35 @@ body.dark-mode .nav-logo img {
 </main>
 <a class="whatsapp" target="_blank" rel="noopener noreferrer" href="https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q"><i class="fa-brands fa-whatsapp"></i></a>
 <footer><p>© 2026 E-MITRA WALA | Rajasthan Digital Service Help</p><p><a href="privacy-policy.html">Privacy Policy</a><a href="about.html">About</a><a href="contact.html">Contact</a><a href="disclaimer.html">Disclaimer</a><a href="terms-and-conditions.html">Terms & Conditions</a></p></footer>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+const firebaseConfig={apiKey:"AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",authDomain:"my-website-73785.firebaseapp.com",databaseURL:"https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app/",projectId:"my-website-73785",storageBucket:"my-website-73785.firebasestorage.app",messagingSenderId:"854088341990",appId:"1:854088341990:web:3211d4ef9fe4b78d025e27"};
+const app=initializeApp(firebaseConfig),db=getDatabase(app),grid=document.getElementById("usefulPagesGrid");
+const escapeHTML=(v="")=>String(v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+const safeHref=(value="#")=>{
+  const text=String(value||"").trim();
+  if(/^https?:\/\//i.test(text)||/^[a-z0-9][a-z0-9_-]*\.html(?:[#?][^"'<>]*)?$/i.test(text)||/^#[-\w]+$/.test(text)) return text;
+  return "#";
+};
+const normalizeRow=(id,item)=>typeof item==="string"?{id,title:item,description:"",url:"#"}:{id,...(item&&typeof item==="object"?item:{})};
+onValue(ref(db,"usefulContentPages"),(snapshot)=>{
+  if(!grid||!snapshot.exists()) return;
+  const rows=[];
+  snapshot.forEach((child)=>{
+    const data=normalizeRow(child.key,child.val());
+    if(String(data.status||"published").toLowerCase()==="draft") return;
+    if(!String(data.title||"").trim()) return;
+    rows.push(data);
+  });
+  rows.sort((a,b)=>Number(a.displayOrder||9999)-Number(b.displayOrder||9999)||Number(b.createdAt||0)-Number(a.createdAt||0));
+  if(!rows.length){
+    grid.innerHTML='<div class="panel"><h2>No useful pages published</h2><p>Admin se useful content pages publish hone ke baad yahan show hongi.</p></div>';
+    return;
+  }
+  grid.innerHTML=rows.map((item)=>`<a class="card" href="${safeHref(item.url)}"><strong>${escapeHTML(item.title||"Useful Page")}</strong><span>${escapeHTML(item.description||"Useful guide page")}</span></a>`).join("");
+});
+</script>
 <button class="theme-toggle" type="button" aria-label="Toggle dark mode" title="Dark mode" onclick="toggleDarkMode()"><span class="theme-symbol" aria-hidden="true">☾</span></button>
 <script id="emitra-theme-js">
 (function(){

@@ -46,6 +46,11 @@
       ".write": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'"
     },
 
+    "usefulContentPages": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'"
+    },
+
     "mockTests": {
       ".read": true,
       ".write": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'",

@@ -431,9 +431,9 @@ const buildHomeFallbackHtml = (rows = []) => {
   if (!topRows.length) {
     return `    <article class="home-job-card">
       <span>Latest Jobs</span>
-      <h3><a href="job-form.html">Latest government job updates</a></h3>
+      <h3><a href="job-form.html" target="_blank" rel="noopener noreferrer">Latest government job updates</a></h3>
       <p>Latest online form, admit card, result aur answer key updates yahan milenge.</p>
-      <a href="job-form.html">View Details</a>
+      <a href="job-form.html" target="_blank" rel="noopener noreferrer">View Details</a>
     </article>`;
   }
   return topRows.map(({ id, job }) => {
@@ -442,10 +442,10 @@ const buildHomeFallbackHtml = (rows = []) => {
     const location = job.location || job.jobLocation || "All India";
     return `    <article class="home-job-card">
       <span>${htmlEscape(job.type || "Online Form")}</span>
-      <h3><a href="${htmlEscape(url)}">${htmlEscape(job.title || job.text || "Job Update")}</a></h3>
+      <h3><a href="${htmlEscape(url)}" target="_blank" rel="noopener noreferrer">${htmlEscape(job.title || job.text || "Job Update")}</a></h3>
       <p>Last Date: <span class="last-date">${htmlEscape(lastDate)}</span></p>
       <p>Location: ${htmlEscape(location)}</p>
-      <a href="${htmlEscape(url)}">View Details</a>
+      <a href="${htmlEscape(url)}" target="_blank" rel="noopener noreferrer">View Details</a>
     </article>`;
   }).join("\n");
 };
