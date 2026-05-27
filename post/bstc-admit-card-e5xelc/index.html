@@ -1378,9 +1378,12 @@ const renderJobDetail = (jobId, rawJob) => {
       { label:"Application Start Date", value:job.startDate },
       { label:"Last Date Apply Online", value:job.lastApplyDate || job.lastDate, className:"danger-date" },
       { label:"Last Date Fee Payment", value:job.lastFeeDate },
-      { label:"Exam Date", value:job.examDate },
+      { label:"Tier I / Main Exam Date", value:job.examDate },
+      { label:"Exam City Available", value:job.examCityDate },
       { label:"Admit Card Date", value:job.admitCardDate },
-      { label:"Result Date", value:job.resultDate }
+      { label:"Answer Key Available", value:job.answerKeyDate },
+      { label:"Result Date", value:job.resultDate },
+      { label:"Tier II / Second Exam Date", value:job.tierTwoExamDate || job.tier2ExamDate }
     ]);
     const importantHeading = document.querySelector("#importantPanel h2");
     if(importantHeading){ importantHeading.textContent = "Important Dates"; }
@@ -1404,6 +1407,12 @@ const renderJobDetail = (jobId, rawJob) => {
       { label:"OBC Female Fee", value:job.obcFemaleFee },
       { label:"SC Female Fee", value:job.scFemaleFee },
       { label:"PH Candidate Fee", value:job.phCandidateFee || job.onlyFemaleFee },
+      { label:"STA B General / OBC / EWS", value:job.staBGeneralFee },
+      { label:"STA B SC / ST / PH / Female", value:job.staBScStFemaleFee },
+      { label:"STA B Refund Fee", value:job.staBRefundFee },
+      { label:"Tech A General / OBC / EWS", value:job.techAGeneralFee },
+      { label:"Tech A SC / ST / PH / Female", value:job.techAScStFemaleFee },
+      { label:"Tech A Refund Fee", value:job.techARefundFee },
       { label:"Single Exam Fee", value:job.singleExamFee || job.oneExamFee },
       { label:"Both Exam Fee", value:job.bothExamFee || job.combinedExamFee || job.twoExamFee },
       { label:"Payment Mode", value:job.paymentMode }
@@ -1455,15 +1464,23 @@ const renderJobDetail = (jobId, rawJob) => {
     });
     const hasLinksManual = renderManualContent("linksManual", "linksPanel", job.importantLinksManual, "Other Important Links");
     const nestedImportant = Array.isArray(job.importantLinks) ? job.importantLinks : [];
+    const primaryVisibleLinks = linkButtons.map((item) => ({ label:item.label, url:safeUrl(item.url) })).filter((item) => item.url && item.url !== "#");
+    const primaryLinkKeys = new Set(primaryVisibleLinks.map((item) => `${String(item.label || "").trim().toLowerCase()}|${item.url}`));
+    const primaryUrls = new Set(primaryVisibleLinks.map((item) => item.url));
+    const extraImportantLinks = nestedImportant.filter((item) => {
+      if(!item || !item.label || !item.url) return false;
+      const url = safeUrl(item.url);
+      return !primaryUrls.has(url) && !primaryLinkKeys.has(`${String(item.label || "").trim().toLowerCase()}|${url}`);
+    });
     let hasNestedImportant = false;
-    if(nestedImportant.length && !hasPostApplyLinks){
-      const nestedLinksHtml = nestedImportant.filter((item) => item && item.label && item.url).map((item) => `<a class="btn" href="${safeUrl(item.url)}" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-link"></i> ${escapeHTML(item.label)}</a>`).join("");
+    if(extraImportantLinks.length && !hasPostApplyLinks){
+      const nestedLinksHtml = extraImportantLinks.map((item) => `<a class="btn" href="${safeUrl(item.url)}" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-link"></i> ${escapeHTML(item.label)}</a>`).join("");
       document.getElementById("postApplyLinks").innerHTML = nestedLinksHtml;
       hasNestedImportant = Boolean(nestedLinksHtml);
     }
     renderSidebarLinks([
       ...linkButtons,
-      ...nestedImportant.map((item) => ({ label:item.label || "Important Link", url:item.url, icon:"fa-solid fa-link" }))
+      ...extraImportantLinks.map((item) => ({ label:item.label || "Important Link", url:item.url, icon:"fa-solid fa-link" }))
     ]);
     document.getElementById("linksPanel").style.display = hasLink || hasPostApplyLinks || hasLinksManual || hasNestedImportant ? "block" : "none";
 

@@ -465,7 +465,7 @@ const updateIndexFallback = (rows = []) => {
 };
 
 const updateStaticPostPages = (rows = []) => {
-  fs.rmSync(POST_ROOT, { recursive: true, force: true });
+  fs.mkdirSync(POST_ROOT, { recursive: true });
   rows.forEach(({ id, job }) => {
     const seo = buildSeoFields(job, id);
     const dir = path.join(POST_ROOT, seo.slug);
