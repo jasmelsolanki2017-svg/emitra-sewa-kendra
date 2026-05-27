@@ -1071,6 +1071,36 @@ const renderMcqSection = (job = {}) => {
   mcqPanel.style.display = "block";
 };
 
+const normalizeCurrentAffairsNewsItems = (job = {}) => {
+  const article = job.advancedArticleData && typeof job.advancedArticleData === "object" ? job.advancedArticleData : {};
+  const content = job.content && typeof job.content === "object" ? job.content : (article.content && typeof article.content === "object" ? article.content : {});
+  const raw = Array.isArray(job.news) ? job.news
+    : Array.isArray(article.news) ? article.news
+      : Array.isArray(content.news) ? content.news
+        : Array.isArray(job["समाचार"]) ? job["समाचार"]
+          : Array.isArray(job.currentAffairsData?.["समाचार"]) ? job.currentAffairsData["समाचार"]
+            : Array.isArray(job.currentAffairsData?.news) ? job.currentAffairsData.news : [];
+  return raw.map((item) => {
+    if(!item || typeof item !== "object"){ return null; }
+    const importance = String(item["महत्व"] || item.importance || item.importanceLevel || "").trim();
+    const title = String(item["शीर्षक"] || item.title || item.heading || item.headline || "").trim();
+    const category = String(item["श्रेणी"] || item.category || item.topic || "").trim();
+    const summary = String(item["सारांश"] || item.summary || item.description || item.content || item.text || "").trim();
+    const source = String(item["स्रोत"] || item.source || "").trim();
+    return title || summary ? { importance, title, category, summary, source } : null;
+  }).filter(Boolean);
+};
+
+const renderCurrentAffairsNewsHtml = (items = []) => items.map((item, index) => `
+  <div class="content-section">
+    <h2 class="sarkari-section-title">${escapeHTML(item.title || `Current Affairs ${index + 1}`)}</h2>
+    ${item.importance ? `<p><strong class="manual-label">महत्व:</strong> ${renderFormattedText(item.importance)}</p>` : ""}
+    ${item.category ? `<p><strong class="manual-label">श्रेणी:</strong> ${renderFormattedText(item.category)}</p>` : ""}
+    ${item.summary ? `<p>${renderFormattedText(item.summary)}</p>` : ""}
+    ${item.source ? `<p><strong class="manual-label">स्रोत:</strong> ${renderFormattedText(item.source)}</p>` : ""}
+  </div>
+`).join("");
+
 const hidePanels = (ids = []) => ids.forEach((id) => {
   const panel = document.getElementById(id);
   if(panel){ panel.style.display = "none"; }
@@ -1078,7 +1108,9 @@ const hidePanels = (ids = []) => ids.forEach((id) => {
 
 const renderCurrentAffairsDetail = ({ jobId = "", job = {}, title = "", description = "", canonicalUrl = "" }) => {
   const introText = Array.isArray(job.intro) ? job.intro.map((item) => String(item || "").trim()).filter(Boolean).join("\n\n") : "";
-  const dateText = job.postDate || job.date || job.content?.date || job.createdAt || "";
+  const dateText = job.postDate || job.date || job.content?.date || job["तारीख"] || job.currentAffairsData?.["तारीख"] || "";
+  const categoryText = job.category || job.content?.category || job["श्रेणी"] || job.currentAffairsData?.["श्रेणी"] || "";
+  const newsItems = normalizeCurrentAffairsNewsItems(job);
   document.getElementById("jobType").textContent = "Current Affairs";
   document.getElementById("jobTitle").textContent = title;
   document.getElementById("jobIntro").innerHTML = renderFormattedText(introText || description || title);
@@ -1092,17 +1124,31 @@ const renderCurrentAffairsDetail = ({ jobId = "", job = {}, title = "", descript
   hidePanels([
     "featurePanel", "jobInfoPanel", "feePanel", "agePanel", "vacancyPanel",
     "eligibilityPanel", "selectionPanel", "applyProcessPanel", "extraPanel",
-    "linksPanel", "pageContentPanel", "communityPanel"
+    "linksPanel", "communityPanel"
   ]);
   renderTextBlock("shortInfoContent", "shortInfoPanel", introText);
   const importantPanel = document.getElementById("importantPanel");
   const importantHeading = importantPanel ? importantPanel.querySelector("h2") : null;
   if(importantHeading){ importantHeading.textContent = "Date"; }
   renderList("importantList", "importantPanel", [
-    { label:"Date", value:dateText }
+    { label:"Date", value:dateText },
+    { label:"Category", value:categoryText },
+    { label:"News Updates", value:newsItems.length ? `${newsItems.length}` : "" }
   ]);
   const importantManual = document.getElementById("importantManual");
   if(importantManual){ importantManual.innerHTML = ""; }
+  const contentPanel = document.getElementById("pageContentPanel");
+  const contentHeading = contentPanel ? contentPanel.querySelector("h2") : null;
+  const contentBox = document.getElementById("pageContent");
+  if(newsItems.length && contentPanel && contentBox){
+    if(contentHeading){ contentHeading.textContent = "समाचार"; }
+    contentBox.classList.remove("empty");
+    contentBox.innerHTML = renderCurrentAffairsNewsHtml(newsItems);
+    contentPanel.style.display = "block";
+  }else if(contentPanel && contentBox){
+    contentBox.innerHTML = "";
+    contentPanel.style.display = "none";
+  }
   const mcqHeading = document.querySelector("#mcqPanel h2");
   if(mcqHeading){ mcqHeading.textContent = "Questions"; }
   renderMcqSection(job);

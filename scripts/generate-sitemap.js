@@ -270,9 +270,39 @@ const getCurrentAffairsIntro = (job = {}, description = "") => {
   return intro.map((item) => String(item || "").trim()).filter(Boolean).join("\n\n") || String(job.shortInfo || description || "").trim();
 };
 
+const getCurrentAffairsNewsItems = (job = {}) => {
+  const article = job.advancedArticleData && typeof job.advancedArticleData === "object" ? job.advancedArticleData : {};
+  const content = job.content && typeof job.content === "object" ? job.content : (article.content && typeof article.content === "object" ? article.content : {});
+  const raw = Array.isArray(job.news) ? job.news
+    : Array.isArray(article.news) ? article.news
+      : Array.isArray(content.news) ? content.news
+        : Array.isArray(job["समाचार"]) ? job["समाचार"]
+          : Array.isArray(job.currentAffairsData?.["समाचार"]) ? job.currentAffairsData["समाचार"]
+            : Array.isArray(job.currentAffairsData?.news) ? job.currentAffairsData.news : [];
+  return raw.map((item) => {
+    if (!item || typeof item !== "object") return null;
+    const importance = String(item["महत्व"] || item.importance || item.importanceLevel || "").trim();
+    const title = String(item["शीर्षक"] || item.title || item.heading || item.headline || "").trim();
+    const category = String(item["श्रेणी"] || item.category || item.topic || "").trim();
+    const summary = String(item["सारांश"] || item.summary || item.description || item.content || item.text || "").trim();
+    const source = String(item["स्रोत"] || item.source || "").trim();
+    return title || summary ? { importance, title, category, summary, source } : null;
+  }).filter(Boolean);
+};
+
+const renderCurrentAffairsNewsHtml = (items = []) => items.map((item, index) => `<div class="content-section">
+                <h2 class="sarkari-section-title">${htmlEscape(item.title || `Current Affairs ${index + 1}`)}</h2>
+                ${item.importance ? `<p><strong class="manual-label">महत्व:</strong> ${htmlEscape(item.importance)}</p>` : ""}
+                ${item.category ? `<p><strong class="manual-label">श्रेणी:</strong> ${htmlEscape(item.category)}</p>` : ""}
+                ${item.summary ? `<p>${htmlEscape(item.summary)}</p>` : ""}
+                ${item.source ? `<p><strong class="manual-label">स्रोत:</strong> ${htmlEscape(item.source)}</p>` : ""}
+              </div>`).join("");
+
 const renderCurrentAffairsFallbackHtml = (job = {}, title = "Current Affairs", description = "") => {
   const intro = getCurrentAffairsIntro(job, description);
-  const dateText = String(job.postDate || job.date || job.content?.date || job.createdAt || "").trim();
+  const dateText = String(job.postDate || job.date || job.content?.date || job["तारीख"] || job.currentAffairsData?.["तारीख"] || "").trim();
+  const categoryText = String(job.category || job.content?.category || job["श्रेणी"] || job.currentAffairsData?.["श्रेणी"] || "").trim();
+  const newsItems = getCurrentAffairsNewsItems(job);
   const questions = getCurrentAffairsQuestions(job);
   const faqs = normalizeCurrentAffairsFaqItems(job.faq);
   const questionHtml = questions.map((item, index) => `<article class="mcq-card">
@@ -288,8 +318,12 @@ const renderCurrentAffairsFallbackHtml = (job = {}, title = "Current Affairs", d
   return `<h2>${htmlEscape(title)}</h2>
             <div class="content-box">
               ${intro ? `<p>${htmlEscape(intro)}</p>` : ""}
-              ${dateText ? `<table class="detail-table"><tbody><tr><th>Date</th><td>${htmlEscape(dateText)}</td></tr></tbody></table>` : ""}
+              ${dateText || categoryText ? `<table class="detail-table"><tbody>${dateText ? `<tr><th>Date</th><td>${htmlEscape(dateText)}</td></tr>` : ""}${categoryText ? `<tr><th>Category</th><td>${htmlEscape(categoryText)}</td></tr>` : ""}</tbody></table>` : ""}
             </div>
+            ${newsItems.length ? `<section class="panel">
+              <h2>समाचार</h2>
+              <div class="content-box">${renderCurrentAffairsNewsHtml(newsItems)}</div>
+            </section>` : ""}
             <section class="panel">
               <h2>Questions</h2>
               <div class="content-box"><div class="mcq-list">${questionHtml}</div></div>
