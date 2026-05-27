@@ -48,6 +48,5 @@ Env save karne ke baad server redeploy/restart karein. Admin side me `admin-auto
 
 - `admin-jobs.html`: kisi bhi saved job ke aage `Telegram Post` dabayein.
 - `dashboard.html`: Latest Jobs list me `Telegram Post` dabayein.
-- `portal-items.html`: Result, Admit Card, Answer Key, Syllabus, Admission item ke aage `Telegram Post` dabayein.
 
 Bot delete ho gaya ho to sirf naya token env me replace karke server redeploy karna hai. Code change dobara nahi chahiye.

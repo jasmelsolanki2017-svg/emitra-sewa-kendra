@@ -318,7 +318,6 @@ body.dark-mode .nav-logo img {
   <a href="admin-current-affairs.html">Current Affairs</a>
   <a href="admin-mock-tests.html">Mock Tests</a>
   <a href="admin-auto-checker.html">Auto Job Checker</a>
-  <a href="portal-items.html">Portal Items</a>
   <a href="admin-useful-pages.html">Useful Pages</a>
   <a href="admin-services.html">Services</a>
   <a href="all-members.html">All Members</a>
@@ -343,7 +342,6 @@ body.dark-mode .nav-logo img {
     <div class="stat-card"><small>Updates</small><strong id="updatesCount">0</strong></div>
     <div class="stat-card"><small>Advertisements</small><strong id="adsCount">0</strong></div>
     <div class="stat-card"><small>Links</small><strong id="linksCount">0</strong></div>
-    <div class="stat-card"><small>Portal Items</small><strong id="portalItemsCount">0</strong></div>
     <div class="stat-card"><small>Auto Drafts</small><strong id="autoDraftsCount">0</strong></div>
     <div class="stat-card"><small>Service Pages</small><strong id="serviceGuidesCount">0</strong></div>
     <div class="stat-card visitor-card">
@@ -416,13 +414,6 @@ body.dark-mode .nav-logo img {
       <h3>Auto Job Checker</h3>
       <p>Official sources check karke naye notice draft me laayein.</p>
       <a href="admin-auto-checker.html">Open</a>
-    </div>
-
-    <div class="card">
-      <i class="fa-solid fa-list-check"></i>
-      <h3>Portal Items</h3>
-      <p>Result, Admit Card, Answer Key, Syllabus, Admission links live manage करें।</p>
-      <a href="portal-items.html">Open</a>
     </div>
 
     <div class="card">
@@ -1031,7 +1022,6 @@ Cook | 1426 |"></textarea>
   const jobsRef = ref(db, "LatestJobs");
   const mockTestsRef = ref(db, "mockTests");
   const membersRef = ref(db, "members");
-  const portalItemsRef = ref(db, "portalItems");
   const serviceGuidesRef = ref(db, "serviceGuides");
   const autoJobDraftsRef = ref(db, "autoJobDrafts");
 
@@ -1048,18 +1038,6 @@ Cook | 1426 |"></textarea>
     return count;
   };
 
-  const countNestedSnapshotChildren = (snapshot) => {
-    let count = 0;
-    if(snapshot.exists()){
-      snapshot.forEach((group) => {
-        if(group.hasChildren()){
-          group.forEach(() => { count += 1; });
-        }
-      });
-    }
-    return count;
-  };
-
   onValue(membersRef, (snapshot) => {
     let count = 0;
     if(snapshot.exists()){
@@ -1069,10 +1047,6 @@ Cook | 1426 |"></textarea>
       });
     }
     setCount("membersCount", count);
-  });
-
-  onValue(portalItemsRef, (snapshot) => {
-    setCount("portalItemsCount", countNestedSnapshotChildren(snapshot));
   });
 
   onValue(serviceGuidesRef, (snapshot) => {

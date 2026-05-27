@@ -18,7 +18,6 @@ Disallow: /admin-auto-checker.html
 Disallow: /admin-requests.html
 Disallow: /admin-services.html
 Disallow: /all-members.html
-Disallow: /portal-items.html
 Disallow: /user-dashboard.html
 Disallow: /user-latest-updates.html
 Disallow: /user-important-links.html
