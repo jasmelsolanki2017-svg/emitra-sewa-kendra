@@ -511,7 +511,12 @@ const buildCanonicalSlug = (id, job = {}) => {
   return suffix ? `${base}-${suffix}` : base;
 };
 const canonicalPostHref = (id, job = {}) => `post/${encodeURIComponent(buildCanonicalSlug(id, job))}/`;
-const portalItemHref = (item) => item && item.sourceJobId ? canonicalPostHref(item.sourceJobId, item) : safeUrl(item && item.url);
+const portalItemHref = (item, category = "") => {
+  if(!item){ return "#"; }
+  if(item.sourceJobId){ return canonicalPostHref(item.sourceJobId, item); }
+  const portalId = category ? `${category}-${item.id || ""}` : (item.id || "");
+  return item.title ? canonicalPostHref(portalId, item) : safeUrl(item.url);
+};
 const jobDetailHref = (id, job = {}) => canonicalPostHref(id, job);
 let jobRowsCache = [];
 let jobsExpanded = false;
@@ -554,7 +559,7 @@ const renderPortalItems = (category, items) => {
   const expanded = Boolean(portalExpanded[category]);
   const limit = getPortalLimit(category);
   list.innerHTML = limitedItems(items, expanded, limit).map((item) => `
-    <li id="${portalPostElementId(category, item.id)}" class="${category === sharedPortalCategory && item.id === sharedPortalPost ? "shared-post" : ""}"><a href="${portalItemHref(item)}" target="_blank" rel="noopener noreferrer">${escapeHTML(item.title || "Update")}</a></li>
+    <li id="${portalPostElementId(category, item.id)}" class="${category === sharedPortalCategory && item.id === sharedPortalPost ? "shared-post" : ""}"><a href="${portalItemHref(item, category)}" target="_blank" rel="noopener noreferrer">${escapeHTML(item.title || "Update")}</a></li>
   `).join("") + renderViewMoreButton("portal", category, items.length, expanded, limit);
   if(category === sharedPortalCategory){ focusSharedPortalPost(); }
 };

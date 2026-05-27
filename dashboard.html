@@ -746,17 +746,7 @@ Cook | 1426 |"></textarea>
   };
   const jobDetailUrl = (id, data = {}) => `${siteBaseUrl()}/post/${encodeURIComponent(buildCanonicalSlug(id, data))}/`;
   const portalSectionMap = { notification:"notification", admitCard:"admitCard", result:"results", syllabus:"syllabus", answerKey:"answerKey", admission:"admission" };
-  const jobPostPageUrl = (id, data = {}) => {
-    const target = data.postTarget || "latestJob";
-    if(portalSectionMap[target]){
-      const params = new URLSearchParams({
-        portal:target,
-        post:`job_${id}`
-      });
-      return `${siteBaseUrl()}/job-form.html?${params.toString()}#${portalSectionMap[target]}`;
-    }
-    return jobDetailUrl(id, data);
-  };
+  const jobPostPageUrl = (id, data = {}) => jobDetailUrl(id, data);
   const getSharePostUrl = (id, data = {}) => {
     const targetKey = portalTargetLinks[data.postTarget || "latestJob"];
     if(targetKey && hasRealLink(data[targetKey])){ return data[targetKey]; }

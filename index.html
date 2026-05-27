@@ -4036,7 +4036,7 @@ return;
 }
 
 list.innerHTML = items.map((item)=>`
-  <li><a href="${portalItemHref(item)}" target="_blank" rel="noopener noreferrer">${escapeHTML(item.title || "Update")}</a></li>
+  <li><a href="${portalItemHref(item, category)}" target="_blank" rel="noopener noreferrer">${escapeHTML(item.title || "Update")}</a></li>
 `).join("");
 };
 
@@ -4048,7 +4048,12 @@ const suffix = String(id || "").replace(/[^a-zA-Z0-9]/g,"").slice(-6).toLowerCas
 return suffix ? `${base}-${suffix}` : base;
 };
 const canonicalPostHref = (id, job = {}) => `post/${encodeURIComponent(buildCanonicalSlug(id, job))}/`;
-const portalItemHref = (item) => item && item.sourceJobId ? canonicalPostHref(item.sourceJobId, item) : safeUrl(item && item.url);
+const portalItemHref = (item, category = "") => {
+if(!item){ return "#"; }
+if(item.sourceJobId){ return canonicalPostHref(item.sourceJobId, item); }
+const portalId = category ? `${category}-${item.id || ""}` : (item.id || "");
+return item.title ? canonicalPostHref(portalId, item) : safeUrl(item.url);
+};
 const jobDetailHref = (id, job = {}) => canonicalPostHref(id, job);
 
 scheduleDataTask(() => {
@@ -4057,10 +4062,10 @@ Object.keys(homePortalCategoryMap).forEach((category)=>{
 const categoryItems = portalData && portalData[category] && typeof portalData[category] === "object" ? portalData[category] : {};
 const items = [];
 
-Object.values(categoryItems).forEach((item)=>{
+Object.entries(categoryItems).forEach(([id, item])=>{
 item = item || {};
 if(item.title){
-items.push(item);
+items.push({ ...item, id });
 }
 });
 
