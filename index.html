@@ -3578,6 +3578,7 @@ return firebaseAuthBundlePromise;
 
 const visitorStatsPath = "visitorStatsV2";
 const visitorDeviceKey = "emitraVisitorDeviceId";
+const visitorCountedKey = "emitraVisitorCountedV2";
 const formatVisitorCount = (value = 0) => String(Math.max(0, Number(value) || 0)).padStart(6, "0");
 const setVisitorCounterText = (value = 0) => {
 const counter = document.getElementById("websiteVisitorsCount");
@@ -3587,15 +3588,18 @@ counter.textContent = formatVisitorCount(value);
 };
 const loadVisitorCount = async () => {
 try{
-const total = await firebaseRestGet(`${visitorStatsPath}/total`).catch(() => 0);
-setVisitorCounterText(total);
-return Number(total) || 0;
+const total = await firebaseRestGet(`${visitorStatsPath}/total`).catch(() => null);
+const normalizedTotal = Number(total) || 0;
+setVisitorCounterText(normalizedTotal);
+return normalizedTotal;
 }
 catch(error){
 setVisitorCounterText(0);
 return 0;
 }
 };
+const hasVisitorBeenCounted = () => localStorage.getItem(visitorCountedKey) === "1";
+const markVisitorCounted = () => localStorage.setItem(visitorCountedKey, "1");
 
 const getVisitorDeviceId = () => {
 let saved = localStorage.getItem(visitorDeviceKey);
@@ -3611,9 +3615,14 @@ return saved;
 const trackUniqueVisitor = async () => {
 try{
 const deviceId = getVisitorDeviceId();
+if(hasVisitorBeenCounted()){
+await loadVisitorCount();
+return;
+}
 const devicePath = `${visitorStatsPath}/devices/${deviceId}`;
 const existingDevice = await firebaseRestGet(devicePath);
 if(existingDevice){
+markVisitorCounted();
 await loadVisitorCount();
 return;
 }
@@ -3628,6 +3637,7 @@ userAgent: navigator.userAgent.slice(0, 180)
 const currentTotal = await loadVisitorCount();
 const nextTotal = (Number(currentTotal) || 0) + 1;
 await firebaseRestSet(`${visitorStatsPath}/total`, nextTotal);
+markVisitorCounted();
 setVisitorCounterText(nextTotal);
 }
 catch(error){
