@@ -1695,6 +1695,24 @@ position:relative;
 z-index:1;
 }
 
+.visitor-counter-number{
+display:inline-flex;
+align-items:center;
+justify-content:center;
+background:#fff;
+border:1px solid #d8e7f7;
+border-radius:5px;
+padding:8px 14px;
+font-family:"Courier New",monospace;
+font-size:30px;
+font-weight:900;
+letter-spacing:4px;
+color:#111;
+box-shadow:inset 0 0 0 2px #f1f5fb;
+position:relative;
+z-index:1;
+}
+
 .counter-box small{
 color:#586174;
 font-weight:700;
@@ -2796,7 +2814,6 @@ Important Links
         <div class="home-portal-box" id="homePortalLatestJobs">
           <h3 class="home-portal-title">Top Online Form</h3>
           <ul class="home-portal-list" id="homePortalJobList"><li class="home-portal-message">Jobs load ho rahi hain...</li></ul>
-          <p class="home-portal-message" id="homePortalNoResult" style="display:none;">कोई matching job नहीं मिली</p>
           <a class="home-portal-view-all" href="job-form.html#latestJobs">View All »</a>
         </div>
 
@@ -2824,8 +2841,19 @@ Important Links
           <a class="home-portal-view-all" href="current-affairs.html">View All »</a>
         </div>
       </div>
+      <p class="home-portal-message" id="homePortalNoResult" style="display:none;">कोई matching update नहीं मिली</p>
 
     </div>
+  </div>
+</section>
+
+<section class="counter-section" aria-labelledby="visitorCounterHeading">
+  <h2 id="visitorCounterHeading">Website Visitors</h2>
+  <div class="counter-box">
+    <div class="counter-icon"><i class="fa-solid fa-users"></i></div>
+    <strong class="visitor-counter-number" id="websiteVisitorsCount">000000</strong>
+    <p>Thank you for visiting E-MITRA WALA</p>
+    <small>Unique device count</small>
   </div>
 </section>
 
@@ -3550,6 +3578,24 @@ return firebaseAuthBundlePromise;
 
 const visitorStatsPath = "visitorStatsV2";
 const visitorDeviceKey = "emitraVisitorDeviceId";
+const formatVisitorCount = (value = 0) => String(Math.max(0, Number(value) || 0)).padStart(6, "0");
+const setVisitorCounterText = (value = 0) => {
+const counter = document.getElementById("websiteVisitorsCount");
+if(counter){
+counter.textContent = formatVisitorCount(value);
+}
+};
+const loadVisitorCount = async () => {
+try{
+const total = await firebaseRestGet(`${visitorStatsPath}/total`).catch(() => 0);
+setVisitorCounterText(total);
+return Number(total) || 0;
+}
+catch(error){
+setVisitorCounterText(0);
+return 0;
+}
+};
 
 const getVisitorDeviceId = () => {
 let saved = localStorage.getItem(visitorDeviceKey);
@@ -3567,7 +3613,10 @@ try{
 const deviceId = getVisitorDeviceId();
 const devicePath = `${visitorStatsPath}/devices/${deviceId}`;
 const existingDevice = await firebaseRestGet(devicePath);
-if(existingDevice){ return; }
+if(existingDevice){
+await loadVisitorCount();
+return;
+}
 const now = Date.now();
 await firebaseRestSet(devicePath, {
 deviceId,
@@ -3576,11 +3625,14 @@ lastSeenAt: now,
 page: location.pathname || "/",
 userAgent: navigator.userAgent.slice(0, 180)
 });
-const currentTotal = await firebaseRestGet(`${visitorStatsPath}/total`).catch(() => 0);
-await firebaseRestSet(`${visitorStatsPath}/total`, (Number(currentTotal) || 0) + 1);
+const currentTotal = await loadVisitorCount();
+const nextTotal = (Number(currentTotal) || 0) + 1;
+await firebaseRestSet(`${visitorStatsPath}/total`, nextTotal);
+setVisitorCounterText(nextTotal);
 }
 catch(error){
 console.warn("Visitor tracking skipped", error);
+loadVisitorCount();
 }
 };
 
@@ -3601,6 +3653,7 @@ setTimeout(runTask, Math.min(timeout, 1600));
 }
 };
 
+scheduleDataTask(loadVisitorCount, 1200);
 scheduleDataTask(trackUniqueVisitor, 6000);
 
 const safeUrl = (value = "#") => {
@@ -3999,7 +4052,7 @@ admission:"homePortalAdmissionList"
 const filterHomePortalJobs = () => {
 const input = document.getElementById("homePortalJobSearch");
 const noResult = document.getElementById("homePortalNoResult");
-const jobCards = document.querySelectorAll("#homePortalJobList .home-portal-job-card");
+const boxes = Array.from(document.querySelectorAll(".home-portal-grid .home-portal-box"));
 
 if(!input || !noResult){
 return;
@@ -4008,15 +4061,27 @@ return;
 const searchValue = input.value.trim().toLowerCase();
 let found = false;
 
-jobCards.forEach((card)=>{
-const isMatch = searchValue === "" || card.innerText.toLowerCase().includes(searchValue);
-card.style.display = isMatch ? "" : "none";
-if(searchValue !== "" && isMatch){
+boxes.forEach((box)=>{
+const title = box.querySelector(".home-portal-title");
+const titleMatches = searchValue !== "" && title && title.innerText.toLowerCase().includes(searchValue);
+const items = Array.from(box.querySelectorAll(".home-portal-list > li"));
+let boxHasMatch = false;
+
+items.forEach((item)=>{
+const itemMatches = searchValue === "" || titleMatches || item.innerText.toLowerCase().includes(searchValue);
+item.style.display = itemMatches ? "" : "none";
+if(searchValue === "" || itemMatches){
+boxHasMatch = true;
+}
+});
+
+box.style.display = searchValue === "" || boxHasMatch ? "" : "none";
+if(searchValue !== "" && boxHasMatch){
 found = true;
 }
 });
 
-noResult.style.display = jobCards.length && searchValue !== "" && !found ? "block" : "none";
+noResult.style.display = searchValue !== "" && !found ? "block" : "none";
 };
 
 const homePortalJobSearch = document.getElementById("homePortalJobSearch");
@@ -4072,6 +4137,7 @@ items.push({ ...item, id });
 sortPortalItems(items);
 renderHomePortalItems(category, items);
 });
+filterHomePortalJobs();
 }).catch((error)=>{
 Object.keys(homePortalCategoryMap).forEach((category)=>{
 const list = document.getElementById(homePortalCategoryMap[category]);
@@ -4079,6 +4145,7 @@ if(list){
 list.innerHTML = `<li class="home-portal-message">Data load nahi hua: ${escapeHTML(error.message)}</li>`;
 }
 });
+filterHomePortalJobs();
 });
 }, 2300);
 
@@ -4152,6 +4219,7 @@ currentAffairsList.innerHTML = uniqueCurrentAffairs.length
 ? uniqueCurrentAffairs.slice(0,10).map(({ id, job })=>`<li><a href="${jobDetailHref(id, job)}" target="_blank" rel="noopener noreferrer">${escapeHTML(job.title || "Current Affairs Update")}</a></li>`).join("")
 : '<li class="home-portal-message">Abhi koi current affairs post nahi hai.</li>';
 }
+filterHomePortalJobs();
 }).catch((error)=>{
 const box = document.getElementById("homeJobList");
 const portalJobList = document.getElementById("homePortalJobList");
@@ -4161,6 +4229,7 @@ box.innerHTML = `<p class="home-job-message">Latest jobs load nahi ho payi: ${es
 if(portalJobList){
 portalJobList.innerHTML = `<li class="home-portal-message">Jobs load nahi ho payi: ${escapeHTML(error.message)}</li>`;
 }
+filterHomePortalJobs();
 });
 }, 2800);
 
