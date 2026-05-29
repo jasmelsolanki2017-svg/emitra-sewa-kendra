@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Free Online Tools | E-MITRA WALA</title>
+<meta name="description" content="E-MITRA WALA free online tools: image resizer, 20KB photo resize, compressor, converter, passport photo, signature resize, PDF tools, QR code generator and age calculator.">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://emitrawala.online/tools.html">
+<meta property="og:title" content="Free Online Tools | E-MITRA WALA">
+<meta property="og:description" content="Browser based free image, PDF, QR and age calculator tools. Files are processed in your browser only.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://emitrawala.online/tools.html">
+<link rel="icon" type="image/png" sizes="512x512" href="favicon.png">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="shortcut icon" href="favicon.ico">
+<link rel="apple-touch-icon" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs" type="module"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "E-MITRA WALA Free Online Tools",
+  "url": "https://emitrawala.online/tools.html",
+  "applicationCategory": "UtilityApplication",
+  "operatingSystem": "Any",
+  "description": "Free browser based image, PDF, QR code and age calculator tools."
+}
+</script>
+<style>
+:root{--blue:#0057a8;--deep:#03224d;--orange:#ff7a00;--page:#f7fbff;--surface:#fff;--soft:#eaf4ff;--line:#d8e6f5;--text:#172033;--muted:#5d6b7f;--green:#138a36;--red:#d90000}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Poppins','Noto Sans Devanagari',sans-serif}
+html{scroll-behavior:smooth}
+body{background:var(--page);color:var(--text);line-height:1.55;overflow-x:hidden}
+nav{background:var(--blue);padding:12px 6%;display:flex;align-items:center;justify-content:space-between;gap:18px;position:sticky;top:0;z-index:20;box-shadow:0 4px 16px rgba(0,0,0,.16)}
+.logo img{width:190px;max-width:48vw;height:auto;display:block}
+nav ul{display:flex;list-style:none;gap:15px;flex-wrap:wrap;justify-content:flex-end;align-items:center}
+nav a{color:#fff;text-decoration:none;font-weight:700;font-size:15px}
+nav a:hover,nav a.active{color:#ffcf75}
+.nav-tools{position:relative}
+.nav-tools summary{list-style:none;color:#fff;font-weight:800;font-size:15px;cursor:pointer;display:flex;align-items:center;gap:7px}
+.nav-tools summary::-webkit-details-marker{display:none}
+.nav-tools[open] summary,.nav-tools summary:hover{color:#ffcf75}
+.nav-tools-menu{position:absolute;right:0;top:calc(100% + 10px);width:235px;background:var(--surface);border:1px solid var(--line);border-radius:8px;box-shadow:0 12px 26px rgba(0,0,0,.18);padding:7px;display:grid;gap:4px;z-index:50}
+.nav-tools-menu a{color:var(--blue);padding:9px 10px;border-radius:6px;font-size:13px;font-weight:900;display:flex;gap:8px;align-items:center}
+.nav-tools-menu a:hover,.nav-tools-menu a.active{background:var(--blue);color:#fff}
+.hero{background:linear-gradient(135deg,var(--blue),var(--deep));color:#fff;border-bottom:4px solid var(--orange);padding:30px 6%}
+.hero-inner{max-width:1120px;margin:auto}
+.tag{display:inline-flex;align-items:center;gap:8px;background:var(--orange);color:var(--deep);padding:7px 12px;border-radius:6px;font-weight:900;font-size:13px;margin-bottom:12px}
+.hero h1{font-size:clamp(27px,4vw,42px);line-height:1.15;color:#ffcf75;margin-bottom:8px}
+.hero p{color:#fff1df;font-weight:600;max-width:860px}
+main{max-width:1180px;margin:auto;padding:22px 3% 44px}
+.privacy-note{background:#fff7ed;border:1px solid #fed7aa;border-left:5px solid var(--orange);border-radius:8px;padding:12px 14px;margin-bottom:16px;color:#7c2d12;font-weight:800}
+.tools-layout{display:grid;grid-template-columns:280px minmax(0,1fr);gap:18px;align-items:start}
+.tool-index{position:sticky;top:86px;background:var(--surface);border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 24px rgba(8,31,74,.07);overflow:hidden}
+.tool-index h2{font-size:18px;background:var(--blue);color:#fff;padding:12px 14px;border-bottom:3px solid var(--orange)}
+.tool-index a{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--blue);font-weight:900;font-size:13px;padding:9px 12px;border-bottom:1px solid #edf3fb}
+.tool-index a:hover{background:var(--soft);color:var(--deep)}
+.tool-stack{display:grid;gap:16px}
+.tool-card{background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--orange);border-radius:8px;box-shadow:0 8px 24px rgba(8,31,74,.07);padding:16px;scroll-margin-top:92px}
+.tool-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+.tool-head h2{color:var(--blue);font-size:clamp(19px,3vw,24px);line-height:1.2}
+.tool-head p{color:var(--muted);font-weight:600;font-size:13px;margin-top:3px}
+.badge{background:var(--soft);border:1px solid #bdd0e5;color:var(--blue);border-radius:6px;padding:5px 8px;font-size:12px;font-weight:900;white-space:nowrap}
+.form-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:12px}
+.field{display:flex;flex-direction:column;gap:5px}
+.field.full{grid-column:1/-1}
+label{font-size:12px;font-weight:900;color:var(--deep)}
+input,select,textarea{width:100%;min-width:0;border:1px solid #bdd0e5;border-radius:7px;padding:9px 10px;background:#fff;color:var(--text);font-size:13px}
+textarea{resize:vertical;min-height:80px}
+input[type=file]{padding:8px;background:#fbfdff}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px}
+button,.download-btn{border:0;border-radius:6px;background:var(--blue);color:#fff;text-decoration:none;font-weight:900;padding:9px 13px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;font-size:13px}
+button:hover,.download-btn:hover{background:var(--orange);color:var(--deep)}
+button.secondary{background:var(--soft);color:var(--blue);border:1px solid #bdd0e5}
+button.danger{background:var(--red)}
+.download-btn.disabled,button:disabled{background:#a8b4c4;color:#fff;pointer-events:none;cursor:not-allowed}
+.preview-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.preview-box{background:#fbfdff;border:1px dashed #aac4df;border-radius:8px;min-height:150px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--muted);font-weight:800;overflow:auto}
+.preview-box img,.preview-box canvas{max-width:100%;height:auto;border-radius:4px}
+.status{min-height:20px;color:var(--blue);font-size:13px;font-weight:800;margin-top:6px}
+.result-list{display:grid;gap:8px;width:100%;align-items:start}
+.result-list a{color:var(--blue);font-weight:900;text-decoration:none;background:#fff;border:1px solid var(--line);border-radius:6px;padding:8px 10px}
+.qr-preview canvas,.qr-preview img{image-rendering:pixelated}
+footer{background:var(--blue);color:white;text-align:center;padding:22px 6%;margin-top:20px}
+footer a{color:#ffcf75;text-decoration:none;font-weight:800;margin:0 7px;display:inline-block}
+@media(max-width:920px){.tools-layout{grid-template-columns:1fr}.tool-index{position:static}.tool-index div{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.preview-grid{grid-template-columns:1fr}}
+@media(max-width:620px){nav{flex-direction:column;align-items:flex-start;padding:12px 4%}nav ul{justify-content:flex-start;gap:12px}.nav-tools{width:100%}.nav-tools-menu{position:static;width:100%;margin-top:8px}.logo img{width:170px;max-width:74vw}.hero{padding:26px 4%}main{padding:16px 3%}.tool-card{padding:13px}.tool-head{display:block}.badge{display:inline-flex;margin-top:8px}.form-grid{grid-template-columns:1fr}.tool-index div{grid-template-columns:1fr}.actions>*{width:100%}}
+</style>
+</head>
+<body>
+<nav>
+  <a class="logo" href="index.html"><img src="site-logo.svg" alt="E-MITRA WALA"></a>
+  <ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="job-form.html">Latest Jobs</a></li>
+    <li><a href="OFFLINEFORM.HTML">PDF Forms</a></li>
+    <li>
+      <details class="nav-tools" open>
+        <summary><i class="fa-solid fa-toolbox"></i> Tools</summary>
+        <div class="nav-tools-menu">
+          <a class="active" href="tools.html"><i class="fa-solid fa-screwdriver-wrench"></i> All Free Tools</a>
+          <a href="OFFLINEFORM.HTML"><i class="fa-solid fa-file-pdf"></i> PDF Form</a>
+          <a href="stationery.html"><i class="fa-solid fa-print"></i> Stationery</a>
+          <a href="resume-format.html"><i class="fa-solid fa-file-lines"></i> Resume Builder</a>
+          <a href="invoice-generator.html"><i class="fa-solid fa-file-invoice"></i> Invoice Generator</a>
+          <a href="#age-calculator"><i class="fa-solid fa-calculator"></i> Age Calculator</a>
+          <a href="mock-test.html"><i class="fa-solid fa-clipboard-check"></i> Daily Mock Test</a>
+        </div>
+      </details>
+    </li>
+    <li><a href="useful-pages.html">Useful Pages</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+</nav>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div class="tag"><i class="fa-solid fa-shield-halved"></i> Browser Based Tools</div>
+    <h1>Free Online Tools</h1>
+    <p>Image, PDF, QR code aur age calculator tools yahan browser me hi process hote hain. File upload, saved history ya background removal yahan use nahi hota.</p>
+  </div>
+</header>
+
+<main>
+  <div class="privacy-note"><i class="fa-solid fa-lock"></i> Privacy: selected files page refresh par clear ho jati hain. Processing sirf current browser tab ki memory me hoti hai.</div>
+  <div class="tools-layout">
+    <aside class="tool-index" aria-label="Free tools list">
+      <h2>All Free Tools</h2>
+      <div>
+        <a href="#image-resizer"><i class="fa-solid fa-image"></i> Image Resizer</a>
+        <a href="#resize-20kb"><i class="fa-solid fa-compress"></i> Resize Image to 20KB</a>
+        <a href="#image-compressor"><i class="fa-solid fa-minimize"></i> Image Compressor</a>
+        <a href="#image-converter"><i class="fa-solid fa-repeat"></i> JPG/PNG/WEBP Converter</a>
+        <a href="#passport-photo"><i class="fa-solid fa-id-card"></i> Passport Size Photo Maker</a>
+        <a href="#ssc-signature"><i class="fa-solid fa-signature"></i> SSC Signature Resizer</a>
+        <a href="#rrb-signature"><i class="fa-solid fa-signature"></i> RRB Signature Resizer</a>
+        <a href="#pan-signature"><i class="fa-solid fa-pen-nib"></i> NSDL PAN Signature Resizer</a>
+        <a href="#pan-photo"><i class="fa-solid fa-user"></i> NSDL PAN Photo Resizer</a>
+        <a href="#photo-signature-joiner"><i class="fa-solid fa-object-group"></i> Photo Signature Joiner</a>
+        <a href="#photo-name-date"><i class="fa-solid fa-calendar-days"></i> Photo Name Date Joiner</a>
+        <a href="#image-to-pdf"><i class="fa-solid fa-file-pdf"></i> Image to PDF Converter</a>
+        <a href="#pdf-to-jpg"><i class="fa-solid fa-file-image"></i> PDF to JPG Converter</a>
+        <a href="#pdf-merge"><i class="fa-solid fa-layer-group"></i> PDF Merge Tool</a>
+        <a href="#qr-generator"><i class="fa-solid fa-qrcode"></i> QR Code Generator</a>
+        <a href="#age-calculator"><i class="fa-solid fa-calculator"></i> Age Calculator</a>
+      </div>
+    </aside>
+
+    <div class="tool-stack">
+      <section class="tool-card" id="image-resizer">
+        <div class="tool-head"><div><h2>Image Resizer</h2><p>Width, height, quality aur output format select karke image resize karein.</p></div><span class="badge">Canvas</span></div>
+        <div class="form-grid">
+          <div class="field full"><label for="resizerFile">Image upload</label><input id="resizerFile" type="file" accept="image/*"></div>
+          <div class="field"><label for="resizerWidth">Width px</label><input id="resizerWidth" type="number" min="1" placeholder="Width"></div>
+          <div class="field"><label for="resizerHeight">Height px</label><input id="resizerHeight" type="number" min="1" placeholder="Height"></div>
+          <div class="field"><label for="resizerQuality">Quality %</label><input id="resizerQuality" type="number" min="1" max="100" value="85"></div>
+          <div class="field"><label for="resizerFormat">Output</label><select id="resizerFormat"><option value="image/jpeg">JPG</option><option value="image/png">PNG</option><option value="image/webp">WEBP</option></select></div>
+        </div>
+        <div class="actions"><button type="button" onclick="runImageResizer()"><i class="fa-solid fa-wand-magic-sparkles"></i> Resize</button><a id="resizerDownload" class="download-btn disabled" href="#" download><i class="fa-solid fa-download"></i> Download</a></div>
+        <div class="preview-grid"><div class="preview-box" id="resizerPreview">Preview</div><div><div class="status" id="resizerStatus"></div></div></div>
+      </section>
+
+      <section class="tool-card" id="resize-20kb">
+        <div class="tool-head"><div><h2>Resize Image to 20KB</h2><p>Default target 20KB hai. Tool quality aur size reduce karke target ke neeche laane ki koshish karta hai.</p></div><span class="badge">Canvas</span></div>
+        <div class="form-grid">
+          <div class="field full"><label for="kb20File">Image upload</label><input id="kb20File" type="file" accept="image/*"></div>
+          <div class="field"><label for="kb20Target">Target KB</label><input id="kb20Target" type="number" min="5" value="20"></div>
+        </div>
+        <div class="actions"><button type="button" onclick="runKbTool('kb20')"><i class="fa-solid fa-compress"></i> Resize to Target</button><a id="kb20Download" class="download-btn disabled" href="#" download><i class="fa-solid fa-download"></i> Download</a></div>
+        <div class="preview-grid"><div class="preview-box" id="kb20Preview">Preview</div><div><div class="status" id="kb20Status"></div></div></div>
+      </section>
+
+      <section class="tool-card" id="image-compressor">
+        <div class="tool-head"><div><h2>Image Compressor</h2><p>Target KB enter karke JPG/WebP style compression se file size kam karein.</p></div><span class="badge">Canvas</span></div>
+        <div class="form-grid">
+          <div class="field full"><label for="compressFile">Image upload</label><input id="compressFile" type="file" accept="image/*"></div>
+          <div class="field"><label for="compressTarget">Target KB</label><input id="compressTarget" type="number" min="5" value="100"></div>
+        </div>
+        <div class="actions"><button type="button" onclick="runKbTool('compress')"><i class="fa-solid fa-minimize"></i> Compress</button><a id="compressDownload" class="download-btn disabled" href="#" download><i class="fa-solid fa-download"></i> Download</a></div>
+        <div class="preview-grid"><div class="preview-box" id="compressPreview">Preview</div><div><div class="status" id="compressStatus"></div></div></div>
+      </section>
+
+      <section class="tool-card" id="image-converter">
+        <div class="tool-head"><div><h2>JPG/PNG/WEBP Converter</h2><p>Image select karke JPG, PNG ya WEBP format me convert karein.</p></div><span class="badge">Canvas</span></div>
+        <div class="form-grid">
+          <div class="field full"><label for="convertFile">Image upload</label><input id="convertFile" type="file" accept="image/*"></div>
+          <div class="field"><label for="convertFormat">Output</label><select id="convertFormat"><option value="image/jpeg">JPG</option><option value="image/png">PNG</option><option value="image/webp">WEBP</option></select></div>
+          <div class="field"><label for="convertQuality">Quality %</label><input id="convertQuality" type="number" min="1" max="100" value="90"></div>
+        </div>
+        <div class="actions"><button type="button" onclick="runImageConverter()"><i class="fa-solid fa-repeat"></i> Convert</button><a id="convertDownload" class="download-btn disabled" href="#" download><i class="fa-solid fa-download"></i> Download</a></div>
+        <div class="preview-grid"><div class="preview-box" id="convertPreview">Preview</div><div><div class="status" id="convertStatus"></div></div></div>
+      </section>
+
+      <section class="tool-card" id="passport-photo">
+        <div class="tool-head"><div><h2>Passport Size Photo Maker</h2><p>Photo ko 413x531 px JPG me fit karein. Background color fill hota hai, background remove nahi hota.</p></div><span class="badge">413x531</span></div>
+        <div class="form-grid">
+          <div class="field full"><label for="passportFile">Photo upload</label><input id="passportFile" type="file" accept="image/*"></div>
+          <div class="field"><label for="passportBg">Background color</label><select id="passportBg"><option value="#ffffff">White</option><option value="#dff1ff">Light Blue</option><option value="#ffe7e7">Light Red</option></select></div>
+        </div>
+        <div class="actions"><button type="button" onclick="runPresetImage('passport')"><i class="fa-solid fa-id-card"></i> Make Photo</button><a id="passportDownload" class="download-btn disabled" href="#" download><i class="fa-solid fa-download"></i> Download JPG</a></div>
+        <div class="preview-grid"><div class="preview-box" id="passportPreview">Preview</div><div><div class="status" id="passportStatus"></div></div></div>
+      </section>
+
+      <section class="tool-card" id="ssc-signature">
+        <div class="tool-head"><div><h2>SSC Signature Resizer</h2><p>Signature ko 140x60 px JPG me resize karein, target max 20KB.</p></div><span class="badge">140x60</span></div>
+        <div class="form-grid"><div class="field full"><label for="sscSignatureFile">Signature upload</label><input id="sscSignatureFile" type="file" accept="image/*"></div></div>
+        <div class="actions"><button type="button" onclick="runPresetImage('sscSignature')"><i class="fa-solid fa-signature"></i> Resize</button><a id="sscSignatureDownload" class="download-btn disabled" href="#" download><i class="fa-solid fa-download"></i> Download JPG</a></div>
+        <div class="preview-grid"><div class="preview-box" id="sscSignaturePreview">Preview</div><div><div class="status" id="sscSignatureStatus"></div></div></div>
+      </section>
+
+      <section class="tool-card" id="rrb-signature">
+        <div class="tool-head"><div><h2>RRB Signature Resizer</h2><p>Signature ko 140x60 px JPG me resize karein, target max 20KB.</p></div><span class="badge">140x60</span></div>
+        <div class="form-grid"><div class="field full"><label for="rrbSignatureFile">Signature upload</label><input id="rrbSignatureFile" type="file" accept="image/*"></div></div>
+        <div class="actions"><button type="button" onclick="runPresetImage('rrbSignature')"><i class="fa-solid fa-signature"></i> Resize</button><a id="rrbSignatureDownload" class="download-btn disabled" href="#" download><i class="fa-solid fa-download"></i> Download JPG</a></div>
+        <div class="preview-grid"><div class="preview-box" id="rrbSignaturePreview">Preview</div><div><div class="status" id="rrbSignatureStatus"></div></div></div>
+      </section>
+
+      <section class="tool-card" id="pan-signature">
+        <div class="tool-head"><div><h2>NSDL PAN Signature Resizer</h2><p>Signature ko 354x132 px JPG me resize karein, target max 50KB.</p></div><span class="badge">354x132</span></div>
+        <div class="form-grid"><div class="field full"><label for="panSignatureFile">Signature upload</label><input id="panSignatureFile" type="file" accept="image/*"></div></div>
+        <div class="actions"><button type="button" onclick="runPresetImage('panSignature')"><i class="fa-solid fa-pen-nib"></i> Resize</button><a id="panSignatureDownload" class="download-btn disabled" href="#" download><i class="fa-solid fa-download"></i> Download JPG</a></div>
+        <div class="preview-grid"><div class="preview-box" id="panSignaturePreview">Preview</div><div><div class="status" id="panSignatureStatus"></div></div></div>
+      </section>
+
+      <section class="tool-card" id="pan-photo">
+        <div class="tool-head"><div><h2>NSDL PAN Photo Resizer</h2><p>Photo ko 213x213 px JPG me resize karein, target max 50KB.</p></div><span class="badge">213x213</span></div>
+        <div class="form-grid"><div class="field full"><label for="panPhotoFile">Photo upload</label><input id="panPhotoFile" type="file" accept="image/*"></div></div>
+        <div class="actions"><button type="button" onclick="runPresetImage('panPhoto')"><i class="fa-solid fa-user"></i> Resize</button><a id="panPhotoDownload" class="download-btn disabled" href="#" download><i class="fa-solid fa-download"></i> Download JPG</a></div>
+        <div class="preview-grid"><div class="preview-box" id="panPhotoPreview">Preview</div><div><div class="status" id="panPhotoStatus"></div></div></div>
+      </section>
+
+      <section class="tool-card" id="photo-signature-joiner">
+        <div class="tool-head"><div><h2>Photo Signature Joiner</h2><p>Photo aur signature ko ek JPG image me vertical join karein.</p></div><span class="badge">Canvas</span></div>
+        <div class="form-grid">
+          <div class="field"><label for="joinPhotoFile">Photo upload</label><input id="joinPhotoFile" type="file" accept="image/*"></div>
+          <div class="field"><label for="joinSignFile">Signature upload</label><input id="joinSignFile" type="file" accept="image/*"></div>
+        </div>
+        <div class="actions"><button type="button" onclick="runPhotoSignatureJoiner()"><i class="fa-solid fa-object-group"></i> Join</button><a id="joinDownload" class="download-btn disabled" href="#" download><i class="fa-solid fa-download"></i> Download JPG</a></div>
+        <div class="preview-grid"><div class="preview-box" id="joinPreview">Preview</div><div><div class="status" id="joinStatus"></div></div></div>
+      </section>
+
+      <section class="tool-card" id="photo-name-date">
+        <div class="tool-head"><div><h2>Photo Name Date Joiner</h2><p>Photo ke niche name aur date add karke JPG download karein.</p></div><span class="badge">Canvas</span></div>
+        <div class="form-grid">
+          <div class="field full"><label for="nameDateFile">Photo upload</label><input id="nameDateFile" type="file" accept="image/*"></div>
+          <div class="field"><label for="nameDateName">Name</label><input id="nameDateName" type="text" placeholder="Candidate name"></div>
+          <div class="field"><label for="nameDateDate">Date</label><input id="nameDateDate" type="date"></div>
+        </div>
+        <div class="actions"><button type="button" onclick="runPhotoNameDateJoiner()"><i class="fa-solid fa-calendar-days"></i> Add Name Date</button><a id="nameDateDownload" class="download-btn disabled" href="#" download><i class="fa-solid fa-download"></i> Download JPG</a></div>
+        <div class="preview-grid"><div class="preview-box" id="nameDatePreview">Preview</div><div><div class="status" id="nameDateStatus"></div></div></div>
+      </section>
+
+      <section class="tool-card" id="image-to-pdf">
+        <div class="tool-head"><div><h2>Image to PDF Converter</h2><p>Multiple images select karke one PDF banayein.</p></div><span class="badge">jsPDF</span></div>
+        <div class="form-grid"><div class="field full"><label for="imagePdfFiles">Images upload</label><input id="imagePdfFiles" type="file" accept="image/*" multiple></div></div>
+        <div class="actions"><button type="button" onclick="runImageToPdf()"><i class="fa-solid fa-file-pdf"></i> Convert to PDF</button><a id="imagePdfDownload" class="download-btn disabled" href="#" download><i class="fa-solid fa-download"></i> Download PDF</a></div>
+        <div class="preview-grid"><div class="preview-box" id="imagePdfPreview">PDF preview ready status</div><div><div class="status" id="imagePdfStatus"></div></div></div>
+      </section>
+
+      <section class="tool-card" id="pdf-to-jpg">
+        <div class="tool-head"><div><h2>PDF to JPG Converter</h2><p>PDF pages ko JPG images me convert karein. Har page ka separate download link milega.</p></div><span class="badge">pdf.js</span></div>
+        <div class="form-grid">
+          <div class="field full"><label for="pdfJpgFile">PDF upload</label><input id="pdfJpgFile" type="file" accept="application/pdf,.pdf"></div>
+          <div class="field"><label for="pdfJpgScale">Quality scale</label><input id="pdfJpgScale" type="number" min="1" max="3" step="0.25" value="1.5"></div>
+        </div>
+        <div class="actions"><button type="button" onclick="runPdfToJpg()"><i class="fa-solid fa-file-image"></i> Convert Pages</button></div>
+        <div class="preview-grid"><div class="preview-box"><div class="result-list" id="pdfJpgLinks">Page-wise links</div></div><div><div class="status" id="pdfJpgStatus"></div></div></div>
+      </section>
+
+      <section class="tool-card" id="pdf-merge">
+        <div class="tool-head"><div><h2>PDF Merge Tool</h2><p>Multiple PDF files ko same order me merge karke one PDF download karein.</p></div><span class="badge">pdf-lib</span></div>
+        <div class="form-grid"><div class="field full"><label for="pdfMergeFiles">PDF files upload</label><input id="pdfMergeFiles" type="file" accept="application/pdf,.pdf" multiple></div></div>
+        <div class="actions"><button type="button" onclick="runPdfMerge()"><i class="fa-solid fa-layer-group"></i> Merge PDF</button><a id="pdfMergeDownload" class="download-btn disabled" href="#" download><i class="fa-solid fa-download"></i> Download PDF</a></div>
+        <div class="preview-grid"><div class="preview-box" id="pdfMergePreview">Merged PDF status</div><div><div class="status" id="pdfMergeStatus"></div></div></div>
+      </section>
+
+      <section class="tool-card" id="qr-generator">
+        <div class="tool-head"><div><h2>QR Code Generator</h2><p>Text ya URL enter karke QR code PNG download karein.</p></div><span class="badge">QR</span></div>
+        <div class="form-grid"><div class="field full"><label for="qrText">Text / URL</label><textarea id="qrText" placeholder="https://emitrawala.online/"></textarea></div></div>
+        <div class="actions"><button type="button" onclick="runQrGenerator()"><i class="fa-solid fa-qrcode"></i> Generate QR</button><a id="qrDownload" class="download-btn disabled" href="#" download><i class="fa-solid fa-download"></i> Download PNG</a></div>
+        <div class="preview-grid"><div class="preview-box qr-preview" id="qrPreview">QR preview</div><div><div class="status" id="qrStatus"></div></div></div>
+      </section>
+
+      <section class="tool-card" id="age-calculator">
+        <div class="tool-head"><div><h2>Age Calculator</h2><p>DOB aur age on date select karke years, months, days aur total days dekhein.</p></div><span class="badge">Calculator</span></div>
+        <div class="form-grid">
+          <div class="field"><label for="ageDob">Date of Birth</label><input id="ageDob" type="date"></div>
+          <div class="field"><label for="ageOn">Age on date</label><input id="ageOn" type="date"></div>
+        </div>
+        <div class="actions"><button type="button" onclick="runAgeCalculator()"><i class="fa-solid fa-calculator"></i> Calculate Age</button><button class="secondary" type="button" onclick="clearAgeTool()"><i class="fa-solid fa-rotate-left"></i> Clear</button></div>
+        <div class="preview-grid"><div class="preview-box" id="agePreview">Age result</div><div><div class="status" id="ageStatus"></div></div></div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <p>© 2026 E-MITRA WALA | Free Online Tools</p>
+  <p><a href="privacy-policy.html">Privacy Policy</a><a href="about.html">About</a><a href="contact.html">Contact</a></p>
+</footer>
+
+<script>
+const activeUrls = new Map();
+const $ = (id) => document.getElementById(id);
+const toKB = (bytes) => (bytes / 1024).toFixed(1);
+const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+const extForMime = (mime) => ({ "image/jpeg":"jpg", "image/png":"png", "image/webp":"webp", "application/pdf":"pdf" }[mime] || "file");
+
+function setStatus(id, text){ $(id).textContent = text || ""; }
+function setPreviewImage(id, blob){
+  const url = URL.createObjectURL(blob);
+  revokeKey(`preview-${id}`);
+  activeUrls.set(`preview-${id}`, url);
+  $(id).innerHTML = `<img src="${url}" alt="Preview">`;
+}
+function revokeKey(key){
+  const oldUrl = activeUrls.get(key);
+  if(oldUrl){ URL.revokeObjectURL(oldUrl); activeUrls.delete(key); }
+}
+function setDownload(id, blob, filename){
+  const link = $(id);
+  revokeKey(`download-${id}`);
+  const url = URL.createObjectURL(blob);
+  activeUrls.set(`download-${id}`, url);
+  link.href = url;
+  link.download = filename;
+  link.classList.remove("disabled");
+  link.onclick = () => setTimeout(() => {
+    if(link.href === url){
+      URL.revokeObjectURL(url);
+      activeUrls.delete(`download-${id}`);
+      link.removeAttribute("href");
+      link.classList.add("disabled");
+    }
+  }, 1200);
+}
+function disableDownload(id){
+  const link = $(id);
+  revokeKey(`download-${id}`);
+  link.removeAttribute("href");
+  link.classList.add("disabled");
+}
+function fileFromInput(id){
+  const file = $(id).files && $(id).files[0];
+  if(!file){ throw new Error("Kripya file select karein."); }
+  return file;
+}
+function filesFromInput(id){
+  const files = Array.from($(id).files || []);
+  if(!files.length){ throw new Error("Kripya file select karein."); }
+  return files;
+}
+function loadImageFromFile(file){
+  return new Promise((resolve, reject) => {
+    if(!file.type.startsWith("image/")){ reject(new Error("Kripya image file select karein.")); return; }
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Image read nahi ho payi.")); };
+    img.src = url;
+  });
+}
+function drawContain(ctx, img, x, y, width, height){
+  const scale = Math.min(width / img.naturalWidth, height / img.naturalHeight);
+  const drawW = img.naturalWidth * scale;
+  const drawH = img.naturalHeight * scale;
+  ctx.drawImage(img, x + (width - drawW) / 2, y + (height - drawH) / 2, drawW, drawH);
+}
+function drawCover(ctx, img, x, y, width, height){
+  const scale = Math.max(width / img.naturalWidth, height / img.naturalHeight);
+  const drawW = img.naturalWidth * scale;
+  const drawH = img.naturalHeight * scale;
+  ctx.drawImage(img, x + (width - drawW) / 2, y + (height - drawH) / 2, drawW, drawH);
+}
+function canvasToBlob(canvas, mime = "image/jpeg", quality = .86){
+  return new Promise((resolve) => canvas.toBlob((blob) => resolve(blob), mime, quality));
+}
+function makeCanvas(width, height, fill = "#ffffff"){
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round(width));
+  canvas.height = Math.max(1, Math.round(height));
+  const ctx = canvas.getContext("2d", { alpha:false });
+  ctx.fillStyle = fill;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  return { canvas, ctx };
+}
+async function blobUnderTarget(canvas, targetKB, mime = "image/jpeg"){
+  const targetBytes = Math.max(1, targetKB) * 1024;
+  let width = canvas.width;
+  let height = canvas.height;
+  let working = canvas;
+  let best = await canvasToBlob(working, mime, .92);
+  for(let scaleTry = 0; scaleTry < 8 && best && best.size > targetBytes; scaleTry++){
+    for(let q = .9; q >= .25; q -= .08){
+      const blob = await canvasToBlob(working, mime, q);
+      if(blob && (!best || blob.size < best.size)){ best = blob; }
+      if(blob && blob.size <= targetBytes){ return blob; }
+    }
+    width = Math.max(80, Math.round(width * .86));
+    height = Math.max(80, Math.round(height * .86));
+    const resized = makeCanvas(width, height);
+    resized.ctx.drawImage(working, 0, 0, width, height);
+    working = resized.canvas;
+  }
+  return best;
+}
+async function runImageResizer(){
+  try{
+    disableDownload("resizerDownload");
+    const img = await loadImageFromFile(fileFromInput("resizerFile"));
+    const width = Number($("resizerWidth").value) || img.naturalWidth;
+    const height = Number($("resizerHeight").value) || img.naturalHeight;
+    const mime = $("resizerFormat").value;
+    const quality = clamp(Number($("resizerQuality").value) || 85, 1, 100) / 100;
+    const made = makeCanvas(width, height, mime === "image/png" ? "rgba(255,255,255,0)" : "#ffffff");
+    made.ctx.drawImage(img, 0, 0, made.canvas.width, made.canvas.height);
+    const blob = await canvasToBlob(made.canvas, mime, quality);
+    setPreviewImage("resizerPreview", blob);
+    setDownload("resizerDownload", blob, `resized-image.${extForMime(mime)}`);
+    setStatus("resizerStatus", `Ready: ${made.canvas.width}x${made.canvas.height}px, ${toKB(blob.size)}KB.`);
+  }catch(error){ setStatus("resizerStatus", error.message); }
+}
+async function runKbTool(prefix){
+  const ids = prefix === "kb20"
+    ? { file:"kb20File", target:"kb20Target", preview:"kb20Preview", download:"kb20Download", status:"kb20Status", name:"image-20kb.jpg" }
+    : { file:"compressFile", target:"compressTarget", preview:"compressPreview", download:"compressDownload", status:"compressStatus", name:"compressed-image.jpg" };
+  try{
+    disableDownload(ids.download);
+    const img = await loadImageFromFile(fileFromInput(ids.file));
+    const targetKB = Number($(ids.target).value) || 20;
+    const made = makeCanvas(img.naturalWidth, img.naturalHeight);
+    made.ctx.drawImage(img, 0, 0);
+    const blob = await blobUnderTarget(made.canvas, targetKB, "image/jpeg");
+    setPreviewImage(ids.preview, blob);
+    setDownload(ids.download, blob, ids.name);
+    const note = blob.size <= targetKB * 1024 ? "Target ke andar ready" : "Minimum possible output";
+    setStatus(ids.status, `${note}: ${toKB(blob.size)}KB.`);
+  }catch(error){ setStatus(ids.status, error.message); }
+}
+async function runImageConverter(){
+  try{
+    disableDownload("convertDownload");
+    const img = await loadImageFromFile(fileFromInput("convertFile"));
+    const mime = $("convertFormat").value;
+    const quality = clamp(Number($("convertQuality").value) || 90, 1, 100) / 100;
+    const made = makeCanvas(img.naturalWidth, img.naturalHeight, mime === "image/png" ? "rgba(255,255,255,0)" : "#ffffff");
+    made.ctx.drawImage(img, 0, 0);
+    const blob = await canvasToBlob(made.canvas, mime, quality);
+    setPreviewImage("convertPreview", blob);
+    setDownload("convertDownload", blob, `converted-image.${extForMime(mime)}`);
+    setStatus("convertStatus", `Converted: ${toKB(blob.size)}KB.`);
+  }catch(error){ setStatus("convertStatus", error.message); }
+}
+const presets = {
+  passport:{ file:"passportFile", preview:"passportPreview", download:"passportDownload", status:"passportStatus", width:413, height:531, maxKB:0, name:"passport-size-photo.jpg", bgInput:"passportBg", cover:true },
+  sscSignature:{ file:"sscSignatureFile", preview:"sscSignaturePreview", download:"sscSignatureDownload", status:"sscSignatureStatus", width:140, height:60, maxKB:20, name:"ssc-signature.jpg" },
+  rrbSignature:{ file:"rrbSignatureFile", preview:"rrbSignaturePreview", download:"rrbSignatureDownload", status:"rrbSignatureStatus", width:140, height:60, maxKB:20, name:"rrb-signature.jpg" },
+  panSignature:{ file:"panSignatureFile", preview:"panSignaturePreview", download:"panSignatureDownload", status:"panSignatureStatus", width:354, height:132, maxKB:50, name:"nsdl-pan-signature.jpg" },
+  panPhoto:{ file:"panPhotoFile", preview:"panPhotoPreview", download:"panPhotoDownload", status:"panPhotoStatus", width:213, height:213, maxKB:50, name:"nsdl-pan-photo.jpg", cover:true }
+};
+async function runPresetImage(key){
+  const p = presets[key];
+  try{
+    disableDownload(p.download);
+    const img = await loadImageFromFile(fileFromInput(p.file));
+    const made = makeCanvas(p.width, p.height, p.bgInput ? $(p.bgInput).value : "#ffffff");
+    if(p.cover){ drawCover(made.ctx, img, 0, 0, p.width, p.height); }
+    else { drawContain(made.ctx, img, 0, 0, p.width, p.height); }
+    const blob = p.maxKB ? await blobUnderTarget(made.canvas, p.maxKB, "image/jpeg") : await canvasToBlob(made.canvas, "image/jpeg", .9);
+    setPreviewImage(p.preview, blob);
+    setDownload(p.download, blob, p.name);
+    const limitText = p.maxKB ? `, target ${p.maxKB}KB` : "";
+    setStatus(p.status, `Ready: ${p.width}x${p.height}px, ${toKB(blob.size)}KB${limitText}.`);
+  }catch(error){ setStatus(p.status, error.message); }
+}
+async function runPhotoSignatureJoiner(){
+  try{
+    disableDownload("joinDownload");
+    const photo = await loadImageFromFile(fileFromInput("joinPhotoFile"));
+    const sign = await loadImageFromFile(fileFromInput("joinSignFile"));
+    const width = 600;
+    const photoH = 720;
+    const signH = 160;
+    const made = makeCanvas(width, photoH + signH + 24);
+    drawContain(made.ctx, photo, 0, 0, width, photoH);
+    made.ctx.strokeStyle = "#d8e6f5";
+    made.ctx.lineWidth = 2;
+    made.ctx.beginPath();
+    made.ctx.moveTo(24, photoH + 12);
+    made.ctx.lineTo(width - 24, photoH + 12);
+    made.ctx.stroke();
+    drawContain(made.ctx, sign, 40, photoH + 24, width - 80, signH);
+    const blob = await canvasToBlob(made.canvas, "image/jpeg", .9);
+    setPreviewImage("joinPreview", blob);
+    setDownload("joinDownload", blob, "photo-signature-joined.jpg");
+    setStatus("joinStatus", `Ready: ${toKB(blob.size)}KB.`);
+  }catch(error){ setStatus("joinStatus", error.message); }
+}
+async function runPhotoNameDateJoiner(){
+  try{
+    disableDownload("nameDateDownload");
+    const img = await loadImageFromFile(fileFromInput("nameDateFile"));
+    const width = Math.max(420, Math.min(900, img.naturalWidth));
+    const photoH = Math.round(width * img.naturalHeight / img.naturalWidth);
+    const footerH = 86;
+    const made = makeCanvas(width, photoH + footerH);
+    made.ctx.drawImage(img, 0, 0, width, photoH);
+    made.ctx.fillStyle = "#ffffff";
+    made.ctx.fillRect(0, photoH, width, footerH);
+    made.ctx.strokeStyle = "#d8e6f5";
+    made.ctx.strokeRect(0, photoH, width, footerH);
+    made.ctx.fillStyle = "#111827";
+    made.ctx.textAlign = "center";
+    made.ctx.font = "700 24px Arial";
+    made.ctx.fillText($("nameDateName").value.trim() || "Name", width / 2, photoH + 34);
+    made.ctx.font = "700 20px Arial";
+    made.ctx.fillText($("nameDateDate").value || new Date().toISOString().slice(0,10), width / 2, photoH + 64);
+    const blob = await canvasToBlob(made.canvas, "image/jpeg", .9);
+    setPreviewImage("nameDatePreview", blob);
+    setDownload("nameDateDownload", blob, "photo-name-date.jpg");
+    setStatus("nameDateStatus", `Ready: ${toKB(blob.size)}KB.`);
+  }catch(error){ setStatus("nameDateStatus", error.message); }
+}
+async function runImageToPdf(){
+  try{
+    disableDownload("imagePdfDownload");
+    const jsPDF = window.jspdf && window.jspdf.jsPDF;
+    if(!jsPDF){ throw new Error("PDF library load nahi hui. Page refresh karke try karein."); }
+    const files = filesFromInput("imagePdfFiles");
+    const pdf = new jsPDF({ orientation:"portrait", unit:"pt", format:"a4" });
+    const pageW = pdf.internal.pageSize.getWidth();
+    const pageH = pdf.internal.pageSize.getHeight();
+    for(let i = 0; i < files.length; i++){
+      const img = await loadImageFromFile(files[i]);
+      if(i > 0){ pdf.addPage(); }
+      const margin = 28;
+      const maxW = pageW - margin * 2;
+      const maxH = pageH - margin * 2;
+      const scale = Math.min(maxW / img.naturalWidth, maxH / img.naturalHeight);
+      const drawW = img.naturalWidth * scale;
+      const drawH = img.naturalHeight * scale;
+      const temp = makeCanvas(img.naturalWidth, img.naturalHeight);
+      temp.ctx.drawImage(img, 0, 0);
+      const data = temp.canvas.toDataURL("image/jpeg", .9);
+      pdf.addImage(data, "JPEG", (pageW - drawW) / 2, (pageH - drawH) / 2, drawW, drawH);
+    }
+    const blob = pdf.output("blob");
+    setDownload("imagePdfDownload", blob, "images-to-pdf.pdf");
+    $("imagePdfPreview").textContent = `${files.length} image se PDF ready hai.`;
+    setStatus("imagePdfStatus", `Ready: ${toKB(blob.size)}KB.`);
+  }catch(error){ setStatus("imagePdfStatus", error.message); }
+}
+async function getPdfJs(){
+  if(window.pdfjsLib){ return window.pdfjsLib; }
+  const pdfjsLib = await import("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs");
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs";
+  window.pdfjsLib = pdfjsLib;
+  return pdfjsLib;
+}
+async function runPdfToJpg(){
+  const links = $("pdfJpgLinks");
+  links.innerHTML = "Processing...";
+  setStatus("pdfJpgStatus", "");
+  Array.from(activeUrls.keys()).filter((key) => key.startsWith("pdfjpg-")).forEach(revokeKey);
+  try{
+    const file = fileFromInput("pdfJpgFile");
+    const scale = clamp(Number($("pdfJpgScale").value) || 1.5, 1, 3);
+    const pdfjsLib = await getPdfJs();
+    const bytes = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
+    links.innerHTML = "";
+    for(let pageNo = 1; pageNo <= pdf.numPages; pageNo++){
+      const page = await pdf.getPage(pageNo);
+      const viewport = page.getViewport({ scale });
+      const made = makeCanvas(viewport.width, viewport.height);
+      await page.render({ canvasContext: made.ctx, viewport }).promise;
+      const blob = await canvasToBlob(made.canvas, "image/jpeg", .9);
+      const url = URL.createObjectURL(blob);
+      activeUrls.set(`pdfjpg-${pageNo}`, url);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `pdf-page-${pageNo}.jpg`;
+      link.textContent = `Download Page ${pageNo} JPG (${toKB(blob.size)}KB)`;
+      link.addEventListener("click", () => setTimeout(() => revokeKey(`pdfjpg-${pageNo}`), 1500));
+      links.appendChild(link);
+    }
+    setStatus("pdfJpgStatus", `${pdf.numPages} page JPG me convert ho gaye.`);
+  }catch(error){ links.textContent = "Page-wise links"; setStatus("pdfJpgStatus", error.message); }
+}
+async function runPdfMerge(){
+  try{
+    disableDownload("pdfMergeDownload");
+    if(!window.PDFLib){ throw new Error("PDF merge library load nahi hui. Page refresh karke try karein."); }
+    const files = filesFromInput("pdfMergeFiles");
+    if(files.length < 2){ throw new Error("Merge ke liye kam se kam 2 PDF select karein."); }
+    const merged = await PDFLib.PDFDocument.create();
+    for(const file of files){
+      const source = await PDFLib.PDFDocument.load(await file.arrayBuffer());
+      const pages = await merged.copyPages(source, source.getPageIndices());
+      pages.forEach((page) => merged.addPage(page));
+    }
+    const bytes = await merged.save();
+    const blob = new Blob([bytes], { type:"application/pdf" });
+    setDownload("pdfMergeDownload", blob, "merged-pdf.pdf");
+    $("pdfMergePreview").textContent = `${files.length} PDF merge ho gaye.`;
+    setStatus("pdfMergeStatus", `Ready: ${toKB(blob.size)}KB.`);
+  }catch(error){ setStatus("pdfMergeStatus", error.message); }
+}
+function runQrGenerator(){
+  try{
+    disableDownload("qrDownload");
+    const text = $("qrText").value.trim();
+    if(!text){ throw new Error("Text ya URL enter karein."); }
+    const box = $("qrPreview");
+    box.innerHTML = "";
+    new QRCode(box, { text, width:220, height:220, colorDark:"#03224d", colorLight:"#ffffff", correctLevel:QRCode.CorrectLevel.H });
+    setTimeout(async () => {
+      const canvas = box.querySelector("canvas");
+      if(!canvas){ setStatus("qrStatus", "QR render nahi hua."); return; }
+      const blob = await canvasToBlob(canvas, "image/png", 1);
+      setDownload("qrDownload", blob, "qr-code.png");
+      setStatus("qrStatus", `QR ready: ${toKB(blob.size)}KB.`);
+    }, 80);
+  }catch(error){ setStatus("qrStatus", error.message); }
+}
+function dateOnly(value){
+  if(!value){ return null; }
+  const parts = value.split("-").map(Number);
+  if(parts.length !== 3){ return null; }
+  return new Date(parts[0], parts[1] - 1, parts[2]);
+}
+function runAgeCalculator(){
+  const dob = dateOnly($("ageDob").value);
+  const onDate = dateOnly($("ageOn").value) || new Date();
+  if(!dob){ setStatus("ageStatus", "Date of Birth select karein."); return; }
+  if(dob > onDate){ setStatus("ageStatus", "DOB age on date se baad ki nahi ho sakti."); return; }
+  let years = onDate.getFullYear() - dob.getFullYear();
+  let months = onDate.getMonth() - dob.getMonth();
+  let days = onDate.getDate() - dob.getDate();
+  if(days < 0){
+    months -= 1;
+    days += new Date(onDate.getFullYear(), onDate.getMonth(), 0).getDate();
+  }
+  if(months < 0){ years -= 1; months += 12; }
+  const totalDays = Math.floor((new Date(onDate.getFullYear(), onDate.getMonth(), onDate.getDate()) - dob) / 86400000);
+  $("agePreview").innerHTML = `<div class="result-list"><a href="#">${years} Years</a><a href="#">${months} Months</a><a href="#">${days} Days</a><a href="#">Total ${totalDays} Days</a></div>`;
+  setStatus("ageStatus", "Age calculate ho gayi.");
+}
+function clearAgeTool(){
+  $("ageDob").value = "";
+  $("ageOn").value = new Date().toISOString().slice(0,10);
+  $("agePreview").textContent = "Age result";
+  setStatus("ageStatus", "");
+}
+window.addEventListener("beforeunload", () => {
+  activeUrls.forEach((url) => URL.revokeObjectURL(url));
+  activeUrls.clear();
+});
+window.addEventListener("DOMContentLoaded", () => {
+  $("ageOn").value = new Date().toISOString().slice(0,10);
+});
+</script>
+</body>
+</html>
