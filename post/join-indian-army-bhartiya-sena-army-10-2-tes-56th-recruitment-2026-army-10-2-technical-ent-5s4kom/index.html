@@ -1589,17 +1589,7 @@ const renderJobDetail = (jobId, rawJob) => {
     ]);
     renderManualContent("jobInfoManual", "jobInfoPanel", job.basicDetailsManual, "Other Basic Details");
 
-    const structuredApplicationFee = flexibleRowsFromValue(getFlexibleField(job, "applicationFee"), {
-      generalObc:"General / OBC Fee",
-      general:"General / OBC Fee",
-      obc:"OBC Fee",
-      scSt:"SC / ST Fee",
-      sc:"SC Fee",
-      st:"ST Fee",
-      female:"Female Fee",
-      paymentMode:"Payment Mode"
-    }).map((row) => ({ ...row, htmlValue:renderFlexibleCell(row.value) }));
-    renderList("feeList", "feePanel", [
+    const feeRows = [
       { label:"General / OBC Fee", value:job.generalObcFee },
       { label:"SC / ST Fee", value:job.scStFee },
       { label:"Female Fee", value:job.femaleFee },
@@ -1614,8 +1604,31 @@ const renderJobDetail = (jobId, rawJob) => {
       { label:"Tech A Refund Fee", value:job.techARefundFee },
       { label:"Single Exam Fee", value:job.singleExamFee || job.oneExamFee },
       { label:"Both Exam Fee", value:job.bothExamFee || job.combinedExamFee || job.twoExamFee },
-      { label:"Payment Mode", value:job.paymentMode },
-      ...structuredApplicationFee
+      { label:"Payment Mode", value:job.paymentMode }
+    ];
+    const structuredApplicationFee = flexibleRowsFromValue(getFlexibleField(job, "applicationFee"), {
+      generalObc:"General / OBC Fee",
+      general:"General / OBC Fee",
+      obc:"OBC Fee",
+      scSt:"SC / ST Fee",
+      sc:"SC Fee",
+      st:"ST Fee",
+      female:"Female Fee",
+      paymentMode:"Payment Mode"
+    }).map((row) => ({ ...row, htmlValue:renderFlexibleCell(row.value) }));
+    const existingFeeLabels = new Set(feeRows.map((row) => String(row.label || "").trim().toLowerCase()));
+    const uniqueApplicationFeeRows = [];
+    const addedFeeLabels = new Set(existingFeeLabels);
+    structuredApplicationFee.forEach((row) => {
+      const label = String(row.label || "").trim().toLowerCase();
+      if(label && !addedFeeLabels.has(label)){
+        addedFeeLabels.add(label);
+        uniqueApplicationFeeRows.push(row);
+      }
+    });
+    renderList("feeList", "feePanel", [
+      ...feeRows,
+      ...uniqueApplicationFeeRows
     ]);
     renderManualContent("feeManual", "feePanel", job.applicationFeeManual, "Other Application Fee");
 
