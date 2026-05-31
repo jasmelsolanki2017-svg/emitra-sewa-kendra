@@ -1528,6 +1528,7 @@ const renderJobDetail = (jobId, rawJob) => {
       { label:"OBC Female Fee", value:job.obcFemaleFee },
       { label:"SC Female Fee", value:job.scFemaleFee },
       { label:"PH Candidate Fee", value:job.phCandidateFee || job.onlyFemaleFee },
+      { label:"All Candidate Fee", value:job.allCandidateFee },
       { label:"STA B General / OBC / EWS", value:job.staBGeneralFee },
       { label:"STA B SC / ST / PH / Female", value:job.staBScStFemaleFee },
       { label:"STA B Refund Fee", value:job.staBRefundFee },
@@ -1546,6 +1547,8 @@ const renderJobDetail = (jobId, rawJob) => {
       sc:"SC Fee",
       st:"ST Fee",
       female:"Female Fee",
+      allCandidate:"All Candidate Fee",
+      allCandidates:"All Candidate Fee",
       paymentMode:"Payment Mode"
     }).map((row) => ({ ...row, htmlValue:renderFlexibleCell(row.value) }));
     const existingFeeLabels = new Set(feeRows.map((row) => String(row.label || "").trim().toLowerCase()));
