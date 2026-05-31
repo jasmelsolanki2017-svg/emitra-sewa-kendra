@@ -51,6 +51,7 @@ const extractHttpUrl = (value, fallback = "") => {
   return match ? match[0] : fallback;
 };
 const FIREBASE_URL = extractUrl(process.env.FIREBASE_URL, DEFAULT_FIREBASE_URL);
+const SETTINGS_PATH = path.join(__dirname, "settings.json");
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "jasmelsolanki@gmail.com";
 const SITE_BASE_URL = extractUrl(process.env.SITE_BASE_URL, "https://emitrawala.online");
 const WHATSAPP_CHANNEL_URL = extractHttpUrl(process.env.WHATSAPP_CHANNEL_URL, "https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q");
@@ -1432,6 +1433,24 @@ const pickShareAutomationFields = (item = {}) => ({
   updatedAt: nowStamp()
 });
 
+function readSettingsFile() {
+  try {
+    const raw = fs.readFileSync(SETTINGS_PATH, "utf8");
+    return JSON.parse(raw || "{}");
+  } catch (err) {
+    return {};
+  }
+}
+
+function writeSettingsFile(obj = {}) {
+  try {
+    fs.writeFileSync(SETTINGS_PATH, JSON.stringify(obj, null, 2), "utf8");
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
+
 const sendTelegramMessage = async (text) => {
   if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
     const error = new Error("TELEGRAM_BOT_TOKEN aur TELEGRAM_CHAT_ID env me set nahi hain");
@@ -2592,6 +2611,31 @@ ${jobEntries.join("\n")}
     res.type("application/xml").send(xml);
   } catch (err) {
     res.type("application/xml").send(readStaticJobSitemap());
+  }
+});
+
+// Public API to read settings (no auth required for reading)
+app.get("/api/settings", (req, res) => {
+  try {
+    const settings = readSettingsFile();
+    return res.json({ ok: true, settings });
+  } catch (err) {
+    return res.status(500).json({ ok: false, error: String(err.message || err) });
+  }
+});
+
+// Admin API to update settings (requires admin auth)
+app.post("/api/settings", async (req, res) => {
+  try {
+    await requireAdmin(req);
+    const incoming = req.body && typeof req.body === "object" ? req.body : {};
+    const current = readSettingsFile();
+    const updated = { ...current, ...incoming };
+    const ok = writeSettingsFile(updated);
+    if (!ok) throw new Error("Failed to write settings file");
+    return res.json({ ok: true, settings: updated });
+  } catch (err) {
+    return res.status(err.statusCode || 500).json({ ok: false, error: String(err.message || err) });
   }
 });
 
