@@ -3651,6 +3651,7 @@ const publicSettingsUrl = () => (location.protocol === "file:" || /^emitrawala\.
 : "/api/settings";
 let visitorCounterVisibility = "public";
 const isVisitorCounterPublic = () => visitorCounterVisibility !== "private";
+const normalizeVisitorVisibility = (value) => String(value || "public").toLowerCase() === "private" ? "private" : "public";
 const formatVisitorCount = (value = 0) => String(Math.max(0, Number(value) || 0)).padStart(6, "0");
 const setVisitorCounterText = (value = 0) => {
 const counter = document.getElementById("websiteVisitorsCount");
@@ -3736,14 +3737,19 @@ setTimeout(runTask, Math.min(timeout, 1600));
 };
 
 const applyVisitorCounterVisibility = async () => {
+  let loadedVisibility = "";
   try{
     const res = await fetch(publicSettingsUrl(), { cache:"no-store" });
     const data = await res.json().catch(() => ({}));
     const settings = data && data.settings ? data.settings : {};
-    visitorCounterVisibility = String(settings.visitorCounterVisibility || "public").toLowerCase() === "private" ? "private" : "public";
+    loadedVisibility = settings.visitorCounterVisibility || "";
   }catch(e){
-    visitorCounterVisibility = "public";
+    loadedVisibility = "";
   }
+  if(!loadedVisibility){
+    loadedVisibility = await firebaseRestGet("publicSettings/visitorCounterVisibility").catch(() => "");
+  }
+  visitorCounterVisibility = normalizeVisitorVisibility(loadedVisibility);
 
   const counterSection = document.querySelector(".counter-section");
   if(counterSection){

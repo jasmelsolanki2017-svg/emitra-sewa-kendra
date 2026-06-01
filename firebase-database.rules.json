@@ -41,6 +41,14 @@
       }
     },
 
+    "publicSettings": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'",
+      "visitorCounterVisibility": {
+        ".validate": "newData.val() == 'public' || newData.val() == 'private'"
+      }
+    },
+
     "serviceGuides": {
       ".read": true,
       ".write": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'"

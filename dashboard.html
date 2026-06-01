@@ -705,10 +705,19 @@ Cook | 1426 |"></textarea>
   const refreshSeoAfterSave = (jobId) => callAdminApi("/admin/seo/normalize", { jobId }).catch(() => null);
 
   const loadPublicSettings = async () => {
-    const response = await fetch(adminApiUrl("/api/settings"), { cache:"no-store" });
-    const data = await response.json().catch(() => ({}));
-    if(!response.ok || data.ok === false){ throw new Error(data.error || "Failed to load settings"); }
-    const settings = data.settings || {};
+    let settings = {};
+    try{
+      const response = await fetch(adminApiUrl("/api/settings"), { cache:"no-store" });
+      const data = await response.json().catch(() => ({}));
+      if(!response.ok || data.ok === false){ throw new Error(data.error || "Failed to load settings"); }
+      settings = data.settings || {};
+    }catch(error){
+      const snapshot = await new Promise((resolve, reject) => {
+        const settingsRef = ref(db, "publicSettings/visitorCounterVisibility");
+        onValue(settingsRef, resolve, reject, { onlyOnce:true });
+      });
+      settings.visitorCounterVisibility = snapshot.exists() ? snapshot.val() : "";
+    }
     const cachedVisibility = String(localStorage.getItem(visitorVisibilityStorageKey) || "").toLowerCase();
     if(!settings.visitorCounterVisibility && (cachedVisibility === "private" || cachedVisibility === "public")){
       settings.visitorCounterVisibility = cachedVisibility;
@@ -739,7 +748,14 @@ Cook | 1426 |"></textarea>
       try{
         select.value = value;
         localStorage.setItem(visitorVisibilityStorageKey, value);
-        const result = await callAdminApi("/api/settings", { visitorCounterVisibility: value });
+        const results = await Promise.allSettled([
+          callAdminApi("/api/settings", { visitorCounterVisibility: value }),
+          set(ref(db, "publicSettings/visitorCounterVisibility"), value)
+        ]);
+        const result = results[0].status === "fulfilled" ? results[0].value : {};
+        if(results.every((item) => item.status === "rejected")){
+          throw results[0].reason || new Error("Settings save failed");
+        }
         const saved = String(result.settings?.visitorCounterVisibility || value).toLowerCase() === "private" ? "private" : "public";
         select.value = saved;
         localStorage.setItem(visitorVisibilityStorageKey, saved);
