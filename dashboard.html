@@ -669,9 +669,6 @@ Cook | 1426 |"></textarea>
     });
   };
 
-  watchVisitorCount();
-  initVisitorVisibilityToggle();
-
   const getAdminServerUrl = () => {
     const saved = String(localStorage.getItem(adminServerStorageKey) || "").trim().replace(/\/+$/, "");
     if(saved){ return saved; }
@@ -748,6 +745,9 @@ Cook | 1426 |"></textarea>
       }
     });
   };
+
+  watchVisitorCount();
+  initVisitorVisibilityToggle();
 
   const cleanDisplayOrder = (value) => {
     const number = Number(String(value || "").replace(/[^\d]/g, ""));
