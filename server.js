@@ -64,6 +64,14 @@ const GEMINI_API_KEY = String(process.env.GEMINI_API_KEY || "").trim();
 const GEMINI_MODEL = String(process.env.GEMINI_MODEL || "gemini-2.5-flash").trim();
 const OPENAI_API_KEY = String(process.env.OPENAI_API_KEY || "").trim();
 const OPENAI_MODEL = String(process.env.OPENAI_MODEL || "").trim();
+const AI_PROVIDER = String(process.env.AI_PROVIDER || "gemini").trim().toLowerCase();
+const AI_MODEL = String(process.env.AI_MODEL || "").trim();
+const OPENROUTER_API_KEY = String(process.env.OPENROUTER_API_KEY || "").trim();
+const OPENROUTER_MODEL = String(process.env.OPENROUTER_MODEL || AI_MODEL || "deepseek/deepseek-chat-v3-0324:free").trim();
+const GROQ_API_KEY = String(process.env.GROQ_API_KEY || "").trim();
+const GROQ_MODEL = String(process.env.GROQ_MODEL || "llama-3.1-8b-instant").trim();
+const DEEPSEEK_API_KEY = String(process.env.DEEPSEEK_API_KEY || "").trim();
+const DEEPSEEK_MODEL = String(process.env.DEEPSEEK_MODEL || "deepseek-chat").trim();
 const GITHUB_TOKEN = String(process.env.GITHUB_TOKEN || process.env.SEO_GITHUB_TOKEN || "").trim();
 const GITHUB_REPOSITORY = String(process.env.GITHUB_REPOSITORY || process.env.SEO_GITHUB_REPOSITORY || "jasmelsolanki2017-svg/emitra-sewa-kendra").trim();
 const GITHUB_DISPATCH_EVENT = String(process.env.SEO_GITHUB_DISPATCH_EVENT || "seo-posts-update").trim();
@@ -192,8 +200,48 @@ function isAdminSdkConfigured() {
   );
 }
 
+const normalizeAiProvider = (value = "") => {
+  const provider = String(value || "").trim().toLowerCase();
+  if (provider === "openrouter") return "openrouter";
+  if (provider === "openai") return "openai";
+  return "gemini";
+};
+
+const getAiProviderConfig = (providerValue = "", modelValue = "") => {
+  const provider = normalizeAiProvider(providerValue);
+  const requestedModel = String(modelValue || "").trim();
+  const configs = {
+    gemini: { label: "Gemini", apiKey: GEMINI_API_KEY, model: requestedModel || (AI_PROVIDER === "gemini" ? AI_MODEL : "") || GEMINI_MODEL, type: "gemini" },
+    openrouter: {
+      label: "OpenRouter",
+      apiKey: OPENROUTER_API_KEY,
+      model: requestedModel || (AI_PROVIDER === "openrouter" ? AI_MODEL : "") || OPENROUTER_MODEL || "deepseek/deepseek-chat-v3-0324:free",
+      type: "chat",
+      url: "https://openrouter.ai/api/v1/chat/completions",
+      extraHeaders: {
+        "HTTP-Referer": SITE_BASE_URL,
+        "X-Title": "E-MITRA WALA Auto Job Checker"
+      }
+    },
+    groq: { label: "Groq", apiKey: GROQ_API_KEY, model: requestedModel || GROQ_MODEL, type: "chat", url: "https://api.groq.com/openai/v1/chat/completions" },
+    deepseek: { label: "DeepSeek", apiKey: DEEPSEEK_API_KEY, model: requestedModel || DEEPSEEK_MODEL, type: "chat", url: "https://api.deepseek.com/chat/completions" },
+    openai: { label: "OpenAI", apiKey: OPENAI_API_KEY, model: requestedModel || OPENAI_MODEL, type: "chat", url: "https://api.openai.com/v1/chat/completions" }
+  };
+  return configs[provider] || configs.gemini;
+};
+
+const isAiProviderConfigured = (providerValue = "", modelValue = "") => {
+  const config = getAiProviderConfig(providerValue, modelValue);
+  return Boolean(config.apiKey && config.model);
+};
+
 function buildServerStatus(overrides = {}) {
-  const aiProvider = GEMINI_API_KEY && GEMINI_MODEL ? "Gemini" : (OPENAI_API_KEY && OPENAI_MODEL ? "OpenAI" : "Local");
+  const configuredProvider = normalizeAiProvider(AI_PROVIDER || "gemini");
+  const selectedAi = getAiProviderConfig(configuredProvider, AI_MODEL);
+  const fallbackAi = [selectedAi, getAiProviderConfig("gemini"), getAiProviderConfig("openrouter")]
+    .find((config) => config.apiKey && config.model);
+  const aiProvider = fallbackAi ? fallbackAi.label : "Local";
+  const aiConfigured = Boolean(fallbackAi);
   return {
     ok: true,
     serverOnline: true,
@@ -203,8 +251,22 @@ function buildServerStatus(overrides = {}) {
     cronSecretConfigured: Boolean(String(process.env.CRON_SECRET || "").trim()),
     telegramConfigured: Boolean(TELEGRAM_BOT_TOKEN && TELEGRAM_CHAT_ID),
     whatsappConfigured: Boolean(WHATSAPP_ACCESS_TOKEN && WHATSAPP_PHONE_NUMBER_ID && WHATSAPP_TO_NUMBER),
-    aiConfigured: Boolean((GEMINI_API_KEY && GEMINI_MODEL) || (OPENAI_API_KEY && OPENAI_MODEL)),
+    aiConfigured,
     aiProvider,
+    aiSelectedProvider: selectedAi.label,
+    aiSelectedModel: selectedAi.model,
+    aiEnvProvider: configuredProvider,
+    aiEnvModel: AI_MODEL,
+    aiProviders: {
+      gemini: isAiProviderConfigured("gemini"),
+      openrouter: isAiProviderConfigured("openrouter"),
+      openai: isAiProviderConfigured("openai")
+    },
+    aiModels: {
+      gemini: GEMINI_MODEL,
+      openrouter: OPENROUTER_MODEL,
+      openai: OPENAI_MODEL
+    },
     githubDispatchConfigured: Boolean(GITHUB_TOKEN && GITHUB_REPOSITORY),
     githubRepository: GITHUB_REPOSITORY,
     githubDispatchEvent: GITHUB_DISPATCH_EVENT,
@@ -1216,59 +1278,75 @@ const duplicateKeysForJob = (job = {}) => {
   return Array.from(keys);
 };
 
-const generateAiSummary = async (job = {}) => {
-  const fallback = buildNotificationSummary(job);
-  if (GEMINI_API_KEY && GEMINI_MODEL && typeof fetch === "function") {
-    try {
-      const prompt = [
-        "Hindi me ek short government job/update notification summary likho.",
-        "Sirf factual points rakho, 4 bullet lines max, extra claim mat karo.",
-        JSON.stringify({
-          title: job.title,
-          department: job.department,
-          totalPosts: job.totalPosts,
-          lastDate: job.lastApplyDate || job.lastDate,
-          qualification: job.qualification,
-          sourceLink: job.sourceLink || job.detailLink
-        })
-      ].join("\n");
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(GEMINI_MODEL)}:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`;
-      const response = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [
-            {
-              role: "user",
-              parts: [{ text: prompt }]
-            }
-          ],
-          generationConfig: {
-            temperature: 0.2,
-            maxOutputTokens: 220
-          }
-        })
-      });
-      if (!response.ok) {
-        throw new Error(`Gemini HTTP ${response.status}`);
-      }
-      const data = await response.json();
-      const summary = String(data?.candidates?.[0]?.content?.parts || [])
-        ? (data.candidates[0].content.parts || []).map((part) => part.text || "").join("\n").trim()
-        : "";
-      return { summary: summary || fallback, provider: summary ? "gemini" : "local" };
-    } catch (err) {
-      if (!OPENAI_API_KEY || !OPENAI_MODEL) {
-        return { summary: fallback, provider: "local", error: err.message };
-      }
+
+
+const callAiText = async ({ provider = "gemini", model = "", prompt = "", system = "", temperature = 0.2, maxTokens = 220 } = {}) => {
+  const config = getAiProviderConfig(provider, model);
+  if (!config.apiKey || !config.model || typeof fetch !== "function") {
+    const error = new Error(`${config.label} API key/model missing`);
+    error.code = "AI_NOT_CONFIGURED";
+    throw error;
+  }
+
+  if (config.type === "gemini") {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(config.model)}:generateContent?key=${encodeURIComponent(config.apiKey)}`;
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ role: "user", parts: [{ text: [system, prompt].filter(Boolean).join("\n\n") }] }],
+        generationConfig: { temperature, maxOutputTokens: maxTokens }
+      })
+    });
+    if (!response.ok) {
+      throw new Error(`${config.label} HTTP ${response.status}`);
     }
+    const data = await response.json();
+    return {
+      text: (data?.candidates?.[0]?.content?.parts || []).map((part) => part.text || "").join("\n").trim(),
+      provider: config.label.toLowerCase(),
+      model: config.model
+    };
   }
-  if (!OPENAI_API_KEY || !OPENAI_MODEL || typeof fetch !== "function") {
-    return { summary: fallback, provider: "local" };
+
+  const response = await fetch(config.url, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${config.apiKey}`,
+      "Content-Type": "application/json",
+      ...(config.extraHeaders || {})
+    },
+    body: JSON.stringify({
+      model: config.model,
+      messages: [
+        ...(system ? [{ role: "system", content: system }] : []),
+        { role: "user", content: prompt }
+      ],
+      temperature,
+      max_tokens: maxTokens
+    })
+  });
+  if (!response.ok) {
+    throw new Error(`${config.label} HTTP ${response.status}`);
   }
+  const data = await response.json();
+  return {
+    text: String(data?.choices?.[0]?.message?.content || "").trim(),
+    provider: config.label.toLowerCase(),
+    model: config.model
+  };
+};
+
+const aiOptionsFromRequest = (body = {}) => ({
+  provider: normalizeAiProvider(body.aiProvider || body.provider || AI_PROVIDER || "gemini"),
+  model: String(body.aiModel || body.openRouterModel || body.model || AI_MODEL || "").trim()
+});
+
+const generateAiSummary = async (job = {}, options = {}) => {
+  const fallback = buildNotificationSummary(job);
   const prompt = [
-    "Write a short Hindi notification summary for a government job/update.",
-    "Keep it factual, 4 bullet lines max, no extra claims.",
+    "Hindi me ek short government job/update notification summary likho.",
+    "Sirf factual points rakho, 4 bullet lines max, extra claim mat karo.",
     JSON.stringify({
       title: job.title,
       department: job.department,
@@ -1279,34 +1357,21 @@ const generateAiSummary = async (job = {}) => {
     })
   ].join("\n");
   try {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${OPENAI_API_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: OPENAI_MODEL,
-        messages: [
-          { role: "system", content: "You summarize job notifications for an Indian Hindi audience." },
-          { role: "user", content: prompt }
-        ],
-        temperature: 0.2,
-        max_tokens: 180
-      })
+    const result = await callAiText({
+      ...options,
+      prompt,
+      system: "You summarize job notifications for an Indian Hindi audience.",
+      temperature: 0.2,
+      maxTokens: 220
     });
-    if (!response.ok) {
-      throw new Error(`AI HTTP ${response.status}`);
-    }
-    const data = await response.json();
-    const summary = toText(data?.choices?.[0]?.message?.content || "");
-    return { summary: summary || fallback, provider: summary ? "openai" : "local" };
+    const summary = toText(result.text || "");
+    return { summary: summary || fallback, provider: summary ? result.provider : "local", model: result.model };
   } catch (err) {
     return { summary: fallback, provider: "local", error: err.message };
   }
 };
 
-const generateAiWhatsappPostText = async (job = {}, id = "") => {
+const generateAiWhatsappPostText = async (job = {}, id = "", options = {}) => {
   const fallback = buildWhatsappPostText(id, job);
   const primaryLink = toText(job[pickJobLinkField(job.postTarget)] || job.sourceLink || job.detailLink || job.applyLink || job.officialWebsite || getPublicJobUrl(id, job));
   const targetLabel = {
@@ -1362,49 +1427,23 @@ const generateAiWhatsappPostText = async (job = {}, id = "") => {
     })
   ].join("\n");
 
-  if (GEMINI_API_KEY && GEMINI_MODEL && typeof fetch === "function") {
-    try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(GEMINI_MODEL)}:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`;
-      const response = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [
-            {
-              role: "user",
-              parts: [{ text: prompt }]
-            }
-          ],
-          generationConfig: {
-            temperature: 0.25,
-            maxOutputTokens: 700
-          }
-        })
-      });
-      if (!response.ok) {
-        throw new Error(`Gemini HTTP ${response.status}`);
-      }
-      const data = await response.json();
-      const text = (data?.candidates?.[0]?.content?.parts || [])
-        .map((part) => part.text || "")
-        .join("\n")
-        .replace(/```(?:text|markdown)?/gi, "")
-        .replace(/```/g, "")
-        .trim();
-      return { text: text || fallback, provider: text ? "gemini" : "local" };
-    } catch (err) {
-      return { text: fallback, provider: "local", error: err.message };
-    }
+  try {
+    const result = await callAiText({ ...options, prompt, temperature: 0.25, maxTokens: 700 });
+    const text = String(result.text || "")
+      .replace(/```(?:text|markdown)?/gi, "")
+      .replace(/```/g, "")
+      .trim();
+    return { text: text || fallback, provider: text ? result.provider : "local", model: result.model };
+  } catch (err) {
+    return { text: fallback, provider: "local", error: err.message };
   }
-
-  return { text: fallback, provider: "local" };
 };
 
-const prepareWhatsappShare = async (item = {}, id = "") => {
+const prepareWhatsappShare = async (item = {}, id = "", options = {}) => {
   const enriched = enrichJobAutomation(item, id);
-  const ai = await generateAiSummary(enriched);
+  const ai = await generateAiSummary(enriched, options);
   enriched.notificationSummary = ai.summary;
-  const whatsappAi = await generateAiWhatsappPostText(enriched, id);
+  const whatsappAi = await generateAiWhatsappPostText(enriched, id, options);
   enriched.summaryProvider = ai.provider;
   enriched.whatsappProvider = whatsappAi.provider;
   enriched.whatsappPostText = whatsappAi.text;
@@ -2446,7 +2485,7 @@ async function publishAutoJobDraft(db, draftId, payload = {}) {
     if (draft[key]) job[key] = toText(draft[key]);
   });
   if (autoSendChannels.includes("whatsapp")) {
-    const prepared = await prepareWhatsappShare(job, jobId);
+    const prepared = await prepareWhatsappShare(job, jobId, aiOptionsFromRequest(payload));
     Object.assign(job, pickShareAutomationFields(prepared.item));
   }
 
@@ -3107,10 +3146,11 @@ app.post("/admin/auto-job-checker/draft/enrich", async (req, res) => {
       current = snapshot.exists() ? (snapshot.val() || {}) : {};
     }
     const enriched = enrichJobAutomation({ ...current, ...incoming }, draftId);
-    const ai = await generateAiSummary(enriched);
+    const aiOptions = aiOptionsFromRequest(req.body || {});
+    const ai = await generateAiSummary(enriched, aiOptions);
     enriched.notificationSummary = ai.summary;
     enriched.summaryProvider = ai.provider;
-    const whatsappAi = await generateAiWhatsappPostText(enriched, draftId);
+    const whatsappAi = await generateAiWhatsappPostText(enriched, draftId, aiOptions);
     enriched.whatsappProvider = whatsappAi.provider;
     enriched.whatsappPostText = whatsappAi.text;
     if (draftId) {
@@ -3213,7 +3253,7 @@ app.post("/admin/auto-job-checker/whatsapp/prepare", async (req, res) => {
       }
     }
     const shareId = jobId || draftId || safeKey(item.sourceLink || item.title || "");
-    const prepared = await prepareWhatsappShare(item, shareId);
+    const prepared = await prepareWhatsappShare(item, shareId, aiOptionsFromRequest(req.body || {}));
     const updateFields = pickShareAutomationFields(prepared.item);
     if (draftId) {
       await db.ref(`autoJobDrafts/${draftId}`).update(updateFields);
@@ -3253,7 +3293,7 @@ app.post("/admin/auto-job-checker/share/send", async (req, res) => {
     let prepared = null;
     let text = String(req.body?.text || "").trim();
     if (channel === "whatsapp" && !req.body?.aiPrepared) {
-      prepared = await prepareWhatsappShare(item, shareId);
+      prepared = await prepareWhatsappShare(item, shareId, aiOptionsFromRequest(req.body || {}));
       item = prepared.item;
       text = prepared.text;
       const updateFields = pickShareAutomationFields(item);
