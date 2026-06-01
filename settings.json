@@ -1,3 +1,4 @@
 {
-  "allowVisitors": true
+  "allowVisitors": true,
+  "visitorCounterVisibility": "public"
 }

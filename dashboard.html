@@ -350,10 +350,13 @@ body.dark-mode .nav-logo img {
       <em>Admin only · Unique device count</em>
       <div class="visitor-visibility-row" style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px;">
         <small style="color:#66748a;font-weight:800;">Public Visibility</small>
-        <select id="visitorVisibilitySelect" style="min-width:110px;padding:6px 10px;border:1px solid #d8e7f7;border-radius:6px;background:#fff;font-weight:800;color:#0a3760;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <select id="visitorVisibilitySelect" style="min-width:110px;padding:6px 10px;border:1px solid #d8e7f7;border-radius:6px;background:#fff;font-weight:800;color:#0a3760;">
           <option value="public">Public</option>
           <option value="private">Private</option>
-        </select>
+          </select>
+          <small id="visitorVisibilityStatus" style="color:#66748a;font-weight:900;min-width:56px;text-align:right;"></small>
+        </div>
       </div>
     </div>
   </div>
@@ -601,7 +604,7 @@ Cook | 1426 |"></textarea>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+  import { getAuth, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
   import { getDatabase, ref, push, set, update, remove, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
   const firebaseConfig = {
@@ -617,6 +620,9 @@ Cook | 1426 |"></textarea>
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getDatabase(app);
+
+  // Keep admin logged in (avoid "auto logout" due to non-persistent sessions).
+  setPersistence(auth, browserLocalPersistence).catch(() => {});
 
   const adminEmail = "jasmelsolanki@gmail.com";
   const visitorStatsPath = "visitorStatsV2";
@@ -700,21 +706,26 @@ Cook | 1426 |"></textarea>
 
   const initVisitorVisibilityToggle = async () => {
     const select = document.getElementById("visitorVisibilitySelect");
+    const status = document.getElementById("visitorVisibilityStatus");
     if(!select){ return; }
 
     try{
       const settings = await loadPublicSettings();
       const current = String(settings.visitorCounterVisibility || "public").toLowerCase() === "private" ? "private" : "public";
       select.value = current;
+      if(status){ status.innerText = ""; }
     }catch(e){
       // Keep default "public" on failure.
+      if(status){ status.innerText = "Offline"; }
     }
 
     select.addEventListener("change", async () => {
       const value = select.value === "private" ? "private" : "public";
       select.disabled = true;
+      if(status){ status.innerText = "Saving"; }
       try{
         await callAdminApi("/api/settings", { visitorCounterVisibility: value });
+        if(status){ status.innerText = "Saved"; }
       }catch(err){
         alert(String(err.message || err));
         try{
@@ -722,6 +733,7 @@ Cook | 1426 |"></textarea>
           const current = String(settings.visitorCounterVisibility || "public").toLowerCase() === "private" ? "private" : "public";
           select.value = current;
         }catch(e){ /* ignore */ }
+        if(status){ status.innerText = "Failed"; }
       }finally{
         select.disabled = false;
       }
