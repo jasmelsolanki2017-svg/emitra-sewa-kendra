@@ -3171,8 +3171,14 @@ E-MITRA WALA E-Mitra Sewa Kendra ek trusted digital service center hai.
 <p>
 <script>
   (function(){
+    function settingsUrl(){
+      if(location.protocol === "file:" || /^emitrawala\.online$|github\.io$/i.test(location.hostname)){
+        return "https://emitra-sewa-kendra.onrender.com/api/settings";
+      }
+      return "/api/settings";
+    }
     try{
-      fetch('/api/settings').then(function(res){
+      fetch(settingsUrl()).then(function(res){
         if(!res.ok) return null;
         return res.json();
       }).then(function(data){
@@ -3639,6 +3645,10 @@ return firebaseAuthBundlePromise;
 const visitorStatsPath = "visitorStatsV2";
 const visitorDeviceKey = "emitraVisitorDeviceId";
 const visitorCountedKey = "emitraVisitorCountedV2";
+const defaultAdminServerUrl = "https://emitra-sewa-kendra.onrender.com";
+const publicSettingsUrl = () => (location.protocol === "file:" || /^emitrawala\.online$|github\.io$/i.test(location.hostname))
+? `${defaultAdminServerUrl}/api/settings`
+: "/api/settings";
 let visitorCounterVisibility = "public";
 const isVisitorCounterPublic = () => visitorCounterVisibility !== "private";
 const formatVisitorCount = (value = 0) => String(Math.max(0, Number(value) || 0)).padStart(6, "0");
@@ -3727,7 +3737,7 @@ setTimeout(runTask, Math.min(timeout, 1600));
 
 const applyVisitorCounterVisibility = async () => {
   try{
-    const res = await fetch("/api/settings", { cache:"no-store" });
+    const res = await fetch(publicSettingsUrl(), { cache:"no-store" });
     const data = await res.json().catch(() => ({}));
     const settings = data && data.settings ? data.settings : {};
     visitorCounterVisibility = String(settings.visitorCounterVisibility || "public").toLowerCase() === "private" ? "private" : "public";
@@ -3736,8 +3746,8 @@ const applyVisitorCounterVisibility = async () => {
   }
 
   const counterSection = document.querySelector(".counter-section");
-  if(counterSection && !isVisitorCounterPublic()){
-    counterSection.style.display = "none";
+  if(counterSection){
+    counterSection.style.display = isVisitorCounterPublic() ? "" : "none";
   }
 
   // Tracking should stay ON even when the counter is private (hidden from public UI).

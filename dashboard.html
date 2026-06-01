@@ -635,6 +635,7 @@ Cook | 1426 |"></textarea>
 
   const adminEmail = "jasmelsolanki@gmail.com";
   const visitorStatsPath = "visitorStatsV2";
+  const visitorVisibilityStorageKey = "emitraVisitorCounterVisibility";
   const adminServerStorageKey = "emitraAdminServerUrl";
   const defaultAdminServerUrl = "https://emitra-sewa-kendra.onrender.com";
   let adminAllowed = false;
@@ -707,7 +708,12 @@ Cook | 1426 |"></textarea>
     const response = await fetch(adminApiUrl("/api/settings"), { cache:"no-store" });
     const data = await response.json().catch(() => ({}));
     if(!response.ok || data.ok === false){ throw new Error(data.error || "Failed to load settings"); }
-    return data.settings || {};
+    const settings = data.settings || {};
+    const cachedVisibility = String(localStorage.getItem(visitorVisibilityStorageKey) || "").toLowerCase();
+    if(!settings.visitorCounterVisibility && (cachedVisibility === "private" || cachedVisibility === "public")){
+      settings.visitorCounterVisibility = cachedVisibility;
+    }
+    return settings;
   };
 
   const initVisitorVisibilityToggle = async () => {
@@ -719,6 +725,7 @@ Cook | 1426 |"></textarea>
       const settings = await loadPublicSettings();
       const current = String(settings.visitorCounterVisibility || "public").toLowerCase() === "private" ? "private" : "public";
       select.value = current;
+      localStorage.setItem(visitorVisibilityStorageKey, current);
       if(status){ status.innerText = ""; }
     }catch(e){
       // Keep default "public" on failure.
@@ -730,7 +737,12 @@ Cook | 1426 |"></textarea>
       select.disabled = true;
       if(status){ status.innerText = "Saving"; }
       try{
-        await callAdminApi("/api/settings", { visitorCounterVisibility: value });
+        select.value = value;
+        localStorage.setItem(visitorVisibilityStorageKey, value);
+        const result = await callAdminApi("/api/settings", { visitorCounterVisibility: value });
+        const saved = String(result.settings?.visitorCounterVisibility || value).toLowerCase() === "private" ? "private" : "public";
+        select.value = saved;
+        localStorage.setItem(visitorVisibilityStorageKey, saved);
         if(status){ status.innerText = "Saved"; }
       }catch(err){
         alert(String(err.message || err));

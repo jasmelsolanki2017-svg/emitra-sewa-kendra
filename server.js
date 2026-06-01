@@ -23,6 +23,15 @@ try {
 }
 
 const app = express();
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Cron-Secret");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  if (req.method === "OPTIONS") {
+    return res.status(204).end();
+  }
+  return next();
+});
 const staticMiddleware = express.static(__dirname);
 app.use((req, res, next) => {
   const publicPath = String(req.path || "").toLowerCase();
@@ -3033,8 +3042,18 @@ app.get("/api/settings", (req, res) => {
     const settings = readSettingsFile();
     const db = getAdminDb();
     if (!db) return res.json({ ok: true, settings });
-    db.ref("quickPostSettings").get()
-      .then((snapshot) => res.json({ ok: true, settings: { ...settings, quickPost: snapshot.exists() ? snapshot.val() : settings.quickPost } }))
+    Promise.all([
+      db.ref("quickPostSettings").get(),
+      db.ref("publicSettings/visitorCounterVisibility").get()
+    ])
+      .then(([quickSnapshot, visitorSnapshot]) => res.json({
+        ok: true,
+        settings: {
+          ...settings,
+          quickPost: quickSnapshot.exists() ? quickSnapshot.val() : settings.quickPost,
+          visitorCounterVisibility: visitorSnapshot.exists() ? visitorSnapshot.val() : settings.visitorCounterVisibility
+        }
+      }))
       .catch(() => res.json({ ok: true, settings }));
   } catch (err) {
     return res.status(500).json({ ok: false, error: String(err.message || err) });
@@ -3064,6 +3083,11 @@ app.post("/api/settings", async (req, res) => {
     if (!ok) throw new Error("Failed to write settings file");
     if (incoming.quickPost && typeof incoming.quickPost === "object") {
       await db.ref("quickPostSettings").set({ ...incoming.quickPost, updatedAt: nowStamp() }).catch(() => {});
+    }
+    if (Object.prototype.hasOwnProperty.call(incoming, "visitorCounterVisibility")) {
+      const visibility = String(incoming.visitorCounterVisibility || "public").toLowerCase() === "private" ? "private" : "public";
+      updated.visitorCounterVisibility = visibility;
+      await db.ref("publicSettings/visitorCounterVisibility").set(visibility).catch(() => {});
     }
     return res.json({ ok: true, settings: updated });
   } catch (err) {
