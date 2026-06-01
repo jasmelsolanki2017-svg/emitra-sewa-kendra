@@ -1089,7 +1089,11 @@ const renderTextBlock = (boxId, panelId, value) => {
 const renderBulletTextBlock = (boxId, panelId, value) => {
   const box = document.getElementById(boxId);
   const panel = document.getElementById(panelId);
-  const lines = String(value || "").split(/\r?\n/).map(stripManualBullet).filter(Boolean);
+  const lines = Array.isArray(value)
+    ? value.map((item) => typeof item === "object" ? (item.text || item.value || item.label || item.name || Object.values(item).filter(isFilledFlexibleValue).join(": ")) : item).map(stripManualBullet).filter(Boolean)
+    : (value && typeof value === "object"
+        ? flexibleRowsFromValue(value).map((row) => `${row.label}: ${row.value}`).map(stripManualBullet).filter(Boolean)
+        : String(value || "").split(/\r?\n/).map(stripManualBullet).filter(Boolean));
   if(!box || !panel){ return false; }
   if(!lines.length){
     box.innerHTML = "";
@@ -1410,7 +1414,23 @@ const renderInlineList = (text = "") => {
 const getFlexibleField = (job = {}, key = "") => {
   const article = job.advancedArticleData && typeof job.advancedArticleData === "object" ? job.advancedArticleData : {};
   const content = job.content && typeof job.content === "object" ? job.content : {};
-  return job[key] ?? article[key] ?? content[key];
+  const snakeKey = String(key || "").replace(/([a-z])([A-Z])/g, "$1_$2").toLowerCase();
+  const aliases = {
+    applicationFee:["applicationFee","applicationFees","application_fee","application_fees"],
+    applicationFees:["applicationFees","applicationFee","application_fees","application_fee"],
+    importantDates:["importantDates","important_dates"],
+    ageLimit:["ageLimit","age_limit"],
+    vacancyDetails:["vacancyDetails","vacancy_details"],
+    selectionProcess:["selectionProcess","selection_process"],
+    importantLinks:["importantLinks","important_links"],
+    customSections:["customSections","custom_sections"]
+  }[key] || [key, snakeKey];
+  for(const source of [job, article, content]){
+    for(const alias of aliases){
+      if(source && source[alias] !== undefined && source[alias] !== null){ return source[alias]; }
+    }
+  }
+  return undefined;
 };
 
 const labelizeKey = (key = "") => String(key || "")
@@ -1492,12 +1512,14 @@ const renderObjectTable = (value) => rowsToStructuredTable(flexibleRowsFromValue
 const renderDataTable = (data) => {
   if(!isFilledFlexibleValue(data)){ return ""; }
   if(typeof data === "string"){ return renderPageContent(data, "Details") || renderFormattedText(data); }
-  const sourceRows = Array.isArray(data) ? data : (Array.isArray(data.rows) ? data.rows : (Array.isArray(data.items) ? data.items : []));
+  const sourceRows = (Array.isArray(data) ? data : (Array.isArray(data.rows) ? data.rows : (Array.isArray(data.items) ? data.items : []))).filter(isFilledFlexibleValue);
   const headers = Array.isArray(data?.headers) ? data.headers : [];
   if(sourceRows.length && sourceRows.every((row) => row && typeof row === "object" && !Array.isArray(row))){
     const keys = headers.length ? headers : Array.from(new Set(sourceRows.flatMap((row) => Object.keys(row))));
-    const head = keys.map((key) => `<th>${renderFormattedText(labelizeKey(key))}</th>`).join("");
-    const body = sourceRows.map((row) => `<tr>${keys.map((key) => `<td>${renderFlexibleCell(row[key])}</td>`).join("")}</tr>`).join("");
+    const visibleKeys = keys.filter((key) => sourceRows.some((row) => isFilledFlexibleValue(row[key])));
+    if(!visibleKeys.length){ return ""; }
+    const head = visibleKeys.map((key) => `<th>${renderFormattedText(labelizeKey(key))}</th>`).join("");
+    const body = sourceRows.map((row) => `<tr>${visibleKeys.map((key) => `<td>${renderFlexibleCell(row[key])}</td>`).join("")}</tr>`).join("");
     return `<div class="structured-table-wrap"><table class="content-table"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
   }
   if(sourceRows.length && sourceRows.every(Array.isArray)){
