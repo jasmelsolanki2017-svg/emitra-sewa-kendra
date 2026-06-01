@@ -114,9 +114,15 @@
         <input class="wide" type="url" id="adminServerUrl" placeholder="Render Server URL jaise https://your-app.onrender.com">
         <input type="number" id="checkerFetchLimit" min="1" max="120" value="12" placeholder="Max new drafts per run">
         <input type="number" id="checkerPageLimit" min="1" max="80" value="20" placeholder="Max pages fetch per run">
+        <select id="aiProviderSelect">
+          <option value="openrouter_deepseek">OpenRouter DeepSeek</option>
+          <option value="openrouter_qwen">OpenRouter Qwen</option>
+          <option value="gemini">Gemini</option>
+        </select>
       </div>
       <div class="buttons">
         <button type="button" onclick="saveAdminServerUrl()">Save Server URL</button>
+        <button type="button" onclick="saveAiProviderSettings()">Save AI Provider</button>
         <button type="button" onclick="checkServerStatus()">Check Server</button>
         <button type="button" class="publish" onclick="runCheckerNow()">Run Checker Now</button>
         <button type="button" onclick="downloadBackup()">Backup Data</button>
@@ -249,6 +255,7 @@
     const firebaseConfig={apiKey:"AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",authDomain:"my-website-73785.firebaseapp.com",databaseURL:"https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app/",projectId:"my-website-73785",storageBucket:"my-website-73785.firebasestorage.app",messagingSenderId:"854088341990",appId:"1:854088341990:web:3211d4ef9fe4b78d025e27"};
     const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getDatabase(app),adminEmail="jasmelsolanki@gmail.com";
     const adminServerStorageKey="emitraAdminServerUrl";
+    const aiProviderStorageKey="emitraAutoCheckerAiProvider";
     let adminAllowed=false,editingSourceId="",activeDraftId="",sourcesCache={},draftsCache={},dataSyncStarted=false;
     const sourceFields=["sourceName","sourceDepartment","sourceUrl","sourceKeywords","sourceKind","sourceMaxFetch","sourceEnabled","sourceLatestJobUrl","sourceAdmitCardUrl","sourceResultUrl","sourceAnswerKeyUrl","sourceSyllabusUrl"];
     const draftFields=["draftTitle","draftDepartment","draftPostDate","draftTotalPosts","draftImportantDates","draftQualification","draftOfficialLink","draftSourceLink","draftPostTarget","draftLastDate","draftSlug","draftSeoTitle","draftMetaDescription","draftNotificationSummary","draftWhatsappPostText","draftPageContent","draftGeneratedJson"];
@@ -256,6 +263,7 @@
     const sourceList=$("sourceList"),scrapedSourceList=$("scrapedSourceList"),draftList=$("draftList"),logList=$("logList");
 
     $("adminServerUrl").value=localStorage.getItem(adminServerStorageKey)||"";
+    $("aiProviderSelect").value=localStorage.getItem(aiProviderStorageKey)||"gemini";
 
     const escapeHTML=(value="")=>String(value||"").replace(/[&<>"']/g,(char)=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[char]));
     const formatTime=(value)=>value?new Date(Number(value)).toLocaleString("hi-IN"):"--";
@@ -343,9 +351,58 @@
       box.innerText=message;
     };
 
-    const getAiRequestOptions=()=>({});
+    const aiProviderOptions={
+      openrouter_deepseek:{label:"OpenRouter DeepSeek",provider:"openrouter",model:"deepseek/deepseek-chat-v3-0324:free"},
+      openrouter_qwen:{label:"OpenRouter Qwen",provider:"openrouter",model:"qwen/qwen3-coder:free"},
+      gemini:{label:"Gemini",provider:"gemini",model:""}
+    };
+    const getSelectedAiOption=()=>aiProviderOptions[getValue("aiProviderSelect")]||aiProviderOptions.openrouter_deepseek;
+    const applyAiSelection=(provider="",model="")=>{
+      const normalizedProvider=String(provider||"").toLowerCase();
+      const normalizedModel=String(model||"").trim();
+      let key="openrouter_deepseek";
+      if(normalizedProvider==="gemini"){
+        key="gemini";
+      }else if(normalizedProvider==="openrouter"&&normalizedModel==="qwen/qwen3-coder:free"){
+        key="openrouter_qwen";
+      }
+      $("aiProviderSelect").value=key;
+      localStorage.setItem(aiProviderStorageKey,key);
+    };
+    $("aiProviderSelect").addEventListener("change",()=>{
+      const option=getSelectedAiOption();
+      localStorage.setItem(aiProviderStorageKey,getValue("aiProviderSelect"));
+      showAiStatus(`Selected: ${option.label}${option.model?` | Model: ${option.model}`:""}. Save AI Provider dabayein.`);
+    });
+    const getAiRequestOptions=()=>{
+      const option=getSelectedAiOption();
+      return {aiProvider:option.provider,aiModel:option.model};
+    };
+    const loadAiProviderSettings=async()=>{
+      try{
+        const response=await fetch(adminApiUrl("/api/settings"),{method:"GET",cache:"no-store"});
+        const data=await response.json().catch(()=>({}));
+        if(!response.ok||data.ok===false)throw new Error(data.error||`Settings load failed (${response.status})`);
+        const settings=data.settings||{};
+        applyAiSelection(settings.aiProvider||"",settings.aiModel||"");
+      }catch(_error){}
+    };
+    window.saveAiProviderSettings=async()=>{
+      if(!adminAllowed){alert("Admin verify nahi hua.");return}
+      const option=getSelectedAiOption();
+      try{
+        showAiStatus(`Saving: ${option.label}...`);
+        const result=await callAdminApi("/api/settings",{aiProvider:option.provider,aiModel:option.model,openRouterModel:option.provider==="openrouter"?option.model:""});
+        applyAiSelection(result.settings?.aiProvider||option.provider,result.settings?.aiModel||option.model);
+        showAiStatus(`Saved: ${option.label}${option.model?` | Model: ${option.model}`:""}`);
+        await checkServerStatus().catch(()=>{});
+      }catch(error){
+        showAiStatus("AI provider save error: "+error.message);
+      }
+    };
     const renderServerHealth=(data={})=>{
-      const selectedKey=String(data.aiEnvProvider||"gemini").toLowerCase();
+      const selectedKey=String(data.aiSavedProvider||data.aiEnvProvider||"gemini").toLowerCase();
+      applyAiSelection(data.aiSavedProvider||"",data.aiSavedModel||"");
       showAiStatus(`AI Provider: ${data.aiSelectedProvider||data.aiProvider||"Gemini"}${data.aiSelectedModel?` | Model: ${data.aiSelectedModel}`:""} | Status: ${data.aiConfigured?"Ready":"Local fallback"}`);
       $("serverHealth").innerHTML=[
         healthCard("Server",data.serverOnline!==false,data.serverOnline!==false?"Online":"Offline"),
@@ -1063,6 +1120,7 @@
         adminAllowed=true;
         $("accessTitle").innerText="Admin Access Verified";
         $("adminEmailText").innerText=user.email;
+        loadAiProviderSettings().catch(()=>{});
         startDataSync();
         if(hasAdminServerUrl()){checkServerStatus().catch(()=>{})}
       }else{

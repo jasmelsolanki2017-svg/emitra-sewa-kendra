@@ -66,8 +66,10 @@ const OPENAI_API_KEY = String(process.env.OPENAI_API_KEY || "").trim();
 const OPENAI_MODEL = String(process.env.OPENAI_MODEL || "").trim();
 const AI_PROVIDER = String(process.env.AI_PROVIDER || "gemini").trim().toLowerCase();
 const AI_MODEL = String(process.env.AI_MODEL || "").trim();
+const OPENROUTER_DEEPSEEK_MODEL = "deepseek/deepseek-chat-v3-0324:free";
+const OPENROUTER_QWEN_MODEL = "qwen/qwen3-coder:free";
 const OPENROUTER_API_KEY = String(process.env.OPENROUTER_API_KEY || "").trim();
-const OPENROUTER_MODEL = String(process.env.OPENROUTER_MODEL || AI_MODEL || "deepseek/deepseek-chat-v3-0324:free").trim();
+const OPENROUTER_MODEL = String(process.env.OPENROUTER_MODEL || AI_MODEL || OPENROUTER_DEEPSEEK_MODEL).trim();
 const GROQ_API_KEY = String(process.env.GROQ_API_KEY || "").trim();
 const GROQ_MODEL = String(process.env.GROQ_MODEL || "llama-3.1-8b-instant").trim();
 const DEEPSEEK_API_KEY = String(process.env.DEEPSEEK_API_KEY || "").trim();
@@ -235,9 +237,17 @@ const isAiProviderConfigured = (providerValue = "", modelValue = "") => {
   return Boolean(config.apiKey && config.model);
 };
 
+const readAiSettings = () => {
+  const settings = readSettingsFile();
+  const savedProvider = normalizeAiProvider(settings.aiProvider || "");
+  const provider = settings.aiProvider ? savedProvider : normalizeAiProvider(AI_PROVIDER || "gemini");
+  const model = String(settings.aiModel || settings.openRouterModel || (provider === "openrouter" ? OPENROUTER_MODEL : AI_MODEL) || "").trim();
+  return { provider, model };
+};
+
 function buildServerStatus(overrides = {}) {
-  const configuredProvider = normalizeAiProvider(AI_PROVIDER || "gemini");
-  const selectedAi = getAiProviderConfig(configuredProvider, AI_MODEL);
+  const configured = readAiSettings();
+  const selectedAi = getAiProviderConfig(configured.provider, configured.model);
   const fallbackAi = [selectedAi, getAiProviderConfig("gemini"), getAiProviderConfig("openrouter")]
     .find((config) => config.apiKey && config.model);
   const aiProvider = fallbackAi ? fallbackAi.label : "Local";
@@ -255,7 +265,9 @@ function buildServerStatus(overrides = {}) {
     aiProvider,
     aiSelectedProvider: selectedAi.label,
     aiSelectedModel: selectedAi.model,
-    aiEnvProvider: configuredProvider,
+    aiSavedProvider: configured.provider,
+    aiSavedModel: configured.model,
+    aiEnvProvider: normalizeAiProvider(AI_PROVIDER || "gemini"),
     aiEnvModel: AI_MODEL,
     aiProviders: {
       gemini: isAiProviderConfigured("gemini"),
@@ -265,7 +277,9 @@ function buildServerStatus(overrides = {}) {
     aiModels: {
       gemini: GEMINI_MODEL,
       openrouter: OPENROUTER_MODEL,
-      openai: OPENAI_MODEL
+      openai: OPENAI_MODEL,
+      openrouterDeepSeek: OPENROUTER_DEEPSEEK_MODEL,
+      openrouterQwen: OPENROUTER_QWEN_MODEL
     },
     githubDispatchConfigured: Boolean(GITHUB_TOKEN && GITHUB_REPOSITORY),
     githubRepository: GITHUB_REPOSITORY,
@@ -1338,8 +1352,8 @@ const callAiText = async ({ provider = "gemini", model = "", prompt = "", system
 };
 
 const aiOptionsFromRequest = (body = {}) => ({
-  provider: normalizeAiProvider(body.aiProvider || body.provider || AI_PROVIDER || "gemini"),
-  model: String(body.aiModel || body.openRouterModel || body.model || AI_MODEL || "").trim()
+  provider: normalizeAiProvider(body.aiProvider || body.provider || readAiSettings().provider),
+  model: String(body.aiModel || body.openRouterModel || body.model || readAiSettings().model || "").trim()
 });
 
 const generateAiSummary = async (job = {}, options = {}) => {
@@ -2668,6 +2682,18 @@ app.post("/api/settings", async (req, res) => {
   try {
     await requireAdmin(req);
     const incoming = req.body && typeof req.body === "object" ? req.body : {};
+    if (Object.prototype.hasOwnProperty.call(incoming, "aiProvider")) {
+      incoming.aiProvider = normalizeAiProvider(incoming.aiProvider);
+    }
+    if (Object.prototype.hasOwnProperty.call(incoming, "aiModel")) {
+      const requestedProvider = normalizeAiProvider(incoming.aiProvider || readAiSettings().provider);
+      const model = String(incoming.aiModel || "").trim();
+      incoming.aiModel = requestedProvider === "openrouter" ? (model || OPENROUTER_DEEPSEEK_MODEL) : "";
+    }
+    if (Object.prototype.hasOwnProperty.call(incoming, "openRouterModel")) {
+      const model = String(incoming.openRouterModel || "").trim();
+      incoming.openRouterModel = model || "";
+    }
     const current = readSettingsFile();
     const updated = { ...current, ...incoming };
     const ok = writeSettingsFile(updated);
