@@ -1431,6 +1431,214 @@ const parseJsonFromAiText = (value = "") => {
   }
 };
 
+const IST_TIME_ZONE = "Asia/Kolkata";
+const dailyCurrentAffairsDate = (date = new Date()) => {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: IST_TIME_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).formatToParts(date);
+  const get = (type) => parts.find((part) => part.type === type)?.value || "";
+  return `${get("year")}-${get("month")}-${get("day")}`;
+};
+
+const dailyCurrentAffairsDisplayDate = (date = new Date()) => {
+  const parsed = typeof date === "string" ? new Date(`${date}T00:00:00+05:30`) : date;
+  return new Intl.DateTimeFormat("en-GB", {
+    timeZone: IST_TIME_ZONE,
+    day: "2-digit",
+    month: "long",
+    year: "numeric"
+  }).format(parsed);
+};
+
+const getIstClock = (date = new Date()) => {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: IST_TIME_ZONE,
+    hour12: false,
+    hour: "2-digit",
+    minute: "2-digit"
+  }).formatToParts(date);
+  return {
+    hour: Number(parts.find((part) => part.type === "hour")?.value || 0),
+    minute: Number(parts.find((part) => part.type === "minute")?.value || 0)
+  };
+};
+
+const normalizeCurrentAffairsArray = (value) => Array.isArray(value) ? value : (toText(value) ? [toText(value)] : []);
+
+const buildDailyCurrentAffairsPrompt = (dateLabel = "") => [
+  `Date: ${dateLabel}`,
+  "India aur Rajasthan focused Daily Current Affairs update ke liye factual Hindi content banao.",
+  "Output sirf valid JSON do. Markdown/code fence/explanation mat do.",
+  "JSON schema:",
+  "{",
+  '  "news": [{"title":"","category":"","summary":"","importance":"High/Medium/Low","source":""}],',
+  '  "questions": [{"question":"","options":["","","",""],"answer":"","explanation":""}],',
+  '  "faqs": [{"question":"","answer":""}],',
+  '  "shortInfo": "",',
+  '  "metaDescription": ""',
+  "}",
+  "Rules: 8-12 news points, 8-10 MCQ questions, 4-5 FAQs. Facts invent mat karo; uncertain facts ko general exam-revision wording me rakho."
+].join("\n");
+
+const generateDailyCurrentAffairsPayload = async ({ date = new Date(), aiProvider = "", aiModel = "" } = {}) => {
+  const dateKey = typeof date === "string" ? date : dailyCurrentAffairsDate(date);
+  const dateLabel = dailyCurrentAffairsDisplayDate(dateKey);
+  const title = `Daily Current Affairs Update - ${dateLabel}`;
+  const prompt = buildDailyCurrentAffairsPrompt(dateLabel);
+  const ai = await callAiText({
+    ...readAiSettings(),
+    provider: aiProvider || readAiSettings().provider,
+    model: aiModel || readAiSettings().model,
+    prompt,
+    system: "You create concise, factual Hindi daily current affairs study material for Indian competitive exam aspirants.",
+    temperature: 0.25,
+    maxTokens: 2200
+  });
+  const parsed = parseJsonFromAiText(ai.text);
+  const news = normalizeCurrentAffairsArray(parsed.news || parsed.samachar || parsed["समाचार"])
+    .map((item) => item && typeof item === "object" ? {
+      title: toText(item.title || item["शीर्षक"] || item.heading),
+      category: toText(item.category || item["श्रेणी"] || item.topic),
+      summary: toText(item.summary || item["सारांश"] || item.description || item.content),
+      importance: toText(item.importance || item["महत्व"] || item.importanceLevel),
+      source: toText(item.source || item["स्रोत"])
+    } : { title: "", category: "", summary: toText(item), importance: "", source: "" })
+    .filter((item) => item.title || item.summary);
+  const questions = normalizeCurrentAffairsArray(parsed.questions || parsed.mcqs || parsed.quiz)
+    .map((item) => item && typeof item === "object" ? {
+      question: toText(item.question || item.q || item.title),
+      options: normalizeCurrentAffairsArray(item.options).map(toText).filter(Boolean),
+      answer: toText(item.answer || item.correctAnswer || item.correct),
+      explanation: toText(item.explanation || item.reason || item.solution)
+    } : null)
+    .filter((item) => item && item.question && item.options.length);
+  const faqs = normalizeCurrentAffairsArray(parsed.faqs || parsed.faq)
+    .map((item) => item && typeof item === "object" ? {
+      question: toText(item.question || item.q || item.title),
+      answer: toText(item.answer || item.a || item.text || item.content)
+    } : null)
+    .filter((item) => item && item.question && item.answer);
+  if (!news.length && !questions.length) {
+    const error = new Error("AI response me valid current affairs JSON nahi mila.");
+    error.code = "AI_INVALID_RESPONSE";
+    throw error;
+  }
+  const intro = [
+    toText(parsed.shortInfo || parsed.summary || `Aaj ${dateLabel} ke important current affairs, MCQ practice aur FAQs yahan diye gaye hain.`)
+  ].filter(Boolean);
+  const sections = news.map((item) => ({
+    heading: item.title || item.category || "Current Affairs News",
+    content: [item.importance ? `महत्व: ${item.importance}` : "", item.category ? `श्रेणी: ${item.category}` : "", item.summary].filter(Boolean).join("\n")
+  }));
+  const slug = cleanSlug(`daily-current-affairs-update-${dateKey}`) || buildSlug(title);
+  const shortInfo = intro[0] || `${dateLabel} current affairs update.`;
+  const metaDescription = toText(parsed.metaDescription || shortInfo).slice(0, 160);
+  return {
+    title,
+    slug,
+    canonicalUrl: `${SITE_BASE_URL}/post/${encodeURIComponent(slug)}/`,
+    category: "Current Affairs",
+    type: "Current Affairs",
+    postTarget: "currentAffairs",
+    postStatus: "published",
+    displayOrder: "1",
+    postDate: dateLabel,
+    dailyCurrentAffairsDate: dateKey,
+    autoGenerated: true,
+    currentAffairsProvider: ai.provider,
+    currentAffairsModel: ai.model || "",
+    shortInfo,
+    metaDescription,
+    seoTitle: `${title} | E-MITRA WALA`,
+    news,
+    mcqs: questions,
+    questions,
+    faq: faqs,
+    faqs,
+    intro,
+    overview: [
+      { label: "तारीख", value: dateLabel },
+      { label: "श्रेणी", value: "Current Affairs" },
+      { label: "समाचार", value: `${news.length} updates` },
+      { label: "MCQ", value: `${questions.length} questions` }
+    ],
+    sections,
+    content: { intro, news, questions, category: "Current Affairs", date: dateLabel },
+    currentAffairsData: { title, date: dateLabel, news, questions, faqs, shortInfo, metaDescription },
+    advancedArticleData: {
+      title,
+      slug,
+      postTarget: "currentAffairs",
+      shortInfo,
+      intro,
+      overview: [
+        { label: "तारीख", value: dateLabel },
+        { label: "श्रेणी", value: "Current Affairs" },
+        { label: "समाचार", value: `${news.length} updates` },
+        { label: "MCQ", value: `${questions.length} questions` }
+      ],
+      sections,
+      faq: faqs,
+      faqs,
+      mcqs: questions,
+      questions,
+      news,
+      content: { intro, news, questions, category: "Current Affairs", date: dateLabel },
+      seo: { seoTitle: `${title} | E-MITRA WALA`, metaDescription }
+    }
+  };
+};
+
+const findDailyCurrentAffairsPost = async (db, dateKey = "") => {
+  const title = `Daily Current Affairs Update - ${dailyCurrentAffairsDisplayDate(dateKey)}`;
+  const slug = cleanSlug(`daily-current-affairs-update-${dateKey}`);
+  const snapshot = await db.ref("LatestJobs").get();
+  if (!snapshot.exists()) return null;
+  let match = null;
+  snapshot.forEach((child) => {
+    if (match) return;
+    const data = child.val() || {};
+    const target = data.postTarget || data.advancedArticleData?.postTarget;
+    if (target !== "currentAffairs") return;
+    if (data.dailyCurrentAffairsDate === dateKey || data.slug === slug || data.title === title) {
+      match = { id: child.key, data };
+    }
+  });
+  return match;
+};
+
+const upsertDailyCurrentAffairs = async (db, options = {}) => {
+  const dateKey = options.dateKey || dailyCurrentAffairsDate();
+  const payload = await generateDailyCurrentAffairsPayload({ date: dateKey, aiProvider: options.aiProvider, aiModel: options.aiModel });
+  const now = nowStamp();
+  const existing = await findDailyCurrentAffairsPost(db, dateKey);
+  const jobRef = existing ? db.ref(`LatestJobs/${existing.id}`) : db.ref("LatestJobs").push();
+  const jobId = existing ? existing.id : jobRef.key;
+  const data = {
+    ...(existing?.data || {}),
+    ...payload,
+    canonicalUrl: `${SITE_BASE_URL}/post/${encodeURIComponent(payload.slug)}/`,
+    updatedAt: now,
+    ...(existing ? {} : { createdAt: now })
+  };
+  await jobRef.set(data);
+  await normalizeLatestJobsSeo(db, jobId).catch(() => null);
+  const publish = await triggerSeoPostsWorkflow({ db, jobId, reason: existing ? "daily-current-affairs-update" : "daily-current-affairs-create" }).catch((err) => ({ ok: false, error: err.message }));
+  await db.ref("currentAffairsAutoLogs").push({
+    dateKey,
+    jobId,
+    action: existing ? "updated" : "created",
+    title: data.title,
+    provider: data.currentAffairsProvider || "",
+    model: data.currentAffairsModel || "",
+    createdAt: now
+  }).catch(() => {});
+  return { ok: true, action: existing ? "updated" : "created", jobId, title: data.title, slug: data.slug, url: getPublicJobUrl(jobId, data), dateKey, publish };
+};
+
 const rewriteQuickPostDraft = async ({ url = "", pageText = "", prompt = "" } = {}) => {
   const fallback = generateJobJsonFromText(pageText || url, {
     title: findFirstMatchLine(pageText, [/recruitment/i, /vacancy/i, /job/i, /news/i, /भर्ती/i, /समाचार/i]) || "Job Update",
@@ -3802,6 +4010,40 @@ app.post("/admin/git-safety", async (req, res) => {
   }
 });
 
+app.post("/admin/current-affairs/generate-today", async (req, res) => {
+  try {
+    const { db } = await requireAdmin(req);
+    const result = await upsertDailyCurrentAffairs(db, {
+      dateKey: toText(req.body?.dateKey) || dailyCurrentAffairsDate(),
+      aiProvider: req.body?.aiProvider,
+      aiModel: req.body?.aiModel
+    });
+    return res.json(result);
+  } catch (err) {
+    const message = err.code === "AI_NOT_CONFIGURED"
+      ? `${err.message}. Render/server env me GEMINI_API_KEY/OPENROUTER_API_KEY/OPENAI_API_KEY aur model configure karein.`
+      : err.message;
+    return res.status(err.statusCode || (err.code === "AI_NOT_CONFIGURED" ? 503 : 500)).json({ ok: false, error: message });
+  }
+});
+
+const runCronDailyCurrentAffairs = async (req, res) => {
+  try {
+    requireCronSecret(req);
+    const db = getAdminDb();
+    if (!db) {
+      return res.status(503).json({ ok: false, error: "Firebase Admin SDK is not configured" });
+    }
+    const result = await upsertDailyCurrentAffairs(db, { dateKey: toText(req.query?.date || req.body?.dateKey) || dailyCurrentAffairsDate() });
+    return res.json({ ...result, scheduled: true });
+  } catch (err) {
+    const message = err.code === "AI_NOT_CONFIGURED"
+      ? `${err.message}. AI/API key missing hai. Server env me AI key aur model configure karein.`
+      : err.message;
+    return res.status(err.statusCode || (err.code === "AI_NOT_CONFIGURED" ? 503 : 500)).json({ ok: false, error: message });
+  }
+};
+
 const runCronAutoJobChecker = async (req, res) => {
   try {
     requireCronSecret(req);
@@ -3812,11 +4054,37 @@ const runCronAutoJobChecker = async (req, res) => {
   }
 };
 
+app.get("/cron/daily-current-affairs", runCronDailyCurrentAffairs);
+app.post("/cron/daily-current-affairs", runCronDailyCurrentAffairs);
 app.get("/cron/auto-job-checker", runCronAutoJobChecker);
 app.post("/cron/auto-job-checker", runCronAutoJobChecker);
 
+let lastDailyCurrentAffairsRunDate = "";
+const maybeRunDailyCurrentAffairsSchedule = async () => {
+  const enabled = String(process.env.DAILY_CURRENT_AFFAIRS_AUTO || "true").toLowerCase() !== "false";
+  if (!enabled || !isAdminSdkConfigured()) return;
+  const dateKey = dailyCurrentAffairsDate();
+  const { hour, minute } = getIstClock();
+  if (hour !== 7 || minute !== 0 || lastDailyCurrentAffairsRunDate === dateKey) return;
+  lastDailyCurrentAffairsRunDate = dateKey;
+  try {
+    const db = getAdminDb();
+    if (!db) return;
+    const result = await upsertDailyCurrentAffairs(db, { dateKey });
+    console.log(`Daily current affairs ${result.action}: ${result.title}`);
+  } catch (err) {
+    console.error("Daily current affairs failed:", err.message);
+  }
+};
+
 app.listen(PORT, () => {
   console.log(`Admin API running on port ${PORT}`);
+  setInterval(() => {
+    maybeRunDailyCurrentAffairsSchedule().catch((err) => {
+      console.error("Daily current affairs scheduler failed:", err.message);
+    });
+  }, 60 * 1000);
+  maybeRunDailyCurrentAffairsSchedule().catch(() => {});
   if (CHECKER_INTERVAL_MS > 0) {
     setInterval(() => {
       runAutoJobChecker({ scheduled: true }).catch((err) => {
