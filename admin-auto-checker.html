@@ -80,6 +80,18 @@
     .result-box{margin-top:8px;border:1px dashed #bdd0e5;border-radius:7px;background:#fbfdff;padding:8px;font-size:12px;font-weight:700;white-space:pre-wrap;overflow-wrap:anywhere;color:#172033}
     .mini-btn{padding:6px 8px;font-size:11px}
     .hidden{display:none!important}
+    .quick-post-fab{position:fixed;right:18px;bottom:18px;z-index:40;background:#ff7a00;color:#03224d;box-shadow:0 8px 24px rgba(0,0,0,.22)}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(3,34,77,.55);z-index:50;display:none;align-items:center;justify-content:center;padding:14px}
+    .modal-backdrop.open{display:flex}
+    .quick-modal{background:#fff;border-radius:7px;border:1px solid #bdd0e5;width:min(920px,96vw);max-height:92vh;overflow:auto;box-shadow:0 18px 50px rgba(0,0,0,.3)}
+    .quick-modal-head{display:flex;justify-content:space-between;gap:10px;align-items:center;background:#0057a8;color:#fff;padding:10px 12px}
+    .quick-modal-head h2{font-size:17px;color:#fff;margin:0}
+    .quick-tabs{display:flex;gap:6px;flex-wrap:wrap;padding:10px 12px;border-bottom:1px solid #d8e6f5;background:#eef6ff}
+    .quick-tab{background:#fff;color:#0057a8;border:1px solid #bdd0e5}
+    .quick-tab.active{background:#0057a8;color:#fff}
+    .quick-pane{display:none;padding:12px}
+    .quick-pane.active{display:block}
+    .quick-list{max-height:260px;overflow:auto;margin-top:8px}
     @media(max-width:820px){.grid,.form-grid{grid-template-columns:1fr}.wide{grid-column:auto}.row{display:block}.row .actions{justify-content:flex-start;margin-top:8px}nav{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap}nav a,nav button{white-space:nowrap}}
   </style>
 </head>
@@ -95,6 +107,52 @@
     <a href="job-form.html">Public Jobs Page</a>
     <button onclick="logoutUser()">Logout</button>
   </nav>
+  <button type="button" class="quick-post-fab" onclick="openQuickPostModal()">Quick Post</button>
+  <div class="modal-backdrop" id="quickPostModal" role="dialog" aria-modal="true" aria-labelledby="quickPostTitle">
+    <div class="quick-modal">
+      <div class="quick-modal-head">
+        <h2 id="quickPostTitle">Quick Post</h2>
+        <button type="button" class="cancel" onclick="closeQuickPostModal()">Close</button>
+      </div>
+      <div class="quick-tabs">
+        <button type="button" class="quick-tab active" data-quick-tab="batch" onclick="setQuickPostTab('batch')">Batch Post</button>
+        <button type="button" class="quick-tab" data-quick-tab="single" onclick="setQuickPostTab('single')">Single Rewrite</button>
+        <button type="button" class="quick-tab" data-quick-tab="settings" onclick="setQuickPostTab('settings')">Settings</button>
+      </div>
+      <div class="quick-pane active" id="quickPaneBatch">
+        <div class="form-grid">
+          <input class="wide" id="quickBatchUrl" type="url" placeholder="Category/List URL">
+        </div>
+        <div class="buttons">
+          <button type="button" onclick="quickFetchLinks()">Fetch Post List</button>
+          <button type="button" class="publish" onclick="quickStartBatch()">Start Queue</button>
+        </div>
+        <div class="status" id="quickBatchStatus">List URL se links fetch karke drafts queue me bheje jayenge.</div>
+        <div class="quick-list" id="quickLinkList"><div class="empty">Links yahan show honge.</div></div>
+      </div>
+      <div class="quick-pane" id="quickPaneSingle">
+        <div class="form-grid">
+          <input class="wide" id="quickSingleUrl" type="url" placeholder="Source URL">
+        </div>
+        <div class="buttons">
+          <button type="button" class="publish" onclick="quickRewriteSingle()">Fetch & Rewrite</button>
+        </div>
+        <div class="status" id="quickSingleStatus">Draft existing Auto Job Checker review list me save hoga.</div>
+      </div>
+      <div class="quick-pane" id="quickPaneSettings">
+        <div class="health-grid" id="quickAiStatus"></div>
+        <div class="form-grid" style="margin-top:8px">
+          <textarea class="wide" id="quickRewritePrompt" placeholder="Rewrite prompt"></textarea>
+          <input id="quickMaxPosts" type="number" min="1" max="50" placeholder="Max posts per run">
+          <input id="quickDelaySeconds" type="number" min="0" max="60" placeholder="Delay seconds">
+        </div>
+        <div class="buttons">
+          <button type="button" onclick="saveQuickPostSettings()">Save Settings</button>
+        </div>
+        <div class="status" id="quickSettingsStatus">Settings localStorage aur server settings me save honge.</div>
+      </div>
+    </div>
+  </div>
   <main>
     <section class="panel admin-info">
       <h2 id="accessTitle">Admin Access Checking...</h2>
@@ -117,6 +175,7 @@
         <select id="aiProviderSelect">
           <option value="openrouter_deepseek">OpenRouter DeepSeek</option>
           <option value="openrouter_qwen">OpenRouter Qwen</option>
+          <option value="openai">OpenAI</option>
           <option value="gemini">Gemini</option>
         </select>
       </div>
@@ -358,8 +417,15 @@
     const aiProviderOptions={
       openrouter_deepseek:{label:"OpenRouter DeepSeek",provider:"openrouter",model:"deepseek/deepseek-chat-v3-0324:free"},
       openrouter_qwen:{label:"OpenRouter Qwen",provider:"openrouter",model:"qwen/qwen3-coder:free"},
+      openai:{label:"OpenAI",provider:"openai",model:""},
       gemini:{label:"Gemini",provider:"gemini",model:""}
     };
+    const quickPostSettingsKey="emitraQuickPostSettings";
+    let quickFetchedLinks=[],quickBatchPollTimer=null,quickCurrentBatchId="";
+    const readQuickPostSettings=()=>{
+      try{return JSON.parse(localStorage.getItem(quickPostSettingsKey)||"{}")}catch{return {}}
+    };
+    const writeQuickPostSettings=(settings={})=>localStorage.setItem(quickPostSettingsKey,JSON.stringify(settings||{}));
     const getSelectedAiOption=()=>aiProviderOptions[getValue("aiProviderSelect")]||aiProviderOptions.openrouter_deepseek;
     const applyAiSelection=(provider="",model="")=>{
       const normalizedProvider=String(provider||"").toLowerCase();
@@ -367,6 +433,8 @@
       let key="openrouter_deepseek";
       if(normalizedProvider==="gemini"){
         key="gemini";
+      }else if(normalizedProvider==="openai"){
+        key="openai";
       }else if(normalizedProvider==="openrouter"&&normalizedModel==="qwen/qwen3-coder:free"){
         key="openrouter_qwen";
       }
@@ -382,12 +450,115 @@
       const option=getSelectedAiOption();
       return {aiProvider:option.provider,aiModel:option.model};
     };
+    const quickPrompt=()=>getValue("quickRewritePrompt")||"Hindi me unique, factual job/news article draft banao. Copied wording avoid karo. Title, dates, fee, qualification aur useful details preserve karo.";
+    const quickMaxPosts=()=>Math.max(1,Math.min(50,Number(getValue("quickMaxPosts")||readQuickPostSettings().maxPosts||5)));
+    const quickDelaySeconds=()=>Math.max(0,Math.min(60,Number(getValue("quickDelaySeconds")||readQuickPostSettings().delaySeconds||2)));
+    const initQuickPostSettings=()=>{
+      const saved=readQuickPostSettings();
+      setValue("quickRewritePrompt",saved.prompt||quickPrompt());
+      setValue("quickMaxPosts",saved.maxPosts||5);
+      setValue("quickDelaySeconds",saved.delaySeconds||2);
+    };
+    initQuickPostSettings();
+    window.openQuickPostModal=()=>{
+      $("quickPostModal").classList.add("open");
+      renderQuickAiStatus();
+    };
+    window.closeQuickPostModal=()=>{$("quickPostModal").classList.remove("open")};
+    window.setQuickPostTab=(tab)=>{
+      document.querySelectorAll(".quick-tab").forEach((item)=>item.classList.toggle("active",item.dataset.quickTab===tab));
+      ["batch","single","settings"].forEach((key)=>$("quickPane"+key[0].toUpperCase()+key.slice(1)).classList.toggle("active",key===tab));
+      if(tab==="settings")renderQuickAiStatus();
+    };
+    const renderQuickAiStatus=(data={})=>{
+      const option=getSelectedAiOption();
+      $("quickAiStatus").innerHTML=[
+        healthCard("Selected Provider",true,option.label),
+        healthCard("Selected Model",true,option.model||"Gemini default"),
+        healthCard("Server AI",data.aiConfigured===false?"warn":true,data.aiProvider||"Check Server")
+      ].join("");
+    };
+    window.saveQuickPostSettings=async()=>{
+      const settings={prompt:quickPrompt(),maxPosts:quickMaxPosts(),delaySeconds:quickDelaySeconds()};
+      writeQuickPostSettings(settings);
+      try{
+        await callAdminApi("/api/settings",{quickPost:settings});
+        $("quickSettingsStatus").innerText="Quick Post settings save ho gaye.";
+      }catch(error){
+        $("quickSettingsStatus").innerText="Local settings save ho gaye. Server save error: "+error.message;
+      }
+    };
+    const renderQuickLinks=(links=[])=>{
+      if(!links.length){$("quickLinkList").innerHTML='<div class="empty">Links yahan show honge.</div>';return}
+      $("quickLinkList").innerHTML=links.map((item,index)=>`<div class="row"><div><strong>${escapeHTML(item.title||"Post Link")}</strong><small>${escapeHTML(item.url||"")}</small><small>Status: ${escapeHTML(item.status||"ready")}${item.message?` | ${escapeHTML(item.message)}`:""}</small></div><div class="actions"><span class="badge">#${index+1}</span></div></div>`).join("");
+    };
+    window.quickFetchLinks=async()=>{
+      if(!adminAllowed){alert("Admin verify nahi hua.");return}
+      try{
+        $("quickBatchStatus").innerText="Links fetch ho rahe hain...";
+        const result=await callAdminApi("/api/quick-post/fetch-links",{url:getValue("quickBatchUrl"),limit:quickMaxPosts()});
+        quickFetchedLinks=result.links||[];
+        renderQuickLinks(quickFetchedLinks);
+        $("quickBatchStatus").innerText=`${quickFetchedLinks.length} links mile. Start Queue dabayein.`;
+      }catch(error){
+        $("quickBatchStatus").innerText="Fetch links error: "+error.message;
+      }
+    };
+    const pollQuickBatch=async()=>{
+      if(!quickCurrentBatchId)return;
+      try{
+        const result=await callAdminApi("/api/quick-post/status",{batchId:quickCurrentBatchId});
+        const batch=result.batch||{};
+        renderQuickLinks(batch.items||[]);
+        const done=(batch.items||[]).filter((item)=>["done","failed","skipped"].includes(item.status)).length;
+        $("quickBatchStatus").innerText=`Batch ${batch.status}: ${done}/${batch.total||0} processed`;
+        if(["done","failed","cancelled"].includes(batch.status)){
+          clearInterval(quickBatchPollTimer);
+          quickBatchPollTimer=null;
+          await loadServerState().catch(()=>{});
+        }
+      }catch(error){
+        $("quickBatchStatus").innerText="Batch status error: "+error.message;
+      }
+    };
+    window.quickStartBatch=async()=>{
+      if(!adminAllowed){alert("Admin verify nahi hua.");return}
+      try{
+        if(!quickFetchedLinks.length&&getValue("quickBatchUrl")){await quickFetchLinks()}
+        $("quickBatchStatus").innerText="Batch queue start ho rahi hai...";
+        const result=await callAdminApi("/api/quick-post/batch-start",{links:quickFetchedLinks,url:getValue("quickBatchUrl"),prompt:quickPrompt(),maxPosts:quickMaxPosts(),delaySeconds:quickDelaySeconds(),...getAiRequestOptions()});
+        quickCurrentBatchId=result.batchId;
+        renderQuickLinks(result.batch?.items||[]);
+        if(quickBatchPollTimer)clearInterval(quickBatchPollTimer);
+        quickBatchPollTimer=setInterval(pollQuickBatch,2500);
+        await pollQuickBatch();
+      }catch(error){
+        $("quickBatchStatus").innerText="Batch start error: "+error.message;
+      }
+    };
+    window.quickRewriteSingle=async()=>{
+      if(!adminAllowed){alert("Admin verify nahi hua.");return}
+      try{
+        $("quickSingleStatus").innerText="Source fetch + rewrite ho raha hai...";
+        const result=await callAdminApi("/api/quick-post/rewrite-single",{url:getValue("quickSingleUrl"),prompt:quickPrompt(),...getAiRequestOptions()});
+        await loadServerState().catch(()=>{});
+        $("quickSingleStatus").innerText=result.skipped?`Duplicate skip: ${result.reason||"already exists"}`:`Draft ready: ${result.draft?.title||result.title||result.draftId}`;
+      }catch(error){
+        $("quickSingleStatus").innerText="Rewrite error: "+error.message;
+      }
+    };
     const loadAiProviderSettings=async()=>{
       try{
         const response=await fetch(adminApiUrl("/api/settings"),{method:"GET",cache:"no-store"});
         const data=await response.json().catch(()=>({}));
         if(!response.ok||data.ok===false)throw new Error(data.error||`Settings load failed (${response.status})`);
         const settings=data.settings||{};
+        if(settings.quickPost&&typeof settings.quickPost==="object"){
+          writeQuickPostSettings(settings.quickPost);
+          if(settings.quickPost.prompt)setValue("quickRewritePrompt",settings.quickPost.prompt);
+          if(settings.quickPost.maxPosts)setValue("quickMaxPosts",settings.quickPost.maxPosts);
+          if(settings.quickPost.delaySeconds!==undefined)setValue("quickDelaySeconds",settings.quickPost.delaySeconds);
+        }
         applyAiSelection(settings.aiProvider||"",settings.aiModel||"");
       }catch(_error){}
     };
@@ -434,6 +605,7 @@
         setWorkflowResult("Server check ho raha hai...");
         const data=await callAdminApi("/admin/status",{});
         renderServerHealth(data);
+        renderQuickAiStatus(data);
         if(data.databaseConnected){markChecklist("server")}
         setWorkflowResult(`Server OK | Admin: ${data.adminEmail||""} | Checked: ${formatTime(data.checkedAt)}`);
       }catch(error){

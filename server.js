@@ -84,6 +84,7 @@ const execFileAsync = promisify(execFile);
 let adminDb = null;
 let autoCheckerRunning = false;
 let lastSeoWorkflowDispatchAt = 0;
+const quickPostBatches = new Map();
 
 const githubApi = async (pathName = "", options = {}) => {
   const response = await fetch(`https://api.github.com${pathName}`, {
@@ -1410,6 +1411,72 @@ const generateAiSummary = async (job = {}, options = {}) => {
   } catch (err) {
     return { summary: fallback, provider: "local", error: err.message };
   }
+};
+
+const parseJsonFromAiText = (value = "") => {
+  const text = String(value || "").replace(/```(?:json)?/gi, "").replace(/```/g, "").trim();
+  try {
+    return JSON.parse(text);
+  } catch (_err) {
+    const match = text.match(/\{[\s\S]*\}/);
+    if (!match) return {};
+    try {
+      return JSON.parse(match[0]);
+    } catch (_innerErr) {
+      return {};
+    }
+  }
+};
+
+const rewriteQuickPostDraft = async ({ url = "", pageText = "", prompt = "" } = {}) => {
+  const fallback = generateJobJsonFromText(pageText || url, {
+    title: findFirstMatchLine(pageText, [/recruitment/i, /vacancy/i, /job/i, /news/i, /भर्ती/i, /समाचार/i]) || "Job Update",
+    sourceLink: url,
+    detailLink: url
+  });
+  const rewritePrompt = [
+    prompt || "Source content ko Hindi me unique, factual job/news article draft me rewrite karo.",
+    "Output sirf valid JSON do. Markdown/code fence/explanation mat do.",
+    "JSON keys: title, department, totalPosts, importantDates, applicationFeeManual, qualification, shortInfo, pageContent, postTarget, metaDescription.",
+    "Rules: facts invent mat karo, missing data blank rakho, public-friendly Hindi article banao, copied wording avoid karo.",
+    JSON.stringify({
+      sourceUrl: url,
+      content: String(pageText || "").slice(0, 12000)
+    })
+  ].join("\n");
+  let ai = { provider: "local", model: "", text: "" };
+  let parsed = {};
+  try {
+    ai = await callAiText({
+      ...readAiSettings(),
+      prompt: rewritePrompt,
+      system: "You rewrite Indian government job/news source pages into factual Hindi article drafts.",
+      temperature: 0.25,
+      maxTokens: 1400
+    });
+    parsed = parseJsonFromAiText(ai.text);
+  } catch (err) {
+    ai = { provider: "local", model: "", text: "", error: err.message };
+  }
+  const draft = enrichJobAutomation({
+    ...fallback,
+    ...parsed,
+    title: toText(parsed.title || fallback.title || "Job Update"),
+    sourceLink: url,
+    detailLink: url,
+    officialWebsite: url,
+    pageContent: toText(parsed.pageContent || fallback.pageContent || pageText).slice(0, 9000),
+    postTarget: normalizeAutoJobCategory(parsed.postTarget || fallback.postTarget) || fallback.postTarget || "latestJob",
+    checkerStatus: "draft",
+    reviewRequired: true,
+    quickPostDraft: true,
+    rewriteProvider: ai.provider,
+    rewriteModel: ai.model || "",
+    rewriteError: ai.error || "",
+    createdAt: nowStamp(),
+    updatedAt: nowStamp()
+  }, url);
+  return draft;
 };
 
 const generateAiWhatsappPostText = async (job = {}, id = "", options = {}) => {
@@ -2753,7 +2820,11 @@ ${jobEntries.join("\n")}
 app.get("/api/settings", (req, res) => {
   try {
     const settings = readSettingsFile();
-    return res.json({ ok: true, settings });
+    const db = getAdminDb();
+    if (!db) return res.json({ ok: true, settings });
+    db.ref("quickPostSettings").get()
+      .then((snapshot) => res.json({ ok: true, settings: { ...settings, quickPost: snapshot.exists() ? snapshot.val() : settings.quickPost } }))
+      .catch(() => res.json({ ok: true, settings }));
   } catch (err) {
     return res.status(500).json({ ok: false, error: String(err.message || err) });
   }
@@ -2762,7 +2833,7 @@ app.get("/api/settings", (req, res) => {
 // Admin API to update settings (requires admin auth)
 app.post("/api/settings", async (req, res) => {
   try {
-    await requireAdmin(req);
+    const { db } = await requireAdmin(req);
     const incoming = req.body && typeof req.body === "object" ? req.body : {};
     if (Object.prototype.hasOwnProperty.call(incoming, "aiProvider")) {
       incoming.aiProvider = normalizeAiProvider(incoming.aiProvider);
@@ -2780,9 +2851,174 @@ app.post("/api/settings", async (req, res) => {
     const updated = { ...current, ...incoming };
     const ok = writeSettingsFile(updated);
     if (!ok) throw new Error("Failed to write settings file");
+    if (incoming.quickPost && typeof incoming.quickPost === "object") {
+      await db.ref("quickPostSettings").set({ ...incoming.quickPost, updatedAt: nowStamp() }).catch(() => {});
+    }
     return res.json({ ok: true, settings: updated });
   } catch (err) {
     return res.status(err.statusCode || 500).json({ ok: false, error: String(err.message || err) });
+  }
+});
+
+app.post("/api/quick-post/fetch-links", async (req, res) => {
+  try {
+    await requireAdmin(req);
+    const url = extractHttpUrl(req.body?.url || "");
+    if (!url) return res.status(400).json({ ok: false, error: "Valid URL required" });
+    const limit = readPositiveInt(req.body?.limit, 25, 80);
+    const page = await fetchText(url, 22000);
+    const notices = extractNotices(page.text, url, autoJobKeywords, { limit: Math.max(limit, 10) })
+      .slice(0, limit)
+      .map((notice) => ({ title: notice.title, url: notice.link }));
+    return res.json({ ok: true, url, count: notices.length, links: notices });
+  } catch (err) {
+    return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
+  }
+});
+
+const saveQuickPostDraft = async (db, draft = {}) => {
+  const sourceLink = toText(draft.sourceLink || draft.detailLink || draft.officialWebsite);
+  const duplicateId = autoJobUrlCacheKey(sourceLink || draft.title);
+  if (await noticeAlreadyProcessed(db, { ...draft, sourceLink })) {
+    return { ok: true, skipped: true, reason: "duplicate", draftId: duplicateId };
+  }
+  const duplicateKeys = draftDuplicateCacheKeys({ ...draft, sourceLink });
+  const now = nowStamp();
+  const updates = {};
+  duplicateKeys.forEach((key) => {
+    updates[`autoJobSeen/${key}`] = {
+      title: draft.title || "",
+      link: sourceLink,
+      sourceName: "Quick Post",
+      category: draft.postTarget || "latestJob",
+      status: "draft",
+      firstSeenAt: now,
+      draftId: duplicateId
+    };
+  });
+  updates[`autoJobUrlCache/${duplicateId}`] = {
+    title: draft.title || "",
+    link: sourceLink,
+    normalizedLink: normalizeProcessedUrl(sourceLink),
+    sourceName: "Quick Post",
+    category: draft.postTarget || "latestJob",
+    status: "draft",
+    firstSeenAt: now,
+    draftId: duplicateId
+  };
+  updates[`autoJobDrafts/${duplicateId}`] = {
+    ...draft,
+    duplicateKey: duplicateId,
+    duplicateKeys,
+    sourceName: draft.sourceName || "Quick Post",
+    updatedAt: now
+  };
+  await db.ref().update(updates);
+  return { ok: true, skipped: false, draftId: duplicateId, title: draft.title || "" };
+};
+
+app.post("/api/quick-post/rewrite-single", async (req, res) => {
+  try {
+    const { db } = await requireAdmin(req);
+    const url = extractHttpUrl(req.body?.url || "");
+    if (!url) return res.status(400).json({ ok: false, error: "Valid URL required" });
+    const existingSeed = { title: url, sourceLink: url, detailLink: url };
+    if (await noticeAlreadyProcessed(db, existingSeed)) {
+      return res.json({ ok: true, skipped: true, reason: "duplicate", draftId: autoJobUrlCacheKey(url) });
+    }
+    const page = await fetchText(url, 24000);
+    const draft = await rewriteQuickPostDraft({ url, pageText: page.text, prompt: req.body?.prompt || "" });
+    const saved = await saveQuickPostDraft(db, draft);
+    await logAutoJob(db, { level: saved.skipped ? "info" : "success", sourceName: "Quick Post", message: saved.skipped ? `Quick Post duplicate skipped: ${url}` : `Quick Post draft saved: ${draft.title}` });
+    return res.json({ ok: true, ...saved, draft });
+  } catch (err) {
+    return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
+  }
+});
+
+const runQuickPostBatch = async ({ batchId, db, links = [], prompt = "", delaySeconds = 2 }) => {
+  const batch = quickPostBatches.get(batchId);
+  if (!batch) return;
+  batch.status = "running";
+  for (const item of batch.items) {
+    if (batch.status === "cancelled") break;
+    item.status = "running";
+    try {
+      const url = item.url;
+      if (await noticeAlreadyProcessed(db, { title: item.title || url, sourceLink: url, detailLink: url })) {
+        item.status = "skipped";
+        item.message = "Duplicate URL/title";
+      } else {
+        const page = await fetchText(url, 24000);
+        const draft = await rewriteQuickPostDraft({ url, pageText: page.text, prompt });
+        const saved = await saveQuickPostDraft(db, { ...draft, title: draft.title || item.title });
+        item.status = saved.skipped ? "skipped" : "done";
+        item.draftId = saved.draftId || "";
+        item.title = saved.title || draft.title || item.title;
+        item.message = saved.skipped ? "Duplicate URL/title" : "Draft saved";
+      }
+    } catch (err) {
+      item.status = "failed";
+      item.message = err.message;
+    }
+    batch.updatedAt = nowStamp();
+    if (delaySeconds > 0) {
+      await new Promise((resolve) => setTimeout(resolve, Math.min(delaySeconds, 20) * 1000));
+    }
+  }
+  batch.status = batch.items.some((item) => item.status === "running") ? "running" : "done";
+  batch.finishedAt = nowStamp();
+};
+
+app.post("/api/quick-post/batch-start", async (req, res) => {
+  try {
+    const { db } = await requireAdmin(req);
+    const maxPosts = readPositiveInt(req.body?.maxPosts, 5, 50);
+    const delaySeconds = Math.max(0, Math.min(60, Math.floor(Number(req.body?.delaySeconds ?? 2) || 0)));
+    let links = Array.isArray(req.body?.links) ? req.body.links : [];
+    if (!links.length && req.body?.url) {
+      const page = await fetchText(extractHttpUrl(req.body.url), 22000);
+      links = extractNotices(page.text, req.body.url, autoJobKeywords, { limit: maxPosts }).map((notice) => ({ title: notice.title, url: notice.link }));
+    }
+    const normalized = links
+      .map((item) => ({ title: toText(item.title || item.url), url: extractHttpUrl(item.url || item.link || "") }))
+      .filter((item) => item.url)
+      .slice(0, maxPosts);
+    if (!normalized.length) return res.status(400).json({ ok: false, error: "No links found" });
+    const batchId = `qp_${Date.now()}_${crypto.randomBytes(3).toString("hex")}`;
+    const batch = {
+      ok: true,
+      batchId,
+      status: "queued",
+      createdAt: nowStamp(),
+      updatedAt: nowStamp(),
+      total: normalized.length,
+      items: normalized.map((item) => ({ ...item, status: "queued", message: "" }))
+    };
+    quickPostBatches.set(batchId, batch);
+    runQuickPostBatch({ batchId, db, links: normalized, prompt: req.body?.prompt || "", delaySeconds }).catch((err) => {
+      const current = quickPostBatches.get(batchId);
+      if (current) {
+        current.status = "failed";
+        current.error = err.message;
+        current.updatedAt = nowStamp();
+      }
+    });
+    return res.json({ ok: true, batchId, batch });
+  } catch (err) {
+    return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
+  }
+});
+
+app.post("/api/quick-post/status", async (req, res) => {
+  try {
+    await requireAdmin(req);
+    const batchId = String(req.body?.batchId || "").trim();
+    const batch = quickPostBatches.get(batchId);
+    if (!batch) return res.status(404).json({ ok: false, error: "Batch not found" });
+    return res.json({ ok: true, batch });
+  } catch (err) {
+    return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
   }
 });
 
