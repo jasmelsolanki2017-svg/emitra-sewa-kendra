@@ -605,8 +605,9 @@ Cook | 1426 |"></textarea>
     try{
       localStorage.removeItem("loginTime");
       sessionStorage.setItem("adminLoggedOut", "1");
+      localStorage.setItem("adminLoggedOut", String(Date.now()));
     }catch(_error){}
-    window.location.replace("index.html");
+    window.location.replace("index.html?logout=admin");
   };
 </script>
 
@@ -1076,15 +1077,13 @@ Cook | 1426 |"></textarea>
     adminAllowed = false;
     localStorage.removeItem("loginTime");
     sessionStorage.setItem("adminLoggedOut", "1");
+    localStorage.setItem("adminLoggedOut", String(Date.now()));
     try{
-      await Promise.race([
-        signOut(auth),
-        new Promise((resolve) => setTimeout(resolve, 1800))
-      ]);
+      await signOut(auth);
     }catch(error){
       console.warn("Admin logout failed", error);
     }
-    window.location.replace("index.html");
+    window.location.replace("index.html?logout=admin");
   };
 
   const linksRef = ref(db, "importantLinks");

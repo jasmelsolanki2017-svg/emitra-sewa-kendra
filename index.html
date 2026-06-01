@@ -3773,11 +3773,23 @@ const isEmailLogin = (value = "") => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(va
 
 const startFreshUserSession = () => {
 localStorage.setItem(sessionKey, String(Date.now()));
+sessionStorage.removeItem("adminLoggedOut");
+localStorage.removeItem("adminLoggedOut");
 };
 
 const hasActiveUserSession = () => {
 const loginTime = Number(localStorage.getItem(sessionKey));
 return Boolean(loginTime && Date.now() - loginTime < sessionLimitMs);
+};
+
+const hasAdminLogoutMarker = () => {
+const params = new URLSearchParams(window.location.search || "");
+return params.get("logout") === "admin" || sessionStorage.getItem("adminLoggedOut") === "1" || Boolean(localStorage.getItem("adminLoggedOut"));
+};
+
+const clearAdminLogoutMarker = () => {
+sessionStorage.removeItem("adminLoggedOut");
+localStorage.removeItem("adminLoggedOut");
 };
 
 const waitForAuthUser = async (auth, authModule) => {
@@ -3861,6 +3873,12 @@ document.getElementById("loginModal").style.display = "flex";
 
 loadFirebaseAuthBundle().then(async ({ auth, authModule })=>{
 const currentUser = await waitForAuthUser(auth, authModule);
+
+if(hasAdminLogoutMarker() && currentUser && currentUser.email === adminEmail){
+await authModule.signOut(auth).catch(() => {});
+clearAdminLogoutMarker();
+return;
+}
 
 if(currentLoginMode === "admin" && currentUser && currentUser.email === adminEmail){
 redirectByRole(currentUser.email);
@@ -3978,6 +3996,7 @@ const { ref, get, update } = dbModule;
 const userCredential = await signInWithEmailAndPassword(auth,email,password);
 const userEmail = userCredential.user.email || email;
 const firebaseUser = userCredential.user;
+clearAdminLogoutMarker();
 
 if(firebaseUser.uid && userEmail !== adminEmail){
 const memberRef = ref(db, "members/" + firebaseUser.uid);
