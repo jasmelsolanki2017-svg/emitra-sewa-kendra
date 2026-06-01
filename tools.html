@@ -62,9 +62,10 @@ main{max-width:1180px;margin:auto;padding:22px 3% 44px}
 .tool-index{position:sticky;top:86px;background:var(--surface);border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 24px rgba(8,31,74,.07);overflow:hidden}
 .tool-index h2{font-size:18px;background:var(--blue);color:#fff;padding:12px 14px;border-bottom:3px solid var(--orange)}
 .tool-index a{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--blue);font-weight:900;font-size:13px;padding:9px 12px;border-bottom:1px solid #edf3fb}
-.tool-index a:hover{background:var(--soft);color:var(--deep)}
+.tool-index a:hover,.tool-index a.active{background:var(--soft);color:var(--deep)}
 .tool-stack{display:grid;gap:16px}
-.tool-card{background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--orange);border-radius:8px;box-shadow:0 8px 24px rgba(8,31,74,.07);padding:16px;scroll-margin-top:92px}
+.tool-card{display:none;background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--orange);border-radius:8px;box-shadow:0 8px 24px rgba(8,31,74,.07);padding:16px;scroll-margin-top:92px}
+.tool-card.active{display:block}
 .tool-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
 .tool-head h2{color:var(--blue);font-size:clamp(19px,3vw,24px);line-height:1.2}
 .tool-head p{color:var(--muted);font-weight:600;font-size:13px;margin-top:3px}
@@ -313,6 +314,37 @@ const $ = (id) => document.getElementById(id);
 const toKB = (bytes) => (bytes / 1024).toFixed(1);
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 const extForMime = (mime) => ({ "image/jpeg":"jpg", "image/png":"png", "image/webp":"webp", "application/pdf":"pdf" }[mime] || "file");
+
+function openToolFromHash(hash, updateUrl = true){
+  const cards = Array.from(document.querySelectorAll(".tool-card[id]"));
+  if(!cards.length){ return; }
+  const requestedId = String(hash || "").replace(/^#/, "");
+  const target = cards.find((card) => card.id === requestedId) || cards[0];
+  document.querySelectorAll(".tool-index a[href^='#']").forEach((link) => {
+    link.classList.toggle("active", link.getAttribute("href") === `#${target.id}`);
+  });
+  cards.forEach((card) => {
+    const isActive = card === target;
+    card.classList.toggle("active", isActive);
+    card.hidden = !isActive;
+  });
+  if(updateUrl && location.hash !== `#${target.id}`){
+    history.replaceState(null, "", `#${target.id}`);
+  }
+  target.scrollIntoView({ behavior:"smooth", block:"start" });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll(".tool-index a[href^='#'], .nav-tools-menu a[href^='#']").forEach((link) => {
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+      openToolFromHash(link.getAttribute("href"));
+    });
+  });
+  openToolFromHash(location.hash || "#image-resizer", false);
+});
+
+window.addEventListener("hashchange", () => openToolFromHash(location.hash, false));
 
 function setStatus(id, text){ $(id).textContent = text || ""; }
 function setPreviewImage(id, blob){
