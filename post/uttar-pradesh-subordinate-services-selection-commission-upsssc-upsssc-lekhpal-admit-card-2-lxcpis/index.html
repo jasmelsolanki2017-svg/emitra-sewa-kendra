@@ -1186,6 +1186,22 @@ const renderManualContent = (boxId, panelId, value, title) => {
   return true;
 };
 
+const removeKnownManualRows = (value = "", knownLabels = new Set()) => {
+  if(!knownLabels || !knownLabels.size){ return String(value || "").trim(); }
+  return String(value || "")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => {
+      if(!line){ return false; }
+      const pair = splitManualPair(line);
+      if(!pair){ return true; }
+      const label = canonicalRowLabel(pair.label || "");
+      return !label || !knownLabels.has(label);
+    })
+    .join("\n")
+    .trim();
+};
+
 const renderPostWiseApplyLinks = (value = "") => {
   const box = document.getElementById("postApplyLinks");
   const links = parsePostWiseApplyLinks(value);
@@ -1904,7 +1920,11 @@ const renderJobDetail = (jobId, rawJob, allJobs = []) => {
     ]);
     const importantHeading = document.querySelector("#importantPanel h2");
     if(importantHeading){ importantHeading.textContent = "Important Dates"; }
-    renderManualContent("importantManual", "importantPanel", job.importantDatesManual, "Other Important Dates");
+    const renderedImportantLabels = new Set([
+      ...baseImportantRows,
+      ...uniqueStructuredImportant
+    ].filter((row) => isFilledValue(row.value, row.options)).map((row) => canonicalRowLabel(row.dedupeLabel || row.label)).filter(Boolean));
+    renderManualContent("importantManual", "importantPanel", removeKnownManualRows(job.importantDatesManual, renderedImportantLabels), "Other Important Dates");
 
     const overviewKeys = new Set(uniqueRows(defaultOverviewRows).map((row) => `${canonicalRowLabel(row.label)}|${normalizeTextValue(row.value).toLowerCase()}`));
     const basicRows = (hasDefaultOverview ? [
