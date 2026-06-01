@@ -1561,7 +1561,8 @@ const renderJobDetail = (jobId, rawJob) => {
       admitCardDate:"Admit Card Date",
       resultDate:"Result Date"
     }).map((row) => ({ ...row, htmlValue:renderFlexibleCell(row.value) }));
-    renderList("importantList", "importantPanel", [
+    // Avoid duplicate rows when the same date exists in both fixed fields and flexible "importantDates".
+    const baseImportantRows = [
       { label:"Application Start Date", value:job.startDate },
       { label:"Last Date Apply Online", value:job.lastApplyDate || job.lastDate, className:"danger-date" },
       { label:"Last Date Fee Payment", value:job.lastFeeDate },
@@ -1570,8 +1571,23 @@ const renderJobDetail = (jobId, rawJob) => {
       { label:"Admit Card Date", value:job.admitCardDate },
       { label:"Answer Key Available", value:job.answerKeyDate },
       { label:"Result Date", value:job.resultDate },
-      { label:"Tier II / Second Exam Date", value:job.tierTwoExamDate || job.tier2ExamDate },
-      ...structuredImportantDates
+      { label:"Tier II / Second Exam Date", value:job.tierTwoExamDate || job.tier2ExamDate }
+    ];
+    const existingImportantLabels = new Set(
+      baseImportantRows.map((row) => String(row.label || "").trim().toLowerCase()).filter(Boolean)
+    );
+    const uniqueStructuredImportant = [];
+    const addedImportantLabels = new Set(existingImportantLabels);
+    structuredImportantDates.forEach((row) => {
+      const label = String(row.label || "").trim().toLowerCase();
+      if(label && !addedImportantLabels.has(label)){
+        addedImportantLabels.add(label);
+        uniqueStructuredImportant.push(row);
+      }
+    });
+    renderList("importantList", "importantPanel", [
+      ...baseImportantRows,
+      ...uniqueStructuredImportant
     ]);
     const importantHeading = document.querySelector("#importantPanel h2");
     if(importantHeading){ importantHeading.textContent = "Important Dates"; }
@@ -1588,6 +1604,15 @@ const renderJobDetail = (jobId, rawJob) => {
     ]);
     renderManualContent("jobInfoManual", "jobInfoPanel", job.basicDetailsManual, "Other Basic Details");
 
+    const normalizeFeeNumber = (val) => {
+      const s = String(val ?? "").trim();
+      if(!s) return null;
+      const m = s.replace(/,/g, "").match(/-?\d+(\.\d+)?/);
+      if(!m) return null;
+      const n = Number(m[0]);
+      return Number.isFinite(n) ? n : null;
+    };
+
     const feeRows = [
       { label:"General / OBC Fee", value:job.generalObcFee },
       { label:"SC / ST Fee", value:job.scStFee },
@@ -1595,7 +1620,14 @@ const renderJobDetail = (jobId, rawJob) => {
       { label:"OBC Female Fee", value:job.obcFemaleFee },
       { label:"SC Female Fee", value:job.scFemaleFee },
       { label:"PH Candidate Fee", value:job.phCandidateFee || job.onlyFemaleFee },
-      { label:"All Candidate Fee", value:job.allCandidateFee },
+      // If multiple categories have same fee (e.g. OBC and SC), show a single "All Candidates Fee" line.
+      { label:"All Candidates Fee", value:(() => {
+        if(job.allCandidateFee) return job.allCandidateFee;
+        const g = normalizeFeeNumber(job.generalObcFee);
+        const sc = normalizeFeeNumber(job.scStFee);
+        if(g != null && sc != null && g === sc) return job.generalObcFee;
+        return "";
+      })() },
       { label:"STA B General / OBC / EWS", value:job.staBGeneralFee },
       { label:"STA B SC / ST / PH / Female", value:job.staBScStFemaleFee },
       { label:"STA B Refund Fee", value:job.staBRefundFee },
@@ -1614,8 +1646,8 @@ const renderJobDetail = (jobId, rawJob) => {
       sc:"SC Fee",
       st:"ST Fee",
       female:"Female Fee",
-      allCandidate:"All Candidate Fee",
-      allCandidates:"All Candidate Fee",
+      allCandidate:"All Candidates Fee",
+      allCandidates:"All Candidates Fee",
       paymentMode:"Payment Mode"
     }).map((row) => ({ ...row, htmlValue:renderFlexibleCell(row.value) }));
     const existingFeeLabels = new Set(feeRows.map((row) => String(row.label || "").trim().toLowerCase()));

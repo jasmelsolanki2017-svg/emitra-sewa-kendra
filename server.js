@@ -1134,6 +1134,29 @@ const cleanMultiline = (value = "", limit = 6) => String(value || "")
   .slice(0, limit)
   .join("\n");
 
+const feeSummaryLines = (job = {}) => {
+  const feeFields = [
+    ["General / OBC", job.generalObcFee || job.generalFee || job.obcFee],
+    ["SC / ST", job.scStFee || job.scFee || job.stFee],
+    ["Female", job.femaleFee],
+    ["OBC Female", job.obcFemaleFee],
+    ["SC Female", job.scFemaleFee],
+    ["PH", job.phCandidateFee || job.phFee || job.pwdFee],
+    ["All Candidate", job.allCandidateFee],
+    ["Single Exam", job.singleExamFee || job.oneExamFee],
+    ["Both Exam", job.bothExamFee || job.combinedExamFee],
+    ["Payment Mode", job.paymentMode]
+  ];
+  const manual = cleanMultiline(job.applicationFeeManual || job.feeDetails || job.feesDetails || "", 5);
+  const lines = feeFields
+    .map(([label, value]) => compactLine(label, value))
+    .filter(Boolean);
+  if (manual) {
+    lines.push(...manual.split("\n"));
+  }
+  return Array.from(new Set(lines)).slice(0, 8);
+};
+
 const buildNotificationSummary = (job = {}) => {
   const title = toText(job.title || "Job Update");
   const lines = [
@@ -1195,7 +1218,9 @@ const buildWhatsappPostText = (id = "", job = {}) => {
     compactLine("🗓️ आवेदन शुरू", job.startDate || job.postDate),
     compactLine("⏳ अंतिम तिथि", job.lastApplyDate || job.lastDate),
     compactLine("📌 कुल पद", job.totalPosts || job.totalVacancy),
+    compactLine("💳 फीस", feeSummaryLines(job)[0]),
     compactLine("📍 स्थान", job.location || job.jobLocation),
+    feeSummaryLines(job).length > 1 ? ["", "💳 *आवेदन शुल्क:*", ...feeSummaryLines(job).slice(0, 6).map((line) => `• ${line}`)].join("\n") : "",
     qualificationLines.length ? ["", "🎓 *योग्यता:*", ...qualificationLines].join("\n") : "",
     "",
     "📌 *नोट:* पूरी पात्रता जानकारी के लिए ऑफिशियल नोटिफिकेशन जरूर पढ़ें।",
@@ -1237,6 +1262,8 @@ const buildTelegramPostText = (id = "", job = {}) => {
     "",
     `🗓️ आवेदन शुरू: ${toText(job.startDate || job.postDate || "Update Soon")}`,
     `⏳ अंतिम तिथि: ${toText(job.lastApplyDate || job.lastDate || "Update Soon")}`,
+    `📌 कुल पद: ${toText(job.totalPosts || job.totalVacancy || "Update Soon")}`,
+    ...(feeSummaryLines(job).length ? [`💳 फीस: ${feeSummaryLines(job).join(" | ")}`] : []),
     `📂 कैटेगरी: ${getJobCategoryLabel(job.postTarget || "latestJob")}`,
     "",
     "🔗 पूरी जानकारी देखें:",
@@ -1403,6 +1430,8 @@ const generateAiWhatsappPostText = async (job = {}, id = "", options = {}) => {
     "*Department / Exam name*",
     "🗓️ *आवेदन शुरू:* date",
     "⏳ *अंतिम तिथि:* date",
+    "📌 *कुल पद:* total posts",
+    "💳 *आवेदन शुल्क:* fee summary",
     "📍 *स्थान:* location",
     "🎓 *योग्यता:*",
     "✅ qualification point",
@@ -1418,7 +1447,8 @@ const generateAiWhatsappPostText = async (job = {}, id = "", options = {}) => {
     "Rules:",
     "- Sirf final WhatsApp message do, explanation nahi.",
     "- WhatsApp bold ke liye *text* use karo, markdown link [text](url) mat banao.",
-    "- Missing date/location/posts ko invent mat karo; missing line omit kar do.",
+    "- Missing date/location/posts/fee ko invent mat karo; missing line omit kar do.",
+    "- Total posts aur application fee data available ho to post me zaroor include karo.",
     "- Qualification ko simple Hindi bullet points me likho, max 6 bullets.",
     "- Official/apply URL exactly wahi rakho jo data me hai.",
     "- 900-1400 characters ke andar rakho.",
@@ -1428,6 +1458,9 @@ const generateAiWhatsappPostText = async (job = {}, id = "", options = {}) => {
       department: job.department,
       examName: job.examName || job.subTitle,
       totalPosts: job.totalPosts || job.totalVacancy,
+      applicationFee: feeSummaryLines(job).join("\n"),
+      lastFeeDate: job.lastFeeDate,
+      paymentMode: job.paymentMode,
       postDate: job.postDate,
       startDate: job.startDate,
       lastDate: job.lastApplyDate || job.lastDate,
@@ -1453,14 +1486,51 @@ const generateAiWhatsappPostText = async (job = {}, id = "", options = {}) => {
   }
 };
 
+const configuredShareAiOptions = (primary = {}) => {
+  const options = [];
+  const add = (provider, model = "") => {
+    const config = getAiProviderConfig(provider, model);
+    const key = `${normalizeAiProvider(provider)}|${config.model}`;
+    if (!config.apiKey || !config.model || options.some((item) => item.key === key)) return;
+    options.push({ key, provider: normalizeAiProvider(provider), model: config.model, label: `${config.label}${config.model ? ` (${config.model})` : ""}` });
+  };
+  if (primary.provider) add(primary.provider, primary.model);
+  add("gemini", GEMINI_MODEL);
+  add("openrouter", OPENROUTER_DEEPSEEK_MODEL);
+  add("openrouter", OPENROUTER_QWEN_MODEL);
+  add("openai", OPENAI_MODEL);
+  return options;
+};
+
+const generateShareSuggestions = async (job = {}, id = "", primaryOptions = {}) => {
+  const providers = configuredShareAiOptions(primaryOptions).slice(0, 5);
+  const suggestions = [];
+  for (const option of providers) {
+    const result = await generateAiWhatsappPostText(job, id, option);
+    suggestions.push({
+      label: option.label,
+      provider: result.provider || option.provider,
+      model: result.model || option.model,
+      text: result.text || "",
+      error: result.error || ""
+    });
+  }
+  if (!suggestions.length) {
+    suggestions.push({ label: "Local Template", provider: "local", model: "", text: buildWhatsappPostText(id, job), error: "" });
+  }
+  return suggestions;
+};
+
 const prepareWhatsappShare = async (item = {}, id = "", options = {}) => {
   const enriched = enrichJobAutomation(item, id);
   const ai = await generateAiSummary(enriched, options);
   enriched.notificationSummary = ai.summary;
   const whatsappAi = await generateAiWhatsappPostText(enriched, id, options);
+  const suggestions = await generateShareSuggestions(enriched, id, options);
   enriched.summaryProvider = ai.provider;
   enriched.whatsappProvider = whatsappAi.provider;
   enriched.whatsappPostText = whatsappAi.text;
+  enriched.aiShareSuggestions = suggestions;
   enriched.updatedAt = nowStamp();
   return {
     item: enriched,
@@ -1471,7 +1541,8 @@ const prepareWhatsappShare = async (item = {}, id = "", options = {}) => {
       whatsappProvider: whatsappAi.provider,
       summaryError: ai.error || "",
       whatsappError: whatsappAi.error || ""
-    }
+    },
+    suggestions
   };
 };
 
@@ -1483,6 +1554,7 @@ const pickShareAutomationFields = (item = {}) => ({
   summaryProvider: item.summaryProvider || "",
   whatsappProvider: item.whatsappProvider || "",
   whatsappPostText: item.whatsappPostText || "",
+  aiShareSuggestions: Array.isArray(item.aiShareSuggestions) ? item.aiShareSuggestions.slice(0, 5) : [],
   updatedAt: nowStamp()
 });
 
@@ -2476,6 +2548,16 @@ async function publishAutoJobDraft(db, draftId, payload = {}) {
     lastDate: toText(draft.lastDate || draft.lastApplyDate || "Update Soon"),
     qualification: toText(draft.qualification || "Update Soon"),
     importantDates: toText(draft.importantDates),
+    applicationFeeManual: toText(draft.applicationFeeManual || draft.feeDetails || draft.feesDetails),
+    feeDetails: toText(draft.feeDetails || draft.applicationFeeManual),
+    generalObcFee: toText(draft.generalObcFee),
+    scStFee: toText(draft.scStFee),
+    femaleFee: toText(draft.femaleFee),
+    phCandidateFee: toText(draft.phCandidateFee),
+    allCandidateFee: toText(draft.allCandidateFee),
+    singleExamFee: toText(draft.singleExamFee),
+    bothExamFee: toText(draft.bothExamFee),
+    paymentMode: toText(draft.paymentMode),
     applyLink: toText(draft.applyLink || "#"),
     detailLink: toText(draft.detailLink || draft.sourceLink || "#"),
     officialWebsite: toText(draft.officialWebsite || draft.officialLink),
@@ -3177,8 +3259,10 @@ app.post("/admin/auto-job-checker/draft/enrich", async (req, res) => {
     enriched.notificationSummary = ai.summary;
     enriched.summaryProvider = ai.provider;
     const whatsappAi = await generateAiWhatsappPostText(enriched, draftId, aiOptions);
+    const suggestions = await generateShareSuggestions(enriched, draftId, aiOptions);
     enriched.whatsappProvider = whatsappAi.provider;
     enriched.whatsappPostText = whatsappAi.text;
+    enriched.aiShareSuggestions = suggestions;
     if (draftId) {
       await db.ref(`autoJobDrafts/${draftId}`).update(enriched);
     }
@@ -3191,7 +3275,8 @@ app.post("/admin/auto-job-checker/draft/enrich", async (req, res) => {
         whatsappProvider: whatsappAi.provider,
         summaryError: ai.error || "",
         whatsappError: whatsappAi.error || ""
-      }
+      },
+      suggestions
     });
   } catch (err) {
     return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
@@ -3261,6 +3346,38 @@ app.post("/admin/auto-job-checker/draft/ignore", async (req, res) => {
   }
 });
 
+app.post("/admin/auto-job-checker/draft/reject", async (req, res) => {
+  try {
+    const { db } = await requireAdmin(req);
+    const draftId = String(req.body?.draftId || "").trim();
+    if (!draftId) {
+      return res.status(400).json({ ok: false, error: "Draft ID required" });
+    }
+    const snapshot = await db.ref(`autoJobDrafts/${draftId}`).get();
+    const draft = snapshot.exists() ? (snapshot.val() || {}) : {};
+    const now = nowStamp();
+    const updates = {
+      [`autoJobDrafts/${draftId}/checkerStatus`]: "ignored",
+      [`autoJobDrafts/${draftId}/rejectedAt`]: now,
+      [`autoJobDrafts/${draftId}/updatedAt`]: now,
+      [`autoJobUrlCache/${draftId}/status`]: "ignored",
+      [`autoJobUrlCache/${draftId}/rejectedAt`]: now
+    };
+    draftDuplicateCacheKeys({ ...draft, sourceLink: draft.sourceLink || draft.detailLink }).forEach((key) => {
+      updates[`autoJobSeen/${key}/status`] = "ignored";
+      updates[`autoJobSeen/${key}/rejectedAt`] = now;
+    });
+    await db.ref().update(updates);
+    await logAutoJob(db, {
+      level: "info",
+      message: `Draft rejected: ${draftId}`
+    });
+    return res.json({ ok: true });
+  } catch (err) {
+    return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
+  }
+});
+
 app.post("/admin/auto-job-checker/whatsapp/prepare", async (req, res) => {
   try {
     const { db } = await requireAdmin(req);
@@ -3290,7 +3407,8 @@ app.post("/admin/auto-job-checker/whatsapp/prepare", async (req, res) => {
       ok: true,
       text: prepared.text,
       draft: prepared.item,
-      ai: prepared.ai
+      ai: prepared.ai,
+      suggestions: prepared.suggestions || []
     });
   } catch (err) {
     return res.status(err.statusCode || 500).json({ ok: false, error: err.message });

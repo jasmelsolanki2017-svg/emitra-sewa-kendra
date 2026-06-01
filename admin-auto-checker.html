@@ -202,6 +202,7 @@
         <input id="draftPostDate" placeholder="Post Date">
         <input id="draftTotalPosts" placeholder="Total Posts">
         <textarea id="draftImportantDates" placeholder="Important Dates"></textarea>
+        <textarea id="draftApplicationFeeManual" placeholder="Application Fee / Fee details"></textarea>
         <textarea id="draftQualification" placeholder="Qualification"></textarea>
         <input id="draftOfficialLink" type="url" placeholder="Official Link">
         <input id="draftSourceLink" type="url" placeholder="Source / Notice Link">
@@ -219,19 +220,22 @@
         <textarea id="draftMetaDescription" placeholder="Auto SEO Meta Description"></textarea>
         <textarea id="draftNotificationSummary" placeholder="AI Notification Summary"></textarea>
         <textarea class="wide" id="draftWhatsappPostText" placeholder="Auto WhatsApp post text"></textarea>
+        <div class="wide result-box" id="aiShareSuggestionBox">AI suggestions yahan show honge. Suggestion ko select karke edit/share kar sakte hain.</div>
         <textarea class="wide" id="draftPageContent" placeholder="Extra page content / PDF extracted text"></textarea>
         <textarea class="wide" id="draftGeneratedJson" placeholder="Auto generated JSON preview"></textarea>
         <label class="check-item"><input type="checkbox" id="draftAutoSendWhatsapp"> Publish ke baad WhatsApp API auto send</label>
       </div>
       <div class="buttons">
+        <button type="button" onclick="previewDraft()">Preview Draft</button>
         <button type="button" onclick="generateDraftAutomation()">Auto Summary / SEO / Slug</button>
         <button type="button" onclick="generateDraftJson()">Auto JSON Generate</button>
         <button type="button" onclick="copyDraftWhatsappPost()">Copy WhatsApp Post</button>
         <button type="button" onclick="sendDraftShare('telegram')">Send Telegram</button>
         <button type="button" onclick="sendDraftShare('whatsapp')">Send WhatsApp</button>
         <button type="button" onclick="saveDraft()">Save Draft</button>
-        <button type="button" class="publish" onclick="publishDraft()">Publish Live</button>
+        <button type="button" class="publish" onclick="publishDraft()">Approve & Publish</button>
         <button type="button" class="cancel" onclick="clearDraftForm()">Clear Form</button>
+        <button type="button" class="delete" onclick="rejectDraft()">Reject Draft</button>
         <button type="button" class="delete" onclick="deleteDraft()">Delete Draft</button>
       </div>
       <div class="status" id="draftStatus">Draft select karein ya checker run karein.</div>
@@ -258,7 +262,7 @@
     const aiProviderStorageKey="emitraAutoCheckerAiProvider";
     let adminAllowed=false,editingSourceId="",activeDraftId="",sourcesCache={},draftsCache={},dataSyncStarted=false;
     const sourceFields=["sourceName","sourceDepartment","sourceUrl","sourceKeywords","sourceKind","sourceMaxFetch","sourceEnabled","sourceLatestJobUrl","sourceAdmitCardUrl","sourceResultUrl","sourceAnswerKeyUrl","sourceSyllabusUrl"];
-    const draftFields=["draftTitle","draftDepartment","draftPostDate","draftTotalPosts","draftImportantDates","draftQualification","draftOfficialLink","draftSourceLink","draftPostTarget","draftLastDate","draftSlug","draftSeoTitle","draftMetaDescription","draftNotificationSummary","draftWhatsappPostText","draftPageContent","draftGeneratedJson"];
+    const draftFields=["draftTitle","draftDepartment","draftPostDate","draftTotalPosts","draftImportantDates","draftApplicationFeeManual","draftQualification","draftOfficialLink","draftSourceLink","draftPostTarget","draftLastDate","draftSlug","draftSeoTitle","draftMetaDescription","draftNotificationSummary","draftWhatsappPostText","draftPageContent","draftGeneratedJson"];
     const $=(id)=>document.getElementById(id);
     const sourceList=$("sourceList"),scrapedSourceList=$("scrapedSourceList"),draftList=$("draftList"),logList=$("logList");
 
@@ -641,6 +645,8 @@
       postDate:getValue("draftPostDate"),
       totalPosts:getValue("draftTotalPosts"),
       importantDates:getValue("draftImportantDates"),
+      applicationFeeManual:getValue("draftApplicationFeeManual"),
+      feeDetails:getValue("draftApplicationFeeManual"),
       qualification:getValue("draftQualification"),
       officialLink:getValue("draftOfficialLink"),
       officialWebsite:getValue("draftOfficialLink"),
@@ -668,6 +674,7 @@
       setValue("draftPostDate",data.postDate);
       setValue("draftTotalPosts",data.totalPosts);
       setValue("draftImportantDates",data.importantDates);
+      setValue("draftApplicationFeeManual",data.applicationFeeManual||data.feeDetails||data.feesDetails);
       setValue("draftQualification",data.qualification);
       setValue("draftOfficialLink",data.officialLink||data.officialWebsite);
       setValue("draftSourceLink",data.sourceLink||data.detailLink);
@@ -678,6 +685,7 @@
       setValue("draftMetaDescription",data.metaDescription);
       setValue("draftNotificationSummary",data.notificationSummary);
       setValue("draftWhatsappPostText",data.whatsappPostText);
+      renderAiSuggestions(data.aiShareSuggestions||[]);
       setValue("draftPageContent",data.pageContent);
       setValue("draftGeneratedJson",data.generatedJson||"");
       $("draftStatus").innerText="Draft selected: "+(data.title||id);
@@ -694,6 +702,7 @@
       activeDraftId="";
       draftFields.forEach((id)=>setValue(id,id==="draftPostTarget"?"latestJob":""));
       $("draftStatus").innerText="Draft select karein ya checker run karein.";
+      renderAiSuggestions([]);
     };
 
     window.saveDraft=async()=>{
@@ -720,6 +729,7 @@
       if(data.department)setValue("draftDepartment",data.department);
       if(data.totalPosts)setValue("draftTotalPosts",data.totalPosts);
       if(data.importantDates)setValue("draftImportantDates",data.importantDates);
+      if(data.applicationFeeManual||data.feeDetails||data.feesDetails)setValue("draftApplicationFeeManual",data.applicationFeeManual||data.feeDetails||data.feesDetails);
       if(data.qualification)setValue("draftQualification",data.qualification);
       if(data.officialWebsite||data.officialLink)setValue("draftOfficialLink",data.officialWebsite||data.officialLink);
       if(data.sourceLink||data.detailLink)setValue("draftSourceLink",data.sourceLink||data.detailLink);
@@ -730,6 +740,7 @@
       if(data.metaDescription)setValue("draftMetaDescription",data.metaDescription);
       if(data.notificationSummary)setValue("draftNotificationSummary",data.notificationSummary);
       if(data.whatsappPostText)setValue("draftWhatsappPostText",data.whatsappPostText);
+      renderAiSuggestions(data.aiShareSuggestions||[]);
       if(data.pageContent)setValue("draftPageContent",data.pageContent);
       setValue("draftGeneratedJson",JSON.stringify(data,null,2));
     };
@@ -774,16 +785,69 @@
       return copied;
     };
 
+    const renderAiSuggestions=(suggestions=[])=>{
+      const box=$("aiShareSuggestionBox");
+      if(!box){return}
+      if(!Array.isArray(suggestions)||!suggestions.length){
+        box.innerHTML="AI suggestions yahan show honge. Suggestion ko select karke edit/share kar sakte hain.";
+        return;
+      }
+      box.innerHTML=suggestions.map((item,index)=>{
+        const title=item.label||item.provider||`AI ${index+1}`;
+        const text=String(item.text||"").trim();
+        const error=String(item.error||"").trim();
+        return `<div class="row ${error?"error":"success"}"><div><strong>${escapeHTML(title)}</strong><small>${escapeHTML(item.model||item.provider||"")}</small><small>${escapeHTML(error||text.slice(0,360))}</small></div><div class="actions">${text?`<button type="button" class="mini-btn" onclick="useAiSuggestion(${index})">Use</button>`:""}</div></div>`;
+      }).join("");
+      window.currentAiSuggestions=suggestions;
+    };
+    window.useAiSuggestion=(index)=>{
+      const item=(window.currentAiSuggestions||[])[Number(index)];
+      const text=String(item?.text||"").trim();
+      if(!text){return}
+      setValue("draftWhatsappPostText",text);
+      $("draftStatus").innerText=`${item.label||item.provider||"AI"} suggestion selected. Edit karke share kar sakte hain.`;
+    };
+
     const prepareWhatsappPost=async()=>{
       if(!adminAllowed){throw new Error("Admin verify nahi hua.")}
       $("draftStatus").innerText="AI se WhatsApp summary ban rahi hai...";
       const result=await callAdminApi("/admin/auto-job-checker/whatsapp/prepare",{draftId:activeDraftId,draft:draftForm(),...getAiRequestOptions()});
       applyDraftAutomation(result.draft||{});
+      renderAiSuggestions(result.suggestions||result.draft?.aiShareSuggestions||[]);
       if(result.draft&&activeDraftId){
         draftsCache[activeDraftId]={...(draftsCache[activeDraftId]||{}),...result.draft};
         renderDrafts();
       }
       return result;
+    };
+
+    const slugPreview=(title="",fallback="")=>String(title||fallback||"job-update").toLowerCase().replace(/['"]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,120)||`job-${Date.now()}`;
+
+    window.previewDraft=()=>{
+      const data=draftForm();
+      if(!data.title){$("draftStatus").innerText="Preview ke liye pehle draft select ya title bharen.";return}
+      const slug=data.slug||slugPreview(data.title,activeDraftId);
+      const canonical=`https://emitrawala.online/post/${encodeURIComponent(slug)}/`;
+      const lines=[
+        "Draft Preview",
+        `Title: ${data.title}`,
+        data.department?`Department: ${data.department}`:"",
+        data.totalPosts?`Total Posts: ${data.totalPosts}`:"",
+        data.applicationFeeManual?`Fee: ${data.applicationFeeManual}`:"",
+        data.lastApplyDate||data.lastDate?`Last Date: ${data.lastApplyDate||data.lastDate}`:"",
+        `Post Type: ${data.postTarget||"latestJob"}`,
+        "",
+        "SEO Preview",
+        `Slug: ${slug}`,
+        `Canonical: ${canonical}`,
+        `Meta Title: ${data.seoTitle||`${data.title} | E-MITRA WALA`}`,
+        `Meta Description: ${data.metaDescription||`${data.title}, ${data.department||"Government update"}, apply link, qualification and important dates`}`,
+        "",
+        "Public Flow",
+        "Approve karne par ye LatestJobs me save hoga aur /post/<slug>/ detail page par render hoga."
+      ].filter(Boolean);
+      setWorkflowResult(lines.join("\n"));
+      $("draftStatus").innerText="Preview ready. Zarurat ho to fields edit karke Approve & Publish dabayein.";
     };
 
     window.copyDraftWhatsappPost=async()=>{
@@ -863,6 +927,24 @@
         }catch(error){
           $("draftStatus").innerText=error.message;
         }
+      }
+    };
+
+    window.rejectDraft=async()=>{
+      if(!adminAllowed){alert("Admin verify nahi hua.");return}
+      if(!activeDraftId){alert("Pehle draft select karein.");return}
+      if(!confirm("Is draft ko reject karna hai? Ye pending approval list se hat jayega."))return;
+      try{
+        if(hasAdminServerUrl()){
+          await callAdminApi("/admin/auto-job-checker/draft/reject",{draftId:activeDraftId});
+          await loadServerState();
+        }else{
+          await update(ref(db,"autoJobDrafts/"+activeDraftId),{checkerStatus:"ignored",rejectedAt:Date.now(),updatedAt:Date.now()});
+        }
+        clearDraftForm();
+        $("draftStatus").innerText="Draft reject ho gaya.";
+      }catch(error){
+        $("draftStatus").innerText="Reject error: "+error.message;
       }
     };
 
@@ -1049,7 +1131,7 @@
           ].filter((type)=>group.types[type.key].length).map((type)=>`
             <details class="draft-type-section">
               <summary class="draft-type-head"><span>${type.label}</span><small>${group.types[type.key].length} draft${group.types[type.key].length>1?"s":""}</small></summary>
-            ${group.types[type.key].map(([id,data])=>`<div class="row ${activeDraftId===id?"success":""}"><input class="draft-check draft-select" type="checkbox" value="${escapeHTML(id)}" onchange="updateBulkSelectedCount()"><div><strong>${escapeHTML(data.title||"Untitled Draft")}</strong><small>${escapeHTML(data.department||"Department not set")} | ${escapeHTML(data.postTarget||"latestJob")} | ${formatTime(data.createdAt)}</small><small>${data.lightweightDraft?"Light draft":"Full draft"} | PDF text: ${data.pdfTextExtracted?"Yes":"No"}</small><small>${escapeHTML(data.sourceLink||data.detailLink||"")}</small><span class="badge">Draft</span>${data.sourceKind==="aggregator"?'<span class="badge">Scraped Portal</span>':""}</div><div class="actions"><button class="mini-btn" onclick="selectDraft('${id}')">Review</button><button class="publish mini-btn" onclick="quickPublishDraft('${id}','latestJob')">Job</button><button class="publish mini-btn" onclick="quickPublishDraft('${id}','admitCard')">Admit</button><button class="publish mini-btn" onclick="quickPublishDraft('${id}','result')">Result</button><button class="publish mini-btn" onclick="quickPublishDraft('${id}','syllabus')">Syllabus</button><button class="publish mini-btn" onclick="quickPublishDraft('${id}','currentAffairs')">Current</button><button class="delete mini-btn" onclick="ignoreDraft('${id}')">Ignore</button></div></div>`).join("")}
+            ${group.types[type.key].map(([id,data])=>`<div class="row ${activeDraftId===id?"success":""}"><input class="draft-check draft-select" type="checkbox" value="${escapeHTML(id)}" onchange="updateBulkSelectedCount()"><div><strong>${escapeHTML(data.title||"Untitled Draft")}</strong><small>${escapeHTML(data.department||"Department not set")} | ${escapeHTML(data.postTarget||"latestJob")} | ${formatTime(data.createdAt)}</small><small>${data.lightweightDraft?"Light draft":"Full draft"} | PDF text: ${data.pdfTextExtracted?"Yes":"No"}</small><small>${escapeHTML(data.sourceLink||data.detailLink||"")}</small><span class="badge">Pending Approval</span>${data.sourceKind==="aggregator"?'<span class="badge">Scraped Portal</span>':""}</div><div class="actions"><button class="mini-btn" onclick="selectDraft('${id}');previewDraft()">Preview</button><button class="mini-btn" onclick="selectDraft('${id}')">Edit</button><button class="publish mini-btn" onclick="quickPublishDraft('${id}','${escapeHTML(data.postTarget||"latestJob")}')">Approve</button><button class="publish mini-btn" onclick="quickPublishDraft('${id}','latestJob')">Job</button><button class="publish mini-btn" onclick="quickPublishDraft('${id}','admitCard')">Admit</button><button class="publish mini-btn" onclick="quickPublishDraft('${id}','result')">Result</button><button class="publish mini-btn" onclick="quickPublishDraft('${id}','syllabus')">Syllabus</button><button class="publish mini-btn" onclick="quickPublishDraft('${id}','currentAffairs')">Current</button><button class="delete mini-btn" onclick="ignoreDraft('${id}')">Reject</button></div></div>`).join("")}
             </details>
           `).join("")}
         </div>
