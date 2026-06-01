@@ -324,7 +324,7 @@ body.dark-mode .nav-logo img {
   <a href="OFFLINEFORM.HTML">PDF Forms</a>
   <a href="job-form.html">Latest Jobs Page</a>
   <a href="stationery.html">Stationery</a>
-  <button onclick="logoutUser()">Logout</button>
+  <button type="button" id="logoutBtn" onclick="logoutUser()">Logout</button>
 </nav>
 
 <section class="dashboard">
@@ -600,6 +600,14 @@ Cook | 1426 |"></textarea>
 
   updateLiveTime();
   setInterval(updateLiveTime,1000);
+
+  window.logoutUser = window.logoutUser || function(){
+    try{
+      localStorage.removeItem("loginTime");
+      sessionStorage.setItem("adminLoggedOut", "1");
+    }catch(_error){}
+    window.location.replace("index.html");
+  };
 </script>
 
 <script type="module">
@@ -1067,8 +1075,12 @@ Cook | 1426 |"></textarea>
   window.logoutUser = async () => {
     adminAllowed = false;
     localStorage.removeItem("loginTime");
+    sessionStorage.setItem("adminLoggedOut", "1");
     try{
-      await signOut(auth);
+      await Promise.race([
+        signOut(auth),
+        new Promise((resolve) => setTimeout(resolve, 1800))
+      ]);
     }catch(error){
       console.warn("Admin logout failed", error);
     }
