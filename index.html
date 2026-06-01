@@ -3593,8 +3593,9 @@ import("https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js")
 const app = appModule.initializeApp(firebaseConfig);
 const auth = authModule.getAuth(app);
 const db = dbModule.getDatabase(app);
-authModule.setPersistence(auth, authModule.browserLocalPersistence).catch(() => {});
-return { auth, db, authModule, dbModule };
+return authModule.setPersistence(auth, authModule.browserLocalPersistence)
+.catch(() => {})
+.then(() => ({ auth, db, authModule, dbModule }));
 });
 return firebaseAuthBundlePromise;
 };
@@ -3743,6 +3744,23 @@ const loginTime = Number(localStorage.getItem(sessionKey));
 return Boolean(loginTime && Date.now() - loginTime < sessionLimitMs);
 };
 
+const waitForAuthUser = async (auth, authModule) => {
+if(auth.currentUser){ return auth.currentUser; }
+if(typeof auth.authStateReady === "function"){
+await auth.authStateReady().catch(() => {});
+return auth.currentUser;
+}
+return new Promise((resolve) => {
+const unsubscribe = authModule.onAuthStateChanged(auth, (user) => {
+unsubscribe();
+resolve(user || null);
+}, () => {
+unsubscribe();
+resolve(null);
+});
+});
+};
+
 const redirectByRole = (email) => {
 if(email === adminEmail){
 window.location.href = "dashboard.html";
@@ -3805,8 +3823,8 @@ window.setAuthView("login", isAdmin);
 
 document.getElementById("loginModal").style.display = "flex";
 
-loadFirebaseAuthBundle().then(({ auth })=>{
-const currentUser = auth.currentUser;
+loadFirebaseAuthBundle().then(async ({ auth, authModule })=>{
+const currentUser = await waitForAuthUser(auth, authModule);
 
 if(currentLoginMode === "admin" && currentUser && currentUser.email === adminEmail){
 redirectByRole(currentUser.email);
