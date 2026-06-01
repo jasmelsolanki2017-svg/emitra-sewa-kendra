@@ -348,6 +348,13 @@ body.dark-mode .nav-logo img {
       <small>Website Visitors</small>
       <strong class="visitor-counter-number" id="websiteVisitorsCount">000000</strong>
       <em>Admin only · Unique device count</em>
+      <div class="visitor-visibility-row" style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px;">
+        <small style="color:#66748a;font-weight:800;">Public Visibility</small>
+        <select id="visitorVisibilitySelect" style="min-width:110px;padding:6px 10px;border:1px solid #d8e7f7;border-radius:6px;background:#fff;font-weight:800;color:#0a3760;">
+          <option value="public">Public</option>
+          <option value="private">Private</option>
+        </select>
+      </div>
     </div>
   </div>
 
@@ -648,6 +655,7 @@ Cook | 1426 |"></textarea>
   };
 
   watchVisitorCount();
+  initVisitorVisibilityToggle();
 
   const getAdminServerUrl = () => {
     const saved = String(localStorage.getItem(adminServerStorageKey) || "").trim().replace(/\/+$/, "");
@@ -682,6 +690,43 @@ Cook | 1426 |"></textarea>
     return data;
   };
   const refreshSeoAfterSave = (jobId) => callAdminApi("/admin/seo/normalize", { jobId }).catch(() => null);
+
+  const loadPublicSettings = async () => {
+    const response = await fetch(adminApiUrl("/api/settings"), { cache:"no-store" });
+    const data = await response.json().catch(() => ({}));
+    if(!response.ok || data.ok === false){ throw new Error(data.error || "Failed to load settings"); }
+    return data.settings || {};
+  };
+
+  const initVisitorVisibilityToggle = async () => {
+    const select = document.getElementById("visitorVisibilitySelect");
+    if(!select){ return; }
+
+    try{
+      const settings = await loadPublicSettings();
+      const current = String(settings.visitorCounterVisibility || "public").toLowerCase() === "private" ? "private" : "public";
+      select.value = current;
+    }catch(e){
+      // Keep default "public" on failure.
+    }
+
+    select.addEventListener("change", async () => {
+      const value = select.value === "private" ? "private" : "public";
+      select.disabled = true;
+      try{
+        await callAdminApi("/api/settings", { visitorCounterVisibility: value });
+      }catch(err){
+        alert(String(err.message || err));
+        try{
+          const settings = await loadPublicSettings();
+          const current = String(settings.visitorCounterVisibility || "public").toLowerCase() === "private" ? "private" : "public";
+          select.value = current;
+        }catch(e){ /* ignore */ }
+      }finally{
+        select.disabled = false;
+      }
+    });
+  };
 
   const cleanDisplayOrder = (value) => {
     const number = Number(String(value || "").replace(/[^\d]/g, ""));

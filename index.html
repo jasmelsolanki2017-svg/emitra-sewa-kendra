@@ -3602,6 +3602,8 @@ return firebaseAuthBundlePromise;
 const visitorStatsPath = "visitorStatsV2";
 const visitorDeviceKey = "emitraVisitorDeviceId";
 const visitorCountedKey = "emitraVisitorCountedV2";
+let visitorCounterVisibility = "public";
+const isVisitorCounterPublic = () => visitorCounterVisibility !== "private";
 const formatVisitorCount = (value = 0) => String(Math.max(0, Number(value) || 0)).padStart(6, "0");
 const setVisitorCounterText = (value = 0) => {
 const counter = document.getElementById("websiteVisitorsCount");
@@ -3686,8 +3688,31 @@ setTimeout(runTask, Math.min(timeout, 1600));
 }
 };
 
-scheduleDataTask(loadVisitorCount, 1200);
-scheduleDataTask(trackUniqueVisitor, 6000);
+const applyVisitorCounterVisibility = async () => {
+  try{
+    const res = await fetch("/api/settings", { cache:"no-store" });
+    const data = await res.json().catch(() => ({}));
+    const settings = data && data.settings ? data.settings : {};
+    visitorCounterVisibility = String(settings.visitorCounterVisibility || "public").toLowerCase() === "private" ? "private" : "public";
+  }catch(e){
+    visitorCounterVisibility = "public";
+  }
+
+  const counterSection = document.querySelector(".counter-section");
+  if(counterSection && !isVisitorCounterPublic()){
+    counterSection.style.display = "none";
+  }
+
+  // Tracking should stay ON even when the counter is private (hidden from public UI).
+  // Public mode: load count quickly + track.
+  // Private mode: still track unique visitors, but skip updating the hidden counter UI.
+  if(isVisitorCounterPublic()){
+    scheduleDataTask(loadVisitorCount, 1200);
+  }
+  scheduleDataTask(trackUniqueVisitor, 6000);
+};
+
+applyVisitorCounterVisibility();
 
 const safeUrl = (value = "#") => {
 const url = String(value || "#").trim();
