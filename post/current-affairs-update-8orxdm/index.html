@@ -127,6 +127,7 @@ main{max-width:1180px;margin:auto;padding:26px 3% 42px;}
 .article-head{padding:22px 22px 14px;border-bottom:1px solid #e2edf8;background:linear-gradient(180deg,#fff,#f7fbff);}
 .article-head h2{color:var(--deep);font-size:clamp(20px,3vw,30px);line-height:1.3;margin-bottom:10px;}
 .article-intro{color:#334155;font-size:16px;font-weight:500;margin:0;}
+.article-meta-line{color:#586174;font-size:13px;font-weight:800;margin:10px 0 0;}
 .panel{background:#fff;border:0;border-radius:0;padding:0;margin:0;border-bottom:1px solid #e5effa;}
 .panel:last-child{border-bottom:0;}
 .panel h2,.sarkari-section-title{background:#eef7ff;border-left:5px solid var(--blue);color:var(--deep);font-size:20px;font-weight:900;line-height:1.25;padding:13px 18px;margin:0;}
@@ -171,11 +172,8 @@ main{max-width:1180px;margin:auto;padding:26px 3% 42px;}
 .qualification-card{display:grid;grid-template-columns:minmax(140px,32%) minmax(0,1fr);border:1px solid #d8e5f3;border-radius:8px;overflow:hidden;background:#fff;}
 .qualification-post{background:#f1f7ff;color:var(--deep);font-weight:900;padding:12px;border-right:1px solid #d8e5f3;}
 .qualification-text{color:#1f2937;font-weight:600;padding:12px;white-space:pre-line;}
-.community-table{font-size:17px;margin:0;}
-.community-table td{padding:16px 10px;font-weight:900;text-align:center;}
-.community-label{color:#00897b;}
-.community-link{color:#001dff;text-decoration:none;}
-.community-link:hover{text-decoration:underline;}
+.community-actions{display:flex;justify-content:center;padding:18px;}
+.community-actions .btn{width:min(100%,320px);font-size:16px;background:#128c3c;}
 .empty{color:#6a7281;font-weight:700;}
 .actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;padding:14px 18px 18px;}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--blue);color:white;text-decoration:none;padding:11px 14px;border-radius:5px;font-weight:900;font-size:14px;min-height:44px;text-align:center;box-shadow:0 6px 16px rgba(0,87,168,.14);}
@@ -217,6 +215,7 @@ body.dark-mode .mcq-question{background:#0b2749!important;color:#ffb15c!importan
 body.dark-mode .mcq-option.correct{background:#0d3322!important;border-color:#21a760!important;color:#c8f7d8!important;}
 body.dark-mode .mcq-answer,body.dark-mode .mcq-explanation{color:#e8f1ff!important;}
 @media(max-width:920px){.layout{grid-template-columns:1fr}.detail-sidebar{position:static;top:auto}.hero{padding:24px 5% 26px}main{padding:18px 3% 34px}.detail-table th,.detail-table td{display:block;width:100%;}.detail-table th{border-bottom:0}.panel h2,.sarkari-section-title{font-size:17px}.actions{grid-template-columns:1fr}.content-table{font-size:12px}.content-table th,.content-table td{padding:7px 6px}.manual-pair{grid-template-columns:1fr;gap:3px}.qualification-card{grid-template-columns:1fr}.qualification-post{border-right:0;border-bottom:1px solid #d8e5f3}.theme-toggle{right:16px;bottom:16px;width:50px;height:50px;}nav{flex-direction:column;align-items:flex-start}}
+@media(max-width:768px){main{padding:14px 2.5% 30px}.article-head{padding:18px 14px 12px}.content-box,.table-wrap{padding:12px}.section-manual{padding:0 12px 14px}.detail-table{font-size:13px}.detail-table th,.detail-table td{padding:9px 10px}.structured-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}.structured-table-wrap .content-table,.content-table{min-width:520px}.content-section{overflow-x:auto}.actions{padding:12px}.btn{font-size:13px;padding:10px 12px}.hero h1{font-size:24px}.hero p{font-size:14px}.meta-badge{font-size:11px}.article-meta-line{font-size:12px}.community-actions{padding:14px 12px}.community-actions .btn{width:100%}}
 </style>
 <link rel="stylesheet" href="mobile-responsive-fix.css">
 </head>
@@ -252,6 +251,7 @@ body.dark-mode .mcq-answer,body.dark-mode .mcq-explanation{color:#e8f1ff!importa
         <div class="article-head">
           <h2 id="sheetTitle">Job Update</h2>
           <p class="article-intro" id="sheetSubTitle">Important notification details, eligibility, dates aur apply links yahan dekhein.</p>
+          <p class="article-meta-line" id="articleMetaLine"></p>
         </div>
         <section class="panel" id="seoFallbackPanel">
           <h2>Current Affairs Update</h2>
@@ -393,7 +393,7 @@ body.dark-mode .mcq-answer,body.dark-mode .mcq-explanation{color:#e8f1ff!importa
           <div class="actions">
             <a class="btn apply" id="applyBtn" href="#" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-arrow-up-right-from-square"></i> Apply Online</a>
             <a class="btn notification" id="officialBtn" href="#" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-file-lines"></i> Official Notification</a>
-            <a class="btn website" id="websiteBtn" href="#" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-globe"></i> Official Website</a>
+            <a class="btn website" id="websiteBtn" href="#" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-globe"></i> Visit Official Website</a>
             <a class="btn" id="admitCardBtn" href="#" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-id-card"></i> Admit Card</a>
             <a class="btn" id="resultBtn" href="#" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-square-poll-vertical"></i> Result</a>
             <a class="btn" id="syllabusBtn" href="#" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-book-open"></i> Syllabus</a>
@@ -418,14 +418,9 @@ body.dark-mode .mcq-answer,body.dark-mode .mcq-explanation{color:#e8f1ff!importa
         </section>
 
         <section class="panel" id="communityPanel">
-          <table class="content-table community-table">
-            <tbody>
-              <tr>
-                <td class="community-label">Join Our WhatsApp Channel</td>
-                <td><a class="community-link" href="https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q" target="_blank" rel="noopener noreferrer">Click Here</a></td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="community-actions">
+            <a class="btn whatsapp" href="https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q" target="_blank" rel="noopener noreferrer">📢 Join WhatsApp Channel</a>
+          </div>
         </section>
       </div>
     </article>
@@ -436,13 +431,7 @@ body.dark-mode .mcq-answer,body.dark-mode .mcq-explanation{color:#e8f1ff!importa
       </div>
       <div class="sidebar-card">
         <h3>Latest Updates / Related Jobs</h3>
-        <div class="related-list" id="relatedJobs">
-          <a href="job-form.html">Latest Jobs</a>
-          <a href="current-affairs.html">Current Affairs</a>
-          <a href="job-form.html#notification">Notifications</a>
-          <a href="job-form.html#result">Results</a>
-          <a href="job-form.html#admitcard">Admit Cards</a>
-        </div>
+        <div class="related-list" id="relatedJobs"></div>
       </div>
     </aside>
   </div>
@@ -473,7 +462,7 @@ body.dark-mode .mcq-answer,body.dark-mode .mcq-explanation{color:#e8f1ff!importa
 })();
 </script>
 
-<script>window.__EMITRA_STATIC_POST__={"id":"-OtcLvY1kSL1o18ORxdM","job":{"advancedArticleData":{"postTarget":"currentAffairs","shortInfo":"Important current affairs questions, answers and explanations.","slug":"current-affairs-update-8orxdm","title":"Current Affairs Update"},"canonicalUrl":"https://emitrawala.online/post/current-affairs-update-8orxdm/","currentAffairsData":{"तारीख":"2026-05-27","श्रेणी":"करेंट अफेयर्स","समाचार":[{"महत्व":"योगासन को अंतरराष्ट्रीय खेल के रूप में पहचान मिली","शीर्षक":"भारत में पहला विश्व योगासन चैम्पियनशिप 2026 शुरू","श्रेणी":"खेल","सारांश":"केंद्रीय खेल मंत्री मनसुख मंडाविया ने नई दिल्ली में पहली विश्व योगासन चैम्पियनशिप का शुभारंभ किया।"},{"महत्व":"बैंकिंग और प्रतियोगी परीक्षाओं के लिए महत्वपूर्ण","शीर्षक":"आरबीआई ने रेपो रेट 5.75% पर स्थिर रखा","श्रेणी":"अर्थव्यवस्था","सारांश":"भारतीय रिजर्व बैंक ने रेपो रेट में कोई बदलाव नहीं किया और GDP वृद्धि अनुमान बढ़ाया।"},{"महत्व":"द्विपक्षीय व्यापार और मुद्रा स्वतंत्रता को बढ़ावा","शीर्षक":"भारत-यूएई के बीच पहली रुपया-दिरहम व्यापार डील","श्रेणी":"अंतरराष्ट्रीय संबंध","सारांश":"भारत और यूएई ने अमेरिकी डॉलर के बिना स्थानीय मुद्राओं में व्यापार समझौता पूरा किया।"},{"महत्व":"भारत-अमेरिका अंतरिक्ष सहयोग में बड़ी उपलब्धि","शीर्षक":"निसार सैटेलाइट का सफल प्रक्षेपण","श्रेणी":"विज्ञान एवं तकनीक","सारांश":"इसरो और नासा ने संयुक्त रूप से निसार अर्थ ऑब्जर्वेशन सैटेलाइट लॉन्च किया।"},{"महत्व":"नवीकरणीय ऊर्जा और कार्बन उत्सर्जन में कमी पर जोर","शीर्षक":"भारत ने नए जलवायु लक्ष्य प्रस्तुत किए","श्रेणी":"पर्यावरण","सारांश":"भारत ने COP31 से पहले UNFCCC को अपने अपडेटेड जलवायु लक्ष्य सौंपे।"}],"स्रोत":["वजिराम एंड रवि","टाइम्स ऑफ इंडिया","करेंट अफेयर्स पोर्टल"]},"displayOrder":"1","jsonLd":{"@context":"https://schema.org","@graph":[{"@id":"https://emitrawala.online/post/current-affairs-update-8orxdm/#breadcrumb","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","item":"https://emitrawala.online/","name":"Home","position":1},{"@type":"ListItem","item":"https://emitrawala.online/job-form.html","name":"Latest Jobs","position":2},{"@type":"ListItem","item":"https://emitrawala.online/post/current-affairs-update-8orxdm/","name":"Current Affairs Update","position":3}]},{"@id":"https://emitrawala.online/post/current-affairs-update-8orxdm/#article","@type":"Article","dateModified":"2026-05-27T08:02:41.898Z","description":"Important current affairs questions, answers and explanations.","headline":"Current Affairs Update | E-MITRA WALA","mainEntityOfPage":"https://emitrawala.online/post/current-affairs-update-8orxdm/","publisher":{"@type":"Organization","name":"E-MITRA WALA","url":"https://emitrawala.online/"},"title":"Current Affairs Update","url":"https://emitrawala.online/post/current-affairs-update-8orxdm/"}]},"metaDescription":"Important current affairs questions, answers and explanations.","postDate":"","postStatus":"published","postTarget":"currentAffairs","seoTitle":"Current Affairs Update | E-MITRA WALA","seoUpdatedAt":1780283351353,"shortInfo":"Important current affairs questions, answers and explanations.","slug":"current-affairs-update-8orxdm","title":"Current Affairs Update","type":"Current Affairs","updatedAt":1779868961898,"तारीख":"2026-05-27","श्रेणी":"करेंट अफेयर्स","समाचार":[{"महत्व":"योगासन को अंतरराष्ट्रीय खेल के रूप में पहचान मिली","शीर्षक":"भारत में पहला विश्व योगासन चैम्पियनशिप 2026 शुरू","श्रेणी":"खेल","सारांश":"केंद्रीय खेल मंत्री मनसुख मंडाविया ने नई दिल्ली में पहली विश्व योगासन चैम्पियनशिप का शुभारंभ किया।"},{"महत्व":"बैंकिंग और प्रतियोगी परीक्षाओं के लिए महत्वपूर्ण","शीर्षक":"आरबीआई ने रेपो रेट 5.75% पर स्थिर रखा","श्रेणी":"अर्थव्यवस्था","सारांश":"भारतीय रिजर्व बैंक ने रेपो रेट में कोई बदलाव नहीं किया और GDP वृद्धि अनुमान बढ़ाया।"},{"महत्व":"द्विपक्षीय व्यापार और मुद्रा स्वतंत्रता को बढ़ावा","शीर्षक":"भारत-यूएई के बीच पहली रुपया-दिरहम व्यापार डील","श्रेणी":"अंतरराष्ट्रीय संबंध","सारांश":"भारत और यूएई ने अमेरिकी डॉलर के बिना स्थानीय मुद्राओं में व्यापार समझौता पूरा किया।"},{"महत्व":"भारत-अमेरिका अंतरिक्ष सहयोग में बड़ी उपलब्धि","शीर्षक":"निसार सैटेलाइट का सफल प्रक्षेपण","श्रेणी":"विज्ञान एवं तकनीक","सारांश":"इसरो और नासा ने संयुक्त रूप से निसार अर्थ ऑब्जर्वेशन सैटेलाइट लॉन्च किया।"},{"महत्व":"नवीकरणीय ऊर्जा और कार्बन उत्सर्जन में कमी पर जोर","शीर्षक":"भारत ने नए जलवायु लक्ष्य प्रस्तुत किए","श्रेणी":"पर्यावरण","सारांश":"भारत ने COP31 से पहले UNFCCC को अपने अपडेटेड जलवायु लक्ष्य सौंपे।"}],"स्रोत":["वजिराम एंड रवि","टाइम्स ऑफ इंडिया","करेंट अफेयर्स पोर्टल"]}};</script>
+<script>window.__EMITRA_STATIC_POST__={"id":"-OtcLvY1kSL1o18ORxdM","job":{"advancedArticleData":{"postTarget":"currentAffairs","shortInfo":"Important current affairs questions, answers and explanations.","slug":"current-affairs-update-8orxdm","title":"Current Affairs Update"},"canonicalUrl":"https://emitrawala.online/post/current-affairs-update-8orxdm/","currentAffairsData":{"तारीख":"2026-05-27","श्रेणी":"करेंट अफेयर्स","समाचार":[{"महत्व":"योगासन को अंतरराष्ट्रीय खेल के रूप में पहचान मिली","शीर्षक":"भारत में पहला विश्व योगासन चैम्पियनशिप 2026 शुरू","श्रेणी":"खेल","सारांश":"केंद्रीय खेल मंत्री मनसुख मंडाविया ने नई दिल्ली में पहली विश्व योगासन चैम्पियनशिप का शुभारंभ किया।"},{"महत्व":"बैंकिंग और प्रतियोगी परीक्षाओं के लिए महत्वपूर्ण","शीर्षक":"आरबीआई ने रेपो रेट 5.75% पर स्थिर रखा","श्रेणी":"अर्थव्यवस्था","सारांश":"भारतीय रिजर्व बैंक ने रेपो रेट में कोई बदलाव नहीं किया और GDP वृद्धि अनुमान बढ़ाया।"},{"महत्व":"द्विपक्षीय व्यापार और मुद्रा स्वतंत्रता को बढ़ावा","शीर्षक":"भारत-यूएई के बीच पहली रुपया-दिरहम व्यापार डील","श्रेणी":"अंतरराष्ट्रीय संबंध","सारांश":"भारत और यूएई ने अमेरिकी डॉलर के बिना स्थानीय मुद्राओं में व्यापार समझौता पूरा किया।"},{"महत्व":"भारत-अमेरिका अंतरिक्ष सहयोग में बड़ी उपलब्धि","शीर्षक":"निसार सैटेलाइट का सफल प्रक्षेपण","श्रेणी":"विज्ञान एवं तकनीक","सारांश":"इसरो और नासा ने संयुक्त रूप से निसार अर्थ ऑब्जर्वेशन सैटेलाइट लॉन्च किया।"},{"महत्व":"नवीकरणीय ऊर्जा और कार्बन उत्सर्जन में कमी पर जोर","शीर्षक":"भारत ने नए जलवायु लक्ष्य प्रस्तुत किए","श्रेणी":"पर्यावरण","सारांश":"भारत ने COP31 से पहले UNFCCC को अपने अपडेटेड जलवायु लक्ष्य सौंपे।"}],"स्रोत":["वजिराम एंड रवि","टाइम्स ऑफ इंडिया","करेंट अफेयर्स पोर्टल"]},"displayOrder":"1","jsonLd":{"@context":"https://schema.org","@graph":[{"@id":"https://emitrawala.online/post/current-affairs-update-8orxdm/#breadcrumb","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","item":"https://emitrawala.online/","name":"Home","position":1},{"@type":"ListItem","item":"https://emitrawala.online/job-form.html","name":"Latest Jobs","position":2},{"@type":"ListItem","item":"https://emitrawala.online/post/current-affairs-update-8orxdm/","name":"Current Affairs Update","position":3}]},{"@id":"https://emitrawala.online/post/current-affairs-update-8orxdm/#article","@type":"Article","dateModified":"2026-05-27T08:02:41.898Z","description":"Important current affairs questions, answers and explanations.","headline":"Current Affairs Update | E-MITRA WALA","mainEntityOfPage":"https://emitrawala.online/post/current-affairs-update-8orxdm/","publisher":{"@type":"Organization","name":"E-MITRA WALA","url":"https://emitrawala.online/"},"title":"Current Affairs Update","url":"https://emitrawala.online/post/current-affairs-update-8orxdm/"}]},"metaDescription":"Important current affairs questions, answers and explanations.","postDate":"","postStatus":"published","postTarget":"currentAffairs","seoTitle":"Current Affairs Update | E-MITRA WALA","seoUpdatedAt":1780286005881,"shortInfo":"Important current affairs questions, answers and explanations.","slug":"current-affairs-update-8orxdm","title":"Current Affairs Update","type":"Current Affairs","updatedAt":1779868961898,"तारीख":"2026-05-27","श्रेणी":"करेंट अफेयर्स","समाचार":[{"महत्व":"योगासन को अंतरराष्ट्रीय खेल के रूप में पहचान मिली","शीर्षक":"भारत में पहला विश्व योगासन चैम्पियनशिप 2026 शुरू","श्रेणी":"खेल","सारांश":"केंद्रीय खेल मंत्री मनसुख मंडाविया ने नई दिल्ली में पहली विश्व योगासन चैम्पियनशिप का शुभारंभ किया।"},{"महत्व":"बैंकिंग और प्रतियोगी परीक्षाओं के लिए महत्वपूर्ण","शीर्षक":"आरबीआई ने रेपो रेट 5.75% पर स्थिर रखा","श्रेणी":"अर्थव्यवस्था","सारांश":"भारतीय रिजर्व बैंक ने रेपो रेट में कोई बदलाव नहीं किया और GDP वृद्धि अनुमान बढ़ाया।"},{"महत्व":"द्विपक्षीय व्यापार और मुद्रा स्वतंत्रता को बढ़ावा","शीर्षक":"भारत-यूएई के बीच पहली रुपया-दिरहम व्यापार डील","श्रेणी":"अंतरराष्ट्रीय संबंध","सारांश":"भारत और यूएई ने अमेरिकी डॉलर के बिना स्थानीय मुद्राओं में व्यापार समझौता पूरा किया।"},{"महत्व":"भारत-अमेरिका अंतरिक्ष सहयोग में बड़ी उपलब्धि","शीर्षक":"निसार सैटेलाइट का सफल प्रक्षेपण","श्रेणी":"विज्ञान एवं तकनीक","सारांश":"इसरो और नासा ने संयुक्त रूप से निसार अर्थ ऑब्जर्वेशन सैटेलाइट लॉन्च किया।"},{"महत्व":"नवीकरणीय ऊर्जा और कार्बन उत्सर्जन में कमी पर जोर","शीर्षक":"भारत ने नए जलवायु लक्ष्य प्रस्तुत किए","श्रेणी":"पर्यावरण","सारांश":"भारत ने COP31 से पहले UNFCCC को अपने अपडेटेड जलवायु लक्ष्य सौंपे।"}],"स्रोत":["वजिराम एंड रवि","टाइम्स ऑफ इंडिया","करेंट अफेयर्स पोर्टल"]}};</script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
@@ -511,6 +500,19 @@ const renderFormattedText = (value = "") => {
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
   return linkifyText(html);
 };
+
+const emptyValuePattern = /^(?:-|—|na|n\/a|none|null|undefined|not\s*specified|not\s*available|notify\s*soon|update\s*soon|coming\s*soon)$/i;
+
+const normalizeTextValue = (value = "") => String(value ?? "").replace(/\s+/g, " ").trim();
+
+const formatReadableDate = (value = "") => {
+  const date = parseLooseDate(value);
+  if(!date){ return String(value || "").trim(); }
+  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  return `${String(date.getDate()).padStart(2, "0")}-${months[date.getMonth()]}-${date.getFullYear()}`;
+};
+
+const valueLooksLikeDate = (value = "") => Boolean(parseLooseDate(value));
 
 const safeUrl = (value = "#") => {
   const url = String(value || "#").trim();
@@ -689,6 +691,7 @@ const buildJobSchemaGraph = ({ job = {}, title = "Job Update", description = "",
     "description":description,
     "url":canonicalUrl,
     "mainEntityOfPage":canonicalUrl,
+    "author":{ "@type":"Organization", "name":"EmitraWala Team" },
     "datePublished":isoDateOrUndefined(job.createdAt) || undefined,
     "dateModified":isoDateOrUndefined(job.updatedAt) || isoDateOrUndefined(job.createdAt) || undefined,
     "publisher":publisher
@@ -759,8 +762,7 @@ const buildOverviewRows = (job = {}) => [
   { label:"Job Location", value:job.location },
   { label:"Application Mode", value:job.applicationMode || job.mode || job.type },
   { label:"Post Type", value:job.type },
-  { label:"Last Date", value:job.lastApplyDate || job.lastDate },
-  { label:"Official Website", value:job.officialWebsite }
+  { label:"Last Date", value:job.lastApplyDate || job.lastDate }
 ].filter((row) => isFilledValue(row.value, row.options));
 const normalizeJobToArticle = (input = {}) => {
   const base = typeof input === "string" ? { title:input, type:"Online Form" } : ((input && typeof input === "object") ? { ...input } : {});
@@ -829,20 +831,55 @@ const isJobVisible = (job) => {
   return true;
 };
 const isFilledValue = (value, options = {}) => {
-  const text = String(value || "").trim();
+  if(Array.isArray(value)){
+    return value.some((item) => isFilledValue(typeof item === "object" ? JSON.stringify(item) : item, options));
+  }
+  if(value && typeof value === "object"){
+    return Object.values(value).some((item) => isFilledValue(item, options));
+  }
+  const text = normalizeTextValue(value);
   if(!text || text === "#"){ return false; }
-  if(/^(update soon|not available|n\/a|null|undefined)$/i.test(text)){ return false; }
+  if(emptyValuePattern.test(text)){ return false; }
   if(options.hideDefaultAllIndia && /^all india$/i.test(text)){ return false; }
   return true;
+};
+
+const normalizeRowLabel = (label = "") => String(label || "")
+  .toLowerCase()
+  .replace(/[^a-z0-9]+/g, " ")
+  .replace(/\b(apply|online|application)\b/g, "application")
+  .replace(/\b(payment|pay)\b/g, "payment")
+  .replace(/\s+/g, " ")
+  .trim();
+
+const canonicalRowLabel = (label = "") => {
+  const normalized = normalizeRowLabel(label);
+  if(/last date.*application|application.*last date/.test(normalized)){ return "application last date"; }
+  if(/last date.*fee|fee.*payment.*last date|payment.*last date/.test(normalized)){ return "fee payment last date"; }
+  return normalized;
+};
+
+const uniqueRows = (rows = []) => {
+  const seen = new Set();
+  return rows.filter((row) => {
+    if(!row || !isFilledValue(row.value, row.options)){ return false; }
+    const key = `${canonicalRowLabel(row.dedupeLabel || row.label)}|${normalizeTextValue(row.value).toLowerCase()}`;
+    if(seen.has(key)){ return false; }
+    seen.add(key);
+    return true;
+  });
 };
 
 const renderList = (listId, panelId, rows) => {
   const list = document.getElementById(listId);
   const panel = document.getElementById(panelId);
   if(!list || !panel){ return false; }
-  const html = rows
-    .filter((row) => isFilledValue(row.value, row.options))
-    .map((row) => `<tr><th scope="row">${escapeHTML(row.label)}</th><td class="${row.className || ""}">${row.htmlValue || renderFormattedText(row.value)}</td></tr>`)
+  const html = uniqueRows(rows)
+    .map((row) => {
+      const shouldFormatDate = row.format === "date" || /\b(date|available)\b/i.test(row.label || "");
+      const displayValue = shouldFormatDate && valueLooksLikeDate(row.value) ? formatReadableDate(row.value) : row.value;
+      return `<tr><th scope="row">${escapeHTML(row.label)}</th><td class="${row.className || ""}">${row.htmlValue || renderFormattedText(displayValue)}</td></tr>`;
+    })
     .join("");
   list.innerHTML = html;
   const tableWrap = list.closest(".table-wrap");
@@ -902,6 +939,57 @@ const renderEligibilityList = (job = {}) => renderList("eligibilityList", "eligi
   { label:"Required Documents", value:job.requiredDocuments },
   { label:"Physical Eligibility", value:job.physicalEligibility }
 ]);
+
+const parsePostWiseVacancyRows = (job = {}) => {
+  const source = job.postWiseVacancy || job.vacancyDetails || job.vacancy || job.vacancies || "";
+  if(Array.isArray(source)){
+    return source.map((item) => {
+      if(!item || typeof item !== "object"){ return null; }
+      const postName = item.postName || item.post || item.name || item.title;
+      const totalPosts = item.totalPosts || item.total || item.vacancy || item.posts || item.count;
+      return isFilledValue(postName) && isFilledValue(totalPosts) ? { postName, totalPosts } : null;
+    }).filter(Boolean);
+  }
+  if(source && typeof source === "object"){
+    return Object.entries(source).map(([postName, totalPosts]) => (
+      isFilledValue(postName) && isFilledValue(totalPosts) ? { postName, totalPosts } : null
+    )).filter(Boolean);
+  }
+  const lines = String(source || "").split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  const rows = [];
+  let current = {};
+  const pushCurrent = () => {
+    if(isFilledValue(current.postName) && isFilledValue(current.totalPosts)){ rows.push({ ...current }); }
+    current = {};
+  };
+  lines.forEach((line) => {
+    const pair = splitManualPair(line);
+    if(pair){
+      const key = pair.label.toLowerCase();
+      if(/post\s*name|^post$|पद/.test(key)){ current.postName = pair.value; return; }
+      if(/total|vacancy|posts|पदों/.test(key)){ current.totalPosts = pair.value; pushCurrent(); return; }
+    }
+    const inline = line.match(/^(.+?)\s*(?:\||-|:)\s*(\d[\d,]*)\s*$/);
+    if(inline){ rows.push({ postName:inline[1].trim(), totalPosts:inline[2].trim() }); }
+  });
+  pushCurrent();
+  if(!rows.length && isFilledValue(job.postName) && isFilledValue(job.totalVacancy || job.totalPosts)){
+    rows.push({ postName:job.postName, totalPosts:job.totalVacancy || job.totalPosts });
+  }
+  const seen = new Set();
+  return rows.filter((row) => {
+    const key = `${normalizeTextValue(row.postName).toLowerCase()}|${normalizeTextValue(row.totalPosts).toLowerCase()}`;
+    if(seen.has(key)){ return false; }
+    seen.add(key);
+    return true;
+  });
+};
+
+const renderPostWiseVacancyTable = (job = {}) => {
+  const rows = parsePostWiseVacancyRows(job);
+  if(!rows.length){ return ""; }
+  return `<div class="structured-table-wrap"><table class="content-table"><thead><tr><th>Post Name</th><th>Total Posts</th></tr></thead><tbody>${rows.map((row) => `<tr><td>${renderFormattedText(row.postName)}</td><td>${renderFormattedText(row.totalPosts)}</td></tr>`).join("")}</tbody></table></div>`;
+};
 
 const renderLabeledLine = (line = "") => {
   const text = String(line || "").trim();
@@ -1005,7 +1093,10 @@ const renderMetaBadges = (items = []) => {
   if(!box){ return; }
   box.innerHTML = items
     .filter((item) => isFilledValue(item.value))
-    .map((item) => `<span class="meta-badge"><i class="${item.icon}" aria-hidden="true"></i>${escapeHTML(item.label)}: ${escapeHTML(item.value)}</span>`)
+    .map((item) => {
+      const value = /\bdate\b/i.test(item.label || "") && valueLooksLikeDate(item.value) ? formatReadableDate(item.value) : item.value;
+      return `<span class="meta-badge"><i class="${item.icon}" aria-hidden="true"></i>${escapeHTML(item.label)}: ${escapeHTML(value)}</span>`;
+    })
     .join("");
 };
 const articleRowsToTableRows = (items = []) => items.map((item, index) => {
@@ -1036,6 +1127,32 @@ const renderSidebarLinks = (items = []) => {
   const html = items.map((item) => buildButton(item, item.className || "")).filter(Boolean).join("");
   box.innerHTML = html || '<a class="btn notification" href="job-form.html">Latest Jobs</a>';
 };
+
+const renderArticleMeta = (job = {}) => {
+  const box = document.getElementById("articleMetaLine");
+  if(!box){ return; }
+  const updated = formatReadableDate(job.updatedAt || job.createdAt || job.postDate || "");
+  box.textContent = `Last Updated: ${updated || "Update Soon"} | Author: EmitraWala Team`;
+};
+
+const renderRelatedJobs = (currentId = "", currentJob = {}, allJobs = []) => {
+  const box = document.getElementById("relatedJobs");
+  const card = box?.closest(".sidebar-card");
+  if(!box || !card){ return; }
+  const target = normalizePostTarget(currentJob.postTarget);
+  const rows = (Array.isArray(allJobs) ? allJobs : [])
+    .filter((item) => item && item.id !== currentId && isJobVisible(item.job || {}))
+    .filter((item) => normalizePostTarget((item.job || {}).postTarget) === target)
+    .slice(0, 5);
+  if(!rows.length){
+    box.innerHTML = "";
+    card.style.display = "none";
+    return;
+  }
+  box.innerHTML = rows.map((item) => `<a href="${canonicalJobHref(item.id, item.job)}">${escapeHTML((item.job || {}).title || "Job Update")}</a>`).join("");
+  card.style.display = "block";
+};
+
 const normalizeFaqItems = (items = []) => (Array.isArray(items) ? items : []).map((item) => {
   if(!item || typeof item === "string"){ return null; }
   const question = String(item.question || item.q || item.title || "").trim();
@@ -1167,6 +1284,7 @@ const renderCurrentAffairsDetail = ({ jobId = "", job = {}, title = "", descript
   document.getElementById("jobIntro").innerHTML = renderFormattedText(introText || description || title);
   document.getElementById("sheetTitle").textContent = title;
   document.getElementById("sheetSubTitle").innerHTML = renderFormattedText(introText || description || "Important current affairs questions, answers and explanations.");
+  renderArticleMeta(job);
   const shortInfoHeading = document.querySelector("#shortInfoPanel h2");
   if(shortInfoHeading){ shortInfoHeading.textContent = "Intro"; }
   renderMetaBadges([
@@ -1223,8 +1341,7 @@ const splitTableCells = (line) => line
 const isSeparatorRow = (line) => /^\s*\|?[\s:-]+\|[\s|:-]*$/.test(line);
 
 const isMeaningfulCell = (value) => {
-  const text = String(value || "").trim();
-  return Boolean(text && !/^[-–—]+$/.test(text));
+  return isFilledValue(value);
 };
 
 const renderTableBlock = (lines) => {
@@ -1246,13 +1363,14 @@ const renderTableBlock = (lines) => {
 
 const renderInlineList = (text = "") => {
   const value = String(text || "").trim();
+  if(!isFilledValue(value)){ return ""; }
   if(value.includes(";")){
     const items = value.split(";").map((item) => item.trim()).filter(Boolean);
     if(items.length > 1){
       return `<ul>${items.map((item) => `<li>${renderFormattedText(item)}</li>`).join("")}</ul>`;
     }
   }
-  return renderFormattedText(value || "—");
+  return renderFormattedText(valueLooksLikeDate(value) ? formatReadableDate(value) : value);
 };
 
 const getFlexibleField = (job = {}, key = "") => {
@@ -1301,12 +1419,13 @@ const flexibleRowsFromValue = (value, preferredLabels = {}) => {
 };
 
 const rowsToStructuredTable = (rows = [], className = "content-table") => {
-  const cleanRows = rows.filter((row) => row && isFilledFlexibleValue(row.value));
+  const cleanRows = uniqueRows(rows.filter((row) => row && isFilledFlexibleValue(row.value)));
   if(!cleanRows.length){ return ""; }
   return `<div class="structured-table-wrap"><table class="${className}"><tbody>${cleanRows.map((row) => `<tr><th>${renderFormattedText(row.label)}</th><td>${renderFlexibleCell(row.value)}</td></tr>`).join("")}</tbody></table></div>`;
 };
 
 const renderFlexibleCell = (value) => {
+  if(!isFilledFlexibleValue(value)){ return ""; }
   if(Array.isArray(value)){
     const items = value.filter(isFilledFlexibleValue);
     if(!items.length){ return ""; }
@@ -1318,7 +1437,7 @@ const renderFlexibleCell = (value) => {
   if(value && typeof value === "object"){
     return rowsToStructuredTable(flexibleRowsFromValue(value));
   }
-  return renderFormattedText(value);
+  return renderFormattedText(valueLooksLikeDate(value) ? formatReadableDate(value) : value);
 };
 
 const renderObjectTable = (value) => rowsToStructuredTable(flexibleRowsFromValue(value));
@@ -1376,10 +1495,6 @@ const renderFlexibleSection = (section = {}) => {
 
 const buildAutomaticSections = (job = {}) => {
   const sections = [];
-  const vacancyDetails = getFlexibleField(job, "vacancyDetails");
-  if(isFilledFlexibleValue(vacancyDetails) && !isFilledFlexibleValue(job.vacancyDetailsManual)){
-    sections.push({ title:"Vacancy Details", type:"table", data:vacancyDetails });
-  }
   const courseEligibility = getFlexibleField(job, "courseEligibility");
   if(isFilledFlexibleValue(courseEligibility)){
     sections.push({ title:"Course Eligibility", type:Array.isArray(courseEligibility) ? "list" : "keyValue", data:courseEligibility });
@@ -1461,7 +1576,7 @@ const message = document.getElementById("jobMessage");
 const wrap = document.getElementById("jobDetailWrap");
 const staticPost = window.__EMITRA_STATIC_POST__ && typeof window.__EMITRA_STATIC_POST__ === "object" ? window.__EMITRA_STATIC_POST__ : null;
 
-const renderJobDetail = (jobId, rawJob) => {
+const renderJobDetail = (jobId, rawJob, allJobs = []) => {
     const job = normalizeJob(rawJob);
     if(!isJobVisible(job)){
       message.textContent = "Ye post abhi public page par hidden hai.";
@@ -1509,6 +1624,7 @@ const renderJobDetail = (jobId, rawJob) => {
     document.getElementById("jobIntro").innerHTML = renderFormattedText(job.shortInfo || `${title} ke important dates, eligibility, fee, vacancy details aur apply links yahan dekhein.`);
     document.getElementById("sheetTitle").textContent = title;
     document.getElementById("sheetSubTitle").innerHTML = renderFormattedText(job.shortInfo || `${type} notification ki complete details yahan clean format me di gayi hain.`);
+    renderArticleMeta(job);
     renderTextBlock("shortInfoContent", "shortInfoPanel", job.shortInfo || (Array.isArray(job.intro) ? job.intro.join("\n") : ""));
     renderMetaBadges([
       { label:"Post Date", value:job.postDate, icon:"fa-solid fa-calendar-plus" },
@@ -1524,8 +1640,7 @@ const renderJobDetail = (jobId, rawJob) => {
       { label:"Job Location", value:job.location, options:{ hideDefaultAllIndia:true } },
       { label:"Application Mode", value:job.applicationMode || job.mode || job.type },
       { label:"Post Type", value:job.type },
-      { label:"Last Date", value:job.lastApplyDate || job.lastDate, className:"danger-date" },
-      { label:"Official Website", value:job.officialWebsite }
+      { label:"Last Date", value:job.lastApplyDate || job.lastDate, className:"danger-date", format:"date" }
     ];
     const nestedOverviewRows = articleRowsToTableRows(job.overview);
     const hasDefaultOverview = defaultOverviewRows.some((row) => isFilledValue(row.value, row.options));
@@ -1545,8 +1660,8 @@ const renderJobDetail = (jobId, rawJob) => {
     // Avoid duplicate rows when the same date exists in both fixed fields and flexible "importantDates".
     const baseImportantRows = [
       { label:"Application Start Date", value:job.startDate },
-      { label:"Last Date Apply Online", value:job.lastApplyDate || job.lastDate, className:"danger-date" },
-      { label:"Last Date Fee Payment", value:job.lastFeeDate },
+      { label:"Application Last Date", dedupeLabel:"application last date", value:job.lastApplyDate || job.lastDate, className:"danger-date", format:"date" },
+      { label:"Fee Payment Last Date", dedupeLabel:"fee payment last date", value:job.lastFeeDate, format:"date" },
       { label:"Tier I / Main Exam Date", value:job.examDate },
       { label:"Exam City Available", value:job.examCityDate },
       { label:"Admit Card Date", value:job.admitCardDate },
@@ -1555,12 +1670,12 @@ const renderJobDetail = (jobId, rawJob) => {
       { label:"Tier II / Second Exam Date", value:job.tierTwoExamDate || job.tier2ExamDate }
     ];
     const existingImportantLabels = new Set(
-      baseImportantRows.map((row) => String(row.label || "").trim().toLowerCase()).filter(Boolean)
+      baseImportantRows.filter((row) => isFilledValue(row.value, row.options)).map((row) => canonicalRowLabel(row.dedupeLabel || row.label)).filter(Boolean)
     );
     const uniqueStructuredImportant = [];
     const addedImportantLabels = new Set(existingImportantLabels);
     structuredImportantDates.forEach((row) => {
-      const label = String(row.label || "").trim().toLowerCase();
+      const label = canonicalRowLabel(row.label || "");
       if(label && !addedImportantLabels.has(label)){
         addedImportantLabels.add(label);
         uniqueStructuredImportant.push(row);
@@ -1574,16 +1689,19 @@ const renderJobDetail = (jobId, rawJob) => {
     if(importantHeading){ importantHeading.textContent = "Important Dates"; }
     renderManualContent("importantManual", "importantPanel", job.importantDatesManual, "Other Important Dates");
 
-    renderList("jobInfoList", "jobInfoPanel", [
-      { label:"Department / Board Name", value:job.department },
+    const overviewKeys = new Set(uniqueRows(defaultOverviewRows).map((row) => `${canonicalRowLabel(row.label)}|${normalizeTextValue(row.value).toLowerCase()}`));
+    const basicRows = [
+      { label:"Department / Board Name", dedupeLabel:"organization department", value:job.department },
       { label:"Post Name", value:job.postName },
       { label:"Category", value:job.category },
-      { label:"Total Posts", value:job.totalPosts },
+      { label:"Total Posts", dedupeLabel:"total posts vacancy", value:job.totalPosts },
       { label:"Job Type", value:job.type },
       { label:"Job Location", value:job.location, options:{ hideDefaultAllIndia:true } },
       { label:"Salary / Pay Scale", value:job.salary }
-    ]);
-    renderManualContent("jobInfoManual", "jobInfoPanel", job.basicDetailsManual, "Other Basic Details");
+    ].filter((row) => !overviewKeys.has(`${canonicalRowLabel(row.dedupeLabel || row.label)}|${normalizeTextValue(row.value).toLowerCase()}`));
+    const hasBasicRows = renderList("jobInfoList", "jobInfoPanel", basicRows);
+    const hasBasicManual = renderManualContent("jobInfoManual", "jobInfoPanel", job.basicDetailsManual, "Other Basic Details");
+    if(!hasBasicRows && !hasBasicManual){ document.getElementById("jobInfoPanel").style.display = "none"; }
 
     const normalizeFeeNumber = (val) => {
       const s = String(val ?? "").trim();
@@ -1665,13 +1783,15 @@ const renderJobDetail = (jobId, rawJob) => {
     ]);
     renderManualContent("ageManual", "agePanel", job.ageLimitManual, "Other Age Limit");
 
-    renderList("vacancyList", "vacancyPanel", [
-      { label:"Post Name", value:job.postName },
-      { label:"Total Vacancy", value:job.totalVacancy || job.totalPosts },
+    const vacancyHtml = renderPostWiseVacancyTable(job);
+    const vacancyManualValue = vacancyHtml ? "" : (job.vacancyDetailsManual || job.vacancyDetails);
+    const hasVacancyRows = renderList("vacancyList", "vacancyPanel", [
+      { label:"Post Wise Vacancy", value:vacancyHtml ? "available" : "", htmlValue:vacancyHtml },
       { label:"Category Wise Vacancy", value:job.categoryWiseVacancy },
       { label:"State Wise Vacancy", value:job.stateWiseVacancy }
     ]);
-    renderManualContent("vacancyManual", "vacancyPanel", job.vacancyDetailsManual, "Other Vacancy Details");
+    const hasVacancyManual = renderManualContent("vacancyManual", "vacancyPanel", vacancyManualValue, "Other Vacancy Details");
+    if(!hasVacancyRows && !hasVacancyManual){ document.getElementById("vacancyPanel").style.display = "none"; }
 
     renderEligibilityList(job);
     renderManualContent("eligibilityManual", "eligibilityPanel", job.eligibilityManual, "Other Eligibility Details");
@@ -1685,7 +1805,7 @@ const renderJobDetail = (jobId, rawJob) => {
     const linkButtons = [
       { id:"applyBtn", label:"Apply Online", url:job.applyLink, icon:"fa-solid fa-arrow-up-right-from-square", className:"apply" },
       { id:"officialBtn", label:"Official Notification", url:job.detailLink, icon:"fa-solid fa-file-lines", className:"notification" },
-      { id:"websiteBtn", label:"Official Website", url:job.officialWebsite, icon:"fa-solid fa-globe", className:"website" },
+      { id:"websiteBtn", label:"Visit Official Website", url:job.officialWebsite, icon:"fa-solid fa-globe", className:"website" },
       { id:"admitCardBtn", label:"Admit Card", url:job.admitCardLink, icon:"fa-solid fa-id-card" },
       { id:"resultBtn", label:"Result", url:job.resultLink, icon:"fa-solid fa-square-poll-vertical" },
       { id:"syllabusBtn", label:"Syllabus", url:job.syllabusLink, icon:"fa-solid fa-book-open" },
@@ -1720,6 +1840,7 @@ const renderJobDetail = (jobId, rawJob) => {
       ...linkButtons,
       ...extraImportantLinks.map((item) => ({ label:item.label || "Important Link", url:item.url, icon:"fa-solid fa-link" }))
     ]);
+    renderRelatedJobs(jobId, job, allJobs);
     document.getElementById("linksPanel").style.display = hasLink || hasPostApplyLinks || hasLinksManual || hasNestedImportant ? "block" : "none";
 
     const contentBox = document.getElementById("pageContent");
@@ -1754,10 +1875,12 @@ if(!id && !pathSlug){
 }else{
   onValue(ref(db, "LatestJobs"), (snapshot) => {
     let match = null;
+    const allJobs = [];
     if(snapshot.exists()){
       snapshot.forEach((child) => {
-        if(match){ return; }
         const job = normalizeJob(child.val());
+        if(isJobVisible(job)){ allJobs.push({ id:child.key, job }); }
+        if(match){ return; }
         if(isMatchingJobSlug(pathSlug, job, child.key)){
           match = { id:child.key, job };
         }
@@ -1772,7 +1895,7 @@ if(!id && !pathSlug){
       wrap.style.display = "none";
       return;
     }
-    renderJobDetail(match.id, match.job);
+    renderJobDetail(match.id, match.job, allJobs);
   }, (error) => {
     message.textContent = "Job details load nahi ho payi: " + error.message;
   });
