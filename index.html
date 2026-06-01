@@ -1043,6 +1043,15 @@ font-weight:700;
 color:#b30000;
 }
 
+.post-date{
+display:inline-block;
+margin-right:6px;
+color:#5c6f96;
+font-size:13px;
+font-weight:700;
+white-space:nowrap;
+}
+
 .new-badge{
 display:inline-block;
 margin-left:6px;
@@ -4197,7 +4206,7 @@ return;
 }
 
 list.innerHTML = items.map((item)=>`
-  <li><a href="${portalItemHref(item, category)}" target="_blank" rel="noopener noreferrer">${escapeHTML(item.title || "Update")}</a>${renderNewBadge(item)}</li>
+  <li>${renderPostDate(item)}<a href="${portalItemHref(item, category)}" target="_blank" rel="noopener noreferrer">${escapeHTML(item.title || "Update")}</a>${renderNewBadge(item)}</li>
 `).join("");
 };
 
@@ -4223,6 +4232,18 @@ const postTime = getPostTime(item);
 return Boolean(postTime && Date.now() - postTime <= NEW_BADGE_DAYS * 24 * 60 * 60 * 1000);
 };
 const renderNewBadge = (item = {}) => isNewPost(item) ? '<span class="new-badge">New</span>' : "";
+const getPostDateValue = (item = {}) => item.postDate || item.resultDate || item.admitCardDate || item.answerKeyDate || item.createdAt || item.updatedAt || "";
+const formatPostDate = (item = {}) => {
+const value = getPostDateValue(item);
+if(!value){ return ""; }
+const date = typeof value === "number" ? new Date(value) : new Date(String(value).replace(/-/g, " "));
+if(Number.isNaN(date.getTime())){ return ""; }
+return date.toLocaleDateString("en-GB", { day:"numeric", month:"short", year:"numeric" }).replace(/ /g, " ");
+};
+const renderPostDate = (item = {}) => {
+const text = formatPostDate(item);
+return text ? `<span class="post-date">${escapeHTML(text)}</span>` : "";
+};
 
 scheduleDataTask(() => {
 firebaseRestGet("portalItems").then((portalData)=>{
@@ -4293,7 +4314,7 @@ if(uniqueJobs.length && portalJobList){
 portalJobList.innerHTML = uniqueJobs.slice(0,20).map(({ id, job })=>`
   <li class="home-portal-job-card">
     <span class="badge">${escapeHTML(job.type || "Online Form")}</span>
-    <h3><a href="${jobDetailHref(id, job)}" target="_blank" rel="noopener noreferrer">${escapeHTML(job.title || job.text || "Job Update")}</a>${renderNewBadge(job)}</h3>
+    <h3>${renderPostDate(job)}<a href="${jobDetailHref(id, job)}" target="_blank" rel="noopener noreferrer">${escapeHTML(job.title || job.text || "Job Update")}</a>${renderNewBadge(job)}</h3>
     <p>Start: ${escapeHTML(job.startDate || "Update Soon")} | Last: <span class="last-date">${escapeHTML(job.lastDate || job.lastApplyDate || "Update Soon")}</span></p>
     <p>Qualification: ${escapeHTML(job.qualification || "Update Soon")}</p>
     <p>Location: ${escapeHTML(job.location || "All India")}</p>
@@ -4319,7 +4340,7 @@ box.innerHTML = uniqueJobs.slice(0,8).map(({ id, job })=>`
 }
 if(currentAffairsList){
 currentAffairsList.innerHTML = uniqueCurrentAffairs.length
-? uniqueCurrentAffairs.slice(0,10).map(({ id, job })=>`<li><a href="${jobDetailHref(id, job)}" target="_blank" rel="noopener noreferrer">${escapeHTML(job.title || "Current Affairs Update")}</a>${renderNewBadge(job)}</li>`).join("")
+? uniqueCurrentAffairs.slice(0,10).map(({ id, job })=>`<li>${renderPostDate(job)}<a href="${jobDetailHref(id, job)}" target="_blank" rel="noopener noreferrer">${escapeHTML(job.title || "Current Affairs Update")}</a>${renderNewBadge(job)}</li>`).join("")
 : '<li class="home-portal-message">Abhi koi current affairs post nahi hai.</li>';
 }
 filterHomePortalJobs();
