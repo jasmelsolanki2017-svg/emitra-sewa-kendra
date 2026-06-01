@@ -1066,7 +1066,7 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
-window.logoutUser = () => signOut(auth).then(() => { location.href = "index.html"; });
+window.logoutUser = async () => { adminAllowed = false; localStorage.removeItem("loginTime"); try{ await signOut(auth); }catch(error){ console.warn("Admin logout failed", error); } location.replace("index.html"); };
 </script>
 </body>
 </html>

@@ -707,7 +707,7 @@
       }
 
       adminAllowed = false;
-      window.location.href = "index.html";
+      window.location.replace("index.html");
     });
 
     onValue(membersRef, (snapshot) => {
@@ -1133,10 +1133,15 @@
       }
     };
 
-    window.logoutUser = () => {
-      signOut(auth).then(() => {
-        window.location.href = "index.html";
-      });
+    window.logoutUser = async () => {
+      adminAllowed = false;
+      localStorage.removeItem("loginTime");
+      try{
+        await signOut(auth);
+      }catch(error){
+        console.warn("Admin logout failed", error);
+      }
+      window.location.replace("index.html");
     };
   </script>
 </body>

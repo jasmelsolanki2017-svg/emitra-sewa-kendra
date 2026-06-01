@@ -1060,16 +1060,19 @@ Cook | 1426 |"></textarea>
 
     } else {
       adminAllowed = false;
-      window.location.href = "index.html";
+      window.location.replace("index.html");
     }
   });
 
-  window.logoutUser = () => {
+  window.logoutUser = async () => {
+    adminAllowed = false;
     localStorage.removeItem("loginTime");
-
-    signOut(auth).then(() => {
-      window.location.href = "index.html";
-    });
+    try{
+      await signOut(auth);
+    }catch(error){
+      console.warn("Admin logout failed", error);
+    }
+    window.location.replace("index.html");
   };
 
   const linksRef = ref(db, "importantLinks");

@@ -36,11 +36,11 @@
     const accessTitle=document.getElementById("accessTitle"),adminEmailText=document.getElementById("adminEmailText"),linkTitle=document.getElementById("linkTitle"),linkUrl=document.getElementById("linkUrl"),linkStatus=document.getElementById("linkStatus"),adminLinksList=document.getElementById("adminLinksList");
     const escapeHTML=(v="")=>String(v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
     const safeUrl=(v="#")=>/^https?:\/\//i.test(String(v||"").trim())?String(v).trim():"#";
-    onAuthStateChanged(auth,(user)=>{if(user&&user.email===adminEmail){adminAllowed=true;accessTitle.innerText="Admin Access Verified";adminEmailText.innerText=user.email}else{location.href="index.html"}});
+    onAuthStateChanged(auth,(user)=>{if(user&&user.email===adminEmail){adminAllowed=true;accessTitle.innerText="Admin Access Verified";adminEmailText.innerText=user.email}else{location.replace("index.html")}});
     window.addImportantLink=()=>{if(!adminAllowed){alert("Admin verify nahi hua.");return}const title=linkTitle.value.trim(),url=linkUrl.value.trim();if(!title||!url){alert("Link name aur URL dono bharen");return}if(!/^https?:\/\//i.test(url)){alert("URL http:// ya https:// se start hona chahiye");return}linkStatus.innerText="Saving...";set(push(linksRef),{title,url,createdAt:Date.now()}).then(()=>{linkStatus.innerText="Link Added.";linkTitle.value="";linkUrl.value=""}).catch(e=>alert(e.message))};
     window.deleteImportantLink=(id)=>{if(!adminAllowed){alert("Admin verify nahi hua.");return}if(confirm("Ye link delete karna hai?"))remove(ref(db,"importantLinks/"+id)).catch(e=>alert(e.message))};
     onValue(linksRef,(snapshot)=>{const list=adminLinksList;list.innerHTML="";if(snapshot.exists()){snapshot.forEach((child)=>{const data=child.val()||{};list.innerHTML+=`<div class="row"><div><a href="${safeUrl(data.url)}" target="_blank" rel="noopener noreferrer">${escapeHTML(data.title||"Link")}</a><small>${escapeHTML(data.url||"#")}</small></div><button class="delete" onclick="deleteImportantLink('${child.key}')">Delete</button></div>`})}else{list.innerHTML='<div class="empty">Abhi koi link save nahi hai.</div>'}});
-    window.logoutUser=()=>signOut(auth).then(()=>location.href="index.html");
+    window.logoutUser=async()=>{adminAllowed=false;localStorage.removeItem("loginTime");try{await signOut(auth)}catch(error){console.warn("Admin logout failed",error)}location.replace("index.html")};
   </script>
 </body>
 </html>
