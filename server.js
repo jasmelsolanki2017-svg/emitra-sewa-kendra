@@ -1471,7 +1471,7 @@ const parseJsonFromAiText = (value = "") => {
   try {
     return JSON.parse(text);
   } catch (_err) {
-    const match = text.match(/\{[\s\S]*\}/);
+    const match = text.match(/\{[\s\S]*\}/) || text.match(/\[[\s\S]*\]/);
     if (!match) return {};
     try {
       return JSON.parse(match[0]);
@@ -1479,6 +1479,15 @@ const parseJsonFromAiText = (value = "") => {
       return {};
     }
   }
+};
+
+const unwrapCurrentAffairsPayload = (value = {}) => {
+  if (Array.isArray(value)) return { questions: value };
+  if (!value || typeof value !== "object") return {};
+  const nested = value.currentAffairs || value.current_affairs || value.data || value.content;
+  if (Array.isArray(nested)) return { ...value, questions: value.questions || value.mcqs || value.quiz || nested };
+  if (nested && typeof nested === "object") return { ...value, ...nested };
+  return value;
 };
 
 const IST_TIME_ZONE = "Asia/Kolkata";
@@ -1533,22 +1542,10 @@ const buildDailyCurrentAffairsPrompt = (dateLabel = "") => [
   "Rules: 8-12 news points, 8-10 MCQ questions, 4-5 FAQs. Facts invent mat karo; uncertain facts ko general exam-revision wording me rakho."
 ].join("\n");
 
-const generateDailyCurrentAffairsPayload = async ({ date = new Date(), aiProvider = "", aiModel = "" } = {}) => {
-  const dateKey = typeof date === "string" ? date : dailyCurrentAffairsDate(date);
-  const dateLabel = dailyCurrentAffairsDisplayDate(dateKey);
-  const title = `Daily Current Affairs Update - ${dateLabel}`;
-  const prompt = buildDailyCurrentAffairsPrompt(dateLabel);
-  const ai = await callAiTextWithFallback({
-    ...readAiSettings(),
-    provider: aiProvider || readAiSettings().provider,
-    model: aiModel || readAiSettings().model,
-    prompt,
-    system: "You create concise, factual Hindi daily current affairs study material for Indian competitive exam aspirants.",
-    temperature: 0.25,
-    maxTokens: 2200
-  });
-  const parsed = parseJsonFromAiText(ai.text);
-  const news = normalizeCurrentAffairsArray(parsed.news || parsed.samachar || parsed["समाचार"])
+const normalizeDailyCurrentAffairsJson = (value = {}) => {
+  const parsed = unwrapCurrentAffairsPayload(value);
+  const content = parsed.content && typeof parsed.content === "object" ? parsed.content : {};
+  const news = normalizeCurrentAffairsArray(parsed.news || parsed.samachar || parsed["समाचार"] || content.news || content.samachar || content["समाचार"])
     .map((item) => item && typeof item === "object" ? {
       title: toText(item.title || item["शीर्षक"] || item.heading),
       category: toText(item.category || item["श्रेणी"] || item.topic),
@@ -1557,22 +1554,62 @@ const generateDailyCurrentAffairsPayload = async ({ date = new Date(), aiProvide
       source: toText(item.source || item["स्रोत"])
     } : { title: "", category: "", summary: toText(item), importance: "", source: "" })
     .filter((item) => item.title || item.summary);
-  const questions = normalizeCurrentAffairsArray(parsed.questions || parsed.mcqs || parsed.quiz)
+  const questions = normalizeCurrentAffairsArray(parsed.questions || parsed.mcqs || parsed.quiz || parsed.currentAffairs || parsed.current_affairs || parsed["प्रश्न"] || content.questions || content.mcqs || content.quiz)
     .map((item) => item && typeof item === "object" ? {
       question: toText(item.question || item.q || item.title),
-      options: normalizeCurrentAffairsArray(item.options).map(toText).filter(Boolean),
-      answer: toText(item.answer || item.correctAnswer || item.correct),
+      options: normalizeCurrentAffairsArray(item.options || item.option || item.choices || item["विकल्प"] || [item.optionA || item.a, item.optionB || item.b, item.optionC || item.c, item.optionD || item.d].filter(Boolean)).map(toText).filter(Boolean),
+      answer: toText(item.answer || item.correctAnswer || item.correct || item.correct_option || item["उत्तर"]),
       explanation: toText(item.explanation || item.reason || item.solution)
     } : null)
     .filter((item) => item && item.question && item.options.length);
-  const faqs = normalizeCurrentAffairsArray(parsed.faqs || parsed.faq)
+  const faqs = normalizeCurrentAffairsArray(parsed.faqs || parsed.faq || content.faqs || content.faq)
     .map((item) => item && typeof item === "object" ? {
       question: toText(item.question || item.q || item.title),
       answer: toText(item.answer || item.a || item.text || item.content)
     } : null)
     .filter((item) => item && item.question && item.answer);
+  return { parsed, news, questions, faqs };
+};
+
+const generateDailyCurrentAffairsPayload = async ({ date = new Date(), aiProvider = "", aiModel = "" } = {}) => {
+  const dateKey = typeof date === "string" ? date : dailyCurrentAffairsDate(date);
+  const dateLabel = dailyCurrentAffairsDisplayDate(dateKey);
+  const title = `Daily Current Affairs Update - ${dateLabel}`;
+  const prompt = buildDailyCurrentAffairsPrompt(dateLabel);
+  const selected = { provider: aiProvider || readAiSettings().provider, model: aiModel || readAiSettings().model };
+  const attempts = uniqueAiAttempts(selected);
+  let ai = null;
+  let parsed = {};
+  let news = [];
+  let questions = [];
+  let faqs = [];
+  const failures = [];
+  for (const attempt of attempts) {
+    try {
+      const result = await callAiText({
+        provider: attempt.provider,
+        model: attempt.model,
+        prompt,
+        system: "You create concise, factual Hindi daily current affairs study material for Indian competitive exam aspirants.",
+        temperature: 0.25,
+        maxTokens: 2200
+      });
+      const normalized = normalizeDailyCurrentAffairsJson(parseJsonFromAiText(result.text));
+      if (normalized.news.length || normalized.questions.length) {
+        ai = result;
+        parsed = normalized.parsed;
+        news = normalized.news;
+        questions = normalized.questions;
+        faqs = normalized.faqs;
+        break;
+      }
+      failures.push(`${attempt.label} ${attempt.model}: invalid current affairs JSON`);
+    } catch (err) {
+      failures.push(`${attempt.label} ${attempt.model}: ${err.message}`);
+    }
+  }
   if (!news.length && !questions.length) {
-    const error = new Error("AI response me valid current affairs JSON nahi mila.");
+    const error = new Error(`AI response me valid current affairs JSON nahi mila. ${failures.join(" | ")}`);
     error.code = "AI_INVALID_RESPONSE";
     throw error;
   }
