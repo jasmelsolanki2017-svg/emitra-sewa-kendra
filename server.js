@@ -1395,6 +1395,43 @@ const callAiText = async ({ provider = "gemini", model = "", prompt = "", system
   };
 };
 
+const uniqueAiAttempts = (selected = {}) => {
+  const attempts = [];
+  const add = (provider, model = "") => {
+    const config = getAiProviderConfig(provider, model);
+    const key = `${config.label}:${config.model}`;
+    if (!config.apiKey || !config.model || attempts.some((item) => item.key === key)) return;
+    attempts.push({ key, provider: normalizeAiProvider(provider), model: config.model, label: config.label });
+  };
+  add(selected.provider || readAiSettings().provider, selected.model || readAiSettings().model);
+  add("gemini");
+  add("openai");
+  add("openrouter", OPENROUTER_MODEL);
+  add("openrouter", OPENROUTER_DEEPSEEK_MODEL);
+  add("openrouter", OPENROUTER_QWEN_MODEL);
+  return attempts;
+};
+
+const callAiTextWithFallback = async (options = {}) => {
+  const attempts = uniqueAiAttempts({ provider: options.provider, model: options.model });
+  if (!attempts.length) {
+    const error = new Error("AI API key/model missing");
+    error.code = "AI_NOT_CONFIGURED";
+    throw error;
+  }
+  const failures = [];
+  for (const attempt of attempts) {
+    try {
+      return await callAiText({ ...options, provider: attempt.provider, model: attempt.model });
+    } catch (err) {
+      failures.push(`${attempt.label} ${attempt.model}: ${err.message}`);
+    }
+  }
+  const error = new Error(`AI providers failed: ${failures.join(" | ")}`);
+  error.code = "AI_PROVIDER_FAILED";
+  throw error;
+};
+
 const aiOptionsFromRequest = (body = {}) => ({
   provider: normalizeAiProvider(body.aiProvider || body.provider || readAiSettings().provider),
   model: String(body.aiModel || body.openRouterModel || body.model || readAiSettings().model || "").trim()
@@ -1501,7 +1538,7 @@ const generateDailyCurrentAffairsPayload = async ({ date = new Date(), aiProvide
   const dateLabel = dailyCurrentAffairsDisplayDate(dateKey);
   const title = `Daily Current Affairs Update - ${dateLabel}`;
   const prompt = buildDailyCurrentAffairsPrompt(dateLabel);
-  const ai = await callAiText({
+  const ai = await callAiTextWithFallback({
     ...readAiSettings(),
     provider: aiProvider || readAiSettings().provider,
     model: aiModel || readAiSettings().model,
@@ -4093,7 +4130,7 @@ const maybeRunDailyCurrentAffairsSchedule = async () => {
   if (!enabled || !isAdminSdkConfigured()) return;
   const dateKey = dailyCurrentAffairsDate();
   const { hour, minute } = getIstClock();
-  if (hour !== 7 || minute !== 0 || lastDailyCurrentAffairsRunDate === dateKey) return;
+  if (hour < 7 || lastDailyCurrentAffairsRunDate === dateKey) return;
   lastDailyCurrentAffairsRunDate = dateKey;
   try {
     const db = getAdminDb();
