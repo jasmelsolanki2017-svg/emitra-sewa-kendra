@@ -78,7 +78,7 @@
     <li><a href="../job-form.html">Latest Jobs</a></li>
     <li><a href="../OFFLINEFORM.HTML">PDF Forms</a></li>
     <li>
-      <details class="nav-tools" open>
+      <details class="nav-tools">
         <summary><i class="fa-solid fa-toolbox"></i> Tools</summary>
         <div class="nav-tools-menu">
           <a href="../tools.html"><i class="fa-solid fa-screwdriver-wrench"></i> All Free Tools</a>
@@ -307,6 +307,19 @@ const TYPING_MODE_LOCAL_KEY = 'rajasthanFormsTypingMode';
 let sharedFormData = {};
 try { sharedFormData = JSON.parse(localStorage.getItem(DATA_LOCAL_KEY) || '{}') || {}; } catch(e) { sharedFormData = {}; }
 const $ = id => document.getElementById(id);
+const navTools = document.querySelector('.nav-tools');
+if(navTools){
+  document.addEventListener('click', event=>{
+    if(navTools.open && !navTools.contains(event.target)){
+      navTools.open = false;
+    }
+  });
+  document.addEventListener('keydown', event=>{
+    if(event.key === 'Escape' && navTools.open){
+      navTools.open = false;
+    }
+  });
+}
 
 const NO_AUTO_HINDI_FIELD_IDS = new Set([
   'aadhaar','janAadhaar','mobile','dob','date','age','dobDay','dobMonth','dobYear','dateDay','dateMonth','dateYear',
