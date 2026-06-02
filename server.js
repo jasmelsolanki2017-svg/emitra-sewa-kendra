@@ -61,6 +61,7 @@ const extractHttpUrl = (value, fallback = "") => {
 };
 const FIREBASE_URL = extractUrl(process.env.FIREBASE_URL, DEFAULT_FIREBASE_URL);
 const SETTINGS_PATH = path.join(__dirname, "settings.json");
+const FORMS_FIELDS_CONFIG_PATH = path.join(__dirname, "emitra-offline-form-fill", "assets", "forms-fields-config.json");
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "jasmelsolanki@gmail.com";
 const SITE_BASE_URL = extractUrl(process.env.SITE_BASE_URL, "https://emitrawala.online");
 const WHATSAPP_CHANNEL_URL = extractHttpUrl(process.env.WHATSAPP_CHANNEL_URL, "https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q");
@@ -1943,6 +1944,43 @@ function writeSettingsFile(obj = {}) {
   }
 }
 
+function readFormsFieldsConfigFile() {
+  try {
+    const raw = fs.readFileSync(FORMS_FIELDS_CONFIG_PATH, "utf8");
+    return JSON.parse(raw || "{}");
+  } catch (err) {
+    return {};
+  }
+}
+
+function writeFormsFieldsConfigFile(obj = {}) {
+  fs.writeFileSync(FORMS_FIELDS_CONFIG_PATH, JSON.stringify(obj, null, 2) + "\n", "utf8");
+}
+
+function validateFormsFieldsConfig(config = {}) {
+  if (!config || typeof config !== "object" || Array.isArray(config)) {
+    throw new Error("Config JSON object required");
+  }
+  if (!config.forms || typeof config.forms !== "object" || Array.isArray(config.forms)) {
+    throw new Error("Config me forms object required hai");
+  }
+  for (const formKey of ["caste", "bonafide"]) {
+    const form = config.forms[formKey];
+    if (!form || typeof form !== "object" || !Array.isArray(form.fields)) {
+      throw new Error(`${formKey} form fields missing hain`);
+    }
+    form.fields.forEach((field, index) => {
+      if (!field || typeof field !== "object") throw new Error(`${formKey} field ${index + 1} invalid hai`);
+      if (!field.id) throw new Error(`${formKey} field ${index + 1} id missing hai`);
+      const page = Number(field.page);
+      if (!Number.isFinite(page) || page < 1 || page > 10) throw new Error(`${formKey} field ${field.id} page invalid hai`);
+      ["xPct", "yPct", "wPct", "hPct", "fontSize"].forEach((key) => {
+        if (!Number.isFinite(Number(field[key]))) throw new Error(`${formKey} field ${field.id} ${key} invalid hai`);
+      });
+    });
+  }
+}
+
 const sendTelegramMessage = async (text) => {
   if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
     const error = new Error("TELEGRAM_BOT_TOKEN aur TELEGRAM_CHAT_ID env me set nahi hain");
@@ -3170,6 +3208,33 @@ app.post("/api/settings", async (req, res) => {
       await db.ref("publicSettings/visitorCounterVisibility").set(visibility).catch(() => {});
     }
     return res.json({ ok: true, settings: updated });
+  } catch (err) {
+    return res.status(err.statusCode || 500).json({ ok: false, error: String(err.message || err) });
+  }
+});
+
+app.get("/api/forms-config", (req, res) => {
+  try {
+    return res.json({ ok: true, config: readFormsFieldsConfigFile() });
+  } catch (err) {
+    return res.status(500).json({ ok: false, error: String(err.message || err) });
+  }
+});
+
+app.post("/admin/forms-config/save", async (req, res) => {
+  try {
+    await requireAdmin(req);
+    const incoming = req.body && typeof req.body === "object" ? req.body.config : null;
+    validateFormsFieldsConfig(incoming);
+    const current = readFormsFieldsConfigFile();
+    const updated = {
+      ...current,
+      ...incoming,
+      version: incoming.version || current.version || "1.0",
+      updatedAt: nowStamp()
+    };
+    writeFormsFieldsConfigFile(updated);
+    return res.json({ ok: true, config: updated });
   } catch (err) {
     return res.status(err.statusCode || 500).json({ ok: false, error: String(err.message || err) });
   }

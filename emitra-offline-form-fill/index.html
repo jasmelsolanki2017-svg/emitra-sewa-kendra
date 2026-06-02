@@ -63,6 +63,9 @@
     .overlayField.selected{outline:2px solid #2563eb;background:rgba(37,99,235,.12)!important}
     .small{font-size:12px;color:var(--muted);line-height:1.45}.ok{color:#047857}.bad{color:#b91c1c}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
     .toggle{display:flex;align-items:center;gap:8px;font-weight:700}.toggle input{width:auto}
+    .adminOnly{display:none!important}
+    body.adminEditorEnabled .adminOnly{display:flex!important}
+    body.adminEditorEnabled aside.adminOnly{display:block!important}
     .toolsRow{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.fileRow{display:grid;grid-template-columns:1fr;gap:8px;margin-top:8px}
     #status{font-size:13px;color:var(--blue);font-weight:900}.selectedGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     @media(max-width:1280px){.wrap{grid-template-columns:minmax(300px,360px) minmax(680px,1fr) minmax(250px,280px);padding-left:2%;padding-right:2%}.previewShell{min-height:720px}}
@@ -121,7 +124,7 @@
       <option value="manual">Manual / Google Keyboard</option>
     </select>
   </label>
-  <label class="toggle"><input id="editMode" type="checkbox" /> Position Editor</label>
+  <label class="toggle adminOnly"><input id="editMode" type="checkbox" /> Position Editor</label>
 </header>
 
 <div class="wrap">
@@ -145,7 +148,7 @@
     </div>
   </main>
 
-  <aside class="card side">
+  <aside class="card side adminOnly">
     <div class="panel">
       <h2>Position Editor</h2>
       <p class="small">Editor ON karke field ko drag karo. Selected field ki exact value yahan se adjust karo.</p>
@@ -205,6 +208,18 @@ function sanitizeConfigFields(cfg){
 
 const COMBINED_CONFIG_URL = 'assets/forms-fields-config.json';
 const FONT_URL = 'https://cdn.jsdelivr.net/gh/googlefonts/noto-fonts@main/hinted/ttf/NotoSansDevanagari/NotoSansDevanagari-Regular.ttf';
+const DEFAULT_ADMIN_SERVER_URL = 'https://emitra-sewa-kendra.onrender.com';
+const ADMIN_SERVER_STORAGE_KEY = 'emitraAdminServerUrl';
+const ADMIN_EMAIL = 'jasmelsolanki@gmail.com';
+const FIREBASE_CONFIG = {
+  apiKey: 'AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8',
+  authDomain: 'my-website-73785.firebaseapp.com',
+  databaseURL: 'https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app/',
+  projectId: 'my-website-73785',
+  storageBucket: 'my-website-73785.firebasestorage.app',
+  messagingSenderId: '854088341990',
+  appId: '1:854088341990:web:3211d4ef9fe4b78d025e27'
+};
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
@@ -301,6 +316,7 @@ let allConfigs = null;
 let selectedFieldId = null;
 let lastPdfUrl = null;
 let pdfPageSizes = [];
+let authState = { auth: null, user: null, ready: false, isAdmin: false };
 const DATA_LOCAL_KEY = 'rajasthanFormsSharedUserData';
 const AUTO_HINDI_LOCAL_KEY = 'rajasthanFormsAutoHindiTyping';
 const TYPING_MODE_LOCAL_KEY = 'rajasthanFormsTypingMode';
@@ -442,6 +458,57 @@ function setSharedValue(id, value){
 }
 
 function setStatus(msg, cls='') { const el=$('status'); el.textContent = msg; el.className = cls; }
+function isStaticHosted(){
+  return location.protocol === 'file:' || /^emitrawala\.online$|github\.io$/i.test(location.hostname);
+}
+function adminApiUrl(path){
+  const saved = String(localStorage.getItem(ADMIN_SERVER_STORAGE_KEY) || '').trim().replace(/\/+$/,'');
+  if(saved) return saved + path;
+  if(isStaticHosted()) return DEFAULT_ADMIN_SERVER_URL + path;
+  return path;
+}
+async function callAdminApi(path, body = {}){
+  const user = authState.user;
+  if(!user || !authState.isAdmin) throw new Error('Admin login required');
+  const token = await user.getIdToken();
+  const response = await fetch(adminApiUrl(path), {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
+    body: JSON.stringify(body)
+  });
+  const data = await response.json().catch(()=>({}));
+  if(!response.ok || data.ok === false) throw new Error(data.error || `Server save failed (${response.status})`);
+  return data;
+}
+function setAdminEditorEnabled(enabled){
+  authState.isAdmin = Boolean(enabled);
+  document.body.classList.toggle('adminEditorEnabled', authState.isAdmin);
+  if(!authState.isAdmin && $('editMode')){
+    $('editMode').checked = false;
+    document.body.classList.remove('editOn');
+  }
+}
+async function initAdminEditorAccess(){
+  try{
+    const [appModule, authModule] = await Promise.all([
+      import('https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js'),
+      import('https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js')
+    ]);
+    const app = appModule.initializeApp(FIREBASE_CONFIG);
+    const auth = authModule.getAuth(app);
+    await authModule.setPersistence(auth, authModule.browserLocalPersistence).catch(()=>{});
+    authState.auth = auth;
+    authModule.onAuthStateChanged(auth, (user)=>{
+      authState.user = user || null;
+      authState.ready = true;
+      const email = String(user?.email || '').toLowerCase();
+      setAdminEditorEnabled(Boolean(user && email === ADMIN_EMAIL.toLowerCase()));
+    });
+  }catch(error){
+    authState.ready = true;
+    setAdminEditorEnabled(false);
+  }
+}
 
 function buildDataForm(){
   const root=$('dataForm'); root.innerHTML='';
@@ -676,9 +743,18 @@ async function loadBytes(url){ const r=await fetch(url); if(!r.ok) throw new Err
 
 async function loadCombinedConfigs(){
   if (allConfigs) return allConfigs;
-  const res = await fetch(COMBINED_CONFIG_URL);
-  if(!res.ok) throw new Error('Load failed: '+COMBINED_CONFIG_URL);
-  allConfigs = await res.json();
+  try{
+    const apiRes = await fetch(adminApiUrl('/api/forms-config'), {cache:'no-store'});
+    const apiData = await apiRes.json().catch(()=>({}));
+    if(apiRes.ok && apiData.ok !== false && apiData.config?.forms){
+      allConfigs = apiData.config;
+    }
+  }catch(_error){}
+  if(!allConfigs){
+    const res = await fetch(COMBINED_CONFIG_URL);
+    if(!res.ok) throw new Error('Load failed: '+COMBINED_CONFIG_URL);
+    allConfigs = await res.json();
+  }
   if(!allConfigs.forms) throw new Error('Combined config me forms object missing hai');
   return allConfigs;
 }
@@ -689,10 +765,9 @@ async function loadSelectedForm(){
   setStatus(form.title + ' loading...');
   templateBytes = await loadBytes(form.pdf);
   const combined = await loadCombinedConfigs();
-  const cfgText = localStorage.getItem(form.localKey);
   defaultConfig = sanitizeConfigFields(structuredClone(combined.forms[currentFormKey]));
   if(!defaultConfig || !defaultConfig.fields) throw new Error(currentFormKey + ' config missing in forms-fields-config.json');
-  config = cfgText ? sanitizeConfigFields(JSON.parse(cfgText)) : structuredClone(defaultConfig);
+  config = structuredClone(defaultConfig);
   await renderPreview();
   setStatus(form.title + ' ready', 'ok');
 }
@@ -879,6 +954,25 @@ function downloadConfig(){
   const blob=new Blob([JSON.stringify(combined,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob);
   const a=document.createElement('a'); a.href=url; a.download='forms-fields-config.json'; a.click();
 }
+async function saveConfigForEveryone(){
+  if(!authState.isAdmin) {
+    setStatus('Sirf admin config save kar sakta hai.', 'bad');
+    return;
+  }
+  setStatus('Config sabke liye save ho raha hai...');
+  try{
+    const combined = getCombinedConfigForDownload();
+    const result = await callAdminApi('/admin/forms-config/save', { config: combined });
+    allConfigs = result.config || combined;
+    defaultConfig = sanitizeConfigFields(structuredClone(allConfigs.forms[currentFormKey]));
+    config = sanitizeConfigFields(structuredClone(defaultConfig));
+    await renderPreview();
+    setStatus('Config sabke liye update ho gaya.', 'ok');
+  }catch(error){
+    console.error(error);
+    setStatus('Server save error: ' + error.message, 'bad');
+  }
+}
 
 $('formSelect').addEventListener('change', async e=>{ saveSharedFormData(); currentFormKey=e.target.value; buildDataForm(); await loadSelectedForm(); });
 $('previewBtn').addEventListener('click', renderPreview);
@@ -887,7 +981,7 @@ $('printBtn').addEventListener('click', printPdf);
 $('clearDataBtn').addEventListener('click',()=>resetFormData(false));
 $('sampleDataBtn').addEventListener('click',()=>resetFormData(true));
 $('editMode').addEventListener('change',()=>document.body.classList.toggle('editOn',$('editMode').checked));
-$('saveLocalBtn').addEventListener('click',()=>{localStorage.setItem(FORMS[currentFormKey].localKey,JSON.stringify(config)); setStatus('Config browser me save ho gaya','ok');});
+$('saveLocalBtn').addEventListener('click',saveConfigForEveryone);
 $('downloadConfigBtn').addEventListener('click',downloadConfig);
 $('resetConfigBtn').addEventListener('click',async()=>{localStorage.removeItem(FORMS[currentFormKey].localKey); config=sanitizeConfigFields(structuredClone(defaultConfig)); selectedFieldId=null; await renderPreview(); setStatus('Reset done','ok');});
 $('pdfFile').addEventListener('change',async e=>{const f=e.target.files[0]; if(!f)return; templateBytes=await f.arrayBuffer(); await renderPreview(); setStatus('PDF uploaded','ok');});
@@ -929,6 +1023,7 @@ if(typingModeSelectEl){
   });
 }
 
+initAdminEditorAccess();
 init();
 </script>
 </body>
