@@ -229,6 +229,13 @@ main{max-width:1180px;margin:auto;padding:26px 3% 42px;}
 .qualification-card{display:grid;grid-template-columns:minmax(140px,32%) minmax(0,1fr);border:1px solid #d8e5f3;border-radius:8px;overflow:hidden;background:#fff;}
 .qualification-post{background:#f1f7ff;color:var(--deep);font-weight:900;padding:12px;border-right:1px solid #d8e5f3;}
 .qualification-text{color:#1f2937;font-weight:600;padding:12px;white-space:pre-line;}
+.physical-eligibility-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;}
+.physical-eligibility-card{border:1px solid #d8e5f3;border-radius:8px;overflow:hidden;background:#fff;}
+.physical-eligibility-title{background:#f1f7ff;color:var(--deep);font-weight:900;padding:10px 12px;border-bottom:1px solid #d8e5f3;}
+.physical-eligibility-row{display:grid;grid-template-columns:minmax(92px,36%) minmax(0,1fr);gap:8px;padding:8px 12px;border-bottom:1px solid #eef3f8;}
+.physical-eligibility-row:last-child{border-bottom:0;}
+.physical-eligibility-label{font-weight:900;color:var(--deep);}
+.physical-eligibility-value{font-weight:600;color:#1f2937;overflow-wrap:anywhere;}
 .community-actions{display:flex;justify-content:center;padding:18px;}
 .community-actions .btn{width:min(100%,320px);font-size:16px;background:#128c3c;}
 .empty{color:#6a7281;font-weight:700;}
@@ -267,11 +274,16 @@ body.dark-mode .auto-link{color:#8ec5ff!important;}
 body.dark-mode .qualification-card{background:#101b2d!important;border-color:#24405f!important;}
 body.dark-mode .qualification-post{background:#0b2749!important;color:#ffb15c!important;border-color:#24405f!important;}
 body.dark-mode .qualification-text{color:#e8f1ff!important;}
+body.dark-mode .physical-eligibility-card{background:#101b2d!important;border-color:#24405f!important;}
+body.dark-mode .physical-eligibility-title{background:#0b2749!important;color:#ffb15c!important;border-color:#24405f!important;}
+body.dark-mode .physical-eligibility-row{border-color:#24405f!important;}
+body.dark-mode .physical-eligibility-label{color:#ffb15c!important;}
+body.dark-mode .physical-eligibility-value{color:#e8f1ff!important;}
 body.dark-mode .mcq-card,body.dark-mode .mcq-option{background:#101b2d!important;border-color:#24405f!important;color:#e8f1ff!important;}
 body.dark-mode .mcq-question{background:#0b2749!important;color:#ffb15c!important;}
 body.dark-mode .mcq-option.correct{background:#0d3322!important;border-color:#21a760!important;color:#c8f7d8!important;}
 body.dark-mode .mcq-answer,body.dark-mode .mcq-explanation{color:#e8f1ff!important;}
-@media(max-width:920px){.layout{grid-template-columns:1fr}.detail-sidebar{position:static;top:auto}.hero{padding:24px 5% 26px}main{padding:18px 3% 34px}.detail-table th,.detail-table td{display:block;width:100%;}.detail-table th{border-bottom:0}.panel h2,.sarkari-section-title{font-size:17px}.actions{grid-template-columns:1fr}.content-table{font-size:12px}.content-table th,.content-table td{padding:7px 6px}.manual-pair{grid-template-columns:1fr;gap:3px}.qualification-card{grid-template-columns:1fr}.qualification-post{border-right:0;border-bottom:1px solid #d8e5f3}.theme-toggle{right:16px;bottom:16px;width:50px;height:50px;}nav{flex-direction:column;align-items:flex-start}}
+@media(max-width:920px){.layout{grid-template-columns:1fr}.detail-sidebar{position:static;top:auto}.hero{padding:24px 5% 26px}main{padding:18px 3% 34px}.detail-table th,.detail-table td{display:block;width:100%;}.detail-table th{border-bottom:0}.panel h2,.sarkari-section-title{font-size:17px}.actions{grid-template-columns:1fr}.content-table{font-size:12px}.content-table th,.content-table td{padding:7px 6px}.manual-pair{grid-template-columns:1fr;gap:3px}.qualification-card,.physical-eligibility-row{grid-template-columns:1fr}.qualification-post{border-right:0;border-bottom:1px solid #d8e5f3}.physical-eligibility-grid{grid-template-columns:1fr}.theme-toggle{right:16px;bottom:16px;width:50px;height:50px;}nav{flex-direction:column;align-items:flex-start}}
 @media(max-width:768px){main{padding:14px 2.5% 30px}.article-head{padding:18px 14px 12px}.content-box,.table-wrap{padding:12px}.section-manual{padding:0 12px 14px}.detail-table{font-size:13px}.detail-table th,.detail-table td{padding:9px 10px}.structured-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}.structured-table-wrap .content-table,.content-table{min-width:520px}.content-section{overflow-x:auto}.actions{padding:12px}.btn{font-size:13px;padding:10px 12px}.hero h1{font-size:24px}.hero p{font-size:14px}.meta-badge{font-size:11px}.article-meta-line{font-size:12px}.community-actions{padding:14px 12px}.community-actions .btn{width:100%}}
 </style>
 <link rel="stylesheet" href="mobile-responsive-fix.css">
@@ -485,7 +497,7 @@ All candidates must read the official information completely before applying.</t
 })();
 </script>
 
-<script>window.__EMITRA_STATIC_POST__={"id":"-Ot3wW8Rk7gjGPi5xHpS","job":{"admitCardDate":"","admitCardLink":"","ageCalculateDate":"01/05/2026","ageRelaxation":"Age Relaxation Extra as per Bank of Baroda BOB Apprentices 2026 Rules","answerKeyLink":"","applyLink":"#","canonicalUrl":"https://emitrawala.online/post/bank-of-baroda-bob-apprentices-recruitment-2026-apply-online-for-5000-post-i5xhps/","category":"Latest Jobs","categoryWiseVacancy":"state_name: Uttar Pradesh\ntotal_posts: 764\nstate_name: Bihar\ntotal_posts: 179\nstate_name: Jharkhand\ntotal_posts: 64\nstate_name: Madhya Pradesh\ntotal_posts: 136\nstate_name: Delhi\ntotal_posts: 91\nstate_name: Chhattisgarh\ntotal_posts: 122\nstate_name: Rajasthan\ntotal_posts: 412\nstate_name: Himachal Pradesh\ntotal_posts: 8\nstate_name: Haryana\ntotal_posts: 84\nstate_name: Punjab\ntotal_posts: 78\nstate_name: Uttarakhand\ntotal_posts: 76\nstate_name: Pondicherry\ntotal_posts: 4\nstate_name: Tamil Nadu\ntotal_posts: 199\nstate_name: Telangana\ntotal_posts: 83\nstate_name: Odisha\ntotal_posts: 92\nstate_name: Kerala\ntotal_posts: 111\nstate_name: Andhra Pradesh\ntotal_posts: 188\nstate_name: Maharashtra\ntotal_posts: 580\nstate_name: Arunachal Pradesh\ntotal_posts: 4\nstate_name: Assam\ntotal_posts: 29\nstate_name: Manipur\ntotal_posts: 1\nstate_name: Meghalaya\ntotal_posts: 4\nstate_name: Mizoram\ntotal_posts: 2\nstate_name: Nagaland\ntotal_posts: 3\nstate_name: Tripura\ntotal_posts: 3\nstate_name: Karnataka\ntotal_posts: 483\nstate_name: West Bengal\ntotal_posts: 194\nstate_name: Gujarat\ntotal_posts: 960\nstate_name: Andaman & Nicobar Island\ntotal_posts: 1\nstate_name: Sikkim\ntotal_posts: 1\nstate_name: Jammu & Kashmir\ntotal_posts: 2\nstate_name: Chandigarh UT\ntotal_posts: 4\nstate_name: Laddakh\ntotal_posts: 2\nstate_name: Goa\ntotal_posts: 29\nstate_name: Dadra and Nagar Haveli\ntotal_posts: 7\nstate_name: Daman and Diu\ntotal_posts: NA","createdAt":1779273176588,"department":"Bank of Baroda (BOB)","detailLayout":"table","detailLink":"#","displayOrder":2,"examDate":"As per Schedule","experience":"","faq":[{"answer":"08/06/2026","question":"Bank of Baroda BOB Apprentices Recruitment 2026 Apply Online for 5000 Post ki last date kya hai?"},{"answer":"Ye update Bank of Baroda (BOB) se related hai.","question":"Bank of Baroda BOB Apprentices Recruitment 2026 Apply Online for 5000 Post kis department se related hai?"},{"answer":"Apply link update hone par Important Links section me show hoga.","question":"Bank of Baroda BOB Apprentices Recruitment 2026 Apply Online for 5000 Post ka apply link kahan milega?"},{"answer":"Official detail link update hone par isi page par add kiya jayega.","question":"Bank of Baroda BOB Apprentices Recruitment 2026 Apply Online for 5000 Post ka official notification kahan milega?"},{"answer":"Ye result category ka update hai.","question":"Bank of Baroda BOB Apprentices Recruitment 2026 Apply Online for 5000 Post kis category ka update hai?"}],"femaleFee":"","generalObcFee":"800","howToApply":"Bank of Baroda Apprentice Recruitment 2026 के लिए उम्मीदवार 19/05/2026 से 08/06/2026 तक ऑनलाइन आवेदन कर सकते हैं।\nआवेदन करने से पहले official notification ध्यान से पढ़ें।\nEligibility, ID Proof, Address Details और Basic Details तैयार रखें।\nPhoto, Signature, ID Proof, Thumb Impression आदि scan documents तैयार रखें।\nForm submit करने से पहले preview और सभी columns ध्यान से check करें।\nअगर application fee जरूरी है तो fee जरूर जमा करें, नहीं तो form complete नहीं माना जाएगा।\nFinal submitted form का print out निकाल लें।","jsonLd":{"@context":"https://schema.org","@graph":[{"@id":"https://emitrawala.online/post/bank-of-baroda-bob-apprentices-recruitment-2026-apply-online-for-5000-post-i5xhps/#breadcrumb","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","item":"https://emitrawala.online/","name":"Home","position":1},{"@type":"ListItem","item":"https://emitrawala.online/job-form.html","name":"Latest Jobs","position":2},{"@type":"ListItem","item":"https://emitrawala.online/post/bank-of-baroda-bob-apprentices-recruitment-2026-apply-online-for-5000-post-i5xhps/","name":"Bank of Baroda BOB Apprentices Recruitment 2026 Apply Online for 5000 Post","position":3}]},{"@id":"https://emitrawala.online/post/bank-of-baroda-bob-apprentices-recruitment-2026-apply-online-for-5000-post-i5xhps/#article","@type":["Article","JobPosting"],"dateModified":"2026-05-27T17:25:50.134Z","datePosted":"2026-05-19","datePublished":"2026-05-20T10:32:56.588Z","description":"Bank of Baroda BOB Apprentices Recruitment 2026 Apply Online for 5000 Post, Bank of Baroda (BOB), 5000 posts, Last date 08/06/2026, apply link, qualification an","employmentType":"Online Form","headline":"Bank of Baroda BOB Apprentices Recruitment 2026 Apply Online for 5000","hiringOrganization":{"@type":"Organization","name":"Bank of Baroda (BOB)"},"mainEntityOfPage":"https://emitrawala.online/post/bank-of-baroda-bob-apprentices-recruitment-2026-apply-online-for-5000-post-i5xhps/","publisher":{"@type":"Organization","name":"E-MITRA WALA","url":"https://emitrawala.online/"},"title":"Bank of Baroda BOB Apprentices Recruitment 2026 Apply Online for 5000 Post","url":"https://emitrawala.online/post/bank-of-baroda-bob-apprentices-recruitment-2026-apply-online-for-5000-post-i5xhps/","validThrough":"2026-06-08"},{"@id":"https://emitrawala.online/post/bank-of-baroda-bob-apprentices-recruitment-2026-apply-online-for-5000-post-i5xhps/#faq","@type":"FAQPage","mainEntity":[{"@type":"Question","acceptedAnswer":{"@type":"Answer","text":"08/06/2026"},"name":"Bank of Baroda BOB Apprentices Recruitment 2026 Apply Online for 5000 Post ki last date kya hai?"},{"@type":"Question","acceptedAnswer":{"@type":"Answer","text":"Ye update Bank of Baroda (BOB) se related hai."},"name":"Bank of Baroda BOB Apprentices Recruitment 2026 Apply Online for 5000 Post kis department se related hai?"},{"@type":"Question","acceptedAnswer":{"@type":"Answer","text":"Apply link update hone par Important Links section me show hoga."},"name":"Bank of Baroda BOB Apprentices Recruitment 2026 Apply Online for 5000 Post ka apply link kahan milega?"},{"@type":"Question","acceptedAnswer":{"@type":"Answer","text":"Official detail link update hone par isi page par add kiya jayega."},"name":"Bank of Baroda BOB Apprentices Recruitment 2026 Apply Online for 5000 Post ka official notification kahan milega?"},{"@type":"Question","acceptedAnswer":{"@type":"Answer","text":"Ye result category ka update hai."},"name":"Bank of Baroda BOB Apprentices Recruitment 2026 Apply Online for 5000 Post kis category ka update hai?"}]}]},"lastApplyDate":"08/06/2026","lastDate":"08/06/2026","lastFeeDate":"08/06/2026","location":"All India","maxAge":"28 Years","metaDescription":"Bank of Baroda BOB Apprentices Recruitment 2026 Apply Online for 5000 Post, Bank of Baroda (BOB), 5000 posts, Last date 08/06/2026, apply link, qualification an","minAge":"20 Years","obcFemaleFee":"600","officialWebsite":"","onlyFemaleFee":"","pageContent":"Vacancy Details:\npost_name: Apprentice\ntotal_posts: 5000\neligibility: Bachelor Degree in Any Stream in Any Recognized University in India\n\nHow To Apply:\nBank of Baroda Apprentice Recruitment 2026 के लिए उम्मीदवार 19/05/2026 से 08/06/2026 तक ऑनलाइन आवेदन कर सकते हैं।\nआवेदन करने से पहले official notification ध्यान से पढ़ें।\nEligibility, ID Proof, Address Details और Basic Details तैयार रखें।\nPhoto, Signature, ID Proof, Thumb Impression आदि scan documents तैयार रखें।\nForm submit करने से पहले preview और सभी columns ध्यान से check करें।\nअगर application fee जरूरी है तो fee जरूर जमा करें, नहीं तो form complete नहीं माना जाएगा।\nFinal submitted form का print out निकाल लें।","paymentMode":"Debit Card, Credit Card, Net Banking, UPI Only","physicalEligibility":"","postDate":"19 May 2026","postName":"Apprentice","postStatus":"published","postTarget":"result","postWiseApplyLinks":"NAPS: https://www.apprenticeshipindia.gov.in/apprenticeship/opportunity\nNATS: https://nats.education.gov.in/student_type.php","qualification":"Update Soon\n\nPost Name: Apprentice\nQualification: Candidates must have a Graduation Degree in any discipline from a recognized University or any equivalent qualifications recognized by the Central Government.\nAll candidates must read the official information completely before applying.","requiredDocuments":"","resultDate":"","resultLink":"","salary":"","scFemaleFee":"","scStFee":"200/-","selectionProcess":"","seoTitle":"Bank of Baroda BOB Apprentices Recruitment 2026 Apply Online for 5000 ","seoUpdatedAt":1780389261659,"shortInfo":"","slug":"bank-of-baroda-bob-apprentices-recruitment-2026-apply-online-for-5000-post-i5xhps","startDate":"19/05/2026","stateWiseVacancy":"","syllabusLink":"","title":"Bank of Baroda BOB Apprentices Recruitment 2026 Apply Online for 5000 Post","totalPosts":"5000","totalVacancy":"5000","type":"Online Form","updatedAt":1779902750134}};</script>
+<script>window.__EMITRA_STATIC_POST__={"id":"-Ot3wW8Rk7gjGPi5xHpS","job":{"admitCardDate":"","admitCardLink":"","ageCalculateDate":"01/05/2026","ageRelaxation":"Age Relaxation Extra as per Bank of Baroda BOB Apprentices 2026 Rules","answerKeyLink":"","applyLink":"#","canonicalUrl":"https://emitrawala.online/post/bank-of-baroda-bob-apprentices-recruitment-2026-apply-online-for-5000-post-i5xhps/","category":"Latest Jobs","categoryWiseVacancy":"state_name: Uttar Pradesh\ntotal_posts: 764\nstate_name: Bihar\ntotal_posts: 179\nstate_name: Jharkhand\ntotal_posts: 64\nstate_name: Madhya Pradesh\ntotal_posts: 136\nstate_name: Delhi\ntotal_posts: 91\nstate_name: Chhattisgarh\ntotal_posts: 122\nstate_name: Rajasthan\ntotal_posts: 412\nstate_name: Himachal Pradesh\ntotal_posts: 8\nstate_name: Haryana\ntotal_posts: 84\nstate_name: Punjab\ntotal_posts: 78\nstate_name: Uttarakhand\ntotal_posts: 76\nstate_name: Pondicherry\ntotal_posts: 4\nstate_name: Tamil Nadu\ntotal_posts: 199\nstate_name: Telangana\ntotal_posts: 83\nstate_name: Odisha\ntotal_posts: 92\nstate_name: Kerala\ntotal_posts: 111\nstate_name: Andhra Pradesh\ntotal_posts: 188\nstate_name: Maharashtra\ntotal_posts: 580\nstate_name: Arunachal Pradesh\ntotal_posts: 4\nstate_name: Assam\ntotal_posts: 29\nstate_name: Manipur\ntotal_posts: 1\nstate_name: Meghalaya\ntotal_posts: 4\nstate_name: Mizoram\ntotal_posts: 2\nstate_name: Nagaland\ntotal_posts: 3\nstate_name: Tripura\ntotal_posts: 3\nstate_name: Karnataka\ntotal_posts: 483\nstate_name: West Bengal\ntotal_posts: 194\nstate_name: Gujarat\ntotal_posts: 960\nstate_name: Andaman & Nicobar Island\ntotal_posts: 1\nstate_name: Sikkim\ntotal_posts: 1\nstate_name: Jammu & Kashmir\ntotal_posts: 2\nstate_name: Chandigarh UT\ntotal_posts: 4\nstate_name: Laddakh\ntotal_posts: 2\nstate_name: Goa\ntotal_posts: 29\nstate_name: Dadra and Nagar Haveli\ntotal_posts: 7\nstate_name: Daman and Diu\ntotal_posts: NA","createdAt":1779273176588,"department":"Bank of Baroda (BOB)","detailLayout":"table","detailLink":"#","displayOrder":2,"examDate":"As per Schedule","experience":"","faq":[{"answer":"08/06/2026","question":"Bank of Baroda BOB Apprentices Recruitment 2026 Apply Online for 5000 Post ki last date kya hai?"},{"answer":"Ye update Bank of Baroda (BOB) se related hai.","question":"Bank of Baroda BOB Apprentices Recruitment 2026 Apply Online for 5000 Post kis department se related hai?"},{"answer":"Apply link update hone par Important Links section me show hoga.","question":"Bank of Baroda BOB Apprentices Recruitment 2026 Apply Online for 5000 Post ka apply link kahan milega?"},{"answer":"Official detail link update hone par isi page par add kiya jayega.","question":"Bank of Baroda BOB Apprentices Recruitment 2026 Apply Online for 5000 Post ka official notification kahan milega?"},{"answer":"Ye result category ka update hai.","question":"Bank of Baroda BOB Apprentices Recruitment 2026 Apply Online for 5000 Post kis category ka update hai?"}],"femaleFee":"","generalObcFee":"800","howToApply":"Bank of Baroda Apprentice Recruitment 2026 के लिए उम्मीदवार 19/05/2026 से 08/06/2026 तक ऑनलाइन आवेदन कर सकते हैं।\nआवेदन करने से पहले official notification ध्यान से पढ़ें।\nEligibility, ID Proof, Address Details और Basic Details तैयार रखें।\nPhoto, Signature, ID Proof, Thumb Impression आदि scan documents तैयार रखें।\nForm submit करने से पहले preview और सभी columns ध्यान से check करें।\nअगर application fee जरूरी है तो fee जरूर जमा करें, नहीं तो form complete नहीं माना जाएगा।\nFinal submitted form का print out निकाल लें।","jsonLd":{"@context":"https://schema.org","@graph":[{"@id":"https://emitrawala.online/post/bank-of-baroda-bob-apprentices-recruitment-2026-apply-online-for-5000-post-i5xhps/#breadcrumb","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","item":"https://emitrawala.online/","name":"Home","position":1},{"@type":"ListItem","item":"https://emitrawala.online/job-form.html","name":"Latest Jobs","position":2},{"@type":"ListItem","item":"https://emitrawala.online/post/bank-of-baroda-bob-apprentices-recruitment-2026-apply-online-for-5000-post-i5xhps/","name":"Bank of Baroda BOB Apprentices Recruitment 2026 Apply Online for 5000 Post","position":3}]},{"@id":"https://emitrawala.online/post/bank-of-baroda-bob-apprentices-recruitment-2026-apply-online-for-5000-post-i5xhps/#article","@type":["Article","JobPosting"],"dateModified":"2026-05-27T17:25:50.134Z","datePosted":"2026-05-19","datePublished":"2026-05-20T10:32:56.588Z","description":"Bank of Baroda BOB Apprentices Recruitment 2026 Apply Online for 5000 Post, Bank of Baroda (BOB), 5000 posts, Last date 08/06/2026, apply link, qualification an","employmentType":"Online Form","headline":"Bank of Baroda BOB Apprentices Recruitment 2026 Apply Online for 5000","hiringOrganization":{"@type":"Organization","name":"Bank of Baroda (BOB)"},"mainEntityOfPage":"https://emitrawala.online/post/bank-of-baroda-bob-apprentices-recruitment-2026-apply-online-for-5000-post-i5xhps/","publisher":{"@type":"Organization","name":"E-MITRA WALA","url":"https://emitrawala.online/"},"title":"Bank of Baroda BOB Apprentices Recruitment 2026 Apply Online for 5000 Post","url":"https://emitrawala.online/post/bank-of-baroda-bob-apprentices-recruitment-2026-apply-online-for-5000-post-i5xhps/","validThrough":"2026-06-08"},{"@id":"https://emitrawala.online/post/bank-of-baroda-bob-apprentices-recruitment-2026-apply-online-for-5000-post-i5xhps/#faq","@type":"FAQPage","mainEntity":[{"@type":"Question","acceptedAnswer":{"@type":"Answer","text":"08/06/2026"},"name":"Bank of Baroda BOB Apprentices Recruitment 2026 Apply Online for 5000 Post ki last date kya hai?"},{"@type":"Question","acceptedAnswer":{"@type":"Answer","text":"Ye update Bank of Baroda (BOB) se related hai."},"name":"Bank of Baroda BOB Apprentices Recruitment 2026 Apply Online for 5000 Post kis department se related hai?"},{"@type":"Question","acceptedAnswer":{"@type":"Answer","text":"Apply link update hone par Important Links section me show hoga."},"name":"Bank of Baroda BOB Apprentices Recruitment 2026 Apply Online for 5000 Post ka apply link kahan milega?"},{"@type":"Question","acceptedAnswer":{"@type":"Answer","text":"Official detail link update hone par isi page par add kiya jayega."},"name":"Bank of Baroda BOB Apprentices Recruitment 2026 Apply Online for 5000 Post ka official notification kahan milega?"},{"@type":"Question","acceptedAnswer":{"@type":"Answer","text":"Ye result category ka update hai."},"name":"Bank of Baroda BOB Apprentices Recruitment 2026 Apply Online for 5000 Post kis category ka update hai?"}]}]},"lastApplyDate":"08/06/2026","lastDate":"08/06/2026","lastFeeDate":"08/06/2026","location":"All India","maxAge":"28 Years","metaDescription":"Bank of Baroda BOB Apprentices Recruitment 2026 Apply Online for 5000 Post, Bank of Baroda (BOB), 5000 posts, Last date 08/06/2026, apply link, qualification an","minAge":"20 Years","obcFemaleFee":"600","officialWebsite":"","onlyFemaleFee":"","pageContent":"Vacancy Details:\npost_name: Apprentice\ntotal_posts: 5000\neligibility: Bachelor Degree in Any Stream in Any Recognized University in India\n\nHow To Apply:\nBank of Baroda Apprentice Recruitment 2026 के लिए उम्मीदवार 19/05/2026 से 08/06/2026 तक ऑनलाइन आवेदन कर सकते हैं।\nआवेदन करने से पहले official notification ध्यान से पढ़ें।\nEligibility, ID Proof, Address Details और Basic Details तैयार रखें।\nPhoto, Signature, ID Proof, Thumb Impression आदि scan documents तैयार रखें।\nForm submit करने से पहले preview और सभी columns ध्यान से check करें।\nअगर application fee जरूरी है तो fee जरूर जमा करें, नहीं तो form complete नहीं माना जाएगा।\nFinal submitted form का print out निकाल लें।","paymentMode":"Debit Card, Credit Card, Net Banking, UPI Only","physicalEligibility":"","postDate":"19 May 2026","postName":"Apprentice","postStatus":"published","postTarget":"result","postWiseApplyLinks":"NAPS: https://www.apprenticeshipindia.gov.in/apprenticeship/opportunity\nNATS: https://nats.education.gov.in/student_type.php","qualification":"Update Soon\n\nPost Name: Apprentice\nQualification: Candidates must have a Graduation Degree in any discipline from a recognized University or any equivalent qualifications recognized by the Central Government.\nAll candidates must read the official information completely before applying.","requiredDocuments":"","resultDate":"","resultLink":"","salary":"","scFemaleFee":"","scStFee":"200/-","selectionProcess":"","seoTitle":"Bank of Baroda BOB Apprentices Recruitment 2026 Apply Online for 5000 ","seoUpdatedAt":1780390490736,"shortInfo":"","slug":"bank-of-baroda-bob-apprentices-recruitment-2026-apply-online-for-5000-post-i5xhps","startDate":"19/05/2026","stateWiseVacancy":"","syllabusLink":"","title":"Bank of Baroda BOB Apprentices Recruitment 2026 Apply Online for 5000 Post","totalPosts":"5000","totalVacancy":"5000","type":"Online Form","updatedAt":1779902750134}};</script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
@@ -902,6 +914,11 @@ const canonicalRowLabel = (label = "") => {
   const normalized = normalizeRowLabel(label);
   if(/last date.*application|application.*last date/.test(normalized)){ return "application last date"; }
   if(/last date.*fee|fee.*payment.*last date|payment.*last date/.test(normalized)){ return "fee payment last date"; }
+  if(/^as on$/.test(normalized)){ return "age calculate date"; }
+  if(/^minimum age$/.test(normalized)){ return "minimum age"; }
+  if(/^maximum age male$/.test(normalized)){ return "maximum age male"; }
+  if(/^maximum age female$/.test(normalized)){ return "maximum age female"; }
+  if(/^age relaxation$/.test(normalized)){ return "age relaxation"; }
   return normalized;
 };
 
@@ -979,11 +996,92 @@ const renderQualificationValue = (value = "") => {
   `).join("")}</div>`;
 };
 
+const formatEligibilityLabel = (key = "") => {
+  const normalized = String(key || "").trim().replace(/[\s-]+/g, "_").toLowerCase();
+  const labels = {
+    gender:"Gender",
+    height:"Height",
+    height_st:"Height (ST)",
+    chest:"Chest",
+    chest_st:"Chest (ST)",
+    running:"Running"
+  };
+  return labels[normalized] || labelizeKey(key);
+};
+
+const physicalEligibilityKeys = new Set(["gender", "height", "height_st", "chest", "chest_st", "running"]);
+
+const normalizePhysicalEligibilityKey = (key = "") => String(key || "").trim().replace(/[\s-]+/g, "_").toLowerCase();
+
+const isPhysicalEligibilityKey = (key = "") => physicalEligibilityKeys.has(normalizePhysicalEligibilityKey(key));
+
+const addPhysicalEligibilityField = (target = {}, key = "", value = "") => {
+  const normalizedKey = normalizePhysicalEligibilityKey(key);
+  if(!isPhysicalEligibilityKey(normalizedKey) || !isFilledValue(value)){ return; }
+  target[normalizedKey] = value;
+};
+
+const normalizePhysicalEligibilityGroups = (value = "") => {
+  if(!isFilledValue(value)){ return []; }
+  if(Array.isArray(value)){
+    return value.flatMap((item) => normalizePhysicalEligibilityGroups(item));
+  }
+  if(value && typeof value === "object"){
+    const groupEntries = Object.entries(value).filter(([, itemValue]) => itemValue && typeof itemValue === "object" && !Array.isArray(itemValue));
+    if(groupEntries.length && groupEntries.some(([key]) => /^(male|female|पुरुष|महिला)$/i.test(String(key || "").trim()))){
+      return groupEntries.map(([groupName, groupValue]) => {
+        const group = { gender:formatEligibilityLabel(groupName) };
+        Object.entries(groupValue).forEach(([key, entryValue]) => addPhysicalEligibilityField(group, key, entryValue));
+        return group;
+      }).filter((group) => Object.keys(group).some((key) => key !== "gender" && isFilledValue(group[key])));
+    }
+    const group = {};
+    Object.entries(value).forEach(([key, entryValue]) => addPhysicalEligibilityField(group, key, entryValue));
+    return Object.keys(group).some((key) => key !== "gender" && isFilledValue(group[key])) ? [group] : [];
+  }
+  const lines = String(value || "").split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  if(!lines.some((line) => {
+    const pair = splitManualPair(line);
+    return pair && isPhysicalEligibilityKey(pair.label);
+  })){ return []; }
+  const groups = [];
+  let current = {};
+  const pushCurrent = () => {
+    if(Object.keys(current).some((key) => key !== "gender" && isFilledValue(current[key]))){ groups.push({ ...current }); }
+    current = {};
+  };
+  lines.forEach((line) => {
+    const pair = splitManualPair(line);
+    if(!pair || !isPhysicalEligibilityKey(pair.label)){ return; }
+    const key = normalizePhysicalEligibilityKey(pair.label);
+    if(key === "gender" && Object.keys(current).length){ pushCurrent(); }
+    addPhysicalEligibilityField(current, key, pair.value);
+  });
+  pushCurrent();
+  return groups;
+};
+
+const renderPhysicalEligibilityValue = (value = "") => {
+  const groups = normalizePhysicalEligibilityGroups(value);
+  if(!groups.length){
+    return typeof value === "string" ? renderFormattedText(value) : renderFlexibleCell(value);
+  }
+  const orderedKeys = ["height", "height_st", "chest", "chest_st", "running"];
+  return `<div class="physical-eligibility-grid">${groups.map((group, index) => {
+    const title = normalizeTextValue(group.gender || `Group ${index + 1}`);
+    const rows = orderedKeys
+      .filter((key) => isFilledValue(group[key]))
+      .map((key) => `<div class="physical-eligibility-row"><span class="physical-eligibility-label">${escapeHTML(formatEligibilityLabel(key))}</span><span class="physical-eligibility-value">${renderFormattedText(group[key])}</span></div>`)
+      .join("");
+    return rows ? `<div class="physical-eligibility-card"><div class="physical-eligibility-title">${escapeHTML(title)}</div>${rows}</div>` : "";
+  }).filter(Boolean).join("")}</div>`;
+};
+
 const renderEligibilityList = (job = {}) => renderList("eligibilityList", "eligibilityPanel", [
   { label:"Education Qualification", value:job.qualification, htmlValue:isFilledFlexibleValue(getFlexibleField(job, "qualification")) && typeof getFlexibleField(job, "qualification") !== "string" ? renderFlexibleCell(getFlexibleField(job, "qualification")) : renderQualificationValue(job.qualification) },
   { label:"Experience", value:job.experience },
   { label:"Required Documents", value:job.requiredDocuments },
-  { label:"Physical Eligibility", value:job.physicalEligibility }
+  { label:"Physical Eligibility", value:job.physicalEligibility, htmlValue:renderPhysicalEligibilityValue(job.physicalEligibility) }
 ]);
 
 const parsePostWiseVacancyRows = (job = {}) => {
@@ -2066,6 +2164,9 @@ const renderJobDetail = (jobId, rawJob, allJobs = []) => {
       minimumAge:"Minimum Age",
       maxAge:"Maximum Age",
       maximumAge:"Maximum Age",
+      asOn:"As On",
+      maximumAgeMale:"Maximum Age Male",
+      maximumAgeFemale:"Maximum Age Female",
       ageCalculateDate:"Age Calculate Date",
       ageAsOn:"Age Calculate Date",
       relaxation:"Age Relaxation"
@@ -2077,7 +2178,7 @@ const renderJobDetail = (jobId, rawJob, allJobs = []) => {
       { label:"Age Relaxation", value:job.ageRelaxation }
     ];
     const ageLabels = new Set(baseAgeRows.filter((row) => isFilledValue(row.value)).map((row) => canonicalRowLabel(row.label)));
-    renderList("ageList", "agePanel", [
+    const renderedAgeRows = [
       ...baseAgeRows,
       ...structuredAgeLimit.filter((row) => {
         const label = canonicalRowLabel(row.label || "");
@@ -2085,8 +2186,10 @@ const renderJobDetail = (jobId, rawJob, allJobs = []) => {
         if(label){ ageLabels.add(label); }
         return true;
       })
-    ]);
-    renderManualContent("ageManual", "agePanel", job.ageLimitManual, "Other Age Limit");
+    ];
+    renderList("ageList", "agePanel", renderedAgeRows);
+    const renderedAgeLabels = new Set(renderedAgeRows.filter((row) => isFilledValue(row.value, row.options)).map((row) => canonicalRowLabel(row.label)).filter(Boolean));
+    renderManualContent("ageManual", "agePanel", removeKnownManualRows(job.ageLimitManual, renderedAgeLabels), "Other Age Limit");
 
     const vacancyHtml = renderPostWiseVacancyTable(job);
     const categoryVacancyHtml = renderCategoryWiseVacancyTable(job);
