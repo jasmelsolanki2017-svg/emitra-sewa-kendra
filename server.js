@@ -836,7 +836,11 @@ const getCurrentAffairsQuestions = (job = {}) => {
     : (Array.isArray(job.questions) ? job.questions
       : (Array.isArray(article.mcqs) ? article.mcqs
         : (Array.isArray(article.questions) ? article.questions
-          : (Array.isArray(content.questions) ? content.questions : []))));
+          : (Array.isArray(content.questions) ? content.questions
+            : (Array.isArray(job.currentAffairs) ? job.currentAffairs
+              : (Array.isArray(article.currentAffairs) ? article.currentAffairs
+                : (Array.isArray(job.currentAffairsData) ? job.currentAffairsData
+                  : (Array.isArray(job.currentAffairsData?.currentAffairs) ? job.currentAffairsData.currentAffairs : []))))))));
   return items.map((item) => {
     if (!item || typeof item !== "object") return null;
     const question = toText(item.question || item.q || item.title);

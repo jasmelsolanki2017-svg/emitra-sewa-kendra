@@ -91,7 +91,7 @@
       },
       "employmentType": "Defence Job",
       "datePosted": "2026-05-18",
-      "validThrough": "2026-06-01",
+      "validThrough": "2026-05-31",
       "hiringOrganization": {
         "@type": "Organization",
         "name": "The Indian Navy"
@@ -808,7 +808,7 @@ const normalizeJobToArticle = (input = {}) => {
   const overview = Array.isArray(base.overview) ? base.overview : (Array.isArray(article.overview) ? article.overview : buildOverviewRows(base));
   const importantLinks = Array.isArray(base.importantLinks) ? base.importantLinks : (Array.isArray(base.important_links) ? base.important_links : (Array.isArray(article.importantLinks) ? article.importantLinks : (Array.isArray(article.important_links) ? article.important_links : buildImportantLinks(base))));
   const faq = Array.isArray(base.faq) ? base.faq : (Array.isArray(base.faqs) ? base.faqs : (Array.isArray(article.faq) ? article.faq : (Array.isArray(article.faqs) ? article.faqs : (Array.isArray(content.faqs) ? content.faqs : []))));
-  const mcqs = Array.isArray(base.mcqs) ? base.mcqs : (Array.isArray(base.questions) ? base.questions : (Array.isArray(article.mcqs) ? article.mcqs : (Array.isArray(article.questions) ? article.questions : (Array.isArray(content.questions) ? content.questions : []))));
+  const mcqs = Array.isArray(base.mcqs) ? base.mcqs : (Array.isArray(base.questions) ? base.questions : (Array.isArray(article.mcqs) ? article.mcqs : (Array.isArray(article.questions) ? article.questions : (Array.isArray(content.questions) ? content.questions : (Array.isArray(base.currentAffairs) ? base.currentAffairs : (Array.isArray(article.currentAffairs) ? article.currentAffairs : (Array.isArray(base.currentAffairsData) ? base.currentAffairsData : (Array.isArray(base.currentAffairsData?.currentAffairs) ? base.currentAffairsData.currentAffairs : []))))))));
   return {
     ...base,
     title,
