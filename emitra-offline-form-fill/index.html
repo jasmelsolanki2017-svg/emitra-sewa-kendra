@@ -53,7 +53,7 @@
     .dataGroupHead{background:var(--soft);border-bottom:1px solid #c9dff4;padding:9px 11px;display:flex;align-items:center;justify-content:space-between;gap:8px}
     .dataGroupHead span{font-size:12px;color:var(--blue);font-weight:900}
     .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:11px}.field{margin-bottom:0}.field label{font-size:12px;color:#334155;display:block;margin:0 0 4px;font-weight:700}.full{grid-column:1/-1}
-    .previewShell{padding:12px;overflow:auto;max-height:none;min-height:760px;overscroll-behavior:contain}
+    .previewShell{padding:12px;overflow:auto;max-height:none;min-height:760px;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
     .pageWrap{position:relative;margin:0 auto 18px;background:white;border:1px solid #cbd5e1;box-shadow:0 2px 10px rgba(0,0,0,.15);width:max-content}
     canvas{display:block}
     .overlayField{position:absolute;border:1px dashed rgba(220,38,38,.75);background:rgba(255,255,255,.20);color:#111827;overflow:hidden;white-space:nowrap;padding:0 2px;line-height:1.15;min-width:12px;min-height:12px;user-select:none}
@@ -69,8 +69,8 @@
     .toolsRow{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.fileRow{display:grid;grid-template-columns:1fr;gap:8px;margin-top:8px}
     #status{font-size:13px;color:var(--blue);font-weight:900}.selectedGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     @media(max-width:1280px){.wrap{grid-template-columns:minmax(300px,360px) minmax(680px,1fr) minmax(250px,280px);padding-left:2%;padding-right:2%}.previewShell{min-height:720px}}
-    @media(max-width:1100px){.toolHeroInner{display:block}.toolStatus{display:inline-flex;margin-top:10px;min-width:0}.wrap{grid-template-columns:1fr;height:auto;overflow:visible}.card{overflow:visible;display:block}.card.form .panel,.card.side .panel{height:auto;overflow:visible}.previewShell{max-height:none;height:auto;min-height:0;overflow:auto}.card.side{order:2}.card.form{order:1}.card.preview{order:3}.pageWrap{transform-origin:top left}.previewShell{padding:6px}}
-    @media(max-width:620px){nav{flex-direction:column;align-items:flex-start;padding:12px 4%}nav ul{justify-content:flex-start;gap:12px}.nav-tools{width:100%}.nav-tools-menu{position:static;width:100%;margin-top:8px}.logo img{width:170px;max-width:74vw}.toolHero,.toolbar{padding-left:4%;padding-right:4%}.toolbar>*{width:100%;max-width:none!important}.toggle{justify-content:space-between}.wrap{padding:12px 3%}.formActions{grid-template-columns:1fr}}
+    @media(max-width:1100px){.toolHeroInner{display:block}.toolStatus{display:inline-flex;margin-top:10px;min-width:0}.wrap{grid-template-columns:1fr;height:auto;overflow:visible}.card{overflow:visible;display:block}.card.form .panel,.card.side .panel{height:auto;overflow:visible}.previewShell{max-height:none;height:auto;min-height:0;overflow:auto}.card.side{order:2}.card.form{order:1}.card.preview{order:3}.pageWrap{transform-origin:top left}.previewShell{padding:6px}.card.preview{overflow:hidden}}
+    @media(max-width:620px){nav{flex-direction:column;align-items:flex-start;padding:12px 4%}nav ul{justify-content:flex-start;gap:12px}.nav-tools{width:100%}.nav-tools-menu{position:static;width:100%;margin-top:8px}.logo img{width:170px;max-width:74vw}.toolHero{padding:12px 4%}.toolHero h1{font-size:22px}.toolHero p{font-size:12px}.toolbar{padding:8px 4%;display:grid;grid-template-columns:1fr 1fr}.toolbar>*{width:100%;max-width:none!important}.toolbar select,.toolbar button{min-height:42px}.toolbar .toggle{grid-column:1/-1;justify-content:space-between}.wrap{display:block;padding:10px 3%;overflow:visible}.card{margin-bottom:12px}.panel{padding:12px}.grid{grid-template-columns:1fr;padding:10px}.formActions{grid-template-columns:1fr 1fr}.previewShell{padding:8px;max-height:72vh;min-height:96px}.pageWrap{max-width:100%;overflow:hidden}.pageWrap canvas{width:100%!important;height:auto!important}.small.mobilePreviewHint{display:block}}
   </style>
 </head>
 <body>
@@ -317,6 +317,8 @@ let selectedFieldId = null;
 let lastPdfUrl = null;
 let pdfPageSizes = [];
 let authState = { auth: null, user: null, ready: false, isAdmin: false };
+const MOBILE_PREVIEW_QUERY = window.matchMedia('(max-width: 620px)');
+let mobilePreviewRequested = !MOBILE_PREVIEW_QUERY.matches;
 const DATA_LOCAL_KEY = 'rajasthanFormsSharedUserData';
 const AUTO_HINDI_LOCAL_KEY = 'rajasthanFormsAutoHindiTyping';
 const TYPING_MODE_LOCAL_KEY = 'rajasthanFormsTypingMode';
@@ -458,6 +460,14 @@ function setSharedValue(id, value){
 }
 
 function setStatus(msg, cls='') { const el=$('status'); el.textContent = msg; el.className = cls; }
+function shouldLazyMobilePreview(){
+  return MOBILE_PREVIEW_QUERY.matches && !mobilePreviewRequested && !authState.isAdmin;
+}
+function renderMobilePreviewPlaceholder(){
+  const shell = $('previewShell');
+  if(!shell) return;
+  shell.innerHTML = '<div class="panel small mobilePreviewHint"><b>PDF Preview mobile par pause hai.</b><br>Form fill kar sakte hain. Preview dekhne ke liye upar Preview Refresh dabayein.</div>';
+}
 function isStaticHosted(){
   return location.protocol === 'file:' || /^emitrawala\.online$|github\.io$/i.test(location.hostname);
 }
@@ -483,6 +493,10 @@ async function callAdminApi(path, body = {}){
 function setAdminEditorEnabled(enabled){
   authState.isAdmin = Boolean(enabled);
   document.body.classList.toggle('adminEditorEnabled', authState.isAdmin);
+  if(authState.isAdmin && MOBILE_PREVIEW_QUERY.matches && !mobilePreviewRequested){
+    mobilePreviewRequested = true;
+    renderPreview();
+  }
   if(!authState.isAdmin && $('editMode')){
     $('editMode').checked = false;
     document.body.classList.remove('editOn');
@@ -786,6 +800,10 @@ async function init(){
 
 async function renderPreview(){
   if(!templateBytes || !config) return;
+  if(shouldLazyMobilePreview()){
+    renderMobilePreviewPlaceholder();
+    return;
+  }
   const shell=$('previewShell'); shell.innerHTML='';
   const pdf = await pdfjsLib.getDocument({data: templateBytes.slice(0)}).promise;
   pdfPageSizes=[];
@@ -975,7 +993,7 @@ async function saveConfigForEveryone(){
 }
 
 $('formSelect').addEventListener('change', async e=>{ saveSharedFormData(); currentFormKey=e.target.value; buildDataForm(); await loadSelectedForm(); });
-$('previewBtn').addEventListener('click', renderPreview);
+$('previewBtn').addEventListener('click',()=>{ mobilePreviewRequested = true; renderPreview(); });
 $('downloadBtn').addEventListener('click', downloadPdf);
 $('printBtn').addEventListener('click', printPdf);
 $('clearDataBtn').addEventListener('click',()=>resetFormData(false));
