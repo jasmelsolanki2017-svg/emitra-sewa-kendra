@@ -4,8 +4,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Rajasthan Forms Auto Fill / Print Tool</title>
+  <link rel="canonical" href="https://emitrawala.online/emitra-offline-form-fill/" />
   <style>
-    :root { --brand:#0f766e; --bg:#f6f7fb; --card:#fff; --line:#d7dde8; --danger:#dc2626; }
+    :root { --brand:#0f766e; --brand-dark:#115e59; --bg:#f6f7fb; --card:#fff; --line:#d7dde8; --soft:#ecfdf5; --danger:#dc2626; }
     *{box-sizing:border-box}
     html,body{height:100%}
     body{margin:0;font-family:system-ui,-apple-system,"Noto Sans Devanagari",Arial,sans-serif;background:var(--bg);color:#111827;overflow:hidden;display:flex;flex-direction:column}
@@ -18,10 +19,14 @@
     textarea{min-height:64px;resize:vertical}
     .wrap{display:grid;grid-template-columns:minmax(320px,380px) minmax(0,1fr) minmax(260px,280px);gap:12px;padding:12px;align-items:stretch;flex:1 1 auto;min-height:0;overflow:hidden}
     .card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 1px 2px rgba(0,0,0,.04);min-height:0;overflow:hidden;display:flex;flex-direction:column}
-    .panel{padding:12px}.panel h2{font-size:16px;margin:0 0 10px}.panel h3{font-size:14px;margin:14px 0 8px;color:#334155;border-top:1px solid #eef2f7;padding-top:12px}
+    .panel{padding:12px}.panel h2{font-size:16px;margin:0 0 10px}.panel h3{font-size:14px;margin:0;color:#0f172a}
     .card.form .panel,.card.side .panel{height:100%;overflow-y:auto;overscroll-behavior:contain}
     .card.preview{min-width:0}
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.field{margin-bottom:9px}.field label{font-size:12px;color:#475569;display:block;margin:0 0 3px}.full{grid-column:1/-1}
+    .formActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0 12px}
+    .dataGroup{border:1px solid var(--line);border-radius:12px;background:#fbfdff;margin:0 0 12px;overflow:hidden}
+    .dataGroupHead{background:var(--soft);border-bottom:1px solid #cceee0;padding:9px 11px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+    .dataGroupHead span{font-size:12px;color:var(--brand-dark);font-weight:800}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:11px}.field{margin-bottom:0}.field label{font-size:12px;color:#334155;display:block;margin:0 0 4px;font-weight:700}.full{grid-column:1/-1}
     .previewShell{padding:12px;overflow:auto;height:100%;max-height:none;flex:1 1 auto;min-height:0;overscroll-behavior:contain}
     .pageWrap{position:relative;margin:0 auto 18px;background:white;border:1px solid #cbd5e1;box-shadow:0 2px 10px rgba(0,0,0,.15);width:max-content}
     canvas{display:block}
@@ -40,6 +45,7 @@
 <body>
 <header>
   <h1>Rajasthan Forms Auto Fill / Print</h1>
+  <a class="btn secondary" href="/" title="E-MITRA WALA Home">Home</a>
   <select id="formSelect" title="Form चुनें" style="max-width:260px;font-weight:700">
     <option value="caste">जाति प्रमाण पत्र Form</option>
     <option value="bonafide">मूल निवास / Bonafide Form</option>
@@ -64,6 +70,10 @@
       <p class="small">Data browser me hi rahega. Server/database me save nahi hota. Form change karne par common data same rahega.</p>
       <p class="small ok"><b>Note:</b> ऊपर form type चुनो. जाति प्रमाण पत्र और मूल निवास/Bonafide दोनों form auto-fill हैं. Position Editor से field ko drag करके exact जगह set कर सकते हो.</p>
       <p class="small"><b>Typing Mode:</b> Auto Hindi में Roman type करते ही Hindi बनेगा. Manual / Google Keyboard mode में site auto convert नहीं करेगी, जिससे Gboard/Google Input Tools suggestions use कर सकते हो.</p>
+      <div class="formActions">
+        <button id="clearDataBtn" type="button" class="danger">Clear Data</button>
+        <button id="sampleDataBtn" type="button" class="secondary">Sample Data</button>
+      </div>
       <div id="dataForm"></div>
     </div>
   </section>
@@ -362,8 +372,12 @@ function setStatus(msg, cls='') { const el=$('status'); el.textContent = msg; el
 function buildDataForm(){
   const root=$('dataForm'); root.innerHTML='';
   for (const group of FORM_SCHEMAS[currentFormKey]) {
-    const h=document.createElement('h3'); h.textContent=group.group; root.appendChild(h);
-    const grid=document.createElement('div'); grid.className='grid'; root.appendChild(grid);
+    const section=document.createElement('section'); section.className='dataGroup';
+    const head=document.createElement('div'); head.className='dataGroupHead';
+    const h=document.createElement('h3'); h.textContent=group.group; head.appendChild(h);
+    const count=document.createElement('span'); count.textContent=group.fields.length+' fields'; head.appendChild(count);
+    section.appendChild(head);
+    const grid=document.createElement('div'); grid.className='grid'; section.appendChild(grid);
     for (const [id,label,type,def] of group.fields) {
       const wrap=document.createElement('div'); wrap.className=(type==='textarea'?'field full':'field');
       const lab=document.createElement('label'); lab.textContent=label; wrap.appendChild(lab);
@@ -401,7 +415,26 @@ function buildDataForm(){
       input.addEventListener('blur', ()=>{ applyAutoHindiToInput(input); setSharedValue(id, input.value); refreshOverlayTexts(); });
       wrap.appendChild(input); grid.appendChild(wrap);
     }
+    root.appendChild(section);
   }
+}
+
+function resetFormData(useSample){
+  const nextData = {};
+  for (const group of FORM_SCHEMAS[currentFormKey] || []) {
+    for (const [id,,type,def] of group.fields) {
+      nextData[id] = useSample ? (def || '') : '';
+      if(type.startsWith('select:') && !useSample){
+        const firstOpt = type.substring(7).split(',')[0] || '';
+        nextData[id] = firstOpt.split('=')[0] || '';
+      }
+    }
+  }
+  sharedFormData = {...sharedFormData, ...nextData};
+  try { localStorage.setItem(DATA_LOCAL_KEY, JSON.stringify(sharedFormData)); } catch(e) {}
+  buildDataForm();
+  refreshOverlayTexts();
+  setStatus(useSample ? 'Sample data set ho gaya.' : 'Form data clear ho gaya.', 'ok');
 }
 
 function collectData(){
@@ -777,6 +810,8 @@ $('formSelect').addEventListener('change', async e=>{ saveSharedFormData(); curr
 $('previewBtn').addEventListener('click', renderPreview);
 $('downloadBtn').addEventListener('click', downloadPdf);
 $('printBtn').addEventListener('click', printPdf);
+$('clearDataBtn').addEventListener('click',()=>resetFormData(false));
+$('sampleDataBtn').addEventListener('click',()=>resetFormData(true));
 $('editMode').addEventListener('change',()=>document.body.classList.toggle('editOn',$('editMode').checked));
 $('saveLocalBtn').addEventListener('click',()=>{localStorage.setItem(FORMS[currentFormKey].localKey,JSON.stringify(config)); setStatus('Config browser me save ho gaya','ok');});
 $('downloadConfigBtn').addEventListener('click',downloadConfig);
