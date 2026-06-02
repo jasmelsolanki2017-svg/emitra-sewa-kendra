@@ -25,6 +25,9 @@ const htmlEscape = (value = "") => String(value || "")
   .replace(/"/g, "&quot;")
   .replace(/'/g, "&#039;");
 
+const resolveMergeConflictMarkers = (value = "") => String(value || "")
+  .replace(/^<<<<<<<[^\n]*\n([\s\S]*?)^=======\n[\s\S]*?^>>>>>>>[^\n]*(?:\n|$)/gm, "$1");
+
 const cleanSlug = (value = "") => String(value || "")
   .normalize("NFKD")
   .replace(/[\u0300-\u036f]/g, "")
@@ -354,7 +357,7 @@ const renderStaticPostHtml = (id = "", job = {}) => {
               <p><a class="auto-link" href="${htmlEscape(canonicalUrl)}">Canonical job detail link</a> | <a class="auto-link" href="../../job-form.html">All Latest Jobs</a></p>
             </div>`;
   const staticPayload = `<script>window.__EMITRA_STATIC_POST__=${JSON.stringify({ id, job: { ...job, slug: seo.slug, canonicalUrl } }).replace(/</g, "\\u003c")};</script>`;
-  return fs.readFileSync(JOB_DETAIL_PATH, "utf8")
+  const html = fs.readFileSync(JOB_DETAIL_PATH, "utf8")
     .replace(/<head>/i, "<head>\n<base href=\"../../\">")
     .replace(/<title>[\s\S]*?<\/title>/i, `<title>${htmlEscape(seo.seoTitle)}</title>`)
     .replace(/<meta name="description" content="[^"]*">/i, `<meta name="description" content="${htmlEscape(seo.metaDescription)}">`)
@@ -368,6 +371,7 @@ const renderStaticPostHtml = (id = "", job = {}) => {
     .replace(/<aside class="detail-sidebar"/i, currentAffairs ? `<aside class="detail-sidebar" style="display:none;"` : `<aside class="detail-sidebar"`)
     .replace(/<script type="module">/i, `${staticPayload}\n<script type="module">`)
     .replace(/<section class="panel" id="seoFallbackPanel">[\s\S]*?<\/section>/i, `<section class="panel" id="seoFallbackPanel">\n          ${fallbackHtml}\n        </section>`);
+  return resolveMergeConflictMarkers(html);
 };
 
 const removeDynamicJobEntries = (xml = "") => String(xml || "")
