@@ -1357,7 +1357,8 @@ const callAiText = async ({ provider = "gemini", model = "", prompt = "", system
       })
     });
     if (!response.ok) {
-      throw new Error(`${config.label} HTTP ${response.status}`);
+      const details = await response.text().catch(() => "");
+      throw new Error(`${config.label} HTTP ${response.status}${details ? `: ${details.slice(0, 220)}` : ""}`);
     }
     const data = await response.json();
     return {
@@ -1385,7 +1386,8 @@ const callAiText = async ({ provider = "gemini", model = "", prompt = "", system
     })
   });
   if (!response.ok) {
-    throw new Error(`${config.label} HTTP ${response.status}`);
+    const details = await response.text().catch(() => "");
+    throw new Error(`${config.label} HTTP ${response.status}${details ? `: ${details.slice(0, 220)}` : ""}`);
   }
   const data = await response.json();
   return {
@@ -1482,10 +1484,10 @@ const parseJsonFromAiText = (value = "") => {
 };
 
 const unwrapCurrentAffairsPayload = (value = {}) => {
-  if (Array.isArray(value)) return { questions: value };
+  if (Array.isArray(value)) return { news: value, questions: value };
   if (!value || typeof value !== "object") return {};
   const nested = value.currentAffairs || value.current_affairs || value.data || value.content;
-  if (Array.isArray(nested)) return { ...value, questions: value.questions || value.mcqs || value.quiz || nested };
+  if (Array.isArray(nested)) return { ...value, news: value.news || value.samachar || nested, questions: value.questions || value.mcqs || value.quiz || nested };
   if (nested && typeof nested === "object") return { ...value, ...nested };
   return value;
 };
