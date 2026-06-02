@@ -1,0 +1,826 @@
+<!doctype html>
+<html lang="hi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Rajasthan Forms Auto Fill / Print Tool</title>
+  <style>
+    :root { --brand:#0f766e; --bg:#f6f7fb; --card:#fff; --line:#d7dde8; --danger:#dc2626; }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;font-family:system-ui,-apple-system,"Noto Sans Devanagari",Arial,sans-serif;background:var(--bg);color:#111827;overflow:hidden;display:flex;flex-direction:column}
+    header{position:relative;z-index:10;background:#fff;border-bottom:1px solid var(--line);padding:10px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;flex:0 0 auto}
+    header h1{font-size:18px;margin:0 10px 0 0;color:#0f172a}
+    button,.btn{border:0;background:var(--brand);color:white;padding:9px 12px;border-radius:9px;cursor:pointer;font-weight:600;display:inline-flex;gap:6px;align-items:center;text-decoration:none;font-size:14px}
+    button.secondary{background:#334155} button.warn{background:#d97706} button.danger{background:#dc2626}
+    button:disabled{opacity:.6;cursor:not-allowed}
+    input,select,textarea{width:100%;border:1px solid var(--line);border-radius:8px;padding:8px 9px;font:inherit;background:white}
+    textarea{min-height:64px;resize:vertical}
+    .wrap{display:grid;grid-template-columns:minmax(320px,380px) minmax(0,1fr) minmax(260px,280px);gap:12px;padding:12px;align-items:stretch;flex:1 1 auto;min-height:0;overflow:hidden}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 1px 2px rgba(0,0,0,.04);min-height:0;overflow:hidden;display:flex;flex-direction:column}
+    .panel{padding:12px}.panel h2{font-size:16px;margin:0 0 10px}.panel h3{font-size:14px;margin:14px 0 8px;color:#334155;border-top:1px solid #eef2f7;padding-top:12px}
+    .card.form .panel,.card.side .panel{height:100%;overflow-y:auto;overscroll-behavior:contain}
+    .card.preview{min-width:0}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.field{margin-bottom:9px}.field label{font-size:12px;color:#475569;display:block;margin:0 0 3px}.full{grid-column:1/-1}
+    .previewShell{padding:12px;overflow:auto;height:100%;max-height:none;flex:1 1 auto;min-height:0;overscroll-behavior:contain}
+    .pageWrap{position:relative;margin:0 auto 18px;background:white;border:1px solid #cbd5e1;box-shadow:0 2px 10px rgba(0,0,0,.15);width:max-content}
+    canvas{display:block}
+    .overlayField{position:absolute;border:1px dashed rgba(220,38,38,.75);background:rgba(255,255,255,.20);color:#111827;overflow:hidden;white-space:nowrap;padding:0 2px;line-height:1.15;min-width:12px;min-height:12px;user-select:none}
+    .overlayField.check::after{content:"✓";font-weight:900;color:#111827;font-size:22px;line-height:1}
+    .overlayField.hiddenValue{opacity:.22}
+    .editOn .overlayField{background:rgba(20,184,166,.08);border:1px solid rgba(20,184,166,.9);cursor:move}
+    .overlayField.selected{outline:2px solid #2563eb;background:rgba(37,99,235,.12)!important}
+    .small{font-size:12px;color:#64748b;line-height:1.45}.ok{color:#047857}.bad{color:#b91c1c}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+    .toggle{display:flex;align-items:center;gap:8px;font-weight:700}.toggle input{width:auto}
+    .toolsRow{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.fileRow{display:grid;grid-template-columns:1fr;gap:8px;margin-top:8px}
+    #status{font-size:13px;color:#334155}.selectedGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    @media(max-width:1100px){body{overflow:auto;display:block}.wrap{grid-template-columns:1fr;height:auto;overflow:visible}.card{overflow:visible;display:block}.card.form .panel,.card.side .panel{height:auto;overflow:visible}.previewShell{max-height:none;height:auto;overflow:auto}.card.side{order:2}.card.form{order:1}.card.preview{order:3}header{position:relative}.pageWrap{transform-origin:top left}.previewShell{padding:6px}}
+  </style>
+</head>
+<body>
+<header>
+  <h1>Rajasthan Forms Auto Fill / Print</h1>
+  <select id="formSelect" title="Form चुनें" style="max-width:260px;font-weight:700">
+    <option value="caste">जाति प्रमाण पत्र Form</option>
+    <option value="bonafide">मूल निवास / Bonafide Form</option>
+  </select>
+  <button id="previewBtn">Preview Refresh</button>
+  <button id="downloadBtn">Download PDF</button>
+  <button id="printBtn" class="secondary">Print PDF</button>
+  <label class="toggle" style="gap:6px">Typing Mode
+    <select id="typingModeSelect" title="Typing Mode" style="width:auto;min-width:190px;font-weight:700;padding:7px 9px">
+      <option value="auto">Auto Hindi Typing</option>
+      <option value="manual">Manual / Google Keyboard</option>
+    </select>
+  </label>
+  <label class="toggle"><input id="editMode" type="checkbox" /> Position Editor</label>
+  <span id="status">Loading...</span>
+</header>
+
+<div class="wrap">
+  <section class="card form">
+    <div class="panel">
+      <h2>User Form Data</h2>
+      <p class="small">Data browser me hi rahega. Server/database me save nahi hota. Form change karne par common data same rahega.</p>
+      <p class="small ok"><b>Note:</b> ऊपर form type चुनो. जाति प्रमाण पत्र और मूल निवास/Bonafide दोनों form auto-fill हैं. Position Editor से field ko drag करके exact जगह set कर सकते हो.</p>
+      <p class="small"><b>Typing Mode:</b> Auto Hindi में Roman type करते ही Hindi बनेगा. Manual / Google Keyboard mode में site auto convert नहीं करेगी, जिससे Gboard/Google Input Tools suggestions use कर सकते हो.</p>
+      <div id="dataForm"></div>
+    </div>
+  </section>
+
+  <main class="card preview">
+    <div class="previewShell" id="previewShell">
+      <div class="small">PDF preview load ho raha hai...</div>
+    </div>
+  </main>
+
+  <aside class="card side">
+    <div class="panel">
+      <h2>Position Editor</h2>
+      <p class="small">Editor ON karke field ko drag karo. Selected field ki exact value yahan se adjust karo.</p>
+      <div class="toolsRow">
+        <button id="saveLocalBtn" class="secondary">Save Browser</button>
+        <button id="downloadConfigBtn" class="warn">Download Config</button>
+        <button id="resetConfigBtn" class="danger">Reset</button>
+      </div>
+      <div class="fileRow">
+        <label class="small">Template PDF replace/upload</label>
+        <input type="file" id="pdfFile" accept="application/pdf" />
+        <label class="small">Combined Config JSON upload</label>
+        <input type="file" id="configFile" accept="application/json" />
+      </div>
+      <h3>Selected Field</h3>
+      <div id="selectedInfo" class="small bad">Koi field selected nahi hai.</div>
+      <div class="selectedGrid" style="margin-top:8px">
+        <div class="field"><label>X %</label><input id="selX" type="number" step="0.001"></div>
+        <div class="field"><label>Y %</label><input id="selY" type="number" step="0.001"></div>
+        <div class="field"><label>W %</label><input id="selW" type="number" step="0.001"></div>
+        <div class="field"><label>H %</label><input id="selH" type="number" step="0.001"></div>
+        <div class="field"><label>Font pt</label><input id="selFont" type="number" step="0.5"></div>
+        <div class="field"><label>Page</label><input id="selPage" type="number" min="1" max="3"></div>
+        <div class="field full"><label>Label</label><input id="selLabel"></div>
+        <div class="field full"><label>Source field id</label><input id="selSource"></div>
+      </div>
+      <p class="small">Tip: Arrow keys se selected field 1px move hoga. Shift + Arrow = 10px.</p>
+    </div>
+  </aside>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/regenerator-runtime@0.14.1/runtime.min.js"></script>
+<script src="https://unpkg.com/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
+<script>
+const FORMS = {
+  caste: {
+    title: 'Rajasthan Caste Certificate Form',
+    pdf: 'assets/SC_ST-CASTE-APPLICATION-FORM-2019.pdf',
+    localKey: 'casteFormFieldConfig',
+    downloadName: 'rajasthan-caste-certificate-filled.pdf'
+  },
+  bonafide: {
+    title: 'Rajasthan Bonafide / मूल निवास Form',
+    pdf: 'assets/Bonafied-all-rajasthan.pdf',
+    localKey: 'bonafideFormFieldConfig',
+    downloadName: 'rajasthan-bonafide-mool-niwas-form.pdf'
+  }
+};
+let currentFormKey = 'caste';
+const DISABLED_FIELD_IDS = new Set(['w1Date','w2Date','bf_w1_date','bf_w2_date']);
+function sanitizeConfigFields(cfg){
+  if(cfg && Array.isArray(cfg.fields)) cfg.fields = cfg.fields.filter(f => !DISABLED_FIELD_IDS.has(f.id));
+  return cfg;
+}
+
+const COMBINED_CONFIG_URL = 'assets/forms-fields-config.json';
+const FONT_URL = 'https://cdn.jsdelivr.net/gh/googlefonts/noto-fonts@main/hinted/ttf/NotoSansDevanagari/NotoSansDevanagari-Regular.ttf';
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+const FORM_SCHEMAS = {
+  caste: [
+    {group:'मुख्य जानकारी', fields:[
+      ['aadhaar','Applicant Aadhaar Number','text','1234 5678 9012'],
+      ['janAadhaar','Jan Aadhaar / Bhamashah Number','text','1234-5678-9012'],
+      ['applicantName','प्रार्थी का नाम','text','राम कुमार मेघवाल'],
+      ['fatherName','पिता का नाम','text','मोहन लाल मेघवाल'],
+      ['grandFatherName','पिता के पिता का नाम (नाबालिग शपथ-पत्र हेतु)','text',''],
+      ['currentAddress','वर्तमान पता','textarea','वार्ड नं. 05, मुख्य बाजार के पास, कालिबंगा'],
+      ['permanentAddress','स्थाई पता','textarea','वार्ड नं. 05, मुख्य बाजार के पास, कालिबंगा, हनुमानगढ़'],
+      ['village','गाँव/शहर','text','कालिबंगा'], ['tehsil','तहसील','text','पीलीबंगा'], ['district','जिला','text','हनुमानगढ़'],
+      ['dob','जन्म दिनांक DD/MM/YYYY','text','15/08/2000'], ['birthPlace','जन्म स्थान','text','कालिबंगा'], ['age','उम्र (DOB से auto)','text',''],
+      ['gender','लिंग','select:male=पुरुष,female=महिला','male'], ['maritalStatus','वैवाहिक स्थिति','select:married=विवाहित,unmarried=अविवाहित','married'],
+      ['religionApplicant','धर्म आवेदक','text','हिन्दू'], ['religionFather','धर्म पिता','text','हिन्दू'],
+      ['subCasteApplicant','उपजाति आवेदक','text','मेघवाल'], ['subCasteFather','उपजाति पिता','text','मेघवाल'],
+      ['educationCasteReligion','शिक्षा/व्यवसाय में दर्ज जाति/धर्म','text','अनुसूचित जाति / हिन्दू'],
+      ['rajasthanResident','राजस्थान मूल निवासी','select:yes=हाँ,no=नहीं','yes'],
+      ['mobile','मोबाइल नंबर','text','9876543210'], ['date','दिनांक DD/MM/YYYY','text','29/05/2026'], ['place','स्थान','text','कालिबांगा'],
+      ['rationNumber','राशन कार्ड नंबर','text','123456789012']
+    ]},
+    {group:'गवाह 1', fields:[
+      ['w1Name','गवाह 1 नाम (manual / खाली छोड़ सकते हैं)','text',''], ['w1Father','गवाह 1 पिता (manual / खाली छोड़ सकते हैं)','text',''],
+      ['w1Address','गवाह 1 पता/निवासी (manual / खाली छोड़ सकते हैं)','textarea',''],
+      ['w1Dept','गवाह 1 विभाग (manual / खाली छोड़ सकते हैं)','text',''], ['w1Post','गवाह 1 पद (manual / खाली छोड़ सकते हैं)','text','']
+    ]},
+    {group:'गवाह 2', fields:[
+      ['w2Name','गवाह 2 नाम (manual / खाली छोड़ सकते हैं)','text',''], ['w2Father','गवाह 2 पिता (manual / खाली छोड़ सकते हैं)','text',''],
+      ['w2Address','गवाह 2 पता/निवासी (manual / खाली छोड़ सकते हैं)','textarea',''],
+      ['w2Dept','गवाह 2 विभाग (manual / खाली छोड़ सकते हैं)','text',''], ['w2Post','गवाह 2 पद (manual / खाली छोड़ सकते हैं)','text','']
+    ]},
+    {group:'शपथ पत्र', fields:[
+      ['duplicateApplied','दोहरे/संशोधित प्रति हाँ/नहीं','text','नहीं'], ['oldCertificateDetails','पुराना प्रमाण पत्र विवरण','text','']
+    ]}
+  ],
+  bonafide: [
+    {group:'मुख्य जानकारी - मूल निवास', fields:[
+      ['aadhaar','Applicant Aadhaar Number','text','1234 5678 9012'],
+      ['janAadhaar','Jan Aadhaar Number','text','1234-5678-9012'],
+      ['applicantName','प्रार्थी का नाम','text','राम कुमार'],
+      ['fatherName','पिता/पति का नाम','text','मोहन लाल'],
+      ['currentAddress','वर्तमान/स्थाई पता','textarea','वार्ड नं. 05, मुख्य बाजार के पास, कालिबंगा, हनुमानगढ़'],
+      ['fatherOriginalPlace','पिता/पति का मूल स्थान','text','कालिबंगा, राजस्थान'],
+      ['fatherOccupation','पिता/पति का व्यवसाय','text','कृषि'],
+      ['fatherBusinessAddress','पिता/पति के व्यवसाय का पता','textarea','कालिबंगा, तहसील पीलीबंगा, जिला हनुमानगढ़'],
+      ['birthPlace','जन्म स्थान','text','कालिबंगा'],
+      ['dob','जन्म दिनांक DD/MM/YYYY','text','15/08/2000'],
+      ['age','Candidate Age / उम्र (DOB से auto)','text',''],
+      ['propertyDetails','स्वयं/पिता की अचल संपत्ति का विवरण','textarea','ग्राम कालिबंगा में पैतृक आवास/भूमि'],
+      ['voterList','मतदाता सूची में नाम','select:yes=हाँ,no=नहीं','yes'],
+      ['yearsRajasthan','राजस्थान में रहने के वर्ष','text','25 वर्ष'],
+      ['mobile','मोबाइल नंबर','text','9876543210'],
+      ['date','दिनांक DD/MM/YYYY','text','29/05/2026'],
+      ['place','स्थान','text','कालिबांगा'],
+      ['district','जिला','text','हनुमानगढ़']
+    ]},
+    {group:'शिक्षा विवरण', fields:[
+      ['edu1Name','कक्षा 1 से 9 - संस्था','text','राजकीय उच्च प्राथमिक विद्यालय कालिबंगा'], ['edu1Place','स्थान','text','कालिबंगा'],
+      ['edu10Name','10वीं - संस्था','text','राजकीय उच्च माध्यमिक विद्यालय कालिबंगा'], ['edu10Place','स्थान','text','कालिबंगा'],
+      ['edu12Name','12वीं - संस्था','text','राजकीय उच्च माध्यमिक विद्यालय कालिबंगा'], ['edu12Place','स्थान','text','कालिबंगा'],
+      ['eduGradName','स्नातक - संस्था','text',''], ['eduGradPlace','स्थान','text',''],
+      ['eduPgName','स्नातकोत्तर - संस्था','text',''], ['eduPgPlace','स्थान','text',''],
+      ['eduOtherName','अन्य - संस्था','text',''], ['eduOtherPlace','स्थान','text','']
+    ]},
+    {group:'महिला के लिए', fields:[
+      ['femaleMarried','क्या आप विवाहित हैं? (हाँ लिखने पर विवाहित महिला शपथ-पत्र)','text',''],
+      ['femaleMarriageDetails','विवाह कब और किसके साथ हुआ?','text',''],
+      ['femaleHusbandResident','क्या पति राजस्थान के मूल निवासी हैं?','text',''],
+      ['femaleLivingWithHusband','पति के साथ कब से/कहाँ रह रही हैं?','text','']
+    ]},
+    {group:'उत्तरदायी व्यक्ति / गवाह 1', fields:[
+      ['w1Name','गवाह 1 नाम','text',''], ['w1Father','गवाह 1 पिता/पति','text',''], ['w1Address','गवाह 1 निवासी','textarea',''],
+      ['w1Dept','गवाह 1 राजकीय सेवा/विभाग','text',''], ['w1Post','गवाह 1 पद','text',''], ['w1Years','कितने वर्षों से जानते हैं','text','']
+    ]},
+    {group:'उत्तरदायी व्यक्ति / गवाह 2', fields:[
+      ['w2Name','गवाह 2 नाम','text',''], ['w2Father','गवाह 2 पिता/पति','text',''], ['w2Address','गवाह 2 निवासी','textarea',''],
+      ['w2Dept','गवाह 2 राजकीय सेवा/विभाग','text',''], ['w2Post','गवाह 2 पद','text',''], ['w2Years','कितने वर्षों से जानते हैं','text','']
+    ]},
+    {group:'शपथ पत्र', fields:[
+      ['affidavitEducation','मेरी समस्त शिक्षा कहाँ की है','text','राजस्थान'],
+      ['minorChildName','नाबालिग पुत्र/पुत्री का नाम','text',''], ['minorChildAge','नाबालिग आयु','text',''],
+      ['minorChildBirthPlace','नाबालिग जन्म स्थान','text',''], ['minorChildEducation','नाबालिग शिक्षा स्थान','text',''],
+      ['husbandName','विवाहित महिला के पति का नाम (भरने पर विवाहित महिला शपथ-पत्र)','text',''], ['husbandResident','पति का मूल निवास विवरण','text','']
+    ]}
+  ]
+};
+
+let templateBytes = null;
+let config = null;
+let defaultConfig = null;
+let allConfigs = null;
+let selectedFieldId = null;
+let lastPdfUrl = null;
+let pdfPageSizes = [];
+const DATA_LOCAL_KEY = 'rajasthanFormsSharedUserData';
+const AUTO_HINDI_LOCAL_KEY = 'rajasthanFormsAutoHindiTyping';
+const TYPING_MODE_LOCAL_KEY = 'rajasthanFormsTypingMode';
+let sharedFormData = {};
+try { sharedFormData = JSON.parse(localStorage.getItem(DATA_LOCAL_KEY) || '{}') || {}; } catch(e) { sharedFormData = {}; }
+const $ = id => document.getElementById(id);
+
+const NO_AUTO_HINDI_FIELD_IDS = new Set([
+  'aadhaar','janAadhaar','mobile','dob','date','age','dobDay','dobMonth','dobYear','dateDay','dateMonth','dateYear',
+  'rationNumber','minorChildAge','w1Years','w2Years','yearsRajasthan','oldCertificateDetails'
+]);
+
+function isAutoHindiEnabled(){
+  const modeEl = $('typingModeSelect');
+  if(modeEl) return modeEl.value === 'auto';
+  const oldEl = $('autoHindiToggle');
+  return !oldEl || oldEl.checked;
+}
+
+function shouldAutoHindiField(id, type){
+  if(!id || type.startsWith('select:')) return false;
+  const key = String(id).toLowerCase();
+  if(NO_AUTO_HINDI_FIELD_IDS.has(id)) return false;
+  if(key.includes('aadhaar') || key.includes('mobile') || key.includes('phone') || key.includes('dob') || key.includes('date') || key.includes('age') || key.includes('year') || key.includes('number')) return false;
+  return true;
+}
+
+const HINDI_WORDS = {
+  'ram':'राम','raam':'राम','kumar':'कुमार','kumaar':'कुमार','mohan':'मोहन','lal':'लाल','laal':'लाल',
+  'raj':'राज','raaj':'राज','rajdeep':'राजदीप','raajdeep':'राजदीप','rajdip':'राजदीप','rajdep':'राजदीप',
+  'rajesh':'राजेश','rajendra':'राजेंद्र','rajender':'राजेंद्र','rajveer':'राजवीर','rajkumar':'राजकुमार',
+  'singh':'सिंह','devi':'देवी','kaur':'कौर','sandeep':'संदीप','kuldeep':'कुलदीप','kashmir':'कश्मीर',
+  'meghwal':'मेघवाल','jat':'जाट','jakhad':'जाखड़','solanki':'सोलंकी',
+  'kalibanga':'कालीबंगा','kalibangan':'कालीबंगा','pilibanga':'पीलीबंगा','hanumangarh':'हनुमानगढ़',
+  'rajasthan':'राजस्थान','suratgarh':'सूरतगढ़','ganganagar':'गंगानगर','kharlian':'खरलियां','kharliyan':'खरलियां',
+  'ward':'वार्ड','no':'नं.','number':'नंबर','main':'मुख्य','bazar':'बाजार','bazaar':'बाजार','ke':'के','paas':'पास','pass':'पास',
+  'near':'पास','gurudwara':'गुरुद्वारा','mandir':'मंदिर','gram':'ग्राम','gaon':'गाँव','village':'गाँव',
+  'tehsil':'तहसील','jila':'जिला','district':'जिला','post':'पोस्ट','school':'स्कूल','govt':'राजकीय','rajkiya':'राजकीय',
+  'krishi':'कृषि','agriculture':'कृषि','hindu':'हिन्दू','yes':'हाँ','no':'नहीं','nahi':'नहीं','nahin':'नहीं',
+  'vivahit':'विवाहित','unmarried':'अविवाहित','avivahit':'अविवाहित'
+};
+
+const CONS = [
+  ['ksh','क्ष'],['gy','ज्ञ'],['gya','ज्ञ'],['shr','श्र'],
+  ['chh','छ'],['kh','ख'],['gh','घ'],['ng','ङ'],['ch','च'],['jh','झ'],['ny','ञ'],
+  ['th','थ'],['dh','ध'],['ph','फ'],['bh','भ'],['sh','श'],
+  ['ka','क'],['k','क'],['q','क'],['ga','ग'],['g','ग'],
+  ['cha','च'],['ja','ज'],['j','ज'],['z','ज'],
+  ['ta','त'],['t','त'],['da','द'],['d','द'],['na','न'],['n','न'],
+  ['pa','प'],['p','प'],['fa','फ'],['f','फ'],['ba','ब'],['b','ब'],['ma','म'],['m','म'],
+  ['ya','य'],['y','य'],['ra','र'],['r','र'],['la','ल'],['l','ल'],['va','व'],['wa','व'],['v','व'],['w','व'],
+  ['sa','स'],['s','स'],['ha','ह'],['h','ह']
+];
+const VOWEL_SIGNS = [
+  ['aa','ा'],['ai','ै'],['au','ौ'],['ee','ी'],['ii','ी'],['oo','ू'],['uu','ू'],
+  ['a',''],['i','ि'],['u','ु'],['e','े'],['o','ो']
+];
+const VOWELS = [
+  ['aa','आ'],['ai','ऐ'],['au','औ'],['ee','ई'],['ii','ई'],['oo','ऊ'],['uu','ऊ'],
+  ['a','अ'],['i','इ'],['u','उ'],['e','ए'],['o','ओ']
+];
+
+function matchList(str, i, list){
+  for(const [key, val] of list){
+    if(str.startsWith(key, i)) return [key, val];
+  }
+  return null;
+}
+
+function transliterateWordToHindi(word){
+  const original = String(word || '');
+  if(!/[A-Za-z]/.test(original) || /[ऀ-ॿ]/.test(original)) return original;
+  const lower = original.toLowerCase();
+  if(HINDI_WORDS[lower]) return HINDI_WORDS[lower];
+  let out = '', i = 0;
+  while(i < lower.length){
+    const ch = lower[i];
+    if(ch === 'x'){ out += 'क्स'; i++; continue; }
+    const cons = matchList(lower, i, CONS);
+    if(cons){
+      out += cons[1];
+      i += cons[0].length;
+      const vowel = matchList(lower, i, VOWEL_SIGNS);
+      if(vowel){ out += vowel[1]; i += vowel[0].length; }
+      continue;
+    }
+    const vowel = matchList(lower, i, VOWELS);
+    if(vowel){ out += vowel[1]; i += vowel[0].length; continue; }
+    out += original[i] || ch;
+    i++;
+  }
+  return out;
+}
+
+function autoHindiText(value){
+  if(!value) return value;
+  return String(value).replace(/[A-Za-z]+/g, (word) => transliterateWordToHindi(word));
+}
+
+function applyAutoHindiToInput(input){
+  if(!input || input.dataset.autoHindi !== '1' || !isAutoHindiEnabled()) return;
+  const before = input.value;
+  const after = autoHindiText(before);
+  if(after !== before){
+    input.value = after;
+    const dataId = input.id && input.id.startsWith('data_') ? input.id.slice(5) : '';
+    if(dataId) setSharedValue(dataId, input.value);
+    try { input.setSelectionRange(input.value.length, input.value.length); } catch(e) {}
+  }
+}
+
+function saveSharedFormData(){
+  const schema = FORM_SCHEMAS[currentFormKey] || [];
+  for (const group of schema) {
+    for (const [id] of group.fields) {
+      const el = $('data_'+id);
+      if (el) sharedFormData[id] = el.value;
+    }
+  }
+  try { localStorage.setItem(DATA_LOCAL_KEY, JSON.stringify(sharedFormData)); } catch(e) {}
+}
+
+function setSharedValue(id, value){
+  sharedFormData[id] = value;
+  try { localStorage.setItem(DATA_LOCAL_KEY, JSON.stringify(sharedFormData)); } catch(e) {}
+}
+
+function setStatus(msg, cls='') { const el=$('status'); el.textContent = msg; el.className = cls; }
+
+function buildDataForm(){
+  const root=$('dataForm'); root.innerHTML='';
+  for (const group of FORM_SCHEMAS[currentFormKey]) {
+    const h=document.createElement('h3'); h.textContent=group.group; root.appendChild(h);
+    const grid=document.createElement('div'); grid.className='grid'; root.appendChild(grid);
+    for (const [id,label,type,def] of group.fields) {
+      const wrap=document.createElement('div'); wrap.className=(type==='textarea'?'field full':'field');
+      const lab=document.createElement('label'); lab.textContent=label; wrap.appendChild(lab);
+      let input;
+      if (type==='textarea') { input=document.createElement('textarea'); }
+      else if (type.startsWith('select:')) {
+        input=document.createElement('select');
+        const opts=type.substring(7).split(',');
+        for (const opt of opts){ const [v,t]=opt.split('='); const o=document.createElement('option'); o.value=v; o.textContent=t; input.appendChild(o); }
+      } else input=document.createElement('input');
+      input.id='data_'+id;
+      input.value = Object.prototype.hasOwnProperty.call(sharedFormData, id) ? sharedFormData[id] : (def || '');
+      input.autocomplete = 'off';
+      const hindiField = shouldAutoHindiField(id, type);
+      if(hindiField) {
+        input.dataset.autoHindi = '1';
+        input.lang = 'hi';
+        input.inputMode = 'text';
+        input.setAttribute('autocapitalize','off');
+        input.setAttribute('spellcheck','true');
+      } else {
+        input.inputMode = (id==='aadhaar' || id==='janAadhaar' || id==='mobile' || id==='age' || id==='rationNumber') ? 'numeric' : 'text';
+      }
+      let hindiTimer = null;
+      input.addEventListener('input', ()=>{
+        if(hindiField && isAutoHindiEnabled()){
+          clearTimeout(hindiTimer);
+          if(/[\s,.;।\n]$/.test(input.value)) applyAutoHindiToInput(input);
+          else hindiTimer = setTimeout(()=>{ applyAutoHindiToInput(input); refreshOverlayTexts(); }, 550);
+        }
+        setSharedValue(id, input.value);
+        refreshOverlayTexts();
+      });
+      input.addEventListener('change', ()=>{ applyAutoHindiToInput(input); setSharedValue(id, input.value); refreshOverlayTexts(); });
+      input.addEventListener('blur', ()=>{ applyAutoHindiToInput(input); setSharedValue(id, input.value); refreshOverlayTexts(); });
+      wrap.appendChild(input); grid.appendChild(wrap);
+    }
+  }
+}
+
+function collectData(){
+  saveSharedFormData();
+  const data = {...sharedFormData};
+  for (const group of FORM_SCHEMAS[currentFormKey]) for (const [id] of group.fields) {
+    const el=$('data_'+id);
+    if (el) data[id]=el.value.trim();
+    else if (data[id] == null) data[id]='';
+  }
+  const dob = (data.dob||'').split(/[\/\-.]/); data.dobDay=dob[0]||''; data.dobMonth=dob[1]||''; data.dobYear=dob[2]||'';
+  const date = (data.date||'').split(/[\/\-.]/); data.dateDay=date[0]||''; data.dateMonth=date[1]||''; data.dateYear=date[2]||'';
+  syncAgeFromDob(data);
+  return data;
+}
+function parseSimpleDate(str){
+  if(!str) return null;
+  const m = String(str).trim().match(/(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/);
+  if(!m) return null;
+  const d = Number(m[1]), mo = Number(m[2]) - 1, y = Number(m[3]);
+  const dt = new Date(y, mo, d);
+  if(dt.getFullYear() !== y || dt.getMonth() !== mo || dt.getDate() !== d) return null;
+  return dt;
+}
+
+function calculateAgeFromDob(data){
+  const dob = parseSimpleDate(data.dob);
+  if(!dob) return NaN;
+  const ref = parseSimpleDate(data.date) || new Date();
+  let age = ref.getFullYear() - dob.getFullYear();
+  const beforeBirthday = (ref.getMonth() < dob.getMonth()) || (ref.getMonth() === dob.getMonth() && ref.getDate() < dob.getDate());
+  if(beforeBirthday) age--;
+  return age;
+}
+
+function syncAgeFromDob(data){
+  // DOB valid ho to age hamesha DOB se calculate hogi. Purana/sample age (jaise 25) DOB ko override nahi karega.
+  const dobAge = calculateAgeFromDob(data);
+  if(!Number.isFinite(dobAge)) return;
+  data.age = String(dobAge);
+  sharedFormData.age = data.age;
+  const ageEl = $('data_age');
+  if(ageEl && ageEl.value !== data.age) ageEl.value = data.age;
+  try { localStorage.setItem(DATA_LOCAL_KEY, JSON.stringify(sharedFormData)); } catch(e) {}
+}
+
+function getCandidateAge(data){
+  // Priority: DOB se calculated age. Agar DOB blank/invalid ho tabhi manual age field use hogi.
+  const dobAge = calculateAgeFromDob(data);
+  if(Number.isFinite(dobAge)) return dobAge;
+  const ageMatch = String(data.age || '').match(/\d+(?:\.\d+)?/);
+  if(ageMatch) return Number(ageMatch[0]);
+  return NaN;
+}
+
+function normalizeAnswer(value){
+  return String(value || '').trim().toLowerCase();
+}
+
+function isYesLike(value){
+  const v = normalizeAnswer(value);
+  return ['yes','y','ha','haan','han','हाँ','हा','हां','विवाहित','married','vivahit'].includes(v);
+}
+
+function isNoLike(value){
+  const v = normalizeAnswer(value);
+  return ['no','n','nahi','nahin','नहीं','नही','अविवाहित','unmarried','single'].includes(v);
+}
+
+function hasMarriedWomanData(data){
+  // Vivahit mahila section tabhi active hoga jab user married-woman related blank cells me data bhare.
+  // Sirf "नहीं/अविवाहित" likhne se married affidavit active nahi hoga.
+  if(isYesLike(data.femaleMarried)) return true;
+  if(isNoLike(data.femaleMarried)) return false;
+  const triggerFields = [
+    'husbandName',
+    'husbandResident',
+    'femaleMarriageDetails',
+    'femaleHusbandResident',
+    'femaleLivingWithHusband'
+  ];
+  return triggerFields.some(k => String(data[k] || '').trim().length > 0);
+}
+
+function getBonafideShapathMode(data){
+  // Priority: Vivahit mahila data filled -> married affidavit only.
+  if(hasMarriedWomanData(data)) return 'married';
+  const age = getCandidateAge(data);
+  // 18 se kam = Nabalig, 18 ya usse jyada = Balig
+  return Number.isFinite(age) && age < 18 ? 'minor' : 'adult';
+}
+
+function isBonafideAdultAffidavitField(field){
+  return String(field.id || '').startsWith('bf_aff_adult_');
+}
+
+function isBonafideMinorAffidavitField(field){
+  const id = String(field.id || '');
+  return id.startsWith('bf_aff_minor_') || id.startsWith('bf_aff_child_');
+}
+
+function isBonafideMarriedAffidavitField(field){
+  const id = String(field.id || '');
+  return id.startsWith('bf_aff_married_') || id === 'bf_aff_husband' || id === 'bf_aff_husband_resident';
+}
+
+function shouldFillField(field, data){
+  if(currentFormKey !== 'bonafide') return true;
+  const mode = getBonafideShapathMode(data);
+  // Married-woman data filled ho to sirf Vivahit Mahila shapat-patra fill hoga; Balig/Nabalig blank rahenge.
+  if(isBonafideAdultAffidavitField(field)) return mode === 'adult';
+  if(isBonafideMinorAffidavitField(field)) return mode === 'minor';
+  if(isBonafideMarriedAffidavitField(field)) return mode === 'married';
+  return true;
+}
+
+function isCasteMinorCandidate(data){
+  if(currentFormKey !== 'caste') return false;
+  const age = getCandidateAge(data);
+  return Number.isFinite(age) && age < 18;
+}
+
+function getCasteFieldValue(field, data){
+  // Caste form me candidate 18 se kam ho to page 3 ka shapat-patra candidate ke pita ke naam se fill hoga.
+  if(!isCasteMinorCandidate(data)) return undefined;
+  const id = String(field.id || '');
+  if(id === 'affApplicant') return data.fatherName || '';
+  if(id === 'affFather') return data.grandFatherName || '';
+  if(id === 'affAddress') return data.currentAddress || data.permanentAddress || '';
+  if(id === 'affVillage') return data.village || data.place || '';
+  if(id === 'affTehsil') return data.tehsil || '';
+  if(id === 'affDistrict') return data.district || '';
+  if(id === 'affSubCaste') return data.subCasteApplicant || data.subCasteFather || '';
+  return undefined;
+}
+
+function prepareConditionalData(data){
+  if(currentFormKey !== 'bonafide') return data;
+  const mode = getBonafideShapathMode(data);
+  const prepared = {...data};
+  if(mode === 'minor'){
+    if(!prepared.minorChildName) prepared.minorChildName = prepared.applicantName || '';
+    if(!prepared.minorChildAge) prepared.minorChildAge = String(getCandidateAge(prepared) || '').replace('NaN','');
+    if(!prepared.minorChildBirthPlace) prepared.minorChildBirthPlace = prepared.birthPlace || '';
+    if(!prepared.minorChildEducation) prepared.minorChildEducation = prepared.affidavitEducation || prepared.edu10Place || prepared.edu12Place || prepared.place || '';
+  }
+  if(mode === 'married'){
+    // Agar husbandName alag se blank hai to main fatherName field ko पति/पति नाम ke रूप में use कर देंगे.
+    if(!prepared.husbandName) prepared.husbandName = prepared.fatherName || '';
+    if(!prepared.husbandResident) prepared.husbandResident = prepared.femaleHusbandResident || '';
+  }
+  return prepared;
+}
+
+function valueForField(field, data){
+  data = prepareConditionalData(data);
+  if(!shouldFillField(field, data)) return '';
+  const casteValue = getCasteFieldValue(field, data);
+  if(casteValue !== undefined) return casteValue;
+  if(field.type==='check') return data[field.source]===field.equals ? '✓' : '';
+  return data[field.source] ?? '';
+}
+
+async function loadBytes(url){ const r=await fetch(url); if(!r.ok) throw new Error('Load failed: '+url); return await r.arrayBuffer(); }
+
+async function loadCombinedConfigs(){
+  if (allConfigs) return allConfigs;
+  const res = await fetch(COMBINED_CONFIG_URL);
+  if(!res.ok) throw new Error('Load failed: '+COMBINED_CONFIG_URL);
+  allConfigs = await res.json();
+  if(!allConfigs.forms) throw new Error('Combined config me forms object missing hai');
+  return allConfigs;
+}
+
+async function loadSelectedForm(){
+  const form = FORMS[currentFormKey];
+  selectedFieldId = null;
+  setStatus(form.title + ' loading...');
+  templateBytes = await loadBytes(form.pdf);
+  const combined = await loadCombinedConfigs();
+  const cfgText = localStorage.getItem(form.localKey);
+  defaultConfig = sanitizeConfigFields(structuredClone(combined.forms[currentFormKey]));
+  if(!defaultConfig || !defaultConfig.fields) throw new Error(currentFormKey + ' config missing in forms-fields-config.json');
+  config = cfgText ? sanitizeConfigFields(JSON.parse(cfgText)) : structuredClone(defaultConfig);
+  await renderPreview();
+  setStatus(form.title + ' ready', 'ok');
+}
+
+async function init(){
+  buildDataForm();
+  try{
+    currentFormKey = $('formSelect').value || 'caste';
+    await loadSelectedForm();
+  }catch(e){
+    console.error(e);
+    setStatus('PDF/combined config load problem. Local server use karo ya PDF upload karo.', 'bad');
+    $('previewShell').innerHTML='<div class="panel small bad">PDF/combined config load nahi hua. Folder ko local server se run karo: <span class="mono">python -m http.server 8000</span>, ya right side se PDF/JSON upload karo.</div>';
+  }
+}
+
+async function renderPreview(){
+  if(!templateBytes || !config) return;
+  const shell=$('previewShell'); shell.innerHTML='';
+  const pdf = await pdfjsLib.getDocument({data: templateBytes.slice(0)}).promise;
+  pdfPageSizes=[];
+  for(let p=1; p<=pdf.numPages; p++){
+    const page = await pdf.getPage(p);
+    const viewport1 = page.getViewport({scale:1});
+    pdfPageSizes[p] = {w: viewport1.width, h: viewport1.height};
+    const maxW = Math.min(shell.clientWidth ? shell.clientWidth-34 : 850, 850);
+    const scale = maxW / viewport1.width;
+    const viewport = page.getViewport({scale});
+    const wrap=document.createElement('div'); wrap.className='pageWrap'; wrap.dataset.page=p;
+    const canvas=document.createElement('canvas'); canvas.width=viewport.width; canvas.height=viewport.height;
+    wrap.appendChild(canvas); shell.appendChild(wrap);
+    await page.render({canvasContext: canvas.getContext('2d'), viewport}).promise;
+    addFieldsForPage(wrap, p);
+  }
+  document.body.classList.toggle('editOn', $('editMode').checked);
+}
+
+function addFieldsForPage(wrap, pageNo){
+  const data=collectData();
+  const canvas=wrap.querySelector('canvas');
+  const pageSize=pdfPageSizes[pageNo];
+  for(const field of config.fields.filter(f=>f.page===pageNo)){
+    const div=document.createElement('div');
+    div.className='overlayField '+(field.type==='check'?'check':'');
+    div.dataset.fieldId=field.id;
+    positionDiv(div, field, canvas, pageSize);
+    const val=valueForField(field,data);
+    if(field.type==='text') div.textContent=val;
+    if(!val) div.classList.add('hiddenValue');
+    div.title=field.label+' ('+field.id+')';
+    div.addEventListener('pointerdown', startDrag);
+    div.addEventListener('click', e=>{e.stopPropagation(); selectField(field.id);});
+    wrap.appendChild(div);
+  }
+}
+function positionDiv(div, field, canvas, pageSize){
+  div.style.left=(field.xPct*canvas.width)+'px'; div.style.top=(field.yPct*canvas.height)+'px';
+  div.style.width=(field.wPct*canvas.width)+'px'; div.style.height=(field.hPct*canvas.height)+'px';
+  div.style.fontSize=(field.fontSize * canvas.width / pageSize.w)+'px';
+}
+function refreshOverlayTexts(){
+  const data=collectData();
+  document.querySelectorAll('.overlayField').forEach(div=>{
+    const field=config.fields.find(f=>f.id===div.dataset.fieldId); if(!field) return;
+    const val=valueForField(field,data);
+    if(field.type==='text') div.textContent=val;
+    div.classList.toggle('hiddenValue', !val);
+  });
+}
+
+let drag=null;
+function startDrag(e){
+  if(!$('editMode').checked) return;
+  const div=e.currentTarget; const field=config.fields.find(f=>f.id===div.dataset.fieldId); if(!field) return;
+  selectField(field.id);
+  const wrap=div.parentElement; const canvas=wrap.querySelector('canvas');
+  drag={field, div, canvas, startX:e.clientX, startY:e.clientY, xPct:field.xPct, yPct:field.yPct};
+  div.setPointerCapture(e.pointerId); e.preventDefault();
+}
+document.addEventListener('pointermove', e=>{
+  if(!drag) return;
+  const dx=(e.clientX-drag.startX)/drag.canvas.width; const dy=(e.clientY-drag.startY)/drag.canvas.height;
+  drag.field.xPct=Math.max(0, Math.min(.98, drag.xPct+dx)); drag.field.yPct=Math.max(0, Math.min(.98, drag.yPct+dy));
+  positionDiv(drag.div, drag.field, drag.canvas, pdfPageSizes[drag.field.page]);
+  fillSelectedControls();
+});
+document.addEventListener('pointerup', ()=>{drag=null;});
+
+document.addEventListener('keydown', e=>{
+  if(!$('editMode').checked || !selectedFieldId) return;
+  const field=config.fields.find(f=>f.id===selectedFieldId); if(!field) return;
+  const div=document.querySelector(`[data-field-id="${CSS.escape(field.id)}"]`); if(!div) return;
+  const canvas=div.parentElement.querySelector('canvas'); const step=e.shiftKey?10:1;
+  if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)) e.preventDefault(); else return;
+  if(e.key==='ArrowLeft') field.xPct -= step/canvas.width;
+  if(e.key==='ArrowRight') field.xPct += step/canvas.width;
+  if(e.key==='ArrowUp') field.yPct -= step/canvas.height;
+  if(e.key==='ArrowDown') field.yPct += step/canvas.height;
+  field.xPct=Math.max(0,Math.min(.98,field.xPct)); field.yPct=Math.max(0,Math.min(.98,field.yPct));
+  positionDiv(div,field,canvas,pdfPageSizes[field.page]); fillSelectedControls();
+});
+
+function selectField(id){
+  selectedFieldId=id;
+  document.querySelectorAll('.overlayField').forEach(x=>x.classList.toggle('selected', x.dataset.fieldId===id));
+  fillSelectedControls();
+}
+function fillSelectedControls(){
+  const f=config.fields.find(x=>x.id===selectedFieldId);
+  if(!f){ $('selectedInfo').textContent='Koi field selected nahi hai.'; return; }
+  $('selectedInfo').innerHTML=`<b>${f.label}</b><br><span class="mono">${f.id}</span>`;
+  $('selX').value=(f.xPct*100).toFixed(3); $('selY').value=(f.yPct*100).toFixed(3);
+  $('selW').value=(f.wPct*100).toFixed(3); $('selH').value=(f.hPct*100).toFixed(3);
+  $('selFont').value=f.fontSize; $('selPage').value=f.page; $('selLabel').value=f.label; $('selSource').value=f.source;
+}
+['selX','selY','selW','selH','selFont','selPage','selLabel','selSource'].forEach(id=>{
+  $(id).addEventListener('input',()=>{
+    const f=config.fields.find(x=>x.id===selectedFieldId); if(!f) return;
+    f.xPct=parseFloat($('selX').value)/100 || f.xPct; f.yPct=parseFloat($('selY').value)/100 || f.yPct;
+    f.wPct=parseFloat($('selW').value)/100 || f.wPct; f.hPct=parseFloat($('selH').value)/100 || f.hPct;
+    f.fontSize=parseFloat($('selFont').value)||f.fontSize; f.page=parseInt($('selPage').value)||f.page; f.label=$('selLabel').value; f.source=$('selSource').value;
+    const div=document.querySelector(`[data-field-id="${CSS.escape(f.id)}"]`);
+    if(div){ const canvas=div.parentElement.querySelector('canvas'); positionDiv(div,f,canvas,pdfPageSizes[f.page]); refreshOverlayTexts(); }
+  });
+});
+
+async function makePdf(){
+  if(!templateBytes || !config) throw new Error('Template/config missing');
+  if(typeof regeneratorRuntime === 'undefined') throw new Error('regeneratorRuntime load nahi hua. Internet/CDN check karo aur page hard refresh karo.');
+  const { PDFDocument, rgb } = PDFLib;
+  const pdfDoc = await PDFDocument.load(templateBytes.slice(0));
+  pdfDoc.registerFontkit(fontkit);
+  let font;
+  try{ const fontBytes=await loadBytes(FONT_URL); font=await pdfDoc.embedFont(fontBytes, {subset:true}); }
+  catch(e){ alert('Hindi font load nahi hua. Internet/CDN check karo.'); throw e; }
+  if(!config.fields || config.fields.length===0) {
+    return await pdfDoc.save();
+  }
+  const pages=pdfDoc.getPages(); const data=collectData();
+  for(const field of config.fields){
+    if(!shouldFillField(field, prepareConditionalData(data))) continue;
+    const page=pages[field.page-1]; if(!page) continue;
+    const {width,height}=page.getSize();
+    const x=field.xPct*width; const top=field.yPct*height; const w=field.wPct*width; const h=field.hPct*height;
+    if(field.type==='check'){
+      if(data[field.source]!==field.equals) continue;
+      const cx=x+w*.18, cy=height-top-h*.55;
+      page.drawLine({start:{x:cx, y:cy}, end:{x:cx+w*.18, y:cy-h*.18}, thickness:1.5, color:rgb(0,0,0)});
+      page.drawLine({start:{x:cx+w*.18, y:cy-h*.18}, end:{x:cx+w*.62, y:cy+h*.25}, thickness:1.5, color:rgb(0,0,0)});
+      continue;
+    }
+    let text=valueForField(field,data); if(!text) continue;
+    let size=field.fontSize;
+    while(size>5 && font.widthOfTextAtSize(text,size)>w-2) size-=0.5;
+    const y=height - top - Math.min(h*.68, size*1.15);
+    page.drawText(text,{x:x+1.5,y, size, font, color:rgb(0,0,0), maxWidth:w});
+  }
+  return await pdfDoc.save();
+}
+async function downloadPdf(){
+  setStatus('PDF ban raha hai...');
+  try{
+    const bytes=await makePdf();
+    const blob=new Blob([bytes],{type:'application/pdf'}); const url=URL.createObjectURL(blob); lastPdfUrl=url;
+    const a=document.createElement('a'); a.href=url; a.download=FORMS[currentFormKey].downloadName; a.click();
+    setStatus('PDF downloaded', 'ok');
+  }catch(e){ console.error(e); setStatus('PDF error: '+e.message, 'bad'); }
+}
+async function printPdf(){
+  try{
+    const bytes=await makePdf(); const blob=new Blob([bytes],{type:'application/pdf'}); const url=URL.createObjectURL(blob); lastPdfUrl=url;
+    const iframe=document.createElement('iframe'); iframe.style.position='fixed'; iframe.style.right='0'; iframe.style.bottom='0'; iframe.style.width='1px'; iframe.style.height='1px'; iframe.src=url;
+    document.body.appendChild(iframe); iframe.onload=()=>{ setTimeout(()=>iframe.contentWindow.print(), 500); };
+  }catch(e){ alert('Print PDF error: '+e.message); }
+}
+function getCombinedConfigForDownload(){
+  const combined = structuredClone(allConfigs || {version:'1.0', forms:{}});
+  if(!combined.forms) combined.forms = {};
+  combined.forms[currentFormKey] = structuredClone(config);
+  return combined;
+}
+function downloadConfig(){
+  const combined = getCombinedConfigForDownload();
+  const blob=new Blob([JSON.stringify(combined,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download='forms-fields-config.json'; a.click();
+}
+
+$('formSelect').addEventListener('change', async e=>{ saveSharedFormData(); currentFormKey=e.target.value; buildDataForm(); await loadSelectedForm(); });
+$('previewBtn').addEventListener('click', renderPreview);
+$('downloadBtn').addEventListener('click', downloadPdf);
+$('printBtn').addEventListener('click', printPdf);
+$('editMode').addEventListener('change',()=>document.body.classList.toggle('editOn',$('editMode').checked));
+$('saveLocalBtn').addEventListener('click',()=>{localStorage.setItem(FORMS[currentFormKey].localKey,JSON.stringify(config)); setStatus('Config browser me save ho gaya','ok');});
+$('downloadConfigBtn').addEventListener('click',downloadConfig);
+$('resetConfigBtn').addEventListener('click',async()=>{localStorage.removeItem(FORMS[currentFormKey].localKey); config=sanitizeConfigFields(structuredClone(defaultConfig)); selectedFieldId=null; await renderPreview(); setStatus('Reset done','ok');});
+$('pdfFile').addEventListener('change',async e=>{const f=e.target.files[0]; if(!f)return; templateBytes=await f.arrayBuffer(); await renderPreview(); setStatus('PDF uploaded','ok');});
+$('configFile').addEventListener('change',async e=>{
+  const f=e.target.files[0]; if(!f)return;
+  const uploaded=JSON.parse(await f.text());
+  if(uploaded.forms){
+    allConfigs=uploaded;
+    defaultConfig=sanitizeConfigFields(structuredClone(uploaded.forms[currentFormKey]));
+    if(!defaultConfig || !defaultConfig.fields) throw new Error(currentFormKey+' config missing in uploaded combined JSON');
+    config=sanitizeConfigFields(structuredClone(defaultConfig));
+  } else {
+    // backward compatibility: agar purani single-form JSON upload karo to current selected form me use ho jayegi
+    config=sanitizeConfigFields(uploaded);
+    if(!allConfigs) allConfigs={version:'1.0', forms:{}};
+    allConfigs.forms[currentFormKey]=structuredClone(config);
+  }
+  await renderPreview(); setStatus('Config uploaded','ok');
+});
+
+const typingModeSelectEl = $('typingModeSelect');
+if(typingModeSelectEl){
+  let savedMode = localStorage.getItem(TYPING_MODE_LOCAL_KEY);
+  if(!savedMode){
+    savedMode = localStorage.getItem(AUTO_HINDI_LOCAL_KEY) === '0' ? 'manual' : 'auto';
+  }
+  typingModeSelectEl.value = savedMode === 'manual' ? 'manual' : 'auto';
+  typingModeSelectEl.addEventListener('change', ()=>{
+    localStorage.setItem(TYPING_MODE_LOCAL_KEY, typingModeSelectEl.value);
+    localStorage.setItem(AUTO_HINDI_LOCAL_KEY, typingModeSelectEl.value === 'auto' ? '1' : '0');
+    if(isAutoHindiEnabled()){
+      document.querySelectorAll('[data-auto-hindi="1"]').forEach(el => applyAutoHindiToInput(el));
+      saveSharedFormData();
+      refreshOverlayTexts();
+      setStatus('Auto Hindi Typing ON','ok');
+    } else {
+      setStatus('Manual / Google Keyboard Mode ON','ok');
+    }
+  });
+}
+
+init();
+</script>
+</body>
+</html>

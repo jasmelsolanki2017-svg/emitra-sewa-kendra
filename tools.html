@@ -108,6 +108,7 @@ footer a{color:#ffcf75;text-decoration:none;font-weight:800;margin:0 7px;display
         <summary><i class="fa-solid fa-toolbox"></i> Tools</summary>
         <div class="nav-tools-menu">
           <a class="active" href="tools.html"><i class="fa-solid fa-screwdriver-wrench"></i> All Free Tools</a>
+          <a href="emitra-offline-form-fill/"><i class="fa-solid fa-file-pen"></i> eMitra Offline Form Fill</a>
           <a href="OFFLINEFORM.HTML"><i class="fa-solid fa-file-pdf"></i> PDF Form</a>
           <a href="stationery.html"><i class="fa-solid fa-print"></i> Stationery</a>
           <a href="resume-format.html"><i class="fa-solid fa-file-lines"></i> Resume Builder</a>
@@ -137,6 +138,7 @@ footer a{color:#ffcf75;text-decoration:none;font-weight:800;margin:0 7px;display
       <h2>All Free Tools</h2>
       <div>
         <a href="#image-resizer"><i class="fa-solid fa-image"></i> Image Resizer</a>
+        <a href="emitra-offline-form-fill/"><i class="fa-solid fa-file-pen"></i> eMitra Offline Form Fill</a>
         <a href="#resize-20kb"><i class="fa-solid fa-compress"></i> Resize Image to 20KB</a>
         <a href="#image-compressor"><i class="fa-solid fa-minimize"></i> Image Compressor</a>
         <a href="#image-converter"><i class="fa-solid fa-repeat"></i> JPG/PNG/WEBP Converter</a>
@@ -156,6 +158,12 @@ footer a{color:#ffcf75;text-decoration:none;font-weight:800;margin:0 7px;display
     </aside>
 
     <div class="tool-stack">
+      <section class="tool-card active" id="emitra-offline-form-fill">
+        <div class="tool-head"><div><h2>eMitra Offline Form Fill</h2><p>Rajasthan caste certificate aur bonafide/mool niwas PDF form browser me fill, preview, print aur download karein.</p></div><span class="badge">PDF Fill</span></div>
+        <div class="actions"><a class="download-btn" href="emitra-offline-form-fill/"><i class="fa-solid fa-file-pen"></i> Open Form Fill Tool</a></div>
+        <div class="status">Data browser tab me process hota hai. Template PDF aur field config isi site ke static assets se load honge.</div>
+      </section>
+
       <section class="tool-card" id="image-resizer">
         <div class="tool-head"><div><h2>Image Resizer</h2><p>Width, height, quality aur output format select karke image resize karein.</p></div><span class="badge">Canvas</span></div>
         <div class="form-grid">
@@ -341,7 +349,7 @@ document.addEventListener("DOMContentLoaded", () => {
       openToolFromHash(link.getAttribute("href"));
     });
   });
-  openToolFromHash(location.hash || "#image-resizer", false);
+  openToolFromHash(location.hash || "#emitra-offline-form-fill", false);
 });
 
 window.addEventListener("hashchange", () => openToolFromHash(location.hash, false));
