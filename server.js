@@ -1246,7 +1246,7 @@ const triggerSeoPostsWorkflow = async ({ db = null, jobId = "", reason = "admin-
     await saveSeoPublishLog(db, { ...baseLog, result });
     return result;
   }
-  if (now - lastSeoWorkflowDispatchAt < 30000) {
+  if (reason !== "admin-delete" && now - lastSeoWorkflowDispatchAt < 30000) {
     const result = {
       ok: true,
       configured: true,
@@ -4058,6 +4058,38 @@ app.post("/admin/seo/normalize", async (req, res) => {
       sitemapBytes: Buffer.byteLength(sitemap, "utf8"),
       publish
     });
+  } catch (err) {
+    return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
+  }
+});
+
+app.post("/admin/jobs/delete", async (req, res) => {
+  try {
+    const { db } = await requireAdmin(req);
+    const jobId = toText(req.body?.jobId);
+    if (!jobId) {
+      return res.status(400).json({ ok: false, error: "jobId required" });
+    }
+    const snapshot = await db.ref(`LatestJobs/${jobId}`).get();
+    if (!snapshot.exists()) {
+      return res.status(404).json({ ok: false, error: "Job not found" });
+    }
+    const job = snapshot.val() || {};
+    const seo = buildSeoFields(job, jobId);
+    const slug = toText(job.slug || seo.slug || buildSlug(job.title, jobId));
+    const updates = { [`LatestJobs/${jobId}`]: null };
+    ["notification", "admitCard", "result", "syllabus", "answerKey", "admission"].forEach((category) => {
+      updates[`portalItems/${category}/job_${jobId}`] = null;
+    });
+    await db.ref().update(updates);
+    const staticPost = await deleteStaticPostFolder(slug);
+    const sitemap = await execFileAsync(process.execPath, ["scripts/generate-sitemap.js"], {
+      cwd: __dirname,
+      timeout: 60000,
+      env: process.env
+    }).then((result) => ({ ok: true, stdout: result.stdout })).catch((error) => ({ ok: false, error: error.message, stdout: error.stdout || "", stderr: error.stderr || "" }));
+    const publish = await triggerSeoPostsWorkflow({ db, jobId, reason: "admin-delete", deletedSlug: slug }).catch((err) => ({ ok: false, error: err.message }));
+    return res.json({ ok: true, jobId, slug, staticPost, sitemap, publish });
   } catch (err) {
     return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
   }

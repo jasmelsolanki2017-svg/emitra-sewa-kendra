@@ -26,6 +26,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Remove deleted static post
+        if: github.event.client_payload.deletedSlug != ''
+        env:
+          DELETED_POST_SLUG: ${{ github.event.client_payload.deletedSlug }}
+        run: |
+          if [[ "$DELETED_POST_SLUG" =~ ^[a-zA-Z0-9-]+$ ]]; then
+            rm -rf "post/$DELETED_POST_SLUG"
+          else
+            echo "Skipped unsafe deletedSlug: $DELETED_POST_SLUG"
+          fi
+
       - name: Generate canonical post pages and sitemaps
         run: npm run sitemap
 
