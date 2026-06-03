@@ -323,6 +323,117 @@ const escapeRegex = (value = "") => String(value).replace(/[.*+?^${}()|[\]\\]/g,
 const hashKey = (value = "") => crypto.createHash("sha256").update(String(value || "").trim().toLowerCase()).digest("hex");
 const safeKey = (value = "") => hashKey(value).slice(0, 32);
 const browserUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36";
+const EMITRA_BRAND_NAME = "E-MITRA WALA";
+const EMITRA_WEBSITE = "https://emitrawala.online";
+const PORTAL_BRAND_PATTERNS = [
+  /sarkari\s*result/gi,
+  /sarkari\s*exam/gi,
+  /sarkariexam/gi,
+  /free\s*job\s*alert/gi,
+  /freejobalert/gi,
+  /studygovthelp/gi,
+  /\bemitra\s+wala\b/gi,
+  /\bemitrawala\b(?!\.online)/gi
+];
+const PORTAL_NOISE_PATTERNS = [
+  /(?:visit|read more at|source|credit|courtesy)\s*[:\-]?\s*(?:sarkari\s*result|sarkari\s*exam|sarkariexam|free\s*job\s*alert|freejobalert|studygovthelp)[^\n]*/gi,
+  /(?:join|follow)\s+(?:telegram|whatsapp)[^\n]*/gi,
+  /(?:all rights reserved|copyright)\s+[^\n]*/gi,
+  /(?:home|latest jobs|admit card|results?|answer key|syllabus)\s*\|\s*/gi
+];
+
+const isAggregatorPortalUrl = (value = "") => {
+  try {
+    const host = new URL(String(value || "")).hostname.replace(/^www\./i, "").toLowerCase();
+    return [
+      "sarkariresult.com",
+      "sarkariexam.com",
+      "freejobalert.com",
+      "studygovthelp.in",
+      "studygovthelp.com"
+    ].some((domain) => host === domain || host.endsWith(`.${domain}`));
+  } catch (_err) {
+    return false;
+  }
+};
+
+function sanitizePortalBranding(text = "") {
+  let clean = String(text || "");
+  PORTAL_NOISE_PATTERNS.forEach((pattern) => {
+    clean = clean.replace(pattern, " ");
+  });
+  PORTAL_BRAND_PATTERNS.forEach((pattern) => {
+    clean = clean.replace(pattern, " ");
+  });
+  clean = clean
+    .replace(/\s+([,|:;])/g, "$1")
+    .replace(/(?:^\s*[-|:;,.]+|[-|:;,.]+\s*$)/g, " ")
+    .replace(/[ \t]{2,}/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+  return clean;
+}
+
+const sanitizeGeneratedJson = (value = "") => {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  try {
+    const parsed = JSON.parse(raw);
+    const branded = brandDraftForEmitra(parsed);
+    return JSON.stringify(branded, null, 2);
+  } catch (_err) {
+    return sanitizePortalBranding(raw);
+  }
+};
+
+function brandDraftForEmitra(draft = {}) {
+  const branded = draft && typeof draft === "object" ? { ...draft } : {};
+  const textFields = [
+    "title",
+    "seoTitle",
+    "metaDescription",
+    "notificationSummary",
+    "whatsappPostText",
+    "pageContent",
+    "rawText",
+    "shortInfo",
+    "description",
+    "importantDates",
+    "qualification",
+    "applicationFeeManual",
+    "feeDetails"
+  ];
+  textFields.forEach((field) => {
+    if (branded[field] !== undefined && branded[field] !== null) {
+      branded[field] = sanitizePortalBranding(branded[field]);
+    }
+  });
+  if (branded.generatedJson) {
+    branded.generatedJson = sanitizeGeneratedJson(branded.generatedJson);
+  }
+  if (branded.seo && typeof branded.seo === "object") {
+    branded.seo = { ...branded.seo };
+    ["title", "seoTitle", "description", "metaDescription"].forEach((field) => {
+      if (branded.seo[field]) branded.seo[field] = sanitizePortalBranding(branded.seo[field]);
+    });
+  }
+  if (branded.crawlerSummary && typeof branded.crawlerSummary === "object") {
+    branded.crawlerSummary = { ...branded.crawlerSummary };
+    ["title", "summary"].forEach((field) => {
+      if (branded.crawlerSummary[field]) branded.crawlerSummary[field] = sanitizePortalBranding(branded.crawlerSummary[field]);
+    });
+    branded.crawlerSummary.siteName = EMITRA_BRAND_NAME;
+    branded.crawlerSummary.website = EMITRA_WEBSITE;
+  }
+  if (!toText(branded.title) || isGenericNoticeTitle(branded.title)) {
+    branded.title = "Job Update";
+  }
+  branded.siteName = EMITRA_BRAND_NAME;
+  branded.brandName = EMITRA_BRAND_NAME;
+  branded.website = EMITRA_WEBSITE;
+  return branded;
+}
+
 const decodeHtml = (value = "") => String(value || "")
   .replace(/<script[\s\S]*?<\/script>/gi, " ")
   .replace(/<style[\s\S]*?<\/style>/gi, " ")
@@ -1196,24 +1307,24 @@ const feeSummaryLines = (job = {}) => {
 };
 
 const buildNotificationSummary = (job = {}) => {
-  const title = toText(job.title || "Job Update");
+  const title = sanitizePortalBranding(toText(job.title || "Job Update")) || "Job Update";
   const lines = [
     title,
-    compactLine("Department", job.department),
+    compactLine("Department", sanitizePortalBranding(job.department)),
     compactLine("Total Posts", job.totalPosts || job.totalVacancy),
     compactLine("Last Date", job.lastApplyDate || job.lastDate),
-    compactLine("Qualification", String(job.qualification || "").split(/\r?\n/)[0]),
+    compactLine("Qualification", sanitizePortalBranding(String(job.qualification || "").split(/\r?\n/)[0])),
     compactLine("Category", job.postTarget && job.postTarget !== "latestJob" ? job.postTarget : "")
   ].filter(Boolean);
-  return lines.slice(0, 6).join("\n");
+  return sanitizePortalBranding(lines.slice(0, 6).join("\n"));
 };
 
 const buildSeoFields = (job = {}, id = "") => {
   const seo = job.seo && typeof job.seo === "object" ? job.seo : {};
-  const title = toText(job.title || seo.title || "Job Update");
-  const department = toText(job.department);
+  const title = sanitizePortalBranding(toText(job.title || seo.title || "Job Update")) || "Job Update";
+  const department = sanitizePortalBranding(toText(job.department));
   const suffix = job.postTarget && job.postTarget !== "latestJob" ? ` ${job.postTarget}` : "";
-  const seoTitle = toText(job.seoTitle || seo.seoTitle || seo.title || `${title}${suffix} | E-MITRA WALA`).slice(0, 70);
+  const seoTitle = sanitizePortalBranding(toText(job.seoTitle || seo.seoTitle || seo.title || `${title}${suffix} | ${EMITRA_BRAND_NAME}`)).slice(0, 70);
   const descParts = [
     title,
     department,
@@ -1221,7 +1332,7 @@ const buildSeoFields = (job = {}, id = "") => {
     job.lastApplyDate || job.lastDate ? `Last date ${job.lastApplyDate || job.lastDate}` : "",
     "apply link, qualification and important dates"
   ].filter(Boolean);
-  const metaDescription = toText(job.metaDescription || seo.metaDescription || seo.description || descParts.join(", ")).slice(0, 160);
+  const metaDescription = sanitizePortalBranding(toText(job.metaDescription || seo.metaDescription || seo.description || descParts.join(", "))).slice(0, 160);
   return {
     slug: toText(job.slug || seo.slug) || buildSlug(title, id),
     canonicalUrl: getPublicJobUrl(id, { ...job, slug: toText(job.slug || seo.slug) || buildSlug(title, id) }),
@@ -1248,10 +1359,10 @@ const buildWhatsappPostText = (id = "", job = {}) => {
   const detailsLink = getPublicJobUrl(id, job);
   const officialLink = toText(job[pickJobLinkField(job.postTarget)] || job.sourceLink || job.detailLink || job.applyLink || job.officialWebsite);
   const lines = [
-    `📢 *${label} - EmitraWala.online*`,
+    `📢 *${label} - ${EMITRA_BRAND_NAME}*`,
     "",
-    `📚 *${toText(job.title || "Job Update")}*`,
-    toText(job.department) ? `*${toText(job.department)}*` : "",
+    `📚 *${sanitizePortalBranding(toText(job.title || "Job Update")) || "Job Update"}*`,
+    sanitizePortalBranding(toText(job.department)) ? `*${sanitizePortalBranding(toText(job.department))}*` : "",
     "",
     compactLine("🗓️ आवेदन शुरू", job.startDate || job.postDate),
     compactLine("⏳ अंतिम तिथि", job.lastApplyDate || job.lastDate),
@@ -1267,14 +1378,14 @@ const buildWhatsappPostText = (id = "", job = {}) => {
     officialLink || detailsLink,
     "",
     "🌐 *वेबसाइट:*",
-    SITE_BASE_URL,
+    EMITRA_WEBSITE,
     "",
     "📲 *WhatsApp Channel Join करें:*",
     WHATSAPP_CHANNEL_URL,
     "",
     "⚠️ *नोट:* इच्छुक उम्मीदवार अंतिम तिथि से पहले ऑनलाइन आवेदन जरूर करें।"
   ];
-  return lines.filter(Boolean).join("\n");
+  return sanitizePortalBranding(lines.filter(Boolean).join("\n"));
 };
 
 const getJobCategoryLabel = (target = "") => ({
@@ -1342,7 +1453,7 @@ const enrichJobAutomation = (job = {}, id = "") => {
     updatedAt: nowStamp()
   };
   enriched.whatsappPostText = String(enriched.whatsappPostText || "").trim() || buildWhatsappPostText(id || enriched.duplicateKey || "", enriched);
-  return enriched;
+  return brandDraftForEmitra(enriched);
 };
 
 const duplicateKeysForJob = (job = {}) => {
@@ -1482,10 +1593,10 @@ const generateAiSummary = async (job = {}, options = {}) => {
       temperature: 0.2,
       maxTokens: 220
     });
-    const summary = toText(result.text || "");
+    const summary = sanitizePortalBranding(toText(result.text || ""));
     return { summary: summary || fallback, provider: summary ? result.provider : "local", model: result.model };
   } catch (err) {
-    return { summary: fallback, provider: "local", error: err.message };
+    return { summary: sanitizePortalBranding(fallback) || fallback, provider: "local", error: err.message };
   }
 };
 
@@ -1811,9 +1922,9 @@ const generateAiWhatsappPostText = async (job = {}, id = "", options = {}) => {
     syllabus: "सिलेबस अपडेट"
   }[job.postTarget || "latestJob"] || "लेटेस्ट अपडेट";
   const prompt = [
-    "Aap EmitraWala.online ke WhatsApp channel ke liye ready-to-send Hindi post likhte hain.",
+    `Aap ${EMITRA_BRAND_NAME} (${EMITRA_WEBSITE}) ke WhatsApp channel ke liye ready-to-send Hindi post likhte hain.`,
     "Style bilkul is template jaisa rakho:",
-    "📢 *लेटेस्ट जॉब अपडेट - EmitraWala.online*",
+    `📢 *लेटेस्ट जॉब अपडेट - ${EMITRA_BRAND_NAME}*`,
     "📚 *Title*",
     "*Department / Exam name*",
     "🗓️ *आवेदन शुरू:* date",
@@ -1827,7 +1938,7 @@ const generateAiWhatsappPostText = async (job = {}, id = "", options = {}) => {
     "🔗 *Apply / Official Details:*",
     "URL",
     "🌐 *वेबसाइट:*",
-    SITE_BASE_URL,
+    EMITRA_WEBSITE,
     "📲 *WhatsApp Channel Join करें:*",
     WHATSAPP_CHANNEL_URL,
     "⚠️ *नोट:* इच्छुक उम्मीदवार अंतिम तिथि से पहले ऑनलाइन आवेदन जरूर करें।",
@@ -1842,8 +1953,8 @@ const generateAiWhatsappPostText = async (job = {}, id = "", options = {}) => {
     "- 900-1400 characters ke andar rakho.",
     JSON.stringify({
       updateType: targetLabel,
-      title: job.title,
-      department: job.department,
+      title: sanitizePortalBranding(job.title),
+      department: sanitizePortalBranding(job.department),
       examName: job.examName || job.subTitle,
       totalPosts: job.totalPosts || job.totalVacancy,
       applicationFee: feeSummaryLines(job).join("\n"),
@@ -1853,11 +1964,11 @@ const generateAiWhatsappPostText = async (job = {}, id = "", options = {}) => {
       startDate: job.startDate,
       lastDate: job.lastApplyDate || job.lastDate,
       location: job.location || job.jobLocation,
-      qualification: job.qualification,
-      importantDates: job.importantDates,
-      summary: job.notificationSummary,
+      qualification: sanitizePortalBranding(job.qualification),
+      importantDates: sanitizePortalBranding(job.importantDates),
+      summary: sanitizePortalBranding(job.notificationSummary),
       officialLink: primaryLink,
-      website: SITE_BASE_URL,
+      website: EMITRA_WEBSITE,
       whatsappChannel: WHATSAPP_CHANNEL_URL
     })
   ].join("\n");
@@ -1868,9 +1979,10 @@ const generateAiWhatsappPostText = async (job = {}, id = "", options = {}) => {
       .replace(/```(?:text|markdown)?/gi, "")
       .replace(/```/g, "")
       .trim();
-    return { text: text || fallback, provider: text ? result.provider : "local", model: result.model };
+    const cleanText = sanitizePortalBranding(text || fallback);
+    return { text: cleanText || fallback, provider: text ? result.provider : "local", model: result.model };
   } catch (err) {
-    return { text: fallback, provider: "local", error: err.message };
+    return { text: sanitizePortalBranding(fallback) || fallback, provider: "local", error: err.message };
   }
 };
 
@@ -1899,29 +2011,29 @@ const generateShareSuggestions = async (job = {}, id = "", primaryOptions = {}) 
       label: option.label,
       provider: result.provider || option.provider,
       model: result.model || option.model,
-      text: result.text || "",
+      text: sanitizePortalBranding(result.text || ""),
       error: result.error || ""
     });
   }
   if (!suggestions.length) {
-    suggestions.push({ label: "Local Template", provider: "local", model: "", text: buildWhatsappPostText(id, job), error: "" });
+    suggestions.push({ label: "Local Template", provider: "local", model: "", text: sanitizePortalBranding(buildWhatsappPostText(id, job)), error: "" });
   }
   return suggestions;
 };
 
 const prepareWhatsappShare = async (item = {}, id = "", options = {}) => {
-  const enriched = enrichJobAutomation(item, id);
+  const enriched = brandDraftForEmitra(enrichJobAutomation(item, id));
   const ai = await generateAiSummary(enriched, options);
-  enriched.notificationSummary = ai.summary;
+  enriched.notificationSummary = sanitizePortalBranding(ai.summary);
   const whatsappAi = await generateAiWhatsappPostText(enriched, id, options);
   const suggestions = await generateShareSuggestions(enriched, id, options);
   enriched.summaryProvider = ai.provider;
   enriched.whatsappProvider = whatsappAi.provider;
-  enriched.whatsappPostText = whatsappAi.text;
-  enriched.aiShareSuggestions = suggestions;
+  enriched.whatsappPostText = sanitizePortalBranding(whatsappAi.text);
+  enriched.aiShareSuggestions = suggestions.map((item) => ({ ...item, text: sanitizePortalBranding(item.text || "") }));
   enriched.updatedAt = nowStamp();
   return {
-    item: enriched,
+    item: brandDraftForEmitra(enriched),
     text: enriched.whatsappPostText,
     ai: {
       provider: whatsappAi.provider,
@@ -2639,17 +2751,109 @@ const extractNotices = (body = "", baseUrl = "", keywords = [], options = {}) =>
   return xmlRows.length ? xmlRows : extractLinks(text, baseUrl, keywords, options);
 };
 
+const isPortalOnlyTitle = (title = "") => {
+  const original = toText(title);
+  const cleaned = sanitizePortalBranding(original);
+  if (!cleaned || cleaned.length < 8) return true;
+  return PORTAL_BRAND_PATTERNS.some((pattern) => {
+    pattern.lastIndex = 0;
+    return pattern.test(original);
+  }) && cleaned.split(/\s+/).length <= 2;
+};
+
+const extractNoticePageDetails = (html = "", url = "") => {
+  const body = String(html || "");
+  const officialLinkLabels = /(official\s*(website|site|notification)|download\s*notification|apply\s*online|advertisement|notification\s*pdf|विज्ञप्ति|ऑफिशियल|आवेदन)/i;
+  const details = {
+    title: "",
+    officialLink: "",
+    applyLink: "",
+    notificationLink: ""
+  };
+  const addOfficialLink = (href = "", label = "") => {
+    if (!href || !officialLinkLabels.test(`${label} ${href}`)) return;
+    let resolved = "";
+    try {
+      resolved = new URL(href, url).href;
+    } catch (_err) {
+      return;
+    }
+    if (/apply\s*online|आवेदन/i.test(label) && !details.applyLink) {
+      details.applyLink = resolved;
+    }
+    if (/(notification|advertisement|pdf|विज्ञप्ति)/i.test(`${label} ${resolved}`) && !details.notificationLink) {
+      details.notificationLink = resolved;
+    }
+    if (!details.officialLink) {
+      details.officialLink = resolved;
+    }
+  };
+
+  if (cheerio) {
+    const $ = cheerio.load(body);
+    const titleCandidates = [
+      $("h1").first().text(),
+      $("h2").first().text(),
+      $("meta[property='og:title']").attr("content"),
+      $("title").first().text()
+    ].map((item) => sanitizePortalBranding(toText(item))).filter((item) => item && !isGenericNoticeTitle(item));
+    details.title = titleCandidates[0] || "";
+    $("a[href]").each((_, element) => {
+      const node = $(element);
+      const label = toText([node.text(), node.attr("title"), node.attr("aria-label")].filter(Boolean).join(" "));
+      addOfficialLink(node.attr("href"), label);
+    });
+    return details;
+  }
+
+  details.title = sanitizePortalBranding(decodeHtml(body.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i)?.[1] || body.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] || ""));
+  const linkRegex = /<a\b[^>]*href\s*=\s*["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
+  let match;
+  while ((match = linkRegex.exec(body))) {
+    addOfficialLink(match[1], decodeHtml(match[2]));
+  }
+  return details;
+};
+
+const fetchAggregatorNoticeDetails = async (source = {}, notice = {}, limits = {}) => {
+  if (source.sourceKind !== "aggregator" && !isPortalOnlyTitle(notice.title)) {
+    return notice;
+  }
+  const url = notice.link || "";
+  if (!/^https?:\/\//i.test(url)) return notice;
+  try {
+    await sleep(readPositiveInt(limits.rateLimitMs || process.env.AUTO_JOB_RATE_LIMIT_MS, 1500, 10000));
+    const page = await fetchText(url, Math.min(limits.fetchTimeoutMs || 16000, 20000));
+    const details = extractNoticePageDetails(page.text, url);
+    const cleanTitle = sanitizePortalBranding(details.title || notice.title);
+    return {
+      ...notice,
+      title: cleanTitle && !isGenericNoticeTitle(cleanTitle) ? cleanTitle : sanitizePortalBranding(notice.title),
+      officialLink: details.officialLink || notice.officialLink || "",
+      applyLink: details.applyLink || notice.applyLink || "",
+      notificationLink: details.notificationLink || notice.notificationLink || "",
+      pageContent: sanitizePortalBranding(decodeHtml(page.text)).slice(0, 9000)
+    };
+  } catch (_err) {
+    return {
+      ...notice,
+      title: sanitizePortalBranding(notice.title)
+    };
+  }
+};
+
 const buildDraftFromNotice = (source, notice, options = {}) => {
-  const bodyText = `${notice.title}\n${notice.link}`;
+  const cleanNoticeTitleText = sanitizePortalBranding(notice.title) || "Job Update";
+  const bodyText = `${cleanNoticeTitleText}\n${notice.link}\n${notice.pageContent || ""}`;
   const target = options.postTarget || detectPostTarget(notice.title, notice.link, bodyText);
   const linkField = pickJobLinkField(target);
   const qualification = findFirstMatchLine(bodyText, [
     /qualification/i, /eligibility/i, /education/i, /योग्यता/i, /पात्रता/i, /शैक्षणिक/i
   ]);
   const department = source.department || findFirstMatchLine(bodyText, [/department/i, /board/i, /कार्यालय/i, /विभाग/i]) || source.name;
-  const officialLink = source.url;
+  const officialLink = notice.officialLink || (source.sourceKind === "aggregator" ? "" : source.url);
   const draft = {
-    title: notice.title,
+    title: cleanNoticeTitleText,
     department,
     postDate: new Date().toLocaleDateString("en-GB").replace(/\//g, "-"),
     importantDates: extractDatesBlock(bodyText),
@@ -2658,14 +2862,14 @@ const buildDraftFromNotice = (source, notice, options = {}) => {
     officialWebsite: officialLink,
     officialLink,
     sourceLink: notice.link,
-    detailLink: notice.link,
-    applyLink: "#",
+    detailLink: notice.notificationLink || notice.officialLink || notice.link,
+    applyLink: notice.applyLink || "#",
     type: target === "latestJob" ? "Online Form" : "Update",
     postTarget: target,
     postStatus: "draft",
     displayOrder: "1",
     detailLayout: "table",
-    pageContent: "",
+    pageContent: sanitizePortalBranding(notice.pageContent || ""),
     rawText: bodyText,
     pdfTextExtracted: false,
     lightweightDraft: true,
@@ -2679,20 +2883,20 @@ const buildDraftFromNotice = (source, notice, options = {}) => {
     scanCategory: target,
     crawlerSummary: {
       source: source.name,
-      title: notice.title,
+      title: cleanNoticeTitleText,
       url: notice.link,
       detectedType: target,
       detectedAt: nowStamp(),
       isPdf: /\.pdf(?:$|[?#])/i.test(notice.link),
       summaryProvider: "parser",
-      summary: buildNotificationSummary({ title: notice.title, department, postTarget: target, sourceLink: notice.link })
+      summary: buildNotificationSummary({ title: cleanNoticeTitleText, department, postTarget: target, sourceLink: notice.link })
     },
     generatedJson: "",
     createdAt: nowStamp(),
     updatedAt: nowStamp()
   };
   draft[linkField] = notice.link;
-  const enriched = enrichJobAutomation(draft, hashKey(notice.link).slice(0, 8));
+  const enriched = brandDraftForEmitra(enrichJobAutomation(draft, hashKey(notice.link).slice(0, 8)));
   enriched.generatedJson = JSON.stringify({
     title: enriched.title,
     department: enriched.department,
@@ -2725,7 +2929,7 @@ const enrichDraftWithPdfText = async (draft = {}, notice = {}, limits = {}) => {
       }
     };
   }
-  const enriched = enrichJobAutomation({
+  const enriched = brandDraftForEmitra(enrichJobAutomation({
     ...draft,
     pageContent: pdfText.slice(0, 9000),
     rawText: `${draft.rawText || ""}\n${pdfText}`.trim(),
@@ -2743,7 +2947,7 @@ const enrichDraftWithPdfText = async (draft = {}, notice = {}, limits = {}) => {
       summaryProvider: "parser",
       summary: buildNotificationSummary({ ...draft, pageContent: pdfText })
     }
-  }, draft.duplicateKey || safeKey(link));
+  }, draft.duplicateKey || safeKey(link)));
   enriched.generatedJson = JSON.stringify({
     title: enriched.title,
     department: enriched.department,
@@ -2922,8 +3126,9 @@ async function checkOneAutoJobSource(db, source, limits = {}) {
       });
       found += notices.length;
 
-      for (const notice of notices) {
+      for (const rawNotice of notices) {
         if (newDrafts >= perSourceLimit || (limits.remainingDrafts || 0) <= 0) break;
+        const notice = await fetchAggregatorNoticeDetails(source, rawNotice, limits);
         const normalizedLink = normalizeProcessedUrl(notice.link);
         if (!normalizedLink || seenThisSource.has(normalizedLink)) continue;
         seenThisSource.add(normalizedLink);
@@ -3124,7 +3329,7 @@ async function publishAutoJobDraft(db, draftId, payload = {}) {
     throw error;
   }
   const currentDraft = draftSnapshot.val() || {};
-  const draft = enrichJobAutomation({ ...currentDraft, ...(payload.draft || {}) }, draftId);
+  const draft = brandDraftForEmitra(enrichJobAutomation({ ...currentDraft, ...(payload.draft || {}) }, draftId));
   if (!toText(draft.title)) {
     const error = new Error("Draft title required");
     error.statusCode = 400;
@@ -3150,7 +3355,7 @@ async function publishAutoJobDraft(db, draftId, payload = {}) {
   const autoSendChannels = Array.isArray(payload.autoSendChannels)
     ? payload.autoSendChannels.map((item) => String(item || "").toLowerCase()).filter((channel) => channel !== "telegram")
     : [];
-  const job = {
+  const job = brandDraftForEmitra({
     title: toText(draft.title),
     department: toText(draft.department),
     totalPosts: toText(draft.totalPosts),
@@ -3172,7 +3377,7 @@ async function publishAutoJobDraft(db, draftId, payload = {}) {
     paymentMode: toText(draft.paymentMode),
     applyLink: toText(draft.applyLink || "#"),
     detailLink: toText(draft.detailLink || draft.sourceLink || "#"),
-    officialWebsite: toText(draft.officialWebsite || draft.officialLink),
+    officialWebsite: isAggregatorPortalUrl(draft.officialWebsite || draft.officialLink) ? "" : toText(draft.officialWebsite || draft.officialLink),
     sourceName: toText(draft.sourceName),
     sourceLink: toText(draft.sourceLink),
     type: toText(draft.type || (target === "currentAffairs" ? "Current Affairs" : "Online Form")),
@@ -3187,7 +3392,7 @@ async function publishAutoJobDraft(db, draftId, payload = {}) {
     autoCheckerDraftId: draftId,
     createdAt: now,
     updatedAt: now
-  };
+  });
   job.whatsappPostText = job.whatsappPostText || buildWhatsappPostText(jobId, job);
   ["admitCardLink", "resultLink", "syllabusLink", "answerKeyLink"].forEach((key) => {
     if (draft[key]) job[key] = toText(draft[key]);
@@ -3464,6 +3669,7 @@ app.post("/api/quick-post/fetch-links", async (req, res) => {
 });
 
 const saveQuickPostDraft = async (db, draft = {}) => {
+  draft = brandDraftForEmitra(draft);
   const sourceLink = toText(draft.sourceLink || draft.detailLink || draft.officialWebsite);
   const duplicateId = autoJobUrlCacheKey(sourceLink || draft.title);
   if (await noticeAlreadyProcessed(db, { ...draft, sourceLink })) {
@@ -4040,7 +4246,7 @@ app.post("/admin/auto-job-checker/draft/save", async (req, res) => {
   try {
     const { db } = await requireAdmin(req);
     const draftId = String(req.body?.draftId || "").trim();
-    const draft = req.body?.draft && typeof req.body.draft === "object" ? req.body.draft : {};
+    const draft = brandDraftForEmitra(req.body?.draft && typeof req.body.draft === "object" ? req.body.draft : {});
     if (!draftId) {
       return res.status(400).json({ ok: false, error: "Draft ID required" });
     }
@@ -4076,22 +4282,22 @@ app.post("/admin/auto-job-checker/draft/enrich", async (req, res) => {
       const snapshot = await db.ref(`autoJobDrafts/${draftId}`).get();
       current = snapshot.exists() ? (snapshot.val() || {}) : {};
     }
-    const enriched = enrichJobAutomation({ ...current, ...incoming }, draftId);
+    const enriched = brandDraftForEmitra(enrichJobAutomation({ ...current, ...incoming }, draftId));
     const aiOptions = aiOptionsFromRequest(req.body || {});
     const ai = await generateAiSummary(enriched, aiOptions);
-    enriched.notificationSummary = ai.summary;
+    enriched.notificationSummary = sanitizePortalBranding(ai.summary);
     enriched.summaryProvider = ai.provider;
     const whatsappAi = await generateAiWhatsappPostText(enriched, draftId, aiOptions);
     const suggestions = await generateShareSuggestions(enriched, draftId, aiOptions);
     enriched.whatsappProvider = whatsappAi.provider;
-    enriched.whatsappPostText = whatsappAi.text;
-    enriched.aiShareSuggestions = suggestions;
+    enriched.whatsappPostText = sanitizePortalBranding(whatsappAi.text);
+    enriched.aiShareSuggestions = suggestions.map((item) => ({ ...item, text: sanitizePortalBranding(item.text || "") }));
     if (draftId) {
-      await db.ref(`autoJobDrafts/${draftId}`).update(enriched);
+      await db.ref(`autoJobDrafts/${draftId}`).update(brandDraftForEmitra(enriched));
     }
     return res.json({
       ok: true,
-      draft: enriched,
+      draft: brandDraftForEmitra(enriched),
       ai: {
         provider: whatsappAi.provider,
         summaryProvider: ai.provider,
