@@ -25,6 +25,23 @@ const htmlEscape = (value = "") => String(value || "")
   .replace(/"/g, "&quot;")
   .replace(/'/g, "&#039;");
 
+const translateValue = (value = "", lang = "hi") => {
+  if (Array.isArray(value)) return value.map((item) => translateValue(item, lang));
+  if (value && typeof value === "object") {
+    const keys = Object.keys(value);
+    const hasLang = keys.some((key) => key === "hi" || key === "en");
+    if (hasLang) return value[lang] ?? value.hi ?? value.en ?? "";
+    return value;
+  }
+  return value;
+};
+
+const textValue = (value = "", lang = "hi") => {
+  const translated = translateValue(value, lang);
+  if (translated && typeof translated === "object") return "";
+  return String(translated || "").replace(/\s+/g, " ").trim();
+};
+
 const resolveMergeConflictMarkers = (value = "") => String(value || "")
   .replace(/^<<<<<<<[^\n]*\n([\s\S]*?)^=======\n[\s\S]*?^>>>>>>>[^\n]*(?:\n|$)/gm, "$1");
 
@@ -142,11 +159,11 @@ const schemaDateOrUndefined = (value = "") => {
 
 const buildSeoFields = (job = {}, id = "") => {
   const seoData = job.seo && typeof job.seo === "object" ? job.seo : {};
-  const title = String(job.title || seoData.title || job.text || "Job Update").replace(/\s+/g, " ").trim();
+  const title = textValue(job.title || seoData.title || job.text || "Job Update", "hi");
   const slug = String(job.slug || seoData.slug || buildSlug(title, id)).trim();
   const descParts = [
     title,
-    job.department,
+    textValue(job.department, "hi"),
     job.totalPosts ? `${job.totalPosts} posts` : "",
     job.lastApplyDate || job.lastDate ? `Last date ${job.lastApplyDate || job.lastDate}` : "",
     "apply link, qualification and important dates"
@@ -155,8 +172,8 @@ const buildSeoFields = (job = {}, id = "") => {
     title,
     slug,
     canonicalUrl: String(job.canonicalUrl || jobUrl(id, { ...job, slug })).trim(),
-    seoTitle: String(job.seoTitle || seoData.seoTitle || seoData.title || `${title} | E-MITRA WALA`).replace(/\s+/g, " ").trim().slice(0, 70),
-    metaDescription: String(job.metaDescription || seoData.metaDescription || seoData.description || job.notificationSummary || job.shortInfo || descParts.join(", ")).replace(/\s+/g, " ").trim().slice(0, 160)
+    seoTitle: textValue(job.seoTitle || seoData.seoTitle || seoData.title || `${title} | E-MITRA WALA`, "hi").slice(0, 70),
+    metaDescription: textValue(job.metaDescription || seoData.metaDescription || seoData.description || job.notificationSummary || job.shortInfo || descParts.join(", "), "hi").slice(0, 160)
   };
 };
 
@@ -165,8 +182,8 @@ const normalizeFaqItems = (items = []) => (Array.isArray(items) ? items : [])
     if (!item || typeof item === "string") {
       return null;
     }
-    const question = String(item.question || item.q || item.title || "").trim();
-    const answer = String(item.answer || item.a || item.text || item.content || "").trim();
+    const question = textValue(item.question || item.q || item.title || "", "hi");
+    const answer = textValue(item.answer || item.a || item.text || item.content || "", "hi");
     return question && answer ? { question, answer } : null;
   })
   .filter(Boolean);

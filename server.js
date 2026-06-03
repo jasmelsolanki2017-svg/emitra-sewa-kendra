@@ -317,7 +317,21 @@ function buildServerStatus(overrides = {}) {
   };
 }
 
-const toText = (value = "") => String(value || "").replace(/\s+/g, " ").trim();
+const translateValue = (value = "", lang = "hi") => {
+  if (Array.isArray(value)) return value.map((item) => translateValue(item, lang));
+  if (value && typeof value === "object") {
+    const keys = Object.keys(value);
+    const hasLang = keys.some((key) => key === "hi" || key === "en");
+    if (hasLang) return value[lang] ?? value.hi ?? value.en ?? "";
+    return value;
+  }
+  return value;
+};
+const toText = (value = "") => {
+  const translated = translateValue(value, "hi");
+  if (translated && typeof translated === "object") return "";
+  return String(translated || "").replace(/\s+/g, " ").trim();
+};
 const nowStamp = () => Date.now();
 const escapeRegex = (value = "") => String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const hashKey = (value = "") => crypto.createHash("sha256").update(String(value || "").trim().toLowerCase()).digest("hex");
@@ -358,6 +372,10 @@ const isAggregatorPortalUrl = (value = "") => {
 };
 
 function sanitizePortalBranding(text = "") {
+  if (Array.isArray(text)) return text.map((item) => sanitizePortalBranding(item));
+  if (text && typeof text === "object") {
+    return Object.fromEntries(Object.entries(text).map(([key, value]) => [key, sanitizePortalBranding(value)]));
+  }
   let clean = String(text || "");
   PORTAL_NOISE_PATTERNS.forEach((pattern) => {
     clean = clean.replace(pattern, " ");
@@ -489,6 +507,25 @@ const AUTO_JOB_MAX_DRAFT_LIMIT = 120;
 const AUTO_JOB_MAX_PAGE_LIMIT = 80;
 const AUTO_JOB_MAX_PER_SOURCE_LIMIT = 40;
 const CRAWLER_REQUIRED_FIELDS = ["title", "department", "totalPosts", "importantDates", "qualification", "applicationFee", "officialNotification", "officialWebsite"];
+const BILINGUAL_PUBLIC_FIELDS = [
+  "title",
+  "seoTitle",
+  "metaDescription",
+  "notificationSummary",
+  "importantDates",
+  "applicationFee",
+  "applicationFeeManual",
+  "ageLimit",
+  "qualification",
+  "vacancyDetails",
+  "selectionProcess",
+  "examPattern",
+  "salaryDetails",
+  "howToApply",
+  "whatsappPostText",
+  "pageContent"
+];
+const BILINGUAL_PROMPT_INSTRUCTION = `Generate JSON with English keys. For all public-facing fields, return bilingual object values with hi and en. Hindi should be natural Devanagari and English should be clean SEO-friendly English. Keep official names, post names, exam names, URLs unchanged. Do not mention source portal names like FreeJobAlert, Sarkari Result, Sarkari Exam in public content. Branding must be ${EMITRA_BRAND_NAME}.`;
 const AUTO_SOURCE_PRIORITY = { official: 1, freejobalert: 2, sarkariexam: 3, sarkariresult: 4 };
 
 const readPositiveInt = (value, fallback, max) => {
@@ -1925,6 +1962,7 @@ const rewriteQuickPostDraft = async ({ url = "", pageText = "", prompt = "" } = 
   });
   const rewritePrompt = [
     prompt || "Source content ko Hindi me unique, factual job/news article draft me rewrite karo.",
+    BILINGUAL_PROMPT_INSTRUCTION,
     "Output sirf valid JSON do. Markdown/code fence/explanation mat do.",
     "JSON keys: title, department, totalPosts, importantDates, applicationFeeManual, qualification, shortInfo, pageContent, postTarget, metaDescription.",
     "Rules: facts invent mat karo, missing data blank rakho, public-friendly Hindi article banao, copied wording avoid karo.",
@@ -2942,15 +2980,45 @@ const buildCrawlerGeneratedJson = (draft = {}) => {
   });
 };
 
+const hasBilingualPair = (value) => Boolean(value && typeof value === "object" && toText(value.hi) && toText(value.en));
+
+const applyBilingualModeToJson = (generated = {}, mode = "") => {
+  const normalizedMode = String(mode || "").toLowerCase();
+  if (!["hi", "en", "both"].includes(normalizedMode)) return generated;
+  const next = { ...generated, bilingualMode: normalizedMode };
+  BILINGUAL_PUBLIC_FIELDS.forEach((field) => {
+    if (next[field] === undefined || next[field] === null || next[field] === "") return;
+    if (next[field] && typeof next[field] === "object" && (next[field].hi || next[field].en)) {
+      next[field] = {
+        ...(normalizedMode !== "en" ? { hi: toText(next[field].hi || next[field].en) } : {}),
+        ...(normalizedMode !== "hi" ? { en: toText(next[field].en || next[field].hi) } : {})
+      };
+      return;
+    }
+    const text = toText(next[field]);
+    if (!text) return;
+    if (normalizedMode === "hi") next[field] = { hi: text };
+    else if (normalizedMode === "en") next[field] = { en: text };
+    else next[field] = { hi: text, en: text };
+  });
+  return next;
+};
+
 const validateCrawlerDraftQuality = (draft = {}) => {
   const generated = buildCrawlerGeneratedJson(draft);
+  const mode = String(draft.bilingualMode || generated.bilingualMode || "").toLowerCase();
+  const checkedGenerated = applyBilingualModeToJson(generated, mode);
   const missing = CRAWLER_REQUIRED_FIELDS.filter((field) => !isCrawlerFieldFilled(generated[field]));
+  const bilingualMissing = mode === "both"
+    ? BILINGUAL_PUBLIC_FIELDS.filter((field) => checkedGenerated[field] !== undefined && checkedGenerated[field] !== "" && !hasBilingualPair(checkedGenerated[field]))
+    : [];
+  const allMissing = [...missing, ...bilingualMissing.map((field) => `${field}.hi/en`)];
   return {
-    generated,
-    missing,
-    checkerStatus: missing.length ? "needs_review" : "ready_for_review",
-    reviewReason: missing.length ? `Missing fields: ${missing.join(", ")}` : "",
-    validationStatus: missing.length ? "failed" : "passed"
+    generated: checkedGenerated,
+    missing: allMissing,
+    checkerStatus: allMissing.length ? "needs_review" : "ready_for_review",
+    reviewReason: allMissing.length ? `Missing fields: ${allMissing.join(", ")}` : "",
+    validationStatus: allMissing.length ? "failed" : "passed"
   };
 };
 
@@ -4453,7 +4521,8 @@ app.post("/admin/auto-job-checker/json/generate", async (req, res) => {
     await requireAdmin(req);
     const text = String(req.body?.text || "").trim();
     const draft = req.body?.draft && typeof req.body.draft === "object" ? req.body.draft : {};
-    const generated = applyCrawlerValidation(enrichJobAutomation(generateJobJsonFromText(text || draft.pageContent || draft.rawText || draft.title || "", draft), safeKey(draft.sourceLink || draft.title || text)));
+    const bilingualMode = String(req.body?.bilingualMode || draft.bilingualMode || "").trim();
+    const generated = applyCrawlerValidation(enrichJobAutomation(generateJobJsonFromText(text || draft.pageContent || draft.rawText || draft.title || "", { ...draft, bilingualMode }), safeKey(draft.sourceLink || draft.title || text)));
     return res.json({ ok: true, json: generated });
   } catch (err) {
     return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
@@ -4470,7 +4539,7 @@ app.post("/admin/auto-job-checker/draft/enrich", async (req, res) => {
       const snapshot = await db.ref(`autoJobDrafts/${draftId}`).get();
       current = snapshot.exists() ? (snapshot.val() || {}) : {};
     }
-    let enriched = brandDraftForEmitra(enrichJobAutomation({ ...current, ...incoming }, draftId));
+    let enriched = brandDraftForEmitra(enrichJobAutomation({ ...current, ...incoming, bilingualMode: req.body?.bilingualMode || incoming.bilingualMode || current.bilingualMode || "" }, draftId));
     const aiOptions = aiOptionsFromRequest(req.body || {});
     const ai = await generateAiSummary(enriched, aiOptions);
     enriched.notificationSummary = sanitizePortalBranding(ai.summary);

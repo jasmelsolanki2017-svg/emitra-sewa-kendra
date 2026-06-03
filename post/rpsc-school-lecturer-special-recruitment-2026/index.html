@@ -90,8 +90,8 @@
         "url": "https://emitrawala.online/"
       },
       "employmentType": "Online Form",
-      "datePosted": "2026-05-22",
-      "validThrough": "2026-06-30",
+      "datePosted": "2026-05-21",
+      "validThrough": "2026-06-29",
       "hiringOrganization": {
         "@type": "Organization",
         "name": "Rajasthan Public Service Commission (RPSC)"
@@ -154,6 +154,10 @@ nav{background:var(--blue);padding:14px 6%;display:flex;align-items:center;justi
 nav ul{display:flex;list-style:none;gap:16px;flex-wrap:wrap;justify-content:flex-end;}
 nav a{color:#fff;text-decoration:none;font-weight:700;}
 nav a:hover{color:var(--orange);}
+.lang-switch{display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);border-radius:4px;padding:4px 6px;color:#fff;font-size:13px;font-weight:900;}
+.lang-switch button{border:0;background:transparent;color:#fff;font:inherit;cursor:pointer;padding:3px 5px;border-radius:3px;}
+.lang-switch button.active{background:#fff;color:var(--blue);}
+.lang-switch span{opacity:.75;}
 .hero{background:linear-gradient(135deg,var(--blue),var(--deep));color:#fff;padding:28px 6% 30px;border-bottom:4px solid var(--orange);}
 .hero-inner{max-width:1180px;margin:auto;}
 .tag{display:inline-flex;align-items:center;background:var(--orange);color:var(--deep);padding:7px 12px;border-radius:4px;font-weight:900;font-size:13px;margin-bottom:14px;}
@@ -285,6 +289,11 @@ body.dark-mode .mcq-answer,body.dark-mode .mcq-explanation{color:#e8f1ff!importa
     <li><a href="privacy-policy.html">Privacy Policy</a></li>
     <li><a href="disclaimer.html">Disclaimer</a></li>
   </ul>
+  <div class="lang-switch" aria-label="Language switch">
+    <button type="button" data-lang-btn="hi">हिन्दी</button>
+    <span>|</span>
+    <button type="button" data-lang-btn="en">English</button>
+  </div>
 </nav>
 
 <header class="hero">
@@ -493,6 +502,82 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+
+const LANG_KEY = "emitraLang";
+const BILINGUAL_KEYS = new Set(["hi", "en"]);
+const SECTION_LABELS = {
+  importantDates:{ hi:"महत्वपूर्ण तिथियां", en:"Important Dates" },
+  applicationFee:{ hi:"आवेदन शुल्क", en:"Application Fee" },
+  ageLimit:{ hi:"आयु सीमा", en:"Age Limit" },
+  qualification:{ hi:"योग्यता", en:"Qualification" },
+  vacancyDetails:{ hi:"पदों का विवरण", en:"Vacancy Details" },
+  selectionProcess:{ hi:"चयन प्रक्रिया", en:"Selection Process" },
+  howToApply:{ hi:"आवेदन कैसे करें", en:"How to Apply" },
+  importantLinks:{ hi:"महत्वपूर्ण लिंक", en:"Important Links" }
+};
+let activeLang = "en";
+
+function getLang(){
+  const saved = localStorage.getItem(LANG_KEY);
+  return saved === "hi" || saved === "en" ? saved : "en";
+}
+
+function t(value){
+  if(Array.isArray(value)){ return value.map((item) => t(item)); }
+  if(value && typeof value === "object"){
+    const keys = Object.keys(value);
+    const isBilingual = keys.some((key) => BILINGUAL_KEYS.has(key)) && keys.every((key) => BILINGUAL_KEYS.has(key));
+    if(isBilingual){
+      return value[activeLang] ?? value.hi ?? value.en ?? "";
+    }
+    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, t(item)]));
+  }
+  return value;
+}
+
+function setLang(lang){
+  activeLang = lang === "hi" ? "hi" : "en";
+  localStorage.setItem(LANG_KEY, activeLang);
+  document.documentElement.setAttribute("lang", activeLang);
+  document.querySelectorAll("[data-lang-btn]").forEach((button) => {
+    button.classList.toggle("active", button.dataset.langBtn === activeLang);
+  });
+  if(window.__EMITRA_CURRENT_JOB__){
+    renderJobDetail(window.__EMITRA_CURRENT_JOB__.id, window.__EMITRA_CURRENT_JOB__.rawJob, window.__EMITRA_CURRENT_JOB__.allJobs || []);
+  }
+}
+
+const langLabel = (key) => t(SECTION_LABELS[key] || key);
+
+const applyLanguageLabels = () => {
+  const headingMap = {
+    importantPanel:"importantDates",
+    feePanel:"applicationFee",
+    agePanel:"ageLimit",
+    vacancyPanel:"vacancyDetails",
+    eligibilityPanel:"qualification",
+    selectionPanel:"selectionProcess",
+    applyProcessPanel:"howToApply",
+    linksPanel:"importantLinks"
+  };
+  Object.entries(headingMap).forEach(([panelId, labelKey]) => {
+    const heading = document.querySelector(`#${panelId} h2`);
+    if(heading){ heading.textContent = langLabel(labelKey); }
+  });
+  document.querySelectorAll(".detail-sidebar h3").forEach((heading) => {
+    if(/important links/i.test(heading.textContent || "") || /महत्वपूर्ण/.test(heading.textContent || "")){
+      heading.textContent = langLabel("importantLinks");
+    }
+  });
+};
+
+activeLang = getLang();
+document.documentElement.setAttribute("lang", activeLang);
+document.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-lang-btn]");
+  if(button){ setLang(button.dataset.langBtn); }
+});
+document.addEventListener("DOMContentLoaded", () => setLang(activeLang));
 
 const escapeHTML = (value = "") => String(value)
   .replace(/&/g, "&amp;")
@@ -812,8 +897,10 @@ const normalizeJobToArticle = (input = {}) => {
   const article = base.advancedArticleData && typeof base.advancedArticleData === "object" ? { ...base.advancedArticleData } : {};
   const content = base.content && typeof base.content === "object" ? base.content : (article.content && typeof article.content === "object" ? article.content : {});
   const seo = base.seo && typeof base.seo === "object" ? base.seo : (article.seo && typeof article.seo === "object" ? article.seo : {});
-  const title = String(base.title || article.title || base.notificationTitle || article.notificationTitle || content.title || seo.title || "").trim();
-  const shortInfo = String(base.shortInfo || article.shortInfo || seo.metaDescription || seo.description || "").trim();
+  const titleValue = base.title || article.title || base.notificationTitle || article.notificationTitle || content.title || seo.title || "";
+  const title = t(titleValue);
+  const shortInfoValue = base.shortInfo || article.shortInfo || seo.metaDescription || seo.description || "";
+  const shortInfo = t(shortInfoValue);
   const sections = Array.isArray(base.sections) ? base.sections : (Array.isArray(article.sections) ? article.sections : []);
   const customSections = Array.isArray(base.customSections) ? base.customSections : (Array.isArray(article.customSections) ? article.customSections : []);
   const tables = Array.isArray(base.tables) ? base.tables : (Array.isArray(article.tables) ? article.tables : []);
@@ -1975,16 +2062,16 @@ const renderExamSection = (exam = {}, index = 0) => {
     admitCardDate:"Admit Card Date",
     resultDate:"Result Date"
   }));
-  if(datesHtml){ blocks.push(`<h3>Important Dates</h3>${datesHtml}`); }
+  if(datesHtml){ blocks.push(`<h3>${escapeHTML(langLabel("importantDates"))}</h3>${datesHtml}`); }
   const feesHtml = rowsToStructuredTable(flexibleRowsFromValue(exam.applicationFees || exam.applicationFee || exam.application_fees || exam.fees || exam.fee));
-  if(feesHtml){ blocks.push(`<h3>Application Fees</h3>${feesHtml}`); }
+  if(feesHtml){ blocks.push(`<h3>${escapeHTML(langLabel("applicationFee"))}</h3>${feesHtml}`); }
   const vacancyHtml = renderDataTable(exam.vacancyDetails || exam.vacancy_details || exam.vacancy || exam.vacancies);
-  if(vacancyHtml){ blocks.push(`<h3>Vacancy Details</h3>${vacancyHtml}`); }
+  if(vacancyHtml){ blocks.push(`<h3>${escapeHTML(langLabel("vacancyDetails"))}</h3>${vacancyHtml}`); }
   const eligibilityValue = exam.eligibility || exam.qualification || exam.qualifications || exam.educationQualification;
   const eligibilityHtml = renderFlexibleCell(eligibilityValue);
   if(eligibilityHtml){ blocks.push(`<h3>Eligibility</h3>${eligibilityHtml}`); }
   const linksHtml = renderImportantLinkButtons(exam.importantLinks || exam.important_links || exam.links);
-  if(linksHtml){ blocks.push(`<h3>Important Links</h3>${linksHtml}`); }
+  if(linksHtml){ blocks.push(`<h3>${escapeHTML(langLabel("importantLinks"))}</h3>${linksHtml}`); }
   const extraRows = flexibleRowsFromValue(exam)
     .filter((row) => !/^(name|title|examName|importantDates|important_dates|dates|applicationFees|applicationFee|application_fees|fees|fee|vacancyDetails|vacancy_details|vacancy|vacancies|eligibility|qualification|qualifications|educationQualification|importantLinks|important_links|links)$/i.test(row.key || row.label || ""));
   const extraHtml = rowsToStructuredTable(extraRows);
@@ -2167,7 +2254,9 @@ const wrap = document.getElementById("jobDetailWrap");
 const staticPost = window.__EMITRA_STATIC_POST__ && typeof window.__EMITRA_STATIC_POST__ === "object" ? window.__EMITRA_STATIC_POST__ : null;
 
 const renderJobDetail = (jobId, rawJob, allJobs = []) => {
-    const job = normalizeJob(rawJob);
+    window.__EMITRA_CURRENT_JOB__ = { id:jobId, rawJob, allJobs };
+    const job = normalizeJob(t(rawJob));
+    applyLanguageLabels();
     if(!isJobVisible(job)){
       message.textContent = "Ye post abhi public page par hidden hai.";
       wrap.style.display = "none";
@@ -2316,7 +2405,7 @@ const renderJobDetail = (jobId, rawJob, allJobs = []) => {
       ...uniqueStructuredImportant
     ]);
     const importantHeading = document.querySelector("#importantPanel h2");
-    if(importantHeading){ importantHeading.textContent = "Important Dates"; }
+    if(importantHeading){ importantHeading.textContent = langLabel("importantDates"); }
     const renderedImportantLabels = new Set([
       ...baseImportantRows,
       ...uniqueStructuredImportant

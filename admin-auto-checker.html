@@ -287,6 +287,9 @@
       <div class="buttons">
         <button type="button" onclick="previewDraft()">Preview Draft</button>
         <button type="button" onclick="generateDraftAutomation()">Auto Summary / SEO / Slug</button>
+        <button type="button" onclick="generateLanguageJson('hi')">Generate Hindi</button>
+        <button type="button" onclick="generateLanguageJson('en')">Generate English</button>
+        <button type="button" onclick="generateLanguageJson('both')">Generate Hindi + English</button>
         <button type="button" onclick="generateDraftJson()">Auto JSON Generate</button>
         <button type="button" onclick="copyDraftWhatsappPost()">Copy WhatsApp Post</button>
         <button type="button" onclick="sendDraftShare('telegram')">Send Telegram</button>
@@ -333,6 +336,15 @@
     const shortTime=(value)=>value?new Date(Number(value)).toLocaleTimeString("hi-IN"):"--";
     const getValue=(id)=>$(id).value.trim();
     const setValue=(id,value="")=>{$(id).value=value||""};
+    const valueForField=(value)=>value&&typeof value==="object"?JSON.stringify(value,null,2):(value||"");
+    const parseFieldValue=(id)=>{
+      const value=getValue(id);
+      if(!value){return ""}
+      if(/^\s*[\[{]/.test(value)){
+        try{return JSON.parse(value)}catch(_error){}
+      }
+      return value;
+    };
     const categoryKeys=["latestJob","admitCard","result","answerKey","syllabus"];
     const sourceCategoryCheckboxes=()=>Array.from(document.querySelectorAll(".source-category"));
     const getSourceCategories=()=>sourceCategoryCheckboxes().filter((item)=>item.checked).map((item)=>item.value);
@@ -812,14 +824,14 @@
     window.seedAggregatorSources=()=>seedSourcesByKind("aggregator");
 
     const draftForm=()=>({
-      title:getValue("draftTitle"),
+      title:parseFieldValue("draftTitle"),
       department:getValue("draftDepartment"),
       postDate:getValue("draftPostDate"),
       totalPosts:getValue("draftTotalPosts"),
-      importantDates:getValue("draftImportantDates"),
-      applicationFeeManual:getValue("draftApplicationFeeManual"),
-      feeDetails:getValue("draftApplicationFeeManual"),
-      qualification:getValue("draftQualification"),
+      importantDates:parseFieldValue("draftImportantDates"),
+      applicationFeeManual:parseFieldValue("draftApplicationFeeManual"),
+      feeDetails:parseFieldValue("draftApplicationFeeManual"),
+      qualification:parseFieldValue("draftQualification"),
       officialLink:getValue("draftOfficialLink"),
       officialWebsite:getValue("draftOfficialLink"),
       sourceLink:getValue("draftSourceLink"),
@@ -828,11 +840,11 @@
       lastDate:getValue("draftLastDate"),
       lastApplyDate:getValue("draftLastDate"),
       slug:getValue("draftSlug"),
-      seoTitle:getValue("draftSeoTitle"),
-      metaDescription:getValue("draftMetaDescription"),
-      notificationSummary:getValue("draftNotificationSummary"),
-      whatsappPostText:getValue("draftWhatsappPostText"),
-      pageContent:getValue("draftPageContent"),
+      seoTitle:parseFieldValue("draftSeoTitle"),
+      metaDescription:parseFieldValue("draftMetaDescription"),
+      notificationSummary:parseFieldValue("draftNotificationSummary"),
+      whatsappPostText:parseFieldValue("draftWhatsappPostText"),
+      pageContent:parseFieldValue("draftPageContent"),
       generatedJson:getValue("draftGeneratedJson"),
       postStatus:"draft",
       checkerStatus:"draft",
@@ -841,24 +853,24 @@
 
     const fillDraftForm=(id,data={})=>{
       activeDraftId=id;
-      setValue("draftTitle",data.title);
+      setValue("draftTitle",valueForField(data.title));
       setValue("draftDepartment",data.department);
       setValue("draftPostDate",data.postDate);
       setValue("draftTotalPosts",data.totalPosts);
-      setValue("draftImportantDates",data.importantDates);
-      setValue("draftApplicationFeeManual",data.applicationFeeManual||data.feeDetails||data.feesDetails);
-      setValue("draftQualification",data.qualification);
+      setValue("draftImportantDates",valueForField(data.importantDates));
+      setValue("draftApplicationFeeManual",valueForField(data.applicationFeeManual||data.feeDetails||data.feesDetails));
+      setValue("draftQualification",valueForField(data.qualification));
       setValue("draftOfficialLink",data.officialLink||data.officialWebsite);
       setValue("draftSourceLink",data.sourceLink||data.detailLink);
       setValue("draftPostTarget",data.postTarget||"latestJob");
       setValue("draftLastDate",data.lastDate||data.lastApplyDate);
       setValue("draftSlug",data.slug);
-      setValue("draftSeoTitle",data.seoTitle);
-      setValue("draftMetaDescription",data.metaDescription);
-      setValue("draftNotificationSummary",data.notificationSummary);
-      setValue("draftWhatsappPostText",data.whatsappPostText);
+      setValue("draftSeoTitle",valueForField(data.seoTitle));
+      setValue("draftMetaDescription",valueForField(data.metaDescription));
+      setValue("draftNotificationSummary",valueForField(data.notificationSummary));
+      setValue("draftWhatsappPostText",valueForField(data.whatsappPostText));
       renderAiSuggestions(data.aiShareSuggestions||[]);
-      setValue("draftPageContent",data.pageContent);
+      setValue("draftPageContent",valueForField(data.pageContent));
       setValue("draftGeneratedJson",data.generatedJson||"");
       $("draftStatus").innerText="Draft selected: "+(data.title||id);
     };
@@ -897,23 +909,23 @@
     };
 
     const applyDraftAutomation=(data={})=>{
-      if(data.title)setValue("draftTitle",data.title);
+      if(data.title)setValue("draftTitle",valueForField(data.title));
       if(data.department)setValue("draftDepartment",data.department);
       if(data.totalPosts)setValue("draftTotalPosts",data.totalPosts);
-      if(data.importantDates)setValue("draftImportantDates",data.importantDates);
-      if(data.applicationFeeManual||data.feeDetails||data.feesDetails)setValue("draftApplicationFeeManual",data.applicationFeeManual||data.feeDetails||data.feesDetails);
-      if(data.qualification)setValue("draftQualification",data.qualification);
+      if(data.importantDates)setValue("draftImportantDates",valueForField(data.importantDates));
+      if(data.applicationFeeManual||data.feeDetails||data.feesDetails)setValue("draftApplicationFeeManual",valueForField(data.applicationFeeManual||data.feeDetails||data.feesDetails));
+      if(data.qualification)setValue("draftQualification",valueForField(data.qualification));
       if(data.officialWebsite||data.officialLink)setValue("draftOfficialLink",data.officialWebsite||data.officialLink);
       if(data.sourceLink||data.detailLink)setValue("draftSourceLink",data.sourceLink||data.detailLink);
       if(data.postTarget)setValue("draftPostTarget",data.postTarget);
       if(data.lastDate||data.lastApplyDate)setValue("draftLastDate",data.lastDate||data.lastApplyDate);
       if(data.slug)setValue("draftSlug",data.slug);
-      if(data.seoTitle)setValue("draftSeoTitle",data.seoTitle);
-      if(data.metaDescription)setValue("draftMetaDescription",data.metaDescription);
-      if(data.notificationSummary)setValue("draftNotificationSummary",data.notificationSummary);
-      if(data.whatsappPostText)setValue("draftWhatsappPostText",data.whatsappPostText);
+      if(data.seoTitle)setValue("draftSeoTitle",valueForField(data.seoTitle));
+      if(data.metaDescription)setValue("draftMetaDescription",valueForField(data.metaDescription));
+      if(data.notificationSummary)setValue("draftNotificationSummary",valueForField(data.notificationSummary));
+      if(data.whatsappPostText)setValue("draftWhatsappPostText",valueForField(data.whatsappPostText));
       renderAiSuggestions(data.aiShareSuggestions||[]);
-      if(data.pageContent)setValue("draftPageContent",data.pageContent);
+      if(data.pageContent)setValue("draftPageContent",valueForField(data.pageContent));
       setValue("draftGeneratedJson",JSON.stringify(data,null,2));
     };
 
@@ -940,6 +952,20 @@
         $("draftStatus").innerText="Auto JSON ready. Review karke Save/Publish karein.";
       }catch(error){
         $("draftStatus").innerText="JSON generate error: "+error.message;
+      }
+    };
+
+    window.generateLanguageJson=async(mode="both")=>{
+      if(!adminAllowed){alert("Admin verify nahi hua.");return}
+      try{
+        const label=mode==="hi"?"Hindi":mode==="en"?"English":"Hindi + English";
+        $("draftStatus").innerText=`${label} JSON generate ho raha hai...`;
+        const text=[getValue("draftTitle"),getValue("draftImportantDates"),getValue("draftQualification"),getValue("draftPageContent")].filter(Boolean).join("\n\n");
+        const result=await callAdminApi("/admin/auto-job-checker/json/generate",{text,draft:{...draftForm(),bilingualMode:mode},bilingualMode:mode});
+        applyDraftAutomation(result.json||{});
+        $("draftStatus").innerText=`${label} JSON ready. Review karke Save/Publish karein.`;
+      }catch(error){
+        $("draftStatus").innerText="Language JSON error: "+error.message;
       }
     };
 

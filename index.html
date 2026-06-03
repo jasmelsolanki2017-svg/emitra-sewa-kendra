@@ -319,6 +319,11 @@ color:#fff;
 transform:translateY(-1px);
 }
 
+.lang-switch{display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.32);border-radius:8px;padding:4px 6px;color:#fff;font-size:13px;font-weight:900;}
+.lang-switch button{border:0;background:transparent;color:#fff;font:inherit;cursor:pointer;padding:3px 5px;border-radius:4px;}
+.lang-switch button.active{background:#fff;color:#0057a8;}
+.lang-switch span{opacity:.75;}
+
 .nav-tools{
 position:relative;
 }
@@ -2689,6 +2694,9 @@ body.dark-mode #importantLinksMenuList a:hover {
 <li><a href="useful-pages.html">Useful Pages</a></li>
 <li><a href="contact.html">Contact</a></li>
 </ul>
+<div class="lang-switch" aria-label="Language switch">
+<button type="button" data-lang-btn="hi">हिन्दी</button><span>|</span><button type="button" data-lang-btn="en">English</button>
+</div>
 
 </nav>
 
@@ -3605,6 +3613,13 @@ renderDocumentChecklist();
 <!-- FIREBASE -->
 
 <script>
+(()=>{
+const key="emitraLang";
+const get=()=>{const saved=localStorage.getItem(key);return saved==="hi"||saved==="en"?saved:"en"};
+const apply=(lang)=>{const next=lang==="hi"?"hi":"en";localStorage.setItem(key,next);document.documentElement.setAttribute("lang",next);document.querySelectorAll("[data-lang-btn]").forEach((button)=>button.classList.toggle("active",button.dataset.langBtn===next))};
+document.addEventListener("click",(event)=>{const button=event.target.closest("[data-lang-btn]");if(button)apply(button.dataset.langBtn)});
+apply(get());
+})();
 const initHomepageFirebase = async () => {
 const firebaseConfig = {
 
