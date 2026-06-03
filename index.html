@@ -1037,6 +1037,11 @@ color:#003ac0;
 text-decoration:none;
 font-family:Arial,sans-serif;
 font-weight:700;
+display:inline;
+}
+
+.post-title-line{
+display:inline;
 }
 
 .home-portal-list a:hover{
@@ -1053,17 +1058,21 @@ white-space:nowrap;
 }
 
 .new-badge{
-display:inline-block;
-margin-left:6px;
-padding:1px 5px;
+display:inline-flex;
+align-items:center;
+justify-content:center;
+margin-left:5px;
+padding:1px 4px;
 border-radius:2px;
 background:#ff0000;
 color:white;
 font-size:10px;
 font-weight:900;
-line-height:1.2;
+line-height:1;
 text-transform:uppercase;
 vertical-align:middle;
+white-space:nowrap;
+break-inside:avoid;
 animation:newBlink .85s infinite;
 }
 
@@ -4256,7 +4265,7 @@ return;
 }
 
 list.innerHTML = items.map((item)=>`
-  <li>${renderPostDate(item)}<a href="${portalItemHref(item, category)}" target="_blank" rel="noopener noreferrer">${escapeHTML(item.title || "Update")}</a>${renderNewBadge(item)}</li>
+  <li>${renderPostDate(item)}<span class="post-title-line"><a href="${portalItemHref(item, category)}" target="_blank" rel="noopener noreferrer">${escapeHTML(item.title || "Update")}</a>${renderNewBadge(item)}</span></li>
 `).join("");
 };
 
@@ -4364,7 +4373,7 @@ if(uniqueJobs.length && portalJobList){
 portalJobList.innerHTML = uniqueJobs.slice(0,20).map(({ id, job })=>`
   <li class="home-portal-job-card">
     <span class="badge">${escapeHTML(job.type || "Online Form")}</span>
-    <h3>${renderPostDate(job)}<a href="${jobDetailHref(id, job)}" target="_blank" rel="noopener noreferrer">${escapeHTML(job.title || job.text || "Job Update")}</a>${renderNewBadge(job)}</h3>
+    <h3>${renderPostDate(job)}<span class="post-title-line"><a href="${jobDetailHref(id, job)}" target="_blank" rel="noopener noreferrer">${escapeHTML(job.title || job.text || "Job Update")}</a>${renderNewBadge(job)}</span></h3>
     <p>Start: ${escapeHTML(job.startDate || "Update Soon")} | Last: <span class="last-date">${escapeHTML(job.lastDate || job.lastApplyDate || "Update Soon")}</span></p>
     <p>Qualification: ${escapeHTML(job.qualification || "Update Soon")}</p>
     <p>Location: ${escapeHTML(job.location || "All India")}</p>
@@ -4390,7 +4399,7 @@ box.innerHTML = uniqueJobs.slice(0,8).map(({ id, job })=>`
 }
 if(currentAffairsList){
 currentAffairsList.innerHTML = uniqueCurrentAffairs.length
-? uniqueCurrentAffairs.slice(0,10).map(({ id, job })=>`<li>${renderPostDate(job)}<a href="${jobDetailHref(id, job)}" target="_blank" rel="noopener noreferrer">${escapeHTML(job.title || "Current Affairs Update")}</a>${renderNewBadge(job)}</li>`).join("")
+? uniqueCurrentAffairs.slice(0,10).map(({ id, job })=>`<li>${renderPostDate(job)}<span class="post-title-line"><a href="${jobDetailHref(id, job)}" target="_blank" rel="noopener noreferrer">${escapeHTML(job.title || "Current Affairs Update")}</a>${renderNewBadge(job)}</span></li>`).join("")
 : '<li class="home-portal-message">Abhi koi current affairs post nahi hai.</li>';
 }
 filterHomePortalJobs();
