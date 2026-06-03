@@ -90,8 +90,8 @@
         "url": "https://emitrawala.online/"
       },
       "employmentType": "job",
-      "datePosted": "2026-06-03",
-      "validThrough": "2026-07-03",
+      "datePosted": "2026-06-02",
+      "validThrough": "2026-07-02",
       "hiringOrganization": {
         "@type": "Organization",
         "name": "Department of Personnel, Rajasthan"
@@ -330,11 +330,9 @@ body.dark-mode .mcq-answer,body.dark-mode .mcq-explanation{color:#e8f1ff!importa
               <p><a class="auto-link" href="https://emitrawala.online/post/rpsc-ras-recruitment-2026-apply-online-607-posts/">Canonical job detail link</a> | <a class="auto-link" href="../../job-form.html">All Latest Jobs</a></p>
             </div>
         </section>
-        <section class="panel" id="shortInfoPanel" style="display:none;">
-          <h2>Short Information</h2>
-          <div class="content-box" id="shortInfoContent"></div>
+        <section class="panel" id="pageContentPanel" style="display:none;">
+          <div id="pageContent" class="content-box"></div>
         </section>
-
         <section class="panel" id="featurePanel" style="display:none;">
           <h2>Overview Table</h2>
           <div class="table-wrap">
@@ -342,6 +340,11 @@ body.dark-mode .mcq-answer,body.dark-mode .mcq-explanation{color:#e8f1ff!importa
               <tbody id="featureTable"></tbody>
             </table>
           </div>
+        </section>
+
+        <section class="panel" id="shortInfoPanel" style="display:none;">
+          <h2>Short Information</h2>
+          <div class="content-box" id="shortInfoContent"></div>
         </section>
 
         <section class="panel" id="importantPanel" style="display:none;">
@@ -442,10 +445,6 @@ body.dark-mode .mcq-answer,body.dark-mode .mcq-explanation{color:#e8f1ff!importa
         <section class="panel" id="mcqPanel" style="display:none;">
           <h2>MCQ Practice</h2>
           <div class="content-box" id="mcqContent"></div>
-        </section>
-
-        <section class="panel" id="pageContentPanel" style="display:none;">
-          <div id="pageContent" class="content-box"></div>
         </section>
 
         <section class="panel" id="communityPanel">
@@ -978,6 +977,123 @@ const applicationFeeRowsFromValue = (value) => {
       .filter((row) => isFilledValue(row.value));
   }
   return [feeRow("Fee", value)].filter((row) => isFilledValue(row.value));
+};
+
+const beautifyOverviewValue = (label = "", value = "") => {
+  const cleanLabel = canonicalRowLabel(label);
+  const text = normalizeTextValue(value);
+  if(!text){ return ""; }
+  if(cleanLabel === "application mode" && /^job$/i.test(text)){ return "Online"; }
+  if(cleanLabel === "post type" && /^(job|latestjob|latest job)$/i.test(text)){ return ""; }
+  if(/^(online|offline)$/i.test(text)){ return text.replace(/^\w/, (char) => char.toUpperCase()); }
+  return value;
+};
+
+const overviewLabelMap = {
+  organization:"Organization / Department",
+  department:"Organization / Department",
+  postName:"Post Name",
+  title:"Post Name",
+  totalPosts:"Total Posts / Vacancy",
+  totalVacancy:"Total Posts / Vacancy",
+  location:"Job Location",
+  jobLocation:"Job Location",
+  applicationMode:"Application Mode",
+  mode:"Application Mode",
+  postType:"Post Type",
+  type:"Post Type",
+  lastDate:"Last Date",
+  lastApplyDate:"Last Date"
+};
+
+const normalizeOverviewRows = (rows = []) => articleRowsToTableRows(rows)
+  .map((row) => {
+    const label = overviewLabelMap[row.key] || overviewLabelMap[String(row.label || "").replace(/\s+/g, "")] || row.label;
+    const value = beautifyOverviewValue(label, row.value);
+    return { ...row, label, value };
+  })
+  .filter((row) => isFilledValue(row.value, row.options));
+
+const ageLimitRowsFromValue = (value) => {
+  const labelMap = {
+    asOn:"Age Calculate Date",
+    ageAsOn:"Age Calculate Date",
+    ageCalculateDate:"Age Calculate Date",
+    minimumAge:"Minimum Age",
+    minAge:"Minimum Age",
+    maximumAge:"Maximum Age",
+    maxAge:"Maximum Age",
+    departmentalCandidates:"Departmental Candidates",
+    ageRelaxation:"Age Relaxation",
+    relaxation:"Age Relaxation"
+  };
+  return flexibleRowsFromValue(value, labelMap)
+    .map((row) => ({ ...row, label:labelMap[row.key] || row.label, htmlValue:renderFlexibleCell(row.value, { formatDate:shouldFormatDateKey(row.key || row.label) }) }))
+    .filter((row) => !/^(title|heading|type|name|label)$/i.test(row.key || ""));
+};
+
+const findNestedField = (value, keys = []) => {
+  if(!value || typeof value !== "object"){ return undefined; }
+  for(const key of keys){
+    if(value[key] !== undefined && value[key] !== null){ return value[key]; }
+  }
+  return undefined;
+};
+
+const renderRowsTable = (rows = [], preferredColumns = []) => {
+  const cleanRows = asArray(rows).filter((row) => row && typeof row === "object" && !Array.isArray(row) && isFilledFlexibleValue(row));
+  if(!cleanRows.length){ return ""; }
+  const columns = preferredColumns.length
+    ? preferredColumns.filter((column) => cleanRows.some((row) => isFilledFlexibleValue(row[column.key])))
+    : Array.from(new Set(cleanRows.flatMap((row) => Object.keys(row)))).map((key) => ({ key, label:labelizeKey(key) }));
+  if(!columns.length){ return ""; }
+  const head = columns.map((column) => `<th>${renderFormattedText(column.label)}</th>`).join("");
+  const body = cleanRows.map((row) => `<tr>${columns.map((column) => `<td>${renderFlexibleCell(row[column.key])}</td>`).join("")}</tr>`).join("");
+  return `<div class="structured-table-wrap"><table class="content-table"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
+};
+
+const vacancyFieldValue = (job = {}, keys = []) => {
+  const vacancy = getFlexibleField(job, "vacancyDetails");
+  return findNestedField(vacancy, keys) ?? findNestedField(job, keys);
+};
+
+const renderServiceVacancyTable = (job = {}, keys = []) => renderRowsTable(vacancyFieldValue(job, keys), [
+  { key:"postName", label:"Post Name" },
+  { key:"post", label:"Post Name" },
+  { key:"service", label:"Service" },
+  { key:"department", label:"Department" },
+  { key:"category", label:"Category" },
+  { key:"general", label:"General" },
+  { key:"obc", label:"OBC" },
+  { key:"ews", label:"EWS" },
+  { key:"sc", label:"SC" },
+  { key:"st", label:"ST" },
+  { key:"total", label:"Total Posts" },
+  { key:"totalPosts", label:"Total Posts" },
+  { key:"vacancy", label:"Vacancy" }
+]);
+
+const renderVacancySummary = (job = {}) => {
+  const summary = vacancyFieldValue(job, ["vacancySummary", "summary", "vacancy_summary"]);
+  if(isFilledFlexibleValue(summary)){ return renderFlexibleCell(summary); }
+  const rows = [
+    { label:"Total Posts / Vacancy", value:job.totalVacancy || job.totalPosts },
+    { label:"Post Name", value:job.postName }
+  ];
+  return rowsToStructuredTable(rows);
+};
+
+const looksLikeRawJsonDump = (value = "") => {
+  const text = String(value || "").trim();
+  if(!text){ return false; }
+  if(/^\{[\s\S]*\}$|^\[[\s\S]*\]$/.test(text)){
+    try{ JSON.parse(text); return true; }catch{ return false; }
+  }
+  if(/(^|\n)\s*(Important Dates|Application Fee|Age Limit|Vacancy Details|Eligibility|Selection Process|How To Apply)\s*:/i.test(text)
+    && /(^|\n)\s*(label|value|category|fee|postName|qualification|asOn|minimumAge|maximumAge)\s*:/i.test(text)){
+    return true;
+  }
+  return /"?(applicationFee|ageLimit|vacancyDetails|stateServiceVacancies|subordinateServiceVacancies)"?\s*[:=]/i.test(text);
 };
 
 const parsePostWiseQualifications = (value = "") => {
@@ -1744,6 +1860,38 @@ const renderFlexibleCell = (value, options = {}) => {
 
 const renderObjectTable = (value) => rowsToStructuredTable(flexibleRowsFromValue(value));
 
+const normalizeColumnDef = (column) => {
+  if(column && typeof column === "object"){
+    const key = column.key || column.field || column.name || column.id || column.label || column.title;
+    const label = column.label || column.title || column.name || column.header || key;
+    return key ? { key:String(key), label:String(label || key) } : null;
+  }
+  const key = String(column || "").trim();
+  return key ? { key, label:labelizeKey(key) } : null;
+};
+
+const renderUniversalTable = (columns = [], rows = []) => {
+  const sourceRows = Array.isArray(rows) ? rows.filter(isFilledFlexibleValue) : [];
+  if(!sourceRows.length){ return ""; }
+  const columnDefs = Array.isArray(columns) && columns.length
+    ? columns.map(normalizeColumnDef).filter(Boolean)
+    : (sourceRows.every((row) => row && typeof row === "object" && !Array.isArray(row))
+      ? Array.from(new Set(sourceRows.flatMap((row) => Object.keys(row)))).map((key) => ({ key, label:labelizeKey(key) }))
+      : []);
+  if(sourceRows.every(Array.isArray)){
+    const headValues = columnDefs.length ? columnDefs.map((column) => column.label) : sourceRows[0];
+    const bodyRows = columnDefs.length ? sourceRows : sourceRows.slice(1);
+    if(!headValues.length || !bodyRows.length){ return ""; }
+    return `<div class="structured-table-wrap"><table class="content-table"><thead><tr>${headValues.map((cell) => `<th>${renderFormattedText(cell)}</th>`).join("")}</tr></thead><tbody>${bodyRows.map((row) => `<tr>${row.map((cell) => `<td>${renderFlexibleCell(cell)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+  }
+  if(sourceRows.every((row) => row && typeof row === "object" && !Array.isArray(row))){
+    const visibleColumns = columnDefs.filter((column) => sourceRows.some((row) => isFilledFlexibleValue(row[column.key])));
+    if(!visibleColumns.length){ return ""; }
+    return `<div class="structured-table-wrap"><table class="content-table"><thead><tr>${visibleColumns.map((column) => `<th>${renderFormattedText(column.label)}</th>`).join("")}</tr></thead><tbody>${sourceRows.map((row) => `<tr>${visibleColumns.map((column) => `<td>${renderFlexibleCell(row[column.key])}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+  }
+  return "";
+};
+
 const renderDataTable = (data) => {
   if(!isFilledFlexibleValue(data)){ return ""; }
   if(typeof data === "string"){ return renderPageContent(data, "Details") || renderFormattedText(data); }
@@ -1778,7 +1926,13 @@ const renderDataTable = (data) => {
 
 const renderImportantLinkButtons = (links = []) => {
   const cleanLinks = asArray(links).map((item) => {
-    if(!item || typeof item !== "object"){ return null; }
+    if(!item){ return null; }
+    if(typeof item !== "object"){
+      const urlMatch = String(item).match(/https?:\/\/\S+|www\.\S+/i);
+      if(!urlMatch){ return null; }
+      const label = String(item).slice(0, urlMatch.index).replace(/[:|,-]+$/g, "").trim() || "Important Link";
+      return { label, url:safeUrl(urlMatch[0]) };
+    }
     const label = item.label || item.title || item.name || item.text || "Important Link";
     const url = safeUrl(item.url || item.href || item.link);
     return url && url !== "#" ? { label, url } : null;
@@ -1825,19 +1979,22 @@ const renderFlexibleSection = (section = {}) => {
   if(typeof section === "string"){
     return renderPageContent(section, "Details") || `<div class="content-section"><p>${renderFormattedText(section)}</p></div>`;
   }
-  const title = String(section.heading || section.title || section.name || section.label || "Details").trim();
-  const type = String(section.type || "paragraph").toLowerCase().replace(/[^a-z]/g, "");
-  const value = section.content ?? section.text ?? section.value ?? section.items ?? section.rows ?? section.data ?? "";
+  const title = String(section.heading || section.title || section.name || section.label || "").trim();
+  const type = String(section.type || "text").toLowerCase().replace(/[^a-z]/g, "");
+  const value = section.content ?? section.text ?? section.value ?? section.items ?? section.rows ?? section.data ?? section.links ?? "";
   let body = "";
   if(type === "table"){
-    body = renderDataTable(section.rows || section.data || value);
+    body = renderUniversalTable(section.columns || section.headers || [], section.rows || section.items || section.data || []);
+    if(!body){ body = renderDataTable({ columns:section.columns || section.headers || [], rows:section.rows || section.items || section.data || [] }); }
   }else if(type === "keyvalue"){
     body = rowsToStructuredTable(flexibleRowsFromValue(section.rows || section.items || section.data || value));
   }else if(type === "list"){
     const items = Array.isArray(section.items) ? section.items : (Array.isArray(value) ? value : String(value || "").split(/\r?\n/));
-    const cleanItems = items.map((item) => typeof item === "object" ? (item.text || item.value || item.label || "") : item).filter(isFilledFlexibleValue);
+    const cleanItems = items.map((item) => typeof item === "object" ? (item.text || item.value || item.label || item.title || item.name || "") : item).filter(isFilledFlexibleValue);
     const tag = /^(number|ordered|ol)$/i.test(section.listType || section.style || "") ? "ol" : "ul";
     body = cleanItems.length ? `<${tag}>${cleanItems.map((item) => `<li>${renderFormattedText(item)}</li>`).join("")}</${tag}>` : "";
+  }else if(type === "links" || type === "buttons"){
+    body = renderImportantLinkButtons(section.links || section.items || section.rows || value);
   }else{
     if(Array.isArray(value)){
       body = value.map((item) => `<p>${renderFormattedText(typeof item === "object" ? (item.text || item.value || item.content || "") : item)}</p>`).join("");
@@ -1847,7 +2004,26 @@ const renderFlexibleSection = (section = {}) => {
       body = value ? `<p>${renderFormattedText(value)}</p>` : "";
     }
   }
-  return body ? `<div class="content-section"><h2 class="sarkari-section-title">${escapeHTML(title)}</h2>${body}</div>` : "";
+  return body ? `<div class="content-section">${title ? `<h2 class="sarkari-section-title">${escapeHTML(title)}</h2>` : ""}${body}</div>` : "";
+};
+
+const renderUniversalSections = (sections = []) => {
+  const seen = new Set();
+  return asArray(sections).map((section) => {
+    if(!isFilledFlexibleValue(section)){ return ""; }
+    const key = typeof section === "object" ? JSON.stringify({
+      title:section.title || section.heading || section.name || section.label || "",
+      type:section.type || "",
+      columns:section.columns || section.headers || [],
+      rows:section.rows || section.data || [],
+      items:section.items || [],
+      content:section.content || section.text || "",
+      links:section.links || []
+    }) : String(section);
+    if(seen.has(key)){ return ""; }
+    seen.add(key);
+    return renderFlexibleSection(section);
+  }).filter(Boolean).join("");
 };
 
 const buildAutomaticSections = (job = {}) => {
@@ -1980,13 +2156,15 @@ const renderJobDetail = (jobId, rawJob, allJobs = []) => {
     }
 
     const title = job.title || "Job Update";
-    const type = job.type || "Online Form";
+    const type = /^(job|latestjob|latest job)$/i.test(String(job.type || "").trim()) ? "Online Form" : (job.type || "Online Form");
     const content = String(job.pageContent || "").trim();
     const derivedStartDate = findFlexibleRowValue(getFlexibleField(job, "importantDates"), [/start/, /online.*from/, /apply.*from/]);
     const derivedLastDate = findFlexibleRowValue(getFlexibleField(job, "importantDates"), [/last/, /end/, /close/, /apply.*date/]);
     const displayLastDate = job.lastApplyDate || job.lastDate || derivedLastDate;
-    const nestedSections = [...buildAutomaticSections(job), ...(Array.isArray(job.sections) ? job.sections : [])];
-    const nestedSectionHtml = nestedSections.map(renderFlexibleSection).filter(Boolean).join("");
+    const userSections = Array.isArray(job.sections) ? job.sections.filter(isFilledFlexibleValue) : [];
+    const hasUserSections = userSections.length > 0;
+    const nestedSections = hasUserSections ? userSections : buildAutomaticSections(job);
+    const nestedSectionHtml = renderUniversalSections(nestedSections);
 
     document.title = `${job.seoTitle || title} | E-MITRA WALA`;
     const metaDescription = document.querySelector('meta[name="description"]');
@@ -2031,18 +2209,53 @@ const renderJobDetail = (jobId, rawJob, allJobs = []) => {
       { label:"Total Posts", value:job.totalPosts || job.totalVacancy, icon:"fa-solid fa-users" }
     ]);
 
+    if(hasUserSections){
+      [
+        "featurePanel", "shortInfoPanel", "importantPanel", "jobInfoPanel",
+        "feePanel", "agePanel", "vacancyPanel", "eligibilityPanel",
+        "selectionPanel", "applyProcessPanel", "extraPanel", "linksPanel",
+        "faqPanel", "mcqPanel"
+      ].forEach((panelId) => {
+        const panel = document.getElementById(panelId);
+        if(panel){ panel.style.display = "none"; }
+      });
+      const contentBox = document.getElementById("pageContent");
+      const contentPanel = document.getElementById("pageContentPanel");
+      if(nestedSectionHtml){
+        contentPanel.style.display = "block";
+        contentBox.classList.remove("empty");
+        contentBox.innerHTML = nestedSectionHtml;
+      }else{
+        contentPanel.style.display = "none";
+        contentBox.innerHTML = "";
+      }
+      const sectionLinks = userSections.flatMap((section) => Array.isArray(section?.links) ? section.links : []);
+      const sidebarLinks = sectionLinks.length ? sectionLinks : (Array.isArray(job.importantLinks) ? job.importantLinks : buildImportantLinks(job));
+      renderSidebarLinks(asArray(sidebarLinks).map((item) => ({
+        label:typeof item === "object" ? (item.label || item.title || item.name || "Important Link") : "Important Link",
+        url:typeof item === "object" ? (item.url || item.href || item.link) : item,
+        icon:"fa-solid fa-link"
+      })));
+      renderRelatedJobs(jobId, job, allJobs);
+      const fallbackPanel = document.getElementById("seoFallbackPanel");
+      if(fallbackPanel){ fallbackPanel.style.display = "none"; }
+      message.style.display = "none";
+      wrap.style.display = "block";
+      return;
+    }
+
     const defaultOverviewRows = [
       { label:"Organization / Department", value:job.department },
       { label:"Post Name", value:job.postName || title },
       { label:"Total Posts / Vacancy", value:job.totalVacancy || job.totalPosts },
       { label:"Job Location", value:job.location, options:{ hideDefaultAllIndia:true } },
-      { label:"Application Mode", value:job.applicationMode || job.mode || job.type },
-      { label:"Post Type", value:job.type },
+      { label:"Application Mode", value:beautifyOverviewValue("Application Mode", job.applicationMode || job.mode || job.type) },
+      { label:"Post Type", value:beautifyOverviewValue("Post Type", job.postType || job.type) },
       { label:"Last Date", value:displayLastDate, className:"danger-date", format:"date" }
     ];
-    const nestedOverviewRows = articleRowsToTableRows(job.overview);
+    const nestedOverviewRows = normalizeOverviewRows(job.overview);
     const hasDefaultOverview = defaultOverviewRows.some((row) => isFilledValue(row.value, row.options));
-    const useNestedOverview = normalizePostTarget(job.postTarget) === "currentAffairs" && nestedOverviewRows.length;
+    const useNestedOverview = nestedOverviewRows.length;
     renderList("featureTable", "featurePanel", useNestedOverview ? nestedOverviewRows : (hasDefaultOverview ? defaultOverviewRows : nestedOverviewRows));
 
     const structuredImportantDates = flexibleRowsFromValue(getFlexibleField(job, "importantDates"), {
@@ -2142,8 +2355,8 @@ const renderJobDetail = (jobId, rawJob, allJobs = []) => {
       feeRow("Both Exam Fee", job.bothExamFee || job.combinedExamFee || job.twoExamFee),
       { label:"Payment Mode", value:job.paymentMode }
     ];
-    const hasFixedFeeRows = feeRows.some((row) => !/^payment mode$/i.test(String(row.label || "").trim()) && isFilledValue(row.value));
-    const structuredApplicationFee = hasFixedFeeRows ? [] : applicationFeeRowsFromValue(getFlexibleField(job, "applicationFee"));
+    const structuredApplicationFee = applicationFeeRowsFromValue(getFlexibleField(job, "applicationFee"));
+    const hasStructuredApplicationFee = structuredApplicationFee.length > 0;
     const existingFeeLabels = new Set(feeRows.map((row) => String(row.label || "").trim().toLowerCase()));
     const uniqueApplicationFeeRows = [];
     const addedFeeLabels = new Set(existingFeeLabels);
@@ -2154,13 +2367,13 @@ const renderJobDetail = (jobId, rawJob, allJobs = []) => {
         uniqueApplicationFeeRows.push(row);
       }
     });
-    const allFeeRows = [...feeRows, ...uniqueApplicationFeeRows];
+    const allFeeRows = hasStructuredApplicationFee ? structuredApplicationFee : [...feeRows, ...uniqueApplicationFeeRows];
     const structuredAllCandidateFee = uniqueApplicationFeeRows.find((row) => String(row.label || "").trim().toLowerCase() === "all candidates fee");
     const structuredPaymentMode = uniqueApplicationFeeRows.find((row) => String(row.label || "").trim().toLowerCase() === "payment mode");
     const paymentRows = allFeeRows.filter((row) => String(row.label || "").trim().toLowerCase() === "payment mode");
     const comparableFeeRows = allFeeRows.filter((row) => /fee$/i.test(String(row.label || "").trim()) && !/^all candidates fee$/i.test(String(row.label || "").trim()) && normalizeFeeNumber(row.value) !== null);
     const sameFeeNumber = comparableFeeRows.length > 1 && comparableFeeRows.every((row) => normalizeFeeNumber(row.value) === normalizeFeeNumber(comparableFeeRows[0].value));
-    const finalFeeRows = structuredAllCandidateFee && !allCandidateFee
+    const finalFeeRows = hasStructuredApplicationFee ? structuredApplicationFee : (structuredAllCandidateFee && !allCandidateFee
       ? [
           structuredAllCandidateFee,
           ...(structuredPaymentMode ? [structuredPaymentMode] : paymentRows)
@@ -2170,22 +2383,12 @@ const renderJobDetail = (jobId, rawJob, allJobs = []) => {
               feeRow("All Candidates Fee", comparableFeeRows[0].value),
               ...paymentRows
             ]
-          : allFeeRows);
+          : allFeeRows));
     renderList("feeList", "feePanel", finalFeeRows);
-    renderManualContent("feeManual", "feePanel", job.applicationFeeManual, "Other Application Fee");
+    renderManualContent("feeManual", "feePanel", hasStructuredApplicationFee ? "" : job.applicationFeeManual, "Other Application Fee");
 
-    const structuredAgeLimit = flexibleRowsFromValue(getFlexibleField(job, "ageLimit"), {
-      minAge:"Minimum Age",
-      minimumAge:"Minimum Age",
-      maxAge:"Maximum Age",
-      maximumAge:"Maximum Age",
-      asOn:"As On",
-      maximumAgeMale:"Maximum Age Male",
-      maximumAgeFemale:"Maximum Age Female",
-      ageCalculateDate:"Age Calculate Date",
-      ageAsOn:"Age Calculate Date",
-      relaxation:"Age Relaxation"
-    }).map((row) => ({ ...row, htmlValue:renderFlexibleCell(row.value, { formatDate:shouldFormatDateKey(row.key || row.label) }) }));
+    const structuredAgeLimit = ageLimitRowsFromValue(getFlexibleField(job, "ageLimit"));
+    const hasStructuredAgeLimit = structuredAgeLimit.length > 0;
     const baseAgeRows = [
       { label:"Minimum Age", value:job.minAge },
       { label:"Maximum Age", value:job.maxAge },
@@ -2204,15 +2407,22 @@ const renderJobDetail = (jobId, rawJob, allJobs = []) => {
     ];
     renderList("ageList", "agePanel", renderedAgeRows);
     const renderedAgeLabels = new Set(renderedAgeRows.filter((row) => isFilledValue(row.value, row.options)).map((row) => canonicalRowLabel(row.label)).filter(Boolean));
-    renderManualContent("ageManual", "agePanel", removeKnownManualRows(job.ageLimitManual, renderedAgeLabels), "Other Age Limit");
+    renderManualContent("ageManual", "agePanel", hasStructuredAgeLimit ? "" : removeKnownManualRows(job.ageLimitManual, renderedAgeLabels), "Other Age Limit");
 
     const vacancyHtml = renderPostWiseVacancyTable(job);
     const categoryVacancyHtml = renderCategoryWiseVacancyTable(job);
-    const structuredVacancyHtml = renderDataTable(getFlexibleField(job, "vacancyDetails"));
-    const vacancyManualValue = vacancyHtml || categoryVacancyHtml || structuredVacancyHtml ? "" : (job.vacancyDetailsManual || (typeof job.vacancyDetails === "string" ? job.vacancyDetails : ""));
+    const vacancySummaryHtml = renderVacancySummary(job);
+    const stateServiceHtml = renderServiceVacancyTable(job, ["stateServiceVacancies", "state_service_vacancies", "stateServices", "state_service"]);
+    const subordinateServiceHtml = renderServiceVacancyTable(job, ["subordinateServiceVacancies", "subordinate_service_vacancies", "subordinateServices", "subordinate_service"]);
+    const hasServiceVacancyTables = Boolean(stateServiceHtml || subordinateServiceHtml);
+    const structuredVacancyHtml = hasServiceVacancyTables ? "" : renderDataTable(getFlexibleField(job, "vacancyDetails"));
+    const vacancyManualValue = vacancyHtml || categoryVacancyHtml || vacancySummaryHtml || stateServiceHtml || subordinateServiceHtml || structuredVacancyHtml ? "" : (job.vacancyDetailsManual || (typeof job.vacancyDetails === "string" ? job.vacancyDetails : ""));
     const hasVacancyRows = renderList("vacancyList", "vacancyPanel", [
       { label:"Post Wise Vacancy", value:vacancyHtml ? "available" : "", htmlValue:vacancyHtml },
       { label:"Category Wise Vacancy", value:categoryVacancyHtml ? "available" : "", htmlValue:categoryVacancyHtml },
+      { label:"Vacancy Summary", value:vacancySummaryHtml ? "available" : "", htmlValue:vacancySummaryHtml },
+      { label:"State Service Vacancies", value:stateServiceHtml ? "available" : "", htmlValue:stateServiceHtml },
+      { label:"Subordinate Service Vacancies", value:subordinateServiceHtml ? "available" : "", htmlValue:subordinateServiceHtml },
       { label:"Vacancy Details", value:structuredVacancyHtml ? "available" : "", htmlValue:structuredVacancyHtml },
       { label:"State Wise Vacancy", value:job.stateWiseVacancy }
     ]);
@@ -2272,10 +2482,11 @@ const renderJobDetail = (jobId, rawJob, allJobs = []) => {
     document.getElementById("linksPanel").style.display = hasLink || hasPostApplyLinks || hasLinksManual || hasNestedImportant ? "block" : "none";
 
     const contentBox = document.getElementById("pageContent");
-    if(content || nestedSectionHtml){
+    const hasStructuredDetailData = hasStructuredApplicationFee || hasStructuredAgeLimit || Boolean(vacancySummaryHtml || stateServiceHtml || subordinateServiceHtml || structuredVacancyHtml || nestedSectionHtml);
+    const contentHtml = content && !(hasStructuredDetailData && looksLikeRawJsonDump(content)) ? renderPageContent(content, `${title} Details`, { hideDuplicateSections:true }) : "";
+    if(contentHtml || nestedSectionHtml){
       document.getElementById("pageContentPanel").style.display = "block";
       contentBox.classList.remove("empty");
-      const contentHtml = content ? renderPageContent(content, `${title} Details`, { hideDuplicateSections:true }) : "";
       contentBox.innerHTML = `${contentHtml}${nestedSectionHtml}`;
     }else{
       document.getElementById("pageContentPanel").style.display = "none";
