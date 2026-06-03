@@ -488,12 +488,25 @@ const AUTO_JOB_DEFAULT_PER_SOURCE_LIMIT = 4;
 const AUTO_JOB_MAX_DRAFT_LIMIT = 120;
 const AUTO_JOB_MAX_PAGE_LIMIT = 80;
 const AUTO_JOB_MAX_PER_SOURCE_LIMIT = 40;
+const CRAWLER_REQUIRED_FIELDS = ["title", "department", "totalPosts", "importantDates", "qualification", "applicationFee", "officialNotification", "officialWebsite"];
+const AUTO_SOURCE_PRIORITY = { official: 1, freejobalert: 2, sarkariexam: 3, sarkariresult: 4 };
 
 const readPositiveInt = (value, fallback, max) => {
   const number = Number(value);
   if (!Number.isFinite(number) || number <= 0) return fallback;
   return Math.min(Math.floor(number), max);
 };
+
+const sourcePriorityKey = (source = {}) => {
+  const text = `${source.id || ""} ${source.name || ""} ${source.url || ""}`.toLowerCase().replace(/[^a-z0-9]+/g, "");
+  if (normalizeSourceKind(source.sourceKind || source.kind) !== "aggregator") return "official";
+  if (text.includes("freejobalert")) return "freejobalert";
+  if (text.includes("sarkariexam")) return "sarkariexam";
+  if (text.includes("sarkariresult")) return "sarkariresult";
+  return "aggregator";
+};
+
+const sourcePriorityValue = (source = {}) => AUTO_SOURCE_PRIORITY[sourcePriorityKey(source)] || 50;
 
 const normalizeAutoJobCategory = (value = "") => {
   const key = String(value || "").toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -656,6 +669,32 @@ const extractTotalPosts = (text = "") => {
   const match = String(text || "").match(/(?:total\s*(?:post|posts|vacancy|vacancies)|कुल\s*(?:पद|रिक्ति))\D{0,20}(\d{1,6})/i)
     || String(text || "").match(/(\d{1,6})\s*(?:post|posts|vacancy|vacancies|पद|रिक्ति)/i);
   return match ? match[1] : "";
+};
+
+const extractSectionBlock = (text = "", patterns = [], maxLines = 10) => {
+  const lines = String(text || "").split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  const start = lines.findIndex((line) => patterns.some((pattern) => pattern.test(line)));
+  if (start < 0) return "";
+  const stopPattern = /^(?:important dates?|application fees?|age limit|qualification|eligibility|vacancy|selection process|how to apply|apply online|official|महत्वपूर्ण|आवेदन शुल्क|आयु|योग्यता|रिक्ति|चयन|आवेदन प्रक्रिया)\b/i;
+  const picked = [];
+  for (let index = start; index < lines.length && picked.length < maxLines; index += 1) {
+    if (index > start && stopPattern.test(lines[index])) break;
+    picked.push(lines[index]);
+  }
+  return picked.join("\n");
+};
+const extractApplicationFeeBlock = (text = "") => extractSectionBlock(text, [/application\s*fee/i, /exam\s*fee/i, /fee\s*details/i, /आवेदन\s*शुल्क/i, /शुल्क/i], 10);
+const extractAgeLimitBlock = (text = "") => extractSectionBlock(text, [/age\s*limit/i, /upper\s*age/i, /minimum\s*age/i, /आयु/i], 8);
+const extractVacancyBlock = (text = "") => extractSectionBlock(text, [/vacancy/i, /total\s*posts?/i, /रिक्ति/i, /पद/i], 12);
+const extractSelectionProcessBlock = (text = "") => extractSectionBlock(text, [/selection\s*process/i, /mode\s*of\s*selection/i, /चयन/i], 10);
+const extractHowToApplyBlock = (text = "") => extractSectionBlock(text, [/how\s*to\s*apply/i, /application\s*process/i, /apply\s*online/i, /आवेदन\s*कैसे/i, /आवेदन\s*प्रक्रिया/i], 10);
+const extractPdfTitle = (text = "") => findFirstMatchLine(text, [/recruitment/i, /vacancy/i, /notification/i, /advertisement/i, /online\s*form/i, /admit\s*card/i, /result/i, /भर्ती/i, /विज्ञप्ति/i]) || "";
+const extractPdfDepartment = (text = "") => findFirstMatchLine(text, [/department/i, /ministry/i, /board/i, /commission/i, /agency/i, /कार्यालय/i, /विभाग/i, /आयोग/i]) || "";
+const isCrawlerFieldFilled = (value) => {
+  if (Array.isArray(value)) return value.some(isCrawlerFieldFilled);
+  if (value && typeof value === "object") return Object.values(value).some(isCrawlerFieldFilled);
+  const text = toText(value);
+  return Boolean(text && !/^(?:#|na|n\/a|null|undefined|update soon|coming soon|notify soon|not specified)$/i.test(text));
 };
 
 const detectPostTarget = (title = "", link = "", text = "") => {
@@ -2167,6 +2206,7 @@ const normalizeSource = (id, value = {}) => ({
   url: extractHttpUrl(value.url || ""),
   department: toText(value.department || value.name || ""),
   sourceKind: normalizeSourceKind(value.sourceKind || value.kind),
+  sourcePriority: readPositiveInt(value.sourcePriority || value.priority || sourcePriorityValue({ id, ...value }), sourcePriorityValue({ id, ...value }), 100),
   enabled: value.enabled !== false,
   keywords: toText(value.keywords || ""),
   categories: parseAutoJobCategories(value.categories || value.enabledCategories),
@@ -2320,7 +2360,8 @@ const DEFAULT_AUTO_JOB_SOURCES = [
   categoryPages: source.categoryPages || {},
   feedUrls: parseAutoJobFeedPages(source),
   maxFetch: readPositiveInt(source.maxFetch, AUTO_JOB_DEFAULT_PER_SOURCE_LIMIT, AUTO_JOB_MAX_PER_SOURCE_LIMIT),
-  sourceKind: normalizeSourceKind(source.sourceKind)
+  sourceKind: normalizeSourceKind(source.sourceKind),
+  sourcePriority: readPositiveInt(source.sourcePriority || source.priority || sourcePriorityValue(source), sourcePriorityValue(source), 100)
 }));
 
 const sourcePayloadFromRequest = (value = {}) => {
@@ -2338,6 +2379,7 @@ const sourcePayloadFromRequest = (value = {}) => {
     url,
     keywords: toText(source.keywords),
     sourceKind: normalizeSourceKind(source.sourceKind || source.kind),
+    sourcePriority: readPositiveInt(source.sourcePriority || source.priority || sourcePriorityValue(source), sourcePriorityValue(source), 100),
     categories: parseAutoJobCategories(source.categories || source.enabledCategories),
     categoryPages: parseAutoJobCategoryPages(source),
     feedUrls: parseAutoJobFeedPages(source),
@@ -2763,10 +2805,11 @@ const isPortalOnlyTitle = (title = "") => {
 
 const extractNoticePageDetails = (html = "", url = "") => {
   const body = String(html || "");
-  const officialLinkLabels = /(official\s*(website|site|notification)|download\s*notification|apply\s*online|advertisement|notification\s*pdf|विज्ञप्ति|ऑफिशियल|आवेदन)/i;
+  const officialLinkLabels = /(official\s*(website|site|notification)|download\s*notification|advertisement\s*pdf|notice\s*pdf|notice|apply\s*online|advertisement|notification\s*pdf|विज्ञप्ति|ऑफिशियल|आवेदन)/i;
   const details = {
     title: "",
     officialLink: "",
+    officialWebsite: "",
     applyLink: "",
     notificationLink: ""
   };
@@ -2780,6 +2823,9 @@ const extractNoticePageDetails = (html = "", url = "") => {
     }
     if (/apply\s*online|आवेदन/i.test(label) && !details.applyLink) {
       details.applyLink = resolved;
+    }
+    if (/official\s*(website|site)|ऑफिशियल\s*(वेबसाइट|साइट)/i.test(label) && !details.officialWebsite) {
+      details.officialWebsite = resolved;
     }
     if (/(notification|advertisement|pdf|विज्ञप्ति)/i.test(`${label} ${resolved}`) && !details.notificationLink) {
       details.notificationLink = resolved;
@@ -2830,6 +2876,7 @@ const fetchAggregatorNoticeDetails = async (source = {}, notice = {}, limits = {
       ...notice,
       title: cleanTitle && !isGenericNoticeTitle(cleanTitle) ? cleanTitle : sanitizePortalBranding(notice.title),
       officialLink: details.officialLink || notice.officialLink || "",
+      officialWebsite: details.officialWebsite || notice.officialWebsite || "",
       applyLink: details.applyLink || notice.applyLink || "",
       notificationLink: details.notificationLink || notice.notificationLink || "",
       pageContent: sanitizePortalBranding(decodeHtml(page.text)).slice(0, 9000)
@@ -2842,6 +2889,76 @@ const fetchAggregatorNoticeDetails = async (source = {}, notice = {}, limits = {
   }
 };
 
+const noticeOfficialPdfLink = (notice = {}, draft = {}) => {
+  const candidates = [notice.notificationLink, notice.officialNotification, notice.officialLink, draft.officialNotification, draft.detailLink, notice.link, draft.sourceLink].filter(Boolean);
+  return candidates.find((url) => /\.pdf(?:$|[?#])/i.test(String(url || ""))) || "";
+};
+
+const buildCrawlerGeneratedJson = (draft = {}) => {
+  const id = draft.duplicateKey || draft.sourceLink || draft.title || "";
+  const seo = buildSeoFields(draft, id);
+  const officialNotification = draft.officialNotification || draft.notificationLink || draft.detailLink || "";
+  const applyOnline = draft.applyOnline || draft.applyLink || "";
+  const officialWebsite = draft.officialWebsite || draft.officialLink || "";
+  return brandDraftForEmitra({
+    title: draft.title || "",
+    department: draft.department || "",
+    postName: draft.postName || draft.examName || draft.title || "",
+    totalPosts: draft.totalPosts || draft.totalVacancy || "",
+    importantDates: draft.importantDates || "",
+    applicationFee: draft.applicationFee || draft.applicationFees || draft.applicationFeeManual || draft.feeDetails || "",
+    ageLimit: draft.ageLimit || draft.ageLimitManual || "",
+    qualification: draft.qualification || "",
+    vacancyDetails: draft.vacancyDetails || draft.vacancyDetailsManual || "",
+    selectionProcess: draft.selectionProcess || "",
+    howToApply: draft.howToApply || "",
+    officialNotification,
+    applyOnline,
+    officialWebsite,
+    sourceLink: draft.sourceLink || "",
+    postTarget: draft.postTarget || "latestJob",
+    slug: draft.slug || seo.slug,
+    seoTitle: draft.seoTitle || seo.seoTitle,
+    metaDescription: draft.metaDescription || seo.metaDescription,
+    whatsappPostText: draft.whatsappPostText || buildWhatsappPostText(id, draft)
+  });
+};
+
+const validateCrawlerDraftQuality = (draft = {}) => {
+  const generated = buildCrawlerGeneratedJson(draft);
+  const missing = CRAWLER_REQUIRED_FIELDS.filter((field) => !isCrawlerFieldFilled(generated[field]));
+  return {
+    generated,
+    missing,
+    checkerStatus: missing.length ? "needs_review" : "ready_for_review",
+    reviewReason: missing.length ? `Missing fields: ${missing.join(", ")}` : "",
+    validationStatus: missing.length ? "failed" : "passed"
+  };
+};
+
+const applyCrawlerValidation = (draft = {}) => {
+  const validation = validateCrawlerDraftQuality(draft);
+  return brandDraftForEmitra({
+    ...draft,
+    ...validation.generated,
+    officialNotification: validation.generated.officialNotification,
+    applyOnline: validation.generated.applyOnline,
+    officialWebsite: validation.generated.officialWebsite,
+    applicationFee: validation.generated.applicationFee,
+    ageLimit: validation.generated.ageLimit,
+    vacancyDetails: validation.generated.vacancyDetails,
+    selectionProcess: validation.generated.selectionProcess,
+    howToApply: validation.generated.howToApply,
+    checkerStatus: validation.checkerStatus,
+    reviewRequired: true,
+    reviewReason: validation.reviewReason,
+    missingRequiredFields: validation.missing,
+    validationStatus: validation.validationStatus,
+    generatedJson: JSON.stringify(validation.generated, null, 2),
+    updatedAt: nowStamp()
+  });
+};
+
 const buildDraftFromNotice = (source, notice, options = {}) => {
   const cleanNoticeTitleText = sanitizePortalBranding(notice.title) || "Job Update";
   const bodyText = `${cleanNoticeTitleText}\n${notice.link}\n${notice.pageContent || ""}`;
@@ -2851,7 +2968,8 @@ const buildDraftFromNotice = (source, notice, options = {}) => {
     /qualification/i, /eligibility/i, /education/i, /योग्यता/i, /पात्रता/i, /शैक्षणिक/i
   ]);
   const department = source.department || findFirstMatchLine(bodyText, [/department/i, /board/i, /कार्यालय/i, /विभाग/i]) || source.name;
-  const officialLink = notice.officialLink || (source.sourceKind === "aggregator" ? "" : source.url);
+  const officialNotification = notice.notificationLink || notice.officialNotification || (/\.pdf(?:$|[?#])/i.test(notice.officialLink || "") ? notice.officialLink : "") || notice.link;
+  const officialLink = notice.officialWebsite || (!/\.pdf(?:$|[?#])/i.test(notice.officialLink || "") ? notice.officialLink : "") || (source.sourceKind === "aggregator" ? "" : source.url);
   const draft = {
     title: cleanNoticeTitleText,
     department,
@@ -2861,8 +2979,10 @@ const buildDraftFromNotice = (source, notice, options = {}) => {
     totalPosts: extractTotalPosts(bodyText),
     officialWebsite: officialLink,
     officialLink,
+    officialNotification,
+    applyOnline: notice.applyLink || "",
     sourceLink: notice.link,
-    detailLink: notice.notificationLink || notice.officialLink || notice.link,
+    detailLink: officialNotification,
     applyLink: notice.applyLink || "#",
     type: target === "latestJob" ? "Online Form" : "Update",
     postTarget: target,
@@ -2874,10 +2994,11 @@ const buildDraftFromNotice = (source, notice, options = {}) => {
     pdfTextExtracted: false,
     lightweightDraft: true,
     reviewRequired: true,
-    checkerStatus: "draft",
+    checkerStatus: "needs_review",
     sourceId: source.id,
     sourceName: source.name,
     sourceKind: source.sourceKind || "official",
+    sourcePriority: noticeOfficialPdfLink(notice) ? 1 : readPositiveInt(source.sourcePriority || sourcePriorityValue(source), sourcePriorityValue(source), 100),
     detectedLink: notice.link,
     scanSourcePage: options.scanSourcePage || source.url,
     scanCategory: target,
@@ -2896,46 +3017,42 @@ const buildDraftFromNotice = (source, notice, options = {}) => {
     updatedAt: nowStamp()
   };
   draft[linkField] = notice.link;
-  const enriched = brandDraftForEmitra(enrichJobAutomation(draft, hashKey(notice.link).slice(0, 8)));
-  enriched.generatedJson = JSON.stringify({
-    title: enriched.title,
-    department: enriched.department,
-    postTarget: enriched.postTarget,
-    postStatus: "draft",
-    sourceLink: enriched.sourceLink,
-    officialWebsite: enriched.officialWebsite,
-    notificationSummary: enriched.notificationSummary,
-    importantDates: enriched.importantDates,
-    qualification: enriched.qualification,
-    totalPosts: enriched.totalPosts,
-    pageContent: enriched.pageContent
-  }, null, 2);
-  return enriched;
+  return applyCrawlerValidation(enrichJobAutomation(draft, hashKey(notice.link).slice(0, 8)));
 };
 
 const enrichDraftWithPdfText = async (draft = {}, notice = {}, limits = {}) => {
-  const link = notice.link || draft.sourceLink || "";
+  const link = noticeOfficialPdfLink(notice, draft) || notice.link || draft.sourceLink || "";
   if (!/\.pdf(?:$|[?#])/i.test(link)) {
-    return draft;
+    return applyCrawlerValidation(draft);
   }
   const pdfText = await fetchPdfText(link, limits.pdfTimeoutMs || 25000);
   if (!pdfText) {
-    return {
+    return applyCrawlerValidation({
       ...draft,
+      checkerStatus: "needs_review",
       pdfTextExtracted: false,
       crawlerSummary: {
         ...(draft.crawlerSummary || {}),
         pdfTextExtracted: false
       }
-    };
+    });
   }
-  const enriched = brandDraftForEmitra(enrichJobAutomation({
+  const enriched = enrichJobAutomation({
     ...draft,
+    title: extractPdfTitle(pdfText) || draft.title,
+    department: draft.sourceKind === "aggregator" ? (extractPdfDepartment(pdfText) || "") : (draft.department || extractPdfDepartment(pdfText)),
     pageContent: pdfText.slice(0, 9000),
     rawText: `${draft.rawText || ""}\n${pdfText}`.trim(),
     importantDates: draft.importantDates || extractDatesBlock(pdfText),
+    applicationFeeManual: draft.applicationFeeManual || extractApplicationFeeBlock(pdfText),
+    ageLimitManual: draft.ageLimitManual || extractAgeLimitBlock(pdfText),
     qualification: draft.qualification || findFirstMatchLine(pdfText, [/qualification/i, /eligibility/i, /education/i, /योग्यता/i, /पात्रता/i, /शैक्षणिक/i]),
     totalPosts: draft.totalPosts || extractTotalPosts(pdfText),
+    vacancyDetailsManual: draft.vacancyDetailsManual || extractVacancyBlock(pdfText),
+    selectionProcess: draft.selectionProcess || extractSelectionProcessBlock(pdfText),
+    howToApply: draft.howToApply || extractHowToApplyBlock(pdfText),
+    officialNotification: link,
+    detailLink: link,
     postTarget: detectPostTarget(draft.title, link, pdfText),
     pdfTextExtracted: true,
     lightweightDraft: false,
@@ -2947,21 +3064,8 @@ const enrichDraftWithPdfText = async (draft = {}, notice = {}, limits = {}) => {
       summaryProvider: "parser",
       summary: buildNotificationSummary({ ...draft, pageContent: pdfText })
     }
-  }, draft.duplicateKey || safeKey(link)));
-  enriched.generatedJson = JSON.stringify({
-    title: enriched.title,
-    department: enriched.department,
-    postTarget: enriched.postTarget,
-    postStatus: "draft",
-    sourceLink: enriched.sourceLink,
-    officialWebsite: enriched.officialWebsite,
-    notificationSummary: enriched.notificationSummary,
-    importantDates: enriched.importantDates,
-    qualification: enriched.qualification,
-    totalPosts: enriched.totalPosts,
-    pageContent: enriched.pageContent
-  }, null, 2);
-  return enriched;
+  }, draft.duplicateKey || safeKey(link));
+  return applyCrawlerValidation(enriched);
 };
 
 const sourceKeywordList = (source = {}, category = "") => {
@@ -3165,8 +3269,9 @@ async function checkOneAutoJobSource(db, source, limits = {}) {
             link: notice.link,
             sourceId: source.id,
             sourceName: source.name,
+            sourcePriority: draft.sourcePriority || source.sourcePriority || sourcePriorityValue(source),
             category: detectedTarget,
-            status: "draft",
+            status: draft.checkerStatus || "needs_review",
             firstSeenAt: now,
             draftId: duplicateId
           };
@@ -3177,8 +3282,9 @@ async function checkOneAutoJobSource(db, source, limits = {}) {
           normalizedLink,
           sourceId: source.id,
           sourceName: source.name,
+          sourcePriority: draft.sourcePriority || source.sourcePriority || sourcePriorityValue(source),
           category: detectedTarget,
-          status: "draft",
+          status: draft.checkerStatus || "needs_review",
           firstSeenAt: now,
           draftId: duplicateId
         };
@@ -3278,6 +3384,7 @@ async function runAutoJobChecker(options = {}) {
         if (source.enabled && source.url) sources.push(source);
       });
     }
+    sources.sort((a, b) => Number(a.sourcePriority || sourcePriorityValue(a)) - Number(b.sourcePriority || sourcePriorityValue(b)));
     const results = [];
     for (const source of sources.slice(0, limits.sourceLimit)) {
       if (limits.remainingDrafts <= 0 || limits.remainingPages <= 0) break;
@@ -3340,6 +3447,20 @@ async function publishAutoJobDraft(db, draftId, payload = {}) {
     error.statusCode = 409;
     throw error;
   }
+  const validation = validateCrawlerDraftQuality(draft);
+  if (validation.missing.length) {
+    await db.ref(`autoJobDrafts/${draftId}`).update({
+      checkerStatus: "needs_review",
+      reviewReason: validation.reviewReason,
+      missingRequiredFields: validation.missing,
+      validationStatus: validation.validationStatus,
+      generatedJson: JSON.stringify(validation.generated, null, 2),
+      updatedAt: nowStamp()
+    });
+    const error = new Error(validation.reviewReason);
+    error.statusCode = 409;
+    throw error;
+  }
   const duplicate = await existingPublishedDuplicate(db, draft, draftId);
   if (duplicate) {
     const error = new Error(`Duplicate live post found: ${duplicate.title || duplicate.jobId}`);
@@ -3365,7 +3486,15 @@ async function publishAutoJobDraft(db, draftId, payload = {}) {
     lastDate: toText(draft.lastDate || draft.lastApplyDate || "Update Soon"),
     qualification: toText(draft.qualification || "Update Soon"),
     importantDates: toText(draft.importantDates),
+    applicationFee: draft.applicationFee || draft.applicationFees || "",
+    applicationFees: draft.applicationFees || draft.applicationFee || "",
     applicationFeeManual: toText(draft.applicationFeeManual || draft.feeDetails || draft.feesDetails),
+    ageLimit: draft.ageLimit || draft.ageLimitManual || "",
+    ageLimitManual: toText(draft.ageLimitManual || ""),
+    vacancyDetails: draft.vacancyDetails || "",
+    vacancyDetailsManual: toText(draft.vacancyDetailsManual || ""),
+    selectionProcess: toText(draft.selectionProcess),
+    howToApply: toText(draft.howToApply),
     feeDetails: toText(draft.feeDetails || draft.applicationFeeManual),
     generalObcFee: toText(draft.generalObcFee),
     scStFee: toText(draft.scStFee),
@@ -3376,7 +3505,9 @@ async function publishAutoJobDraft(db, draftId, payload = {}) {
     bothExamFee: toText(draft.bothExamFee),
     paymentMode: toText(draft.paymentMode),
     applyLink: toText(draft.applyLink || "#"),
+    applyOnline: toText(draft.applyOnline || draft.applyLink || "#"),
     detailLink: toText(draft.detailLink || draft.sourceLink || "#"),
+    officialNotification: toText(draft.officialNotification || draft.detailLink || draft.sourceLink || "#"),
     officialWebsite: isAggregatorPortalUrl(draft.officialWebsite || draft.officialLink) ? "" : toText(draft.officialWebsite || draft.officialLink),
     sourceName: toText(draft.sourceName),
     sourceLink: toText(draft.sourceLink),
@@ -3669,7 +3800,7 @@ app.post("/api/quick-post/fetch-links", async (req, res) => {
 });
 
 const saveQuickPostDraft = async (db, draft = {}) => {
-  draft = brandDraftForEmitra(draft);
+  draft = applyCrawlerValidation(draft);
   const sourceLink = toText(draft.sourceLink || draft.detailLink || draft.officialWebsite);
   const duplicateId = autoJobUrlCacheKey(sourceLink || draft.title);
   if (await noticeAlreadyProcessed(db, { ...draft, sourceLink })) {
@@ -3684,7 +3815,7 @@ const saveQuickPostDraft = async (db, draft = {}) => {
       link: sourceLink,
       sourceName: "Quick Post",
       category: draft.postTarget || "latestJob",
-      status: "draft",
+      status: draft.checkerStatus || "needs_review",
       firstSeenAt: now,
       draftId: duplicateId
     };
@@ -3695,7 +3826,7 @@ const saveQuickPostDraft = async (db, draft = {}) => {
     normalizedLink: normalizeProcessedUrl(sourceLink),
     sourceName: "Quick Post",
     category: draft.postTarget || "latestJob",
-    status: "draft",
+    status: draft.checkerStatus || "needs_review",
     firstSeenAt: now,
     draftId: duplicateId
   };
@@ -4246,7 +4377,7 @@ app.post("/admin/auto-job-checker/draft/save", async (req, res) => {
   try {
     const { db } = await requireAdmin(req);
     const draftId = String(req.body?.draftId || "").trim();
-    const draft = brandDraftForEmitra(req.body?.draft && typeof req.body.draft === "object" ? req.body.draft : {});
+    const draft = applyCrawlerValidation(req.body?.draft && typeof req.body.draft === "object" ? req.body.draft : {});
     if (!draftId) {
       return res.status(400).json({ ok: false, error: "Draft ID required" });
     }
@@ -4265,7 +4396,7 @@ app.post("/admin/auto-job-checker/json/generate", async (req, res) => {
     await requireAdmin(req);
     const text = String(req.body?.text || "").trim();
     const draft = req.body?.draft && typeof req.body.draft === "object" ? req.body.draft : {};
-    const generated = enrichJobAutomation(generateJobJsonFromText(text || draft.pageContent || draft.rawText || draft.title || "", draft), safeKey(draft.sourceLink || draft.title || text));
+    const generated = applyCrawlerValidation(enrichJobAutomation(generateJobJsonFromText(text || draft.pageContent || draft.rawText || draft.title || "", draft), safeKey(draft.sourceLink || draft.title || text)));
     return res.json({ ok: true, json: generated });
   } catch (err) {
     return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
@@ -4282,7 +4413,7 @@ app.post("/admin/auto-job-checker/draft/enrich", async (req, res) => {
       const snapshot = await db.ref(`autoJobDrafts/${draftId}`).get();
       current = snapshot.exists() ? (snapshot.val() || {}) : {};
     }
-    const enriched = brandDraftForEmitra(enrichJobAutomation({ ...current, ...incoming }, draftId));
+    let enriched = brandDraftForEmitra(enrichJobAutomation({ ...current, ...incoming }, draftId));
     const aiOptions = aiOptionsFromRequest(req.body || {});
     const ai = await generateAiSummary(enriched, aiOptions);
     enriched.notificationSummary = sanitizePortalBranding(ai.summary);
@@ -4292,12 +4423,13 @@ app.post("/admin/auto-job-checker/draft/enrich", async (req, res) => {
     enriched.whatsappProvider = whatsappAi.provider;
     enriched.whatsappPostText = sanitizePortalBranding(whatsappAi.text);
     enriched.aiShareSuggestions = suggestions.map((item) => ({ ...item, text: sanitizePortalBranding(item.text || "") }));
+    enriched = applyCrawlerValidation(enriched);
     if (draftId) {
-      await db.ref(`autoJobDrafts/${draftId}`).update(brandDraftForEmitra(enriched));
+      await db.ref(`autoJobDrafts/${draftId}`).update(enriched);
     }
     return res.json({
       ok: true,
-      draft: brandDraftForEmitra(enriched),
+      draft: enriched,
       ai: {
         provider: whatsappAi.provider,
         summaryProvider: ai.provider,
