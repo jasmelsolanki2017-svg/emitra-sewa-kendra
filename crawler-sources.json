@@ -1,0 +1,101 @@
+[
+  {
+    "id": "official_rpsc",
+    "name": "RPSC",
+    "department": "Rajasthan Public Service Commission",
+    "url": "https://rpsc.rajasthan.gov.in/news",
+    "keywords": "recruitment, advertisement, result, admit card, answer key, press note, notification, vacancy",
+    "sourceKind": "official",
+    "maxFetch": 4
+  },
+  {
+    "id": "official_rssb",
+    "name": "RSSB",
+    "department": "Rajasthan Staff Selection Board",
+    "url": "https://rssb.rajasthan.gov.in",
+    "keywords": "recruitment, advertisement, result, admit card, answer key, notification, vacancy",
+    "sourceKind": "official",
+    "maxFetch": 4
+  },
+  {
+    "id": "official_ssc",
+    "name": "SSC",
+    "department": "Staff Selection Commission",
+    "url": "https://ssc.gov.in",
+    "keywords": "recruitment, admit card, result, vacancy, notification, notice, exam",
+    "sourceKind": "official",
+    "maxFetch": 4
+  },
+  {
+    "id": "official_upsc",
+    "name": "UPSC",
+    "department": "Union Public Service Commission",
+    "url": "https://upsc.gov.in/recruitment/recruitment-test",
+    "keywords": "recruitment, examination, notification, admit card, result, vacancy, advertisement",
+    "sourceKind": "official",
+    "maxFetch": 4
+  },
+  {
+    "id": "official_nta",
+    "name": "NTA",
+    "department": "National Testing Agency",
+    "url": "https://nta.ac.in/NoticeBoardArchive",
+    "keywords": "public notice, notification, admit card, result, exam city, recruitment, answer key",
+    "sourceKind": "official",
+    "maxFetch": 4
+  },
+  {
+    "id": "official_indian_army",
+    "name": "Indian Army",
+    "department": "Join Indian Army",
+    "url": "https://joinindianarmy.nic.in",
+    "keywords": "recruitment, rally, notification, admit card, result, merit list, officer entry",
+    "sourceKind": "official",
+    "maxFetch": 4
+  },
+  {
+    "id": "official_indian_navy",
+    "name": "Navy",
+    "department": "Indian Navy",
+    "url": "https://www.joinindiannavy.gov.in",
+    "keywords": "recruitment, notification, admit card, result, merit list, entry, vacancy",
+    "sourceKind": "official",
+    "maxFetch": 4
+  },
+  {
+    "id": "official_air_force",
+    "name": "Air Force",
+    "department": "Indian Air Force",
+    "url": "https://agnipathvayu.cdac.in/AV/",
+    "keywords": "recruitment, notification, admit card, result, intake, agniveervayu",
+    "sourceKind": "official",
+    "maxFetch": 4
+  },
+  {
+    "id": "official_ibps",
+    "name": "IBPS",
+    "department": "Institute of Banking Personnel Selection",
+    "url": "https://www.ibps.in/index.php/recruitment",
+    "keywords": "recruitment, CRP, notification, admit card, result, provisional allotment",
+    "sourceKind": "official",
+    "maxFetch": 4
+  },
+  {
+    "id": "official_sbi",
+    "name": "SBI",
+    "department": "State Bank of India",
+    "url": "https://sbi.co.in/web/careers/current-openings",
+    "keywords": "recruitment, advertisement, apply online, admit card, result, apprentice, clerk, officer",
+    "sourceKind": "official",
+    "maxFetch": 4
+  },
+  {
+    "id": "official_nhm_rajasthan",
+    "name": "Rajswasthya/NHM Rajasthan",
+    "department": "Rajasthan Medical Health and NHM",
+    "url": "https://rajswasthya.nic.in",
+    "keywords": "recruitment, vacancy, notification, merit list, result, admit card, NHM, health",
+    "sourceKind": "official",
+    "maxFetch": 4
+  }
+]

@@ -9,6 +9,8 @@ const { execFile } = require("child_process");
 const { promisify } = require("util");
 let admin = null;
 let pdfParse = null;
+let cheerio = null;
+let cron = null;
 
 try {
   admin = require("firebase-admin");
@@ -20,6 +22,18 @@ try {
   pdfParse = require("pdf-parse");
 } catch (err) {
   pdfParse = null;
+}
+
+try {
+  cheerio = require("cheerio");
+} catch (err) {
+  cheerio = null;
+}
+
+try {
+  cron = require("node-cron");
+} catch (err) {
+  cron = null;
 }
 
 const app = express();
@@ -61,6 +75,7 @@ const extractHttpUrl = (value, fallback = "") => {
 };
 const FIREBASE_URL = extractUrl(process.env.FIREBASE_URL, DEFAULT_FIREBASE_URL);
 const SETTINGS_PATH = path.join(__dirname, "settings.json");
+const CRAWLER_SOURCES_PATH = path.join(__dirname, "crawler-sources.json");
 const FORMS_FIELDS_CONFIG_PATH = path.join(__dirname, "emitra-offline-form-fill", "assets", "forms-fields-config.json");
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "jasmelsolanki@gmail.com";
 const SITE_BASE_URL = extractUrl(process.env.SITE_BASE_URL, "https://emitrawala.online");
@@ -88,7 +103,8 @@ const GITHUB_TOKEN = String(process.env.GITHUB_TOKEN || process.env.SEO_GITHUB_T
 const GITHUB_REPOSITORY = String(process.env.GITHUB_REPOSITORY || process.env.SEO_GITHUB_REPOSITORY || "jasmelsolanki2017-svg/emitra-sewa-kendra").trim();
 const GITHUB_DISPATCH_EVENT = String(process.env.SEO_GITHUB_DISPATCH_EVENT || "seo-posts-update").trim();
 const DEFAULT_MEMBER_PASSWORD = "User@123";
-const CHECKER_INTERVAL_MS = Number(process.env.AUTO_JOB_CHECKER_INTERVAL_MS || 60 * 60 * 1000);
+const CHECKER_INTERVAL_MS = Number(process.env.AUTO_JOB_CHECKER_INTERVAL_MS || 30 * 60 * 1000);
+const CHECKER_CRON = String(process.env.AUTO_JOB_CHECKER_CRON || "*/30 * * * *").trim();
 const BACKUP_INTERVAL_MS = Number(process.env.AUTO_BACKUP_INTERVAL_MS || 24 * 60 * 60 * 1000);
 const execFileAsync = promisify(execFile);
 let adminDb = null;
@@ -347,6 +363,10 @@ const AUTO_JOB_CATEGORY_CONFIG = {
   syllabus: {
     label: "Syllabus",
     keywords: ["syllabus", "exam pattern", "previous paper", "पाठ्यक्रम"]
+  },
+  currentAffairs: {
+    label: "Current Affairs",
+    keywords: ["current affairs", "daily current affairs", "news update", "करंट अफेयर्स", "समसामयिकी"]
   }
 };
 
@@ -2048,6 +2068,16 @@ const normalizeSourceKind = (value = "") => {
   return key === "aggregator" || key === "portal" || key === "scraped" ? "aggregator" : "official";
 };
 
+const readCrawlerSourceConfig = () => {
+  try {
+    const raw = fs.readFileSync(CRAWLER_SOURCES_PATH, "utf8");
+    const parsed = JSON.parse(raw || "[]");
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (_err) {
+    return [];
+  }
+};
+
 const DEFAULT_AUTO_JOB_SOURCES = [
   {
     id: "default_ssc",
@@ -2171,7 +2201,7 @@ const DEFAULT_AUTO_JOB_SOURCES = [
     feedUrls: ["https://www.freejobalert.com/feed/"],
     maxFetch: 12
   }
-].map((source) => ({
+].concat(readCrawlerSourceConfig()).map((source) => ({
   ...source,
   enabled: true,
   categories: AUTO_JOB_CATEGORY_KEYS,
@@ -2215,9 +2245,50 @@ const logAutoJob = async (db, payload = {}) => {
     message: toText(payload.message || ""),
     sourceId: payload.sourceId || "",
     sourceName: payload.sourceName || "",
+    source: payload.source || payload.sourceName || "",
+    title: toText(payload.title || ""),
+    url: extractHttpUrl(payload.url || payload.link || "") || toText(payload.url || payload.link || ""),
+    detectedAt: payload.detectedAt || createdAt,
+    status: payload.status || payload.level || "info",
+    error: toText(payload.error || ""),
     createdAt
   });
   return ref.key;
+};
+
+const sleep = (ms = 0) => new Promise((resolve) => setTimeout(resolve, Math.max(0, Number(ms) || 0)));
+
+const canFetchByRobots = async (targetUrl = "") => {
+  if (String(process.env.AUTO_JOB_RESPECT_ROBOTS || "true").toLowerCase() === "false") {
+    return { ok: true, reason: "disabled" };
+  }
+  try {
+    const parsed = new URL(targetUrl);
+    const robotsUrl = `${parsed.origin}/robots.txt`;
+    const robots = await fetchText(robotsUrl, 8000).catch(() => null);
+    if (!robots?.text) return { ok: true, reason: "missing" };
+    const pathName = parsed.pathname || "/";
+    let applies = false;
+    const disallows = [];
+    String(robots.text || "").split(/\r?\n/).forEach((rawLine) => {
+      const line = rawLine.replace(/#.*/, "").trim();
+      if (!line) return;
+      const agent = line.match(/^user-agent\s*:\s*(.+)$/i);
+      if (agent) {
+        const value = agent[1].trim();
+        applies = value === "*" || /emitra|mozilla|bot|crawler/i.test(value);
+        return;
+      }
+      const disallow = line.match(/^disallow\s*:\s*(.*)$/i);
+      if (applies && disallow && disallow[1].trim()) {
+        disallows.push(disallow[1].trim());
+      }
+    });
+    const blocked = disallows.some((rule) => pathName.startsWith(rule));
+    return { ok: !blocked, reason: blocked ? "robots_disallow" : "allowed" };
+  } catch (_err) {
+    return { ok: true, reason: "parse_failed" };
+  }
 };
 
 const fetchText = async (url, timeoutMs = 25000) => {
@@ -2512,27 +2583,49 @@ const extractXmlNotices = (xml = "", baseUrl = "", keywords = [], options = {}) 
 };
 
 const extractLinks = (html = "", baseUrl = "", keywords = [], options = {}) => {
-  const linkRegex = /<a\b[^>]*href\s*=\s*["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
   const sourceKeywords = keywords.length ? keywords : autoJobKeywords;
   const limit = readPositiveInt(options.limit, 80, 200);
   const rows = [];
   const seen = new Set();
-  let match;
-  while ((match = linkRegex.exec(html))) {
-    const href = String(match[1] || "").trim();
-    if (!href || /^(javascript:|mailto:|tel:|#)/i.test(href)) continue;
+  const addLink = (href = "", label = "") => {
+    const rawHref = String(href || "").trim();
+    if (!rawHref || /^(javascript:|mailto:|tel:|#)/i.test(rawHref)) return;
     let link = "";
     try {
-      link = new URL(href, baseUrl).href;
+      link = new URL(rawHref, baseUrl).href;
     } catch (err) {
-      continue;
+      return;
     }
-    const title = cleanNoticeTitle(decodeHtml(match[2] || link));
-    if (!isUsefulNoticeCandidate(title, link, sourceKeywords)) continue;
+    const title = cleanNoticeTitle(decodeHtml(label || link));
+    if (!isUsefulNoticeCandidate(title, link, sourceKeywords)) return;
     const key = link.toLowerCase();
-    if (seen.has(key)) continue;
+    if (seen.has(key)) return;
     seen.add(key);
     rows.push({ title: title || link, link });
+  };
+
+  if (cheerio) {
+    const $ = cheerio.load(String(html || ""));
+    $("a[href]").each((_, element) => {
+      if (rows.length >= limit) return false;
+      const node = $(element);
+      const title = [
+        node.text(),
+        node.attr("title"),
+        node.attr("aria-label"),
+        node.closest("tr").text(),
+        node.closest("li").text()
+      ].map(toText).find(Boolean);
+      addLink(node.attr("href"), title);
+      return undefined;
+    });
+    return rows.slice(0, limit);
+  }
+
+  const linkRegex = /<a\b[^>]*href\s*=\s*["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
+  let match;
+  while ((match = linkRegex.exec(html))) {
+    addLink(match[1], match[2]);
     if (rows.length >= limit) break;
   }
   return rows;
@@ -2584,11 +2677,87 @@ const buildDraftFromNotice = (source, notice, options = {}) => {
     detectedLink: notice.link,
     scanSourcePage: options.scanSourcePage || source.url,
     scanCategory: target,
+    crawlerSummary: {
+      source: source.name,
+      title: notice.title,
+      url: notice.link,
+      detectedType: target,
+      detectedAt: nowStamp(),
+      isPdf: /\.pdf(?:$|[?#])/i.test(notice.link),
+      summaryProvider: "parser",
+      summary: buildNotificationSummary({ title: notice.title, department, postTarget: target, sourceLink: notice.link })
+    },
+    generatedJson: "",
     createdAt: nowStamp(),
     updatedAt: nowStamp()
   };
   draft[linkField] = notice.link;
-  return enrichJobAutomation(draft, hashKey(notice.link).slice(0, 8));
+  const enriched = enrichJobAutomation(draft, hashKey(notice.link).slice(0, 8));
+  enriched.generatedJson = JSON.stringify({
+    title: enriched.title,
+    department: enriched.department,
+    postTarget: enriched.postTarget,
+    postStatus: "draft",
+    sourceLink: enriched.sourceLink,
+    officialWebsite: enriched.officialWebsite,
+    notificationSummary: enriched.notificationSummary,
+    importantDates: enriched.importantDates,
+    qualification: enriched.qualification,
+    totalPosts: enriched.totalPosts,
+    pageContent: enriched.pageContent
+  }, null, 2);
+  return enriched;
+};
+
+const enrichDraftWithPdfText = async (draft = {}, notice = {}, limits = {}) => {
+  const link = notice.link || draft.sourceLink || "";
+  if (!/\.pdf(?:$|[?#])/i.test(link)) {
+    return draft;
+  }
+  const pdfText = await fetchPdfText(link, limits.pdfTimeoutMs || 25000);
+  if (!pdfText) {
+    return {
+      ...draft,
+      pdfTextExtracted: false,
+      crawlerSummary: {
+        ...(draft.crawlerSummary || {}),
+        pdfTextExtracted: false
+      }
+    };
+  }
+  const enriched = enrichJobAutomation({
+    ...draft,
+    pageContent: pdfText.slice(0, 9000),
+    rawText: `${draft.rawText || ""}\n${pdfText}`.trim(),
+    importantDates: draft.importantDates || extractDatesBlock(pdfText),
+    qualification: draft.qualification || findFirstMatchLine(pdfText, [/qualification/i, /eligibility/i, /education/i, /योग्यता/i, /पात्रता/i, /शैक्षणिक/i]),
+    totalPosts: draft.totalPosts || extractTotalPosts(pdfText),
+    postTarget: detectPostTarget(draft.title, link, pdfText),
+    pdfTextExtracted: true,
+    lightweightDraft: false,
+    crawlerSummary: {
+      ...(draft.crawlerSummary || {}),
+      detectedType: detectPostTarget(draft.title, link, pdfText),
+      pdfTextExtracted: true,
+      extractedTextChars: pdfText.length,
+      summaryProvider: "parser",
+      summary: buildNotificationSummary({ ...draft, pageContent: pdfText })
+    }
+  }, draft.duplicateKey || safeKey(link));
+  enriched.generatedJson = JSON.stringify({
+    title: enriched.title,
+    department: enriched.department,
+    postTarget: enriched.postTarget,
+    postStatus: "draft",
+    sourceLink: enriched.sourceLink,
+    officialWebsite: enriched.officialWebsite,
+    notificationSummary: enriched.notificationSummary,
+    importantDates: enriched.importantDates,
+    qualification: enriched.qualification,
+    totalPosts: enriched.totalPosts,
+    pageContent: enriched.pageContent
+  }, null, 2);
+  return enriched;
 };
 
 const sourceKeywordList = (source = {}, category = "") => {
@@ -2724,6 +2893,23 @@ async function checkOneAutoJobSource(db, source, limits = {}) {
       pageFetches++;
       let page;
       try {
+        const robots = await canFetchByRobots(target.url);
+        if (!robots.ok) {
+          targetErrors++;
+          errorMessages.push(`${target.label || "Page"}: robots.txt disallow`);
+          await logAutoJob(db, {
+            level: "warning",
+            sourceId: source.id,
+            sourceName: source.name,
+            title: target.label || source.name,
+            url: target.url,
+            status: "robots_skipped",
+            error: "robots.txt disallow",
+            message: `${source.name}: robots.txt ne scan block kiya`
+          });
+          continue;
+        }
+        await sleep(readPositiveInt(limits.rateLimitMs || process.env.AUTO_JOB_RATE_LIMIT_MS, 1500, 10000));
         page = await fetchText(target.url, limits.fetchTimeoutMs || 18000);
       } catch (err) {
         const friendly = explainFetchError(err);
@@ -2761,10 +2947,11 @@ async function checkOneAutoJobSource(db, source, limits = {}) {
 
         const duplicateKeys = draftDuplicateCacheKeys(draftSeed);
         const duplicateId = autoJobUrlCacheKey(notice.link);
-        const draft = buildDraftFromNotice(source, notice, {
+        let draft = buildDraftFromNotice(source, notice, {
           postTarget: detectedTarget,
           scanSourcePage: target.url
         });
+        draft = await enrichDraftWithPdfText(draft, notice, limits);
         const now = nowStamp();
         const updates = {};
         duplicateKeys.forEach((key) => {
@@ -2796,6 +2983,16 @@ async function checkOneAutoJobSource(db, source, limits = {}) {
           duplicateKeys
         };
         await db.ref().update(updates);
+        await logAutoJob(db, {
+          level: "success",
+          sourceId: source.id,
+          sourceName: source.name,
+          title: draft.title || notice.title,
+          url: notice.link,
+          detectedAt: now,
+          status: "draft",
+          message: `New crawler draft saved: ${draft.title || notice.title}`
+        });
         newDrafts++;
         limits.remainingDrafts -= 1;
       }
@@ -2817,6 +3014,10 @@ async function checkOneAutoJobSource(db, source, limits = {}) {
       level: targetErrors ? "warning" : "success",
       sourceId: source.id,
       sourceName: source.name,
+      title: source.name,
+      url: source.url,
+      status: targetErrors ? "warning" : "success",
+      error: errorMessages.slice(0, 2).join(" | "),
       message: `${source.name}: ${pageFetches} pages/feeds, ${found} links, ${newDrafts} drafts, ${skippedDuplicates} duplicate skipped${targetErrors ? `, ${targetErrors} target skipped` : ""}`
     });
     return { sourceId: source.id, found, newDrafts, skippedDuplicates, pageFetches, targetErrors, ok: true };
@@ -2834,6 +3035,10 @@ async function checkOneAutoJobSource(db, source, limits = {}) {
       level: "error",
       sourceId: source.id,
       sourceName: source.name,
+      title: source.name,
+      url: source.url,
+      status: "error",
+      error: friendly.message,
       message: `${source.name}: ${friendly.message}`
     });
     return { sourceId: source.id, found, newDrafts, skippedDuplicates, pageFetches, ok: false, error: err.message, errorHelp: friendly.message, errorCode: friendly.code, startedAt };
@@ -2856,7 +3061,9 @@ async function runAutoJobChecker(options = {}) {
       remainingPages: readPositiveInt(options.pageLimit || process.env.AUTO_JOB_PAGE_LIMIT, AUTO_JOB_DEFAULT_PAGE_LIMIT, AUTO_JOB_MAX_PAGE_LIMIT),
       perSourceLimit: readPositiveInt(options.perSourceLimit || process.env.AUTO_JOB_PER_SOURCE_LIMIT, AUTO_JOB_DEFAULT_PER_SOURCE_LIMIT, AUTO_JOB_MAX_PER_SOURCE_LIMIT),
       sourceLimit: readPositiveInt(options.sourceLimit || process.env.AUTO_JOB_SOURCE_LIMIT, 100, 500),
-      fetchTimeoutMs: readPositiveInt(options.fetchTimeoutMs || process.env.AUTO_JOB_FETCH_TIMEOUT_MS, 18000, 30000)
+      fetchTimeoutMs: readPositiveInt(options.fetchTimeoutMs || process.env.AUTO_JOB_FETCH_TIMEOUT_MS, 18000, 30000),
+      pdfTimeoutMs: readPositiveInt(options.pdfTimeoutMs || process.env.AUTO_JOB_PDF_TIMEOUT_MS, 25000, 30000),
+      rateLimitMs: readPositiveInt(options.rateLimitMs || process.env.AUTO_JOB_RATE_LIMIT_MS, 1500, 10000)
     };
     const snapshot = await db.ref("autoJobSources").get();
     const sources = [];
@@ -4254,12 +4461,20 @@ app.listen(PORT, () => {
     });
   }, 60 * 1000);
   maybeRunDailyCurrentAffairsSchedule().catch(() => {});
-  if (CHECKER_INTERVAL_MS > 0) {
+  if (cron && CHECKER_CRON) {
+    cron.schedule(CHECKER_CRON, () => {
+      runAutoJobChecker({ scheduled: true }).catch((err) => {
+        console.error("Auto job checker failed:", err.message);
+      });
+    }, { timezone: "Asia/Kolkata" });
+    console.log(`Auto job crawler scheduled with cron: ${CHECKER_CRON}`);
+  } else if (CHECKER_INTERVAL_MS > 0) {
     setInterval(() => {
       runAutoJobChecker({ scheduled: true }).catch((err) => {
         console.error("Auto job checker failed:", err.message);
       });
     }, CHECKER_INTERVAL_MS);
+    console.log(`Auto job crawler scheduled every ${CHECKER_INTERVAL_MS}ms`);
   }
   if (BACKUP_INTERVAL_MS > 0 && isAdminSdkConfigured()) {
     setInterval(() => {

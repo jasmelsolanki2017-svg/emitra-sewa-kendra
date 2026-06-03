@@ -98,8 +98,8 @@
 <body>
   <div class="topbar"><div>Auto Job Checker</div><div id="liveTime">Loading...</div></div>
   <header>
-    <h1>Auto Job Checker</h1>
-    <p>Official websites check karke naye notice ko draft me ready karein.</p>
+    <h1>Auto Job Crawler</h1>
+    <p>Official websites check karke naye notice/PDF ko approval draft me ready karein.</p>
   </header>
   <nav>
     <a href="dashboard.html">Dashboard</a>
@@ -248,13 +248,13 @@
       </section>
 
       <section class="panel">
-        <h2>Error Log / Activity</h2>
+        <h2>Crawler Logs</h2>
         <div class="logs" id="logList"><div class="empty">Loading...</div></div>
       </section>
     </div>
 
     <section class="panel">
-      <h2>Detected Draft Review</h2>
+      <h2>Crawler Drafts</h2>
       <div class="form-grid">
         <input id="draftTitle" placeholder="Title">
         <input id="draftDepartment" placeholder="Department">
@@ -1314,7 +1314,7 @@
     const renderLogs=(logs={})=>{
       const rows=Object.entries(logs).sort((a,b)=>Number(b[1].createdAt||0)-Number(a[1].createdAt||0)).slice(0,80);
       if(!rows.length){logList.innerHTML='<div class="empty">Abhi log nahi hai.</div>';return}
-      logList.innerHTML=rows.map(([,data])=>`<div class="row ${data.level==="error"?"error":data.level==="success"?"success":""}"><div><strong>${escapeHTML(data.level||"info")}</strong><small>${formatTime(data.createdAt)} | ${escapeHTML(data.sourceName||"System")}</small><small>${escapeHTML(data.message||"")}</small></div></div>`).join("");
+      logList.innerHTML=rows.map(([,data])=>`<div class="row ${data.level==="error"?"error":data.level==="success"?"success":""}"><div><strong>${escapeHTML(data.status||data.level||"info")}</strong><small>${formatTime(data.detectedAt||data.createdAt)} | ${escapeHTML(data.sourceName||data.source||"System")}</small>${data.title?`<small>Title: ${escapeHTML(data.title)}</small>`:""}${data.url?`<small>URL: ${escapeHTML(data.url)}</small>`:""}<small>${escapeHTML(data.message||"")}</small>${data.error?`<small style="color:#d90000;">Error: ${escapeHTML(data.error)}</small>`:""}</div></div>`).join("");
     };
 
     const renderCheckerSummary=(data={})=>{
