@@ -90,7 +90,7 @@
         "url": "https://emitrawala.online/"
       },
       "employmentType": "Online Form",
-      "datePosted": "2026-06-02",
+      "datePosted": "2026-06-03",
       "hiringOrganization": {
         "@type": "Organization",
         "name": "FreeJobAlert Job Portal"
@@ -559,25 +559,6 @@ const safeUrl = (value = "#") => {
   if(/^www\./i.test(url)){ return `https://${url}`; }
   return "#";
 };
-
-const comparableLinkUrl = (value = "") => {
-  const clean = safeUrl(value);
-  if(!clean || clean === "#"){ return ""; }
-  try{
-    const url = new URL(clean, location.origin);
-    url.hash = "";
-    const removableParams = ["utm_source","utm_medium","utm_campaign","utm_term","utm_content","fbclid","gclid"];
-    removableParams.forEach((key) => url.searchParams.delete(key));
-    const path = url.pathname.replace(/\/+$/, "") || "/";
-    return `${url.protocol}//${url.hostname.toLowerCase()}${path}${url.search}`.replace(/\/+$/, "");
-  }catch(_error){
-    return clean.replace(/#.*$/, "").replace(/\/+$/, "").toLowerCase();
-  }
-};
-
-const urlsFromText = (value = "") => Array.from(String(value || "").matchAll(/https?:\/\/[^\s"'<>]+|www\.[^\s"'<>]+/gi))
-  .map((match) => comparableLinkUrl(match[0]))
-  .filter(Boolean);
 
 const setMeta = (selector, attr, value) => {
   const text = String(value || "").trim();
@@ -1398,15 +1379,8 @@ const renderManualRow = (row = {}) => {
   return `<p class="manual-line">${renderLabeledLine(row.text)}</p>`;
 };
 
-const renderManualBlock = (content = "", options = {}) => {
-  const skipUrls = options.skipUrls instanceof Set ? options.skipUrls : new Set();
-  const rows = normalizeManualRows(content).filter((row) => {
-    if(!skipUrls.size){ return true; }
-    const haystack = row.type === "pair" ? `${row.label || ""} ${row.value || ""}` : row.text || "";
-    const rowUrls = urlsFromText(haystack);
-    return !rowUrls.length || rowUrls.some((url) => !skipUrls.has(url));
-  });
-  const html = rows.map(renderManualRow).join("");
+const renderManualBlock = (content = "") => {
+  const html = normalizeManualRows(content).map(renderManualRow).join("");
   return html ? `<div class="manual-lines">${html}</div>` : "";
 };
 
@@ -1444,7 +1418,7 @@ const renderBulletTextBlock = (boxId, panelId, value) => {
   return true;
 };
 
-const renderManualContent = (boxId, panelId, value, title, options = {}) => {
+const renderManualContent = (boxId, panelId, value, title) => {
   const box = document.getElementById(boxId);
   const panel = document.getElementById(panelId);
   const content = String(value || "").trim();
@@ -1453,10 +1427,7 @@ const renderManualContent = (boxId, panelId, value, title, options = {}) => {
     box.innerHTML = "";
     return false;
   }
-  box.innerHTML = renderManualBlock(content, options) || "";
-  if(!box.innerHTML){
-    return false;
-  }
+  box.innerHTML = renderManualBlock(content) || renderPageContent(content, title) || renderFormattedText(content);
   panel.style.display = "block";
   return true;
 };
@@ -1540,13 +1511,7 @@ const buildButton = (item, extraClass = "") => {
 const renderSidebarLinks = (items = []) => {
   const box = document.getElementById("sideQuickLinks");
   if(!box){ return; }
-  const seen = new Set();
-  const html = items.map((item) => {
-    const key = comparableLinkUrl(item?.url || "");
-    if(!key || seen.has(key)){ return ""; }
-    seen.add(key);
-    return buildButton(item, item.className || "");
-  }).filter(Boolean).join("");
+  const html = items.map((item) => buildButton(item, item.className || "")).filter(Boolean).join("");
   box.innerHTML = html || '<a class="btn notification" href="job-form.html">Latest Jobs</a>';
 };
 
@@ -2491,23 +2456,17 @@ const renderJobDetail = (jobId, rawJob, allJobs = []) => {
       button.style.display = visible ? "inline-flex" : "none";
       hasLink = hasLink || visible;
     });
+    const hasLinksManual = renderManualContent("linksManual", "linksPanel", job.importantLinksManual, "Other Important Links");
     const nestedImportant = Array.isArray(job.importantLinks) ? job.importantLinks : [];
     const primaryVisibleLinks = linkButtons.map((item) => ({ label:item.label, url:safeUrl(item.url) })).filter((item) => item.url && item.url !== "#");
-    const primaryLinkKeys = new Set(primaryVisibleLinks.map((item) => `${String(item.label || "").trim().toLowerCase()}|${comparableLinkUrl(item.url)}`));
-    const primaryUrls = new Set(primaryVisibleLinks.map((item) => comparableLinkUrl(item.url)).filter(Boolean));
+    const primaryLinkKeys = new Set(primaryVisibleLinks.map((item) => `${String(item.label || "").trim().toLowerCase()}|${item.url}`));
+    const primaryUrls = new Set(primaryVisibleLinks.map((item) => item.url));
     const extraImportantLinks = nestedImportant.filter((item) => {
       if(!item || !item.label || !item.url) return false;
       const url = safeUrl(item.url);
       if(!url || url === "#") return false;
-      const comparableUrl = comparableLinkUrl(url);
-      return !primaryUrls.has(comparableUrl) && !primaryLinkKeys.has(`${String(item.label || "").trim().toLowerCase()}|${comparableUrl}`);
+      return !primaryUrls.has(url) && !primaryLinkKeys.has(`${String(item.label || "").trim().toLowerCase()}|${url}`);
     });
-    const visibleImportantUrls = new Set([
-      ...Array.from(primaryUrls),
-      ...extraImportantLinks.map((item) => comparableLinkUrl(item.url)).filter(Boolean),
-      ...parsePostWiseApplyLinks(job.postWiseApplyLinks).map((item) => comparableLinkUrl(item.url)).filter(Boolean)
-    ]);
-    const hasLinksManual = renderManualContent("linksManual", "linksPanel", job.importantLinksManual, "Other Important Links", { skipUrls:visibleImportantUrls });
     let hasNestedImportant = false;
     if(extraImportantLinks.length && !hasPostApplyLinks){
       const nestedLinksHtml = extraImportantLinks.map((item) => `<a class="btn" href="${safeUrl(item.url)}" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-link"></i> ${escapeHTML(item.label)}</a>`).join("");
