@@ -1228,7 +1228,7 @@ const normalizeLatestJobsSeo = async (db, onlyJobId = "") => {
   };
 };
 
-const triggerSeoPostsWorkflow = async ({ db = null, jobId = "", reason = "admin-save" } = {}) => {
+const triggerSeoPostsWorkflow = async ({ db = null, jobId = "", reason = "admin-save", deletedSlug = "" } = {}) => {
   const now = Date.now();
   const baseLog = {
     jobId,
@@ -1277,6 +1277,7 @@ const triggerSeoPostsWorkflow = async ({ db = null, jobId = "", reason = "admin-
       event_type: GITHUB_DISPATCH_EVENT,
       client_payload: {
         jobId,
+        deletedSlug,
         reason,
         source: "admin-portal",
         requestedAt: new Date(now).toISOString()
@@ -1308,6 +1309,23 @@ const triggerSeoPostsWorkflow = async ({ db = null, jobId = "", reason = "admin-
   };
   await saveSeoPublishLog(db, { ...baseLog, result });
   return result;
+};
+
+const deleteStaticPostFolder = async (slug = "") => {
+  const clean = String(slug || "").trim();
+  if (!/^[a-z0-9-]+$/i.test(clean)) {
+    return { ok: false, skipped: true, reason: "Invalid or empty slug" };
+  }
+  const target = path.resolve(__dirname, "post", clean);
+  const postRoot = path.resolve(__dirname, "post");
+  if (!target.startsWith(`${postRoot}${path.sep}`)) {
+    return { ok: false, skipped: true, reason: "Unsafe post path" };
+  }
+  if (!fs.existsSync(target)) {
+    return { ok: true, skipped: true, slug: clean, reason: "Static post folder not found" };
+  }
+  await fs.promises.rm(target, { recursive: true, force: true });
+  return { ok: true, skipped: false, slug: clean };
 };
 
 const compactLine = (label, value) => {
