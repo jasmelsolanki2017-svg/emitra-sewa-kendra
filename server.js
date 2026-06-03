@@ -3983,6 +3983,13 @@ app.get("/post/:slug", async (req, res, next) => {
   try {
     const found = await findPublishedJobBySlug(req.params.slug);
     if (!found) {
+      const slug = String(req.params.slug || "");
+      if (/^[a-z0-9-]+$/i.test(slug)) {
+        const staticPostPath = path.join(__dirname, "post", slug, "index.html");
+        if (fs.existsSync(staticPostPath)) {
+          return res.sendFile(staticPostPath);
+        }
+      }
       return next();
     }
     const canonicalPath = new URL(getPublicJobUrl(found.id, found.job)).pathname;

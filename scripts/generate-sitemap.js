@@ -516,6 +516,34 @@ const updateStaticPostPages = (rows = []) => {
   });
 };
 
+const readExistingStaticPostRows = (rows = []) => {
+  if (!fs.existsSync(POST_ROOT)) return [];
+  const knownSlugs = new Set(rows.map(({ id, job }) => buildSeoFields(job, id).slug.toLowerCase()));
+  return fs.readdirSync(POST_ROOT, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => {
+      const slug = entry.name;
+      if (knownSlugs.has(slug.toLowerCase())) return null;
+      const filePath = path.join(POST_ROOT, slug, "index.html");
+      if (!fs.existsSync(filePath)) return null;
+      const html = fs.readFileSync(filePath, "utf8");
+      const title = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i)?.[1]
+        || html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]
+        || slug.replace(/-/g, " ");
+      const stat = fs.statSync(filePath);
+      return {
+        id: `static-${slug}`,
+        job: {
+          title: title.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim(),
+          slug,
+          postStatus: "published",
+          updatedAt: stat.mtimeMs
+        }
+      };
+    })
+    .filter(Boolean);
+};
+
 const update404PostRedirects = (rows = []) => {
   const html = fs.readFileSync(NOT_FOUND_PATH, "utf8");
   const slugs = rows
@@ -550,7 +578,8 @@ async function main() {
     .map(([id, value]) => ({ id, job: normalizeJob(value) }))
     .filter(({ job }) => isPublishedJob(job));
   const rows = buildAllStaticRows(latestRows, portalData);
-  const entries = rows
+  const sitemapRows = [...rows, ...readExistingStaticPostRows(rows)];
+  const entries = sitemapRows
     .map(({ id, job }) => sitemapEntry({
       loc: jobUrl(id, job),
       lastmod: sitemapDate(job.updatedAt || job.createdAt || job.postDate),
@@ -568,9 +597,9 @@ ${entries.join("\n")}
   fs.writeFileSync(JOB_SITEMAP_PATH, jobSitemapXml, "utf8");
   updateIndexFallback(rows);
   updateStaticPostPages(rows);
-  update404PostRedirects(rows);
+  update404PostRedirects(sitemapRows);
   patch404SlugMatching();
-  console.log(`sitemap.xml, sitemap-jobs.xml, index.html fallback, 404 redirects and post pages updated with ${entries.length} dynamic LatestJobs URLs`);
+  console.log(`sitemap.xml, sitemap-jobs.xml, index.html fallback, 404 redirects and post pages updated with ${rows.length} dynamic LatestJobs URLs and ${sitemapRows.length - rows.length} preserved static post URLs`);
 }
 
 main().catch((error) => {
