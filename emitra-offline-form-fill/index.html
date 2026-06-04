@@ -158,6 +158,7 @@
       <div class="toolsRow">
         <button id="saveLocalBtn" class="secondary" title="Admin config server par save kare. Sab users ko latest config auto load hoga.">Update Config</button>
         <button id="addFormBtn" class="secondary" title="Naya PDF form dropdown me add kare">Add PDF Form</button>
+        <button id="deleteFormBtn" class="danger" title="Current selected PDF form delete kare">Delete PDF Form</button>
         <button id="addFieldBtn" class="secondary" title="Current PDF par naya mapped field add kare">Add Field</button>
         <button id="addInputBtn" class="secondary" title="User form me naya input add kare">Add Input</button>
         <button id="deleteFieldBtn" class="danger" title="Selected mapped field delete kare">Delete Field</button>
@@ -1268,6 +1269,30 @@ async function addPdfForm(){
   fileInput.dataset.newFormKey = makeFormKeyFromTitle(title);
   fileInput.click();
 }
+async function deletePdfForm(){
+  if(!authState.isAdmin){
+    setStatus('PDF form sirf admin delete kar sakta hai.', 'bad');
+    return;
+  }
+  if(FORMS[currentFormKey]){
+    setStatus('Default form delete nahi ho sakta. Sirf admin-added form delete hoga.', 'bad');
+    return;
+  }
+  if(!allConfigs?.forms?.[currentFormKey]){
+    setStatus('Delete ke liye pehle PDF form select karein.', 'bad');
+    return;
+  }
+  const currentTitle = getFormMeta(currentFormKey).title || currentFormKey;
+  if(!confirm(`"${currentTitle}" PDF form delete karna hai?`)) return;
+  const combined = getCombinedConfigForDownload();
+  delete combined.forms[currentFormKey];
+  const nextFormKey = Object.keys(combined.forms)[0] || Object.keys(FORMS)[0];
+  allConfigs = combined;
+  currentFormKey = nextFormKey;
+  rebuildFormSelect();
+  await loadSelectedForm();
+  setStatus('PDF form delete ho gaya. Permanent save ke liye Update Config dabayein.', 'ok');
+}
 async function saveConfigForEveryone(){
   if(!authState.isAdmin) {
     setStatus('Sirf admin Update Config kar sakta hai.', 'bad');
@@ -1297,6 +1322,7 @@ $('sampleDataBtn').addEventListener('click',()=>resetFormData(true));
 $('editMode').addEventListener('change',()=>document.body.classList.toggle('editOn',$('editMode').checked));
 $('saveLocalBtn').addEventListener('click',saveConfigForEveryone);
 $('addFormBtn').addEventListener('click',addPdfForm);
+$('deleteFormBtn').addEventListener('click',deletePdfForm);
 $('addFieldBtn').addEventListener('click',addMappedField);
 $('addInputBtn').addEventListener('click',addCustomInput);
 $('deleteFieldBtn').addEventListener('click',deleteMappedField);
