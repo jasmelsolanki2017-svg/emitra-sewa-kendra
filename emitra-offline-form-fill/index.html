@@ -153,7 +153,7 @@
       <h2>Position Editor</h2>
       <p class="small">Editor ON karke field ko drag karo. Selected field ki exact value yahan se adjust karo.</p>
       <div class="toolsRow">
-        <button id="saveLocalBtn" class="secondary">Save Browser</button>
+        <button id="saveLocalBtn" class="secondary" title="Admin config server par save kare. Sab users ko latest config auto load hoga.">Update Config</button>
         <button id="downloadConfigBtn" class="warn">Download Config</button>
         <button id="resetConfigBtn" class="danger">Reset</button>
       </div>
@@ -977,10 +977,10 @@ function downloadConfig(){
 }
 async function saveConfigForEveryone(){
   if(!authState.isAdmin) {
-    setStatus('Sirf admin config save kar sakta hai.', 'bad');
+    setStatus('Sirf admin Update Config kar sakta hai.', 'bad');
     return;
   }
-  setStatus('Config sabke liye save ho raha hai...');
+  setStatus('Latest config server par update ho raha hai...');
   try{
     const combined = getCombinedConfigForDownload();
     const result = await callAdminApi('/admin/forms-config/save', { config: combined });
@@ -988,10 +988,10 @@ async function saveConfigForEveryone(){
     defaultConfig = sanitizeConfigFields(structuredClone(allConfigs.forms[currentFormKey]));
     config = sanitizeConfigFields(structuredClone(defaultConfig));
     await renderPreview();
-    setStatus('Config sabke liye update ho gaya.', 'ok');
+    setStatus('Config update ho gaya. Sab users ko latest config auto load hoga.', 'ok');
   }catch(error){
     console.error(error);
-    setStatus('Server save error: ' + error.message, 'bad');
+    setStatus('Update Config error: ' + error.message, 'bad');
   }
 }
 
