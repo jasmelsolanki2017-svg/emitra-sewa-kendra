@@ -234,13 +234,13 @@ const FORM_SCHEMAS = {
       ['currentAddress','वर्तमान पता','textarea','Dummy Current Address'],
       ['permanentAddress','स्थाई पता','textarea','Dummy Permanent Address'],
       ['village','गाँव/शहर','text','Dummy Village'], ['tehsil','तहसील','text','Dummy Tehsil'], ['district','जिला','text','Dummy District'],
-      ['dob','जन्म दिनांक DD/MM/YYYY','text','01/01/2000'], ['birthPlace','जन्म स्थान','text','Dummy Birth Place'], ['age','उम्र (DOB से auto)','text',''],
+      ['dob','जन्म दिनांक DD-MM-YYYY','text','01-01-2000'], ['birthPlace','जन्म स्थान','text','Dummy Birth Place'], ['age','उम्र (DOB से auto)','text',''],
       ['gender','लिंग','select:male=पुरुष,female=महिला','male'], ['maritalStatus','वैवाहिक स्थिति','select:married=विवाहित,unmarried=अविवाहित','married'],
       ['religionApplicant','धर्म आवेदक','text','हिन्दू'], ['religionFather','धर्म पिता','text','हिन्दू'],
       ['subCasteApplicant','उपजाति आवेदक','text','Dummy Caste'], ['subCasteFather','उपजाति पिता','text','Dummy Caste'],
       ['educationCasteReligion','शिक्षा/व्यवसाय में दर्ज जाति/धर्म','text','अनुसूचित जाति / हिन्दू'],
       ['rajasthanResident','राजस्थान मूल निवासी','select:yes=हाँ,no=नहीं','yes'],
-      ['mobile','मोबाइल नंबर','text','0000000000'], ['date','दिनांक DD/MM/YYYY','text','01/01/2026'], ['place','स्थान','text','Dummy Place'],
+      ['mobile','मोबाइल नंबर','text','0000000000'], ['date','दिनांक DD-MM-YYYY','text','01-01-2026'], ['place','स्थान','text','Dummy Place'],
       ['rationNumber','राशन कार्ड नंबर','text','000000000000']
     ]},
     {group:'गवाह 1', fields:[
@@ -269,13 +269,13 @@ const FORM_SCHEMAS = {
       ['fatherOccupation','पिता/पति का व्यवसाय','text','Dummy Occupation'],
       ['fatherBusinessAddress','पिता/पति के व्यवसाय का पता','textarea','Dummy Business Address'],
       ['birthPlace','जन्म स्थान','text','Dummy Birth Place'],
-      ['dob','जन्म दिनांक DD/MM/YYYY','text','01/01/2000'],
+      ['dob','जन्म दिनांक DD-MM-YYYY','text','01-01-2000'],
       ['age','Candidate Age / उम्र (DOB से auto)','text',''],
       ['propertyDetails','स्वयं/पिता की अचल संपत्ति का विवरण','textarea','Dummy Property Details'],
       ['voterList','मतदाता सूची में नाम','select:yes=हाँ,no=नहीं','yes'],
       ['yearsRajasthan','राजस्थान में रहने के वर्ष','text','00 वर्ष'],
       ['mobile','मोबाइल नंबर','text','0000000000'],
-      ['date','दिनांक DD/MM/YYYY','text','01/01/2026'],
+      ['date','दिनांक DD-MM-YYYY','text','01-01-2026'],
       ['place','स्थान','text','Dummy Place'],
       ['district','जिला','text','Dummy District']
     ]},
@@ -548,6 +548,7 @@ function buildDataForm(){
       input.id='data_'+id;
       input.value = Object.prototype.hasOwnProperty.call(sharedFormData, id) ? sharedFormData[id] : (def || '');
       input.autocomplete = 'off';
+      const dateField = id === 'dob' || id === 'date';
       const hindiField = shouldAutoHindiField(id, type);
       if(hindiField) {
         input.dataset.autoHindi = '1';
@@ -556,7 +557,7 @@ function buildDataForm(){
         input.setAttribute('autocapitalize','off');
         input.setAttribute('spellcheck','true');
       } else {
-        input.inputMode = (id==='aadhaar' || id==='janAadhaar' || id==='mobile' || id==='age' || id==='rationNumber') ? 'numeric' : 'text';
+        input.inputMode = (id==='aadhaar' || id==='janAadhaar' || id==='mobile' || id==='age' || id==='rationNumber' || dateField) ? 'numeric' : 'text';
       }
       let hindiTimer = null;
       input.addEventListener('input', ()=>{
@@ -568,8 +569,8 @@ function buildDataForm(){
         setSharedValue(id, input.value);
         refreshOverlayTexts();
       });
-      input.addEventListener('change', ()=>{ applyAutoHindiToInput(input); setSharedValue(id, input.value); refreshOverlayTexts(); });
-      input.addEventListener('blur', ()=>{ applyAutoHindiToInput(input); setSharedValue(id, input.value); refreshOverlayTexts(); });
+      input.addEventListener('change', ()=>{ applyAutoHindiToInput(input); normalizeDateInputIfNeeded(input, id); setSharedValue(id, input.value); refreshOverlayTexts(); });
+      input.addEventListener('blur', ()=>{ applyAutoHindiToInput(input); normalizeDateInputIfNeeded(input, id); setSharedValue(id, input.value); refreshOverlayTexts(); });
       wrap.appendChild(input); grid.appendChild(wrap);
     }
     root.appendChild(section);
@@ -602,14 +603,65 @@ function collectData(){
     if (el) data[id]=el.value.trim();
     else if (data[id] == null) data[id]='';
   }
+  normalizeCollectedDate(data, 'dob');
+  normalizeCollectedDate(data, 'date');
   const dob = (data.dob||'').split(/[\/\-.]/); data.dobDay=dob[0]||''; data.dobMonth=dob[1]||''; data.dobYear=dob[2]||'';
   const date = (data.date||'').split(/[\/\-.]/); data.dateDay=date[0]||''; data.dateMonth=date[1]||''; data.dateYear=date[2]||'';
   syncAgeFromDob(data);
   return data;
 }
+function pad2(value){
+  return String(value).padStart(2, '0');
+}
+
+function normalizeDateValue(str){
+  const raw = String(str || '').trim();
+  if(!raw) return '';
+  let d = '', m = '', y = '';
+  const separated = raw.match(/^(\d{1,2})\D+(\d{1,2})\D+(\d{2}|\d{4})$/);
+  if(separated){
+    d = separated[1]; m = separated[2]; y = separated[3];
+  } else {
+    const digits = raw.replace(/\D/g, '');
+    if(digits.length === 8){
+      d = digits.slice(0, 2); m = digits.slice(2, 4); y = digits.slice(4);
+    } else if(digits.length === 7){
+      d = digits.slice(0, 2); m = digits.slice(2, 3); y = digits.slice(3);
+    } else if(digits.length === 6){
+      d = digits.slice(0, 1); m = digits.slice(1, 2); y = digits.slice(2);
+    } else {
+      return raw;
+    }
+  }
+  if(y.length === 2) y = (Number(y) > 30 ? '19' : '20') + y;
+  const day = Number(d), month = Number(m), year = Number(y);
+  const dt = new Date(year, month - 1, day);
+  if(dt.getFullYear() !== year || dt.getMonth() !== month - 1 || dt.getDate() !== day) return raw;
+  return `${pad2(day)}-${pad2(month)}-${year}`;
+}
+
+function normalizeDateInputIfNeeded(input, id){
+  if(id !== 'dob' && id !== 'date') return;
+  const normalized = normalizeDateValue(input.value);
+  if(normalized && normalized !== input.value){
+    input.value = normalized;
+  }
+}
+
+function normalizeCollectedDate(data, id){
+  const normalized = normalizeDateValue(data[id]);
+  if(!normalized || normalized === data[id]) return;
+  data[id] = normalized;
+  sharedFormData[id] = normalized;
+  const el = $('data_' + id);
+  if(el && el.value !== normalized) el.value = normalized;
+  try { localStorage.setItem(DATA_LOCAL_KEY, JSON.stringify(sharedFormData)); } catch(e) {}
+}
+
 function parseSimpleDate(str){
   if(!str) return null;
-  const m = String(str).trim().match(/(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/);
+  const normalized = normalizeDateValue(str);
+  const m = String(normalized).trim().match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);
   if(!m) return null;
   const d = Number(m[1]), mo = Number(m[2]) - 1, y = Number(m[3]);
   const dt = new Date(y, mo, d);
