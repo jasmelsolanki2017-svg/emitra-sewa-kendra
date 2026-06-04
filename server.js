@@ -77,6 +77,7 @@ const FIREBASE_URL = extractUrl(process.env.FIREBASE_URL, DEFAULT_FIREBASE_URL);
 const SETTINGS_PATH = path.join(__dirname, "settings.json");
 const CRAWLER_SOURCES_PATH = path.join(__dirname, "crawler-sources.json");
 const FORMS_FIELDS_CONFIG_PATH = path.join(__dirname, "emitra-offline-form-fill", "assets", "forms-fields-config.json");
+const FORMS_TEMPLATE_UPLOAD_DIR = path.join(__dirname, "emitra-offline-form-fill", "assets", "uploaded-templates");
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "jasmelsolanki@gmail.com";
 const SITE_BASE_URL = extractUrl(process.env.SITE_BASE_URL, "https://emitrawala.online");
 const WHATSAPP_CHANNEL_URL = extractHttpUrl(process.env.WHATSAPP_CHANNEL_URL, "https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q");
@@ -171,7 +172,7 @@ function normalizeMobile(value = "") {
   };
 }
 
-app.use(express.json({ limit: "1mb" }));
+app.use(express.json({ limit: "20mb" }));
 app.use((req, res, next) => {
   const origin = req.headers.origin || "*";
   res.setHeader("Access-Control-Allow-Origin", origin);
@@ -2208,6 +2209,25 @@ function validateFormsFieldsConfig(config = {}) {
   }
 }
 
+function sanitizeUploadedPdfName(name = "") {
+  const base = path.basename(String(name || "template.pdf")).replace(/\.pdf$/i, "");
+  return (base || "template")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 60) || "template";
+}
+
+function decodePdfBase64(value = "") {
+  const text = String(value || "");
+  const clean = text.includes(",") ? text.split(",").pop() : text;
+  const buffer = Buffer.from(clean, "base64");
+  if (buffer.length < 5 || buffer.slice(0, 5).toString("utf8") !== "%PDF-") {
+    throw new Error("Valid PDF file required");
+  }
+  return buffer;
+}
+
 const sendTelegramMessage = async (text) => {
   if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
     const error = new Error("TELEGRAM_BOT_TOKEN aur TELEGRAM_CHAT_ID env me set nahi hain");
@@ -3864,6 +3884,40 @@ app.post("/admin/forms-config/save", async (req, res) => {
     };
     writeFormsFieldsConfigFile(updated);
     return res.json({ ok: true, config: updated });
+  } catch (err) {
+    return res.status(err.statusCode || 500).json({ ok: false, error: String(err.message || err) });
+  }
+});
+
+app.post("/admin/forms-template/upload", async (req, res) => {
+  try {
+    await requireAdmin(req);
+    const formKey = String(req.body?.formKey || "").trim();
+    if (!["caste", "bonafide"].includes(formKey)) {
+      return res.status(400).json({ ok: false, error: "Valid formKey required" });
+    }
+    const pdfBuffer = decodePdfBase64(req.body?.pdfBase64 || "");
+    if (pdfBuffer.length > 15 * 1024 * 1024) {
+      return res.status(400).json({ ok: false, error: "PDF 15MB se chhoti honi chahiye" });
+    }
+    fs.mkdirSync(FORMS_TEMPLATE_UPLOAD_DIR, { recursive: true });
+    const safeName = sanitizeUploadedPdfName(req.body?.fileName || `${formKey}-template.pdf`);
+    const fileName = `${formKey}-${Date.now()}-${safeName}.pdf`;
+    const filePath = path.join(FORMS_TEMPLATE_UPLOAD_DIR, fileName);
+    fs.writeFileSync(filePath, pdfBuffer);
+    const templatePath = `/emitra-offline-form-fill/assets/uploaded-templates/${fileName}`;
+    const current = readFormsFieldsConfigFile();
+    if (!current.forms || typeof current.forms !== "object") current.forms = {};
+    if (!current.forms[formKey] || typeof current.forms[formKey] !== "object") current.forms[formKey] = { fields: [] };
+    current.forms[formKey] = {
+      ...current.forms[formKey],
+      template: templatePath,
+      templateUpdatedAt: nowStamp()
+    };
+    current.updatedAt = nowStamp();
+    validateFormsFieldsConfig(current);
+    writeFormsFieldsConfigFile(current);
+    return res.json({ ok: true, template: templatePath, config: current });
   } catch (err) {
     return res.status(err.statusCode || 500).json({ ok: false, error: String(err.message || err) });
   }

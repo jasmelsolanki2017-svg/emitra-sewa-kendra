@@ -154,6 +154,9 @@
       <p class="small">Editor ON karke field ko drag karo. Selected field ki exact value yahan se adjust karo.</p>
       <div class="toolsRow">
         <button id="saveLocalBtn" class="secondary" title="Admin config server par save kare. Sab users ko latest config auto load hoga.">Update Config</button>
+        <button id="addFieldBtn" class="secondary" title="Current PDF par naya mapped field add kare">Add Field</button>
+        <button id="addInputBtn" class="secondary" title="User form me naya input add kare">Add Input</button>
+        <button id="deleteFieldBtn" class="danger" title="Selected mapped field delete kare">Delete Field</button>
         <button id="downloadConfigBtn" class="warn">Download Config</button>
         <button id="resetConfigBtn" class="danger">Reset</button>
       </div>
@@ -446,8 +449,7 @@ function applyAutoHindiToInput(input){
 }
 
 function saveSharedFormData(){
-  const schema = FORM_SCHEMAS[currentFormKey] || [];
-  for (const group of schema) {
+  for (const group of getCurrentFormSchema()) {
     for (const [id] of group.fields) {
       const el = $('data_'+id);
       if (el) sharedFormData[id] = el.value;
@@ -478,6 +480,13 @@ function adminApiUrl(path){
   if(saved) return saved + path;
   if(isStaticHosted()) return DEFAULT_ADMIN_SERVER_URL + path;
   return path;
+}
+function resolveTemplateUrl(templatePath){
+  const value = String(templatePath || '').trim();
+  if(!value) return '';
+  if(/^https?:\/\//i.test(value)) return value;
+  if(value.startsWith('/')) return isStaticHosted() ? DEFAULT_ADMIN_SERVER_URL + value : value;
+  return value;
 }
 async function callAdminApi(path, body = {}){
   const user = authState.user;
@@ -526,9 +535,26 @@ async function initAdminEditorAccess(){
   }
 }
 
+function getCurrentFormSchema(){
+  const schema = structuredClone(FORM_SCHEMAS[currentFormKey] || []);
+  const customFields = Array.isArray(config?.customDataFields) ? config.customDataFields : [];
+  if(customFields.length){
+    schema.push({
+      group: 'Custom Inputs',
+      fields: customFields.map(field => [
+        field.id,
+        field.label || field.id,
+        field.type || 'text',
+        field.defaultValue || ''
+      ])
+    });
+  }
+  return schema;
+}
+
 function buildDataForm(){
   const root=$('dataForm'); root.innerHTML='';
-  for (const group of FORM_SCHEMAS[currentFormKey]) {
+  for (const group of getCurrentFormSchema()) {
     const section=document.createElement('section'); section.className='dataGroup';
     const head=document.createElement('div'); head.className='dataGroupHead';
     const h=document.createElement('h3'); h.textContent=group.group; head.appendChild(h);
@@ -579,7 +605,7 @@ function buildDataForm(){
 
 function resetFormData(useSample){
   const nextData = {};
-  for (const group of FORM_SCHEMAS[currentFormKey] || []) {
+  for (const group of getCurrentFormSchema()) {
     for (const [id,,type,def] of group.fields) {
       nextData[id] = useSample ? (def || '') : '';
       if(type.startsWith('select:') && !useSample){
@@ -598,7 +624,7 @@ function resetFormData(useSample){
 function collectData(){
   saveSharedFormData();
   const data = {...sharedFormData};
-  for (const group of FORM_SCHEMAS[currentFormKey]) for (const [id] of group.fields) {
+  for (const group of getCurrentFormSchema()) for (const [id] of group.fields) {
     const el=$('data_'+id);
     if (el) data[id]=el.value.trim();
     else if (data[id] == null) data[id]='';
@@ -832,17 +858,17 @@ async function loadSelectedForm(){
   const form = FORMS[currentFormKey];
   selectedFieldId = null;
   setStatus(form.title + ' loading...');
-  templateBytes = await loadBytes(form.pdf);
   const combined = await loadCombinedConfigs();
   defaultConfig = sanitizeConfigFields(structuredClone(combined.forms[currentFormKey]));
   if(!defaultConfig || !defaultConfig.fields) throw new Error(currentFormKey + ' config missing in forms-fields-config.json');
+  templateBytes = await loadBytes(resolveTemplateUrl(defaultConfig.template) || form.pdf);
   config = structuredClone(defaultConfig);
+  buildDataForm();
   await renderPreview();
   setStatus(form.title + ' ready', 'ok');
 }
 
 async function init(){
-  buildDataForm();
   try{
     currentFormKey = $('formSelect').value || 'caste';
     await loadSelectedForm();
@@ -1027,6 +1053,111 @@ function downloadConfig(){
   const blob=new Blob([JSON.stringify(combined,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob);
   const a=document.createElement('a'); a.href=url; a.download='forms-fields-config.json'; a.click();
 }
+function getSelectedOrFirstVisiblePage(){
+  const selected = config?.fields?.find(f => f.id === selectedFieldId);
+  if(selected?.page) return selected.page;
+  const visiblePage = document.querySelector('.pageWrap')?.dataset?.page;
+  return parseInt(visiblePage, 10) || 1;
+}
+function makeUniqueFieldId(base = 'customField'){
+  const existing = new Set((config?.fields || []).map(f => String(f.id || '')));
+  const prefix = String(base || 'customField').replace(/[^a-zA-Z0-9_]+/g, '_').replace(/^_+|_+$/g, '') || 'customField';
+  let id = prefix;
+  let i = 1;
+  while(existing.has(id)){
+    i += 1;
+    id = `${prefix}_${i}`;
+  }
+  return id;
+}
+function makeUniqueInputId(base = 'customInput'){
+  const schemaIds = new Set();
+  for(const group of getCurrentFormSchema()) for(const [id] of group.fields) schemaIds.add(String(id || ''));
+  const prefix = String(base || 'customInput').replace(/[^a-zA-Z0-9_]+/g, '_').replace(/^_+|_+$/g, '') || 'customInput';
+  let id = prefix;
+  let i = 1;
+  while(schemaIds.has(id)){
+    i += 1;
+    id = `${prefix}_${i}`;
+  }
+  return id;
+}
+async function addMappedField(){
+  if(!config?.fields) return;
+  const page = getSelectedOrFirstVisiblePage();
+  const newField = {
+    id: makeUniqueFieldId(`custom_${currentFormKey}`),
+    label: 'New Field',
+    source: 'applicantName',
+    page,
+    type: 'text',
+    xPct: 0.15,
+    yPct: 0.15,
+    wPct: 0.24,
+    hPct: 0.02,
+    fontSize: 11
+  };
+  config.fields.push(newField);
+  selectedFieldId = newField.id;
+  await renderPreview();
+  selectField(newField.id);
+  setStatus('New field add ho gaya. Source field id aur position adjust karke Update Config dabayein.', 'ok');
+}
+async function addCustomInput(){
+  if(!config) return;
+  const label = String(prompt('Naye input ka label likhein', 'New Input') || '').trim();
+  if(!label) return;
+  const suggestedId = label.replace(/[^\w]+/g, '_').replace(/^_+|_+$/g, '') || 'customInput';
+  const enteredId = String(prompt('Source field id likhein (PDF field me isi id ka use hoga)', suggestedId) || '').trim();
+  if(!enteredId) return;
+  const id = makeUniqueInputId(enteredId);
+  if(!Array.isArray(config.customDataFields)) config.customDataFields = [];
+  config.customDataFields.push({ id, label, type: 'text', defaultValue: '' });
+  buildDataForm();
+  setStatus(`Custom input add ho gaya: ${id}. PDF field ke Source field id me ye id use karein.`, 'ok');
+}
+async function deleteMappedField(){
+  if(!selectedFieldId || !config?.fields) {
+    setStatus('Delete ke liye pehle field select karein.', 'bad');
+    return;
+  }
+  const before = config.fields.length;
+  config.fields = config.fields.filter(f => f.id !== selectedFieldId);
+  if(config.fields.length === before) return;
+  selectedFieldId = null;
+  await renderPreview();
+  fillSelectedControls();
+  setStatus('Selected field delete ho gaya. Permanent save ke liye Update Config dabayein.', 'ok');
+}
+function readFileAsDataUrl(file){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ''));
+    reader.onerror = () => reject(reader.error || new Error('File read failed'));
+    reader.readAsDataURL(file);
+  });
+}
+async function uploadTemplatePdfForEveryone(file){
+  if(!authState.isAdmin) {
+    setStatus('PDF sirf browser preview me upload hua. Sabke liye save karne ke liye admin login chahiye.', 'bad');
+    return;
+  }
+  setStatus('Template PDF server par upload ho raha hai...');
+  const pdfBase64 = await readFileAsDataUrl(file);
+  const result = await callAdminApi('/admin/forms-template/upload', {
+    formKey: currentFormKey,
+    fileName: file.name,
+    pdfBase64
+  });
+  allConfigs = result.config || allConfigs;
+  defaultConfig = sanitizeConfigFields(structuredClone(allConfigs.forms[currentFormKey]));
+  config = sanitizeConfigFields({
+    ...structuredClone(defaultConfig),
+    fields: structuredClone(config.fields || defaultConfig.fields || []),
+    customDataFields: structuredClone(config.customDataFields || defaultConfig.customDataFields || [])
+  });
+  setStatus('Template PDF upload ho gayi. Fields map karke Update Config dabayein.', 'ok');
+}
 async function saveConfigForEveryone(){
   if(!authState.isAdmin) {
     setStatus('Sirf admin Update Config kar sakta hai.', 'bad');
@@ -1047,7 +1178,7 @@ async function saveConfigForEveryone(){
   }
 }
 
-$('formSelect').addEventListener('change', async e=>{ saveSharedFormData(); currentFormKey=e.target.value; buildDataForm(); await loadSelectedForm(); });
+$('formSelect').addEventListener('change', async e=>{ saveSharedFormData(); currentFormKey=e.target.value; await loadSelectedForm(); });
 $('previewBtn').addEventListener('click',()=>{ mobilePreviewRequested = true; renderPreview(); });
 $('downloadBtn').addEventListener('click', downloadPdf);
 $('printBtn').addEventListener('click', printPdf);
@@ -1055,9 +1186,22 @@ $('clearDataBtn').addEventListener('click',()=>resetFormData(false));
 $('sampleDataBtn').addEventListener('click',()=>resetFormData(true));
 $('editMode').addEventListener('change',()=>document.body.classList.toggle('editOn',$('editMode').checked));
 $('saveLocalBtn').addEventListener('click',saveConfigForEveryone);
+$('addFieldBtn').addEventListener('click',addMappedField);
+$('addInputBtn').addEventListener('click',addCustomInput);
+$('deleteFieldBtn').addEventListener('click',deleteMappedField);
 $('downloadConfigBtn').addEventListener('click',downloadConfig);
 $('resetConfigBtn').addEventListener('click',async()=>{localStorage.removeItem(FORMS[currentFormKey].localKey); config=sanitizeConfigFields(structuredClone(defaultConfig)); selectedFieldId=null; await renderPreview(); setStatus('Reset done','ok');});
-$('pdfFile').addEventListener('change',async e=>{const f=e.target.files[0]; if(!f)return; templateBytes=await f.arrayBuffer(); await renderPreview(); setStatus('PDF uploaded','ok');});
+$('pdfFile').addEventListener('change',async e=>{
+  const f=e.target.files[0]; if(!f)return;
+  try{
+    templateBytes=await f.arrayBuffer();
+    await renderPreview();
+    await uploadTemplatePdfForEveryone(f);
+  }catch(error){
+    console.error(error);
+    setStatus('PDF upload error: ' + error.message, 'bad');
+  }
+});
 $('configFile').addEventListener('change',async e=>{
   const f=e.target.files[0]; if(!f)return;
   const uploaded=JSON.parse(await f.text());
