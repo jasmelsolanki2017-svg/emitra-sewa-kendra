@@ -159,6 +159,7 @@
         <button id="saveLocalBtn" class="secondary" title="Admin config server par save kare. Sab users ko latest config auto load hoga.">Update Config</button>
         <button id="addFormBtn" class="secondary" title="Naya PDF form dropdown me add kare">Add PDF Form</button>
         <button id="deleteFormBtn" class="danger" title="Current selected PDF form delete kare">Delete PDF Form</button>
+        <button id="autoDetectBtn" class="secondary" title="PDF preview se blank field boxes auto detect kare">Auto Detect Fields</button>
         <button id="addFieldBtn" class="secondary" title="Current PDF par naya mapped field add kare">Add Field</button>
         <button id="addInputBtn" class="secondary" title="User form me naya input add kare">Add Input</button>
         <button id="deleteFieldBtn" class="danger" title="Selected mapped field delete kare">Delete Field</button>
@@ -1185,6 +1186,161 @@ async function addMappedField(){
   selectField(newField.id);
   setStatus('New field add ho gaya. Source field id aur position adjust karke Update Config dabayein.', 'ok');
 }
+function detectFieldBoxesFromCanvas(canvas){
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  const { width, height } = canvas;
+  const image = ctx.getImageData(0, 0, width, height).data;
+  const visited = new Uint8Array(width * height);
+  const boxes = [];
+  const isFieldPixel = (idx) => {
+    const r = image[idx], g = image[idx + 1], b = image[idx + 2], a = image[idx + 3];
+    return a > 80 && r > 150 && g > 80 && g < 220 && b > 80 && b < 220 && r > g + 18 && r > b + 18;
+  };
+  for(let y = 0; y < height; y += 2){
+    for(let x = 0; x < width; x += 2){
+      const start = y * width + x;
+      if(visited[start] || !isFieldPixel(start * 4)) continue;
+      let minX = x, maxX = x, minY = y, maxY = y, count = 0;
+      const stack = [[x, y]];
+      visited[start] = 1;
+      while(stack.length){
+        const [cx, cy] = stack.pop();
+        count += 1;
+        if(cx < minX) minX = cx; if(cx > maxX) maxX = cx;
+        if(cy < minY) minY = cy; if(cy > maxY) maxY = cy;
+        const neighbors = [[cx + 2, cy], [cx - 2, cy], [cx, cy + 2], [cx, cy - 2]];
+        for(const [nx, ny] of neighbors){
+          if(nx < 0 || ny < 0 || nx >= width || ny >= height) continue;
+          const n = ny * width + nx;
+          if(visited[n] || !isFieldPixel(n * 4)) continue;
+          visited[n] = 1;
+          stack.push([nx, ny]);
+        }
+      }
+      const boxW = maxX - minX + 2;
+      const boxH = maxY - minY + 2;
+      if(count < 8 || boxW < 18 || boxH < 8 || boxW > width * 0.85 || boxH > height * 0.16) continue;
+      boxes.push({ x: minX, y: minY, w: boxW, h: boxH });
+    }
+  }
+  return boxes
+    .sort((a, b) => (a.y - b.y) || (a.x - b.x))
+    .filter((box, index, all) => !all.slice(0, index).some(prev =>
+      Math.abs(prev.x - box.x) < 8 && Math.abs(prev.y - box.y) < 8 &&
+      Math.abs(prev.w - box.w) < 12 && Math.abs(prev.h - box.h) < 10
+    ));
+}
+function normalizeDetectedLabel(text){
+  return String(text || '')
+    .replace(/[।:：_\-.=]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 60);
+}
+function sourceIdFromLabel(label, fallback){
+  const words = String(label || '').toLowerCase().match(/[a-z0-9]+/g) || [];
+  if(words.length){
+    return makeUniqueInputId(words.join('_').slice(0, 36));
+  }
+  return makeUniqueInputId(fallback);
+}
+async function getTextItemsForPreviewPage(pageNo, canvas){
+  try{
+    const pdf = await pdfjsLib.getDocument({data: templateBytes.slice(0)}).promise;
+    const page = await pdf.getPage(pageNo);
+    const viewport1 = page.getViewport({scale:1});
+    const scale = canvas.width / viewport1.width;
+    const viewport = page.getViewport({scale});
+    const textContent = await page.getTextContent();
+    return textContent.items.map(item => {
+      const tx = pdfjsLib.Util.transform(viewport.transform, item.transform);
+      return {
+        text: normalizeDetectedLabel(item.str),
+        x: tx[4],
+        y: tx[5],
+        w: Math.max(8, (item.width || 0) * scale),
+        h: Math.max(8, Math.abs(tx[3] || 10))
+      };
+    }).filter(item => item.text);
+  }catch(error){
+    console.warn('PDF text read failed', error);
+    return [];
+  }
+}
+function guessLabelForBox(box, textItems){
+  const candidates = textItems
+    .map(item => {
+      const itemCenterY = item.y - item.h / 2;
+      const boxCenterY = box.y + box.h / 2;
+      const sameLine = Math.abs(itemCenterY - boxCenterY) < Math.max(18, box.h * 1.5);
+      const leftOfBox = item.x + item.w <= box.x + 8;
+      const aboveBox = item.y <= box.y + 8 && item.y >= box.y - 55;
+      let score = Infinity;
+      if(sameLine && leftOfBox) score = (box.x - (item.x + item.w)) + Math.abs(itemCenterY - boxCenterY) * 2;
+      else if(aboveBox) score = Math.abs(item.x - box.x) + (box.y - item.y) * 3;
+      return { ...item, score };
+    })
+    .filter(item => Number.isFinite(item.score))
+    .sort((a, b) => a.score - b.score);
+  const best = candidates[0];
+  if(!best) return '';
+  return best.text.replace(/^\(?[कखगघङचछजझञटठडढणतथदधनपफबभमयरलवशषसहa-z0-9ivx]+\)?\s*/i, '').trim() || best.text;
+}
+async function autoDetectFields(){
+  if(!config?.fields){
+    setStatus('Auto detect ke liye pehle PDF load karein.', 'bad');
+    return;
+  }
+  const pageWraps = Array.from(document.querySelectorAll('.pageWrap'));
+  if(!pageWraps.length){
+    setStatus('Pehle Preview Refresh dabayein, phir Auto Detect Fields use karein.', 'bad');
+    return;
+  }
+  const existingKeys = new Set((config.fields || []).map(f => `${f.page}:${f.xPct.toFixed(3)}:${f.yPct.toFixed(3)}:${f.wPct.toFixed(3)}:${f.hPct.toFixed(3)}`));
+  let added = 0;
+  if(!Array.isArray(config.customDataFields)) config.customDataFields = [];
+  const existingInputIds = new Set();
+  for(const group of getCurrentFormSchema()) for(const [id] of group.fields) existingInputIds.add(String(id || ''));
+  for(const wrap of pageWraps){
+    const canvas = wrap.querySelector('canvas');
+    const page = parseInt(wrap.dataset.page, 10) || 1;
+    if(!canvas) continue;
+    const boxes = detectFieldBoxesFromCanvas(canvas);
+    const textItems = await getTextItemsForPreviewPage(page, canvas);
+    for(const box of boxes){
+      const label = guessLabelForBox(box, textItems) || `Auto Field ${added + 1}`;
+      const source = sourceIdFromLabel(label, `auto_${currentFormKey}_${page}_${added + 1}`);
+      const field = {
+        id: makeUniqueFieldId(`auto_${currentFormKey}_${page}_${added + 1}`),
+        label,
+        source,
+        page,
+        type: 'text',
+        xPct: box.x / canvas.width,
+        yPct: box.y / canvas.height,
+        wPct: box.w / canvas.width,
+        hPct: box.h / canvas.height,
+        fontSize: 10
+      };
+      const key = `${field.page}:${field.xPct.toFixed(3)}:${field.yPct.toFixed(3)}:${field.wPct.toFixed(3)}:${field.hPct.toFixed(3)}`;
+      if(existingKeys.has(key)) continue;
+      existingKeys.add(key);
+      config.fields.push(field);
+      if(field.source && !existingInputIds.has(field.source)){
+        config.customDataFields.push({ id: field.source, label: field.label, type: 'text', defaultValue: '' });
+        existingInputIds.add(field.source);
+      }
+      added += 1;
+    }
+  }
+  if(!added){
+    setStatus('Auto detect me koi naya field nahi mila. Manual Add Field use karein.', 'bad');
+    return;
+  }
+  buildDataForm();
+  await renderPreview();
+  setStatus(`${added} auto fields add ho gaye. PDF text se label/input name bhi set ho gaye. Update Config dabayein.`, 'ok');
+}
 async function addCustomInput(){
   if(!config) return;
   const label = String(prompt('Naye input ka label likhein', 'New Input') || '').trim();
@@ -1330,6 +1486,7 @@ $('editMode').addEventListener('change',()=>document.body.classList.toggle('edit
 $('saveLocalBtn').addEventListener('click',saveConfigForEveryone);
 $('addFormBtn').addEventListener('click',addPdfForm);
 $('deleteFormBtn').addEventListener('click',deletePdfForm);
+$('autoDetectBtn').addEventListener('click',autoDetectFields);
 $('addFieldBtn').addEventListener('click',addMappedField);
 $('addInputBtn').addEventListener('click',addCustomInput);
 $('deleteFieldBtn').addEventListener('click',deleteMappedField);
