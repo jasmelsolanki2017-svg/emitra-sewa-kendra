@@ -1545,7 +1545,7 @@
         {
           "id": "bf_aff_minor_father",
           "label": "नाबालिग शपथ पिता",
-          "source": "fatherName",
+          "source": "grandFatherName",
           "page": 3,
           "type": "text",
           "xPct": 0.5349017647058824,
