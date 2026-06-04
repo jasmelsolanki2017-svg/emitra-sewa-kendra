@@ -1533,7 +1533,7 @@
         {
           "id": "bf_aff_minor_name",
           "label": "नाबालिग शपथ नाम",
-          "source": "applicantName",
+          "source": "fatherName",
           "page": 3,
           "type": "text",
           "xPct": 0.14706,
