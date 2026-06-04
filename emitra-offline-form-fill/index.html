@@ -155,6 +155,7 @@
       <p class="small">Editor ON karke field ko drag karo. Selected field ki exact value yahan se adjust karo.</p>
       <div class="toolsRow">
         <button id="saveLocalBtn" class="secondary" title="Admin config server par save kare. Sab users ko latest config auto load hoga.">Update Config</button>
+        <button id="addFormBtn" class="secondary" title="Naya PDF form dropdown me add kare">Add PDF Form</button>
         <button id="addFieldBtn" class="secondary" title="Current PDF par naya mapped field add kare">Add Field</button>
         <button id="addInputBtn" class="secondary" title="User form me naya input add kare">Add Input</button>
         <button id="deleteFieldBtn" class="danger" title="Selected mapped field delete kare">Delete Field</button>
@@ -204,6 +205,33 @@ const FORMS = {
   }
 };
 let currentFormKey = 'caste';
+function getFormMeta(formKey){
+  const cfg = allConfigs?.forms?.[formKey] || {};
+  const builtin = FORMS[formKey] || {};
+  return {
+    title: cfg.title || builtin.title || formKey,
+    pdf: resolveTemplateUrl(cfg.template) || builtin.pdf || '',
+    localKey: builtin.localKey || `${formKey}FormFieldConfig`,
+    downloadName: cfg.downloadName || builtin.downloadName || `${formKey}-filled.pdf`
+  };
+}
+function rebuildFormSelect(){
+  const select = $('formSelect');
+  if(!select || !allConfigs?.forms) return;
+  const oldValue = currentFormKey || select.value || 'caste';
+  select.innerHTML = '';
+  for(const formKey of Object.keys(allConfigs.forms)){
+    const option = document.createElement('option');
+    option.value = formKey;
+    option.textContent = getFormMeta(formKey).title;
+    select.appendChild(option);
+  }
+  if(allConfigs.forms[oldValue]) select.value = oldValue;
+  else if(select.options.length) {
+    select.selectedIndex = 0;
+    currentFormKey = select.value;
+  }
+}
 const DISABLED_FIELD_IDS = new Set(['w1Date','w2Date','bf_w1_date','bf_w2_date']);
 function sanitizeConfigFields(cfg){
   if(cfg && Array.isArray(cfg.fields)) cfg.fields = cfg.fields.filter(f => !DISABLED_FIELD_IDS.has(f.id));
@@ -852,11 +880,12 @@ async function loadCombinedConfigs(){
     allConfigs = await res.json();
   }
   if(!allConfigs.forms) throw new Error('Combined config me forms object missing hai');
+  rebuildFormSelect();
   return allConfigs;
 }
 
 async function loadSelectedForm(){
-  const form = FORMS[currentFormKey];
+  const form = getFormMeta(currentFormKey);
   selectedFieldId = null;
   setStatus(form.title + ' loading...');
   const combined = await loadCombinedConfigs();
@@ -1032,7 +1061,7 @@ async function downloadPdf(){
   try{
     const bytes=await makePdf();
     const blob=new Blob([bytes],{type:'application/pdf'}); const url=URL.createObjectURL(blob); lastPdfUrl=url;
-    const a=document.createElement('a'); a.href=url; a.download=FORMS[currentFormKey].downloadName; a.click();
+    const a=document.createElement('a'); a.href=url; a.download=getFormMeta(currentFormKey).downloadName; a.click();
     setStatus('PDF downloaded', 'ok');
   }catch(e){ console.error(e); setStatus('PDF error: '+e.message, 'bad'); }
 }
@@ -1138,7 +1167,20 @@ function readFileAsDataUrl(file){
     reader.readAsDataURL(file);
   });
 }
-async function uploadTemplatePdfForEveryone(file){
+function makeFormKeyFromTitle(title){
+  const slug = String(title || 'custom-form')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '') || 'custom-form';
+  let key = slug;
+  let i = 1;
+  while(allConfigs?.forms?.[key]){
+    i += 1;
+    key = `${slug}-${i}`;
+  }
+  return key;
+}
+async function uploadTemplatePdfForEveryone(file, options = {}){
   if(!authState.isAdmin) {
     setStatus('PDF sirf browser preview me upload hua. Sabke liye save karne ke liye admin login chahiye.', 'bad');
     return;
@@ -1146,11 +1188,17 @@ async function uploadTemplatePdfForEveryone(file){
   setStatus('Template PDF server par upload ho raha hai...');
   const pdfBase64 = await readFileAsDataUrl(file);
   const result = await callAdminApi('/admin/forms-template/upload', {
-    formKey: currentFormKey,
+    formKey: options.formKey || currentFormKey,
+    newFormKey: options.newFormKey || '',
+    formTitle: options.formTitle || '',
     fileName: file.name,
     pdfBase64
   });
   allConfigs = result.config || allConfigs;
+  if(options.newFormKey){
+    currentFormKey = options.newFormKey;
+    rebuildFormSelect();
+  }
   defaultConfig = sanitizeConfigFields(structuredClone(allConfigs.forms[currentFormKey]));
   config = sanitizeConfigFields({
     ...structuredClone(defaultConfig),
@@ -1158,6 +1206,18 @@ async function uploadTemplatePdfForEveryone(file){
     customDataFields: structuredClone(config.customDataFields || defaultConfig.customDataFields || [])
   });
   setStatus('Template PDF upload ho gayi. Fields map karke Update Config dabayein.', 'ok');
+}
+async function addPdfForm(){
+  if(!authState.isAdmin){
+    setStatus('Naya PDF form sirf admin add kar sakta hai.', 'bad');
+    return;
+  }
+  const title = String(prompt('Naye PDF form ka naam likhein', 'New PDF Form') || '').trim();
+  if(!title) return;
+  const fileInput = $('pdfFile');
+  fileInput.dataset.newFormTitle = title;
+  fileInput.dataset.newFormKey = makeFormKeyFromTitle(title);
+  fileInput.click();
 }
 async function saveConfigForEveryone(){
   if(!authState.isAdmin) {
@@ -1187,17 +1247,23 @@ $('clearDataBtn').addEventListener('click',()=>resetFormData(false));
 $('sampleDataBtn').addEventListener('click',()=>resetFormData(true));
 $('editMode').addEventListener('change',()=>document.body.classList.toggle('editOn',$('editMode').checked));
 $('saveLocalBtn').addEventListener('click',saveConfigForEveryone);
+$('addFormBtn').addEventListener('click',addPdfForm);
 $('addFieldBtn').addEventListener('click',addMappedField);
 $('addInputBtn').addEventListener('click',addCustomInput);
 $('deleteFieldBtn').addEventListener('click',deleteMappedField);
 $('downloadConfigBtn').addEventListener('click',downloadConfig);
-$('resetConfigBtn').addEventListener('click',async()=>{localStorage.removeItem(FORMS[currentFormKey].localKey); config=sanitizeConfigFields(structuredClone(defaultConfig)); selectedFieldId=null; await renderPreview(); setStatus('Reset done','ok');});
+$('resetConfigBtn').addEventListener('click',async()=>{localStorage.removeItem(getFormMeta(currentFormKey).localKey); config=sanitizeConfigFields(structuredClone(defaultConfig)); selectedFieldId=null; await renderPreview(); setStatus('Reset done','ok');});
 $('pdfFile').addEventListener('change',async e=>{
   const f=e.target.files[0]; if(!f)return;
   try{
+    const newFormTitle = e.target.dataset.newFormTitle || '';
+    const newFormKey = e.target.dataset.newFormKey || '';
+    delete e.target.dataset.newFormTitle;
+    delete e.target.dataset.newFormKey;
     templateBytes=await f.arrayBuffer();
     await renderPreview();
-    await uploadTemplatePdfForEveryone(f);
+    await uploadTemplatePdfForEveryone(f, { newFormKey, formTitle: newFormTitle });
+    if(newFormKey) await loadSelectedForm();
   }catch(error){
     console.error(error);
     setStatus('PDF upload error: ' + error.message, 'bad');

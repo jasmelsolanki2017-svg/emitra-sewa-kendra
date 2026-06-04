@@ -2192,8 +2192,9 @@ function validateFormsFieldsConfig(config = {}) {
   if (!config.forms || typeof config.forms !== "object" || Array.isArray(config.forms)) {
     throw new Error("Config me forms object required hai");
   }
-  for (const formKey of ["caste", "bonafide"]) {
-    const form = config.forms[formKey];
+  const formEntries = Object.entries(config.forms);
+  if (!formEntries.length) throw new Error("Kam se kam ek form required hai");
+  for (const [formKey, form] of formEntries) {
     if (!form || typeof form !== "object" || !Array.isArray(form.fields)) {
       throw new Error(`${formKey} form fields missing hain`);
     }
@@ -3892,8 +3893,10 @@ app.post("/admin/forms-config/save", async (req, res) => {
 app.post("/admin/forms-template/upload", async (req, res) => {
   try {
     await requireAdmin(req);
-    const formKey = String(req.body?.formKey || "").trim();
-    if (!["caste", "bonafide"].includes(formKey)) {
+    const requestedKey = String(req.body?.formKey || "").trim();
+    const formTitle = String(req.body?.formTitle || "").trim();
+    const formKey = String(req.body?.newFormKey || requestedKey).trim();
+    if (!formKey || !/^[a-zA-Z0-9_-]+$/.test(formKey)) {
       return res.status(400).json({ ok: false, error: "Valid formKey required" });
     }
     const pdfBuffer = decodePdfBase64(req.body?.pdfBase64 || "");
@@ -3911,6 +3914,8 @@ app.post("/admin/forms-template/upload", async (req, res) => {
     if (!current.forms[formKey] || typeof current.forms[formKey] !== "object") current.forms[formKey] = { fields: [] };
     current.forms[formKey] = {
       ...current.forms[formKey],
+      title: formTitle || current.forms[formKey].title || formKey,
+      downloadName: current.forms[formKey].downloadName || `${formKey}-filled.pdf`,
       template: templatePath,
       templateUpdatedAt: nowStamp()
     };
