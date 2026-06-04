@@ -519,7 +519,7 @@ function getPreviewScale(shell, viewport){
   const shellTop = shell.getBoundingClientRect().top || 0;
   const availableHeight = Math.max(420, window.innerHeight - shellTop - 32);
   const heightScale = availableHeight / viewport.height;
-  return Math.min(widthScale, heightScale);
+  return Math.max(0.72, Math.min(widthScale, heightScale));
 }
 function isStaticHosted(){
   return location.protocol === 'file:' || /^emitrawala\.online$|github\.io$/i.test(location.hostname);
