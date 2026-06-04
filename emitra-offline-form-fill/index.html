@@ -303,6 +303,7 @@ const FORM_SCHEMAS = {
     ]},
     {group:'शपथ पत्र', fields:[
       ['affidavitEducation','मेरी समस्त शिक्षा कहाँ की है','text','राजस्थान'],
+      ['minorNativePlace','नाबालिग का मूल निवास स्थान','text',''],
       ['minorChildName','नाबालिग पुत्र/पुत्री का नाम','text',''], ['minorChildAge','नाबालिग आयु','text',''],
       ['minorChildBirthPlace','नाबालिग जन्म स्थान','text',''], ['minorChildEducation','नाबालिग शिक्षा स्थान','text',''],
       ['husbandName','विवाहित महिला के पति का नाम (भरने पर विवाहित महिला शपथ-पत्र)','text',''], ['husbandResident','पति का मूल निवास विवरण','text','']
@@ -736,6 +737,7 @@ function prepareConditionalData(data){
     if(!prepared.minorChildAge) prepared.minorChildAge = String(getCandidateAge(prepared) || '').replace('NaN','');
     if(!prepared.minorChildBirthPlace) prepared.minorChildBirthPlace = prepared.birthPlace || '';
     if(!prepared.minorChildEducation) prepared.minorChildEducation = prepared.affidavitEducation || prepared.edu10Place || prepared.edu12Place || prepared.place || '';
+    if(!prepared.minorNativePlace) prepared.minorNativePlace = prepared.place || '';
   }
   if(mode === 'married'){
     // Agar husbandName alag se blank hai to main fatherName field ko पति/पति नाम ke रूप में use कर देंगे.

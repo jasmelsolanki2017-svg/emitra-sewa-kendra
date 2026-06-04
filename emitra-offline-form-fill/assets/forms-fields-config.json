@@ -1581,7 +1581,7 @@
         {
           "id": "bf_aff_minor_place",
           "label": "मूल निवासी स्थान नाबालिग",
-          "source": "place",
+          "source": "minorNativePlace",
           "page": 3,
           "type": "text",
           "xPct": 0.26196089533547795,
