@@ -66,7 +66,7 @@
     .adminOnly{display:none!important}
     body.adminEditorEnabled .adminOnly{display:flex!important}
     body.adminEditorEnabled aside.adminOnly{display:block!important}
-    @media(min-width:1101px){body.adminEditorEnabled{height:100dvh;overflow:hidden;display:flex;flex-direction:column}body.adminEditorEnabled nav,body.adminEditorEnabled .toolHero,body.adminEditorEnabled .toolbar{flex:0 0 auto}body.adminEditorEnabled .wrap{flex:1 1 auto;height:auto;min-height:0;align-items:stretch;overflow:hidden}body.adminEditorEnabled .card{height:100%;min-height:0;overflow:hidden}body.adminEditorEnabled .card.form .panel,body.adminEditorEnabled .card.side .panel{height:100%;max-height:none;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}body.adminEditorEnabled .previewShell{height:100%;max-height:none;min-height:0;overflow:auto}}
+    @media(min-width:1101px){body.adminEditorEnabled{height:100dvh;overflow:hidden;display:flex;flex-direction:column}body.adminEditorEnabled nav{padding-top:7px;padding-bottom:7px}body.adminEditorEnabled .logo img{width:145px}body.adminEditorEnabled nav a,body.adminEditorEnabled .nav-tools summary{font-size:13px}body.adminEditorEnabled .toolHero{padding-top:8px;padding-bottom:8px}body.adminEditorEnabled .toolHero h1{font-size:26px;margin:2px 0}body.adminEditorEnabled .toolHero p{font-size:11px}.adminEditorEnabled .tag{padding:4px 8px;font-size:11px}.adminEditorEnabled .toolStatus{padding:5px 8px;font-size:11px}.adminEditorEnabled .toolbar{padding-top:7px;padding-bottom:7px;gap:7px}.adminEditorEnabled .toolbar button,.adminEditorEnabled .toolbar select{padding:7px 9px;font-size:12px}.adminEditorEnabled .toolbar .toggle{font-size:13px}body.adminEditorEnabled nav,body.adminEditorEnabled .toolHero,body.adminEditorEnabled .toolbar{flex:0 0 auto}body.adminEditorEnabled .wrap{flex:1 1 auto;height:auto;min-height:0;align-items:stretch;overflow:hidden;gap:10px;padding:10px 5%;grid-template-columns:minmax(260px,330px) minmax(420px,1fr) minmax(240px,300px)}body.adminEditorEnabled .card{height:100%;min-height:0;overflow:hidden}body.adminEditorEnabled .panel{padding:10px}body.adminEditorEnabled .panel h2{font-size:15px;margin-bottom:6px}body.adminEditorEnabled .panel h3{font-size:12px}body.adminEditorEnabled .small{font-size:10px;line-height:1.32}body.adminEditorEnabled input,body.adminEditorEnabled select,body.adminEditorEnabled textarea{font-size:11px;padding:6px 8px;border-radius:6px}body.adminEditorEnabled textarea{min-height:46px}body.adminEditorEnabled button{font-size:11px;padding:7px 9px}.adminEditorEnabled .formActions{gap:6px;margin:7px 0}.adminEditorEnabled .dataGroup{margin-bottom:8px}.adminEditorEnabled .dataGroupHead{padding:7px 8px}.adminEditorEnabled .dataGroupHead span{font-size:10px}.adminEditorEnabled .grid{gap:7px;padding:8px}.adminEditorEnabled .field label{font-size:10px;margin-bottom:3px}.adminEditorEnabled .toolsRow{gap:6px;margin-top:6px}.adminEditorEnabled .fileRow{gap:6px;margin-top:6px}.adminEditorEnabled .selectedGrid{gap:6px}body.adminEditorEnabled .card.form .panel,body.adminEditorEnabled .card.side .panel{height:100%;max-height:none;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}body.adminEditorEnabled .previewShell{height:100%;max-height:none;min-height:0;overflow:auto;padding:8px}}
     .toolsRow{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.fileRow{display:grid;grid-template-columns:1fr;gap:8px;margin-top:8px}
     #status{font-size:13px;color:var(--blue);font-weight:900}.selectedGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     @media(max-width:1280px){.wrap{grid-template-columns:minmax(300px,360px) minmax(680px,1fr) minmax(250px,280px);padding-left:2%;padding-right:2%}.previewShell{min-height:720px}}
@@ -350,6 +350,8 @@ let allConfigs = null;
 let selectedFieldId = null;
 let lastPdfUrl = null;
 let pdfPageSizes = [];
+let activePreviewRenderId = 0;
+let previewRenderInProgress = false;
 let authState = { auth: null, user: null, ready: false, isAdmin: false };
 const MOBILE_PREVIEW_QUERY = window.matchMedia('(max-width: 620px)');
 let mobilePreviewRequested = !MOBILE_PREVIEW_QUERY.matches;
@@ -501,6 +503,23 @@ function renderMobilePreviewPlaceholder(){
   if(!shell) return;
   shell.innerHTML = '<div class="panel small mobilePreviewHint"><b>PDF Preview mobile par pause hai.</b><br>Form fill kar sakte hain. Preview dekhne ke liye upar Preview Refresh dabayein.</div>';
 }
+function nextFrame(){
+  return new Promise(resolve => requestAnimationFrame(resolve));
+}
+function setPreviewBusy(isBusy){
+  previewRenderInProgress = Boolean(isBusy);
+  const btn = $('previewBtn');
+  if(btn) btn.disabled = previewRenderInProgress;
+}
+function getPreviewScale(shell, viewport){
+  const availableWidth = Math.max(260, (shell.clientWidth || 850) - 26);
+  const widthScale = Math.min(availableWidth, 850) / viewport.width;
+  const isDesktopEditor = authState.isAdmin && window.matchMedia('(min-width: 1101px)').matches;
+  if(!isDesktopEditor) return widthScale;
+  const availableHeight = Math.max(360, (shell.clientHeight || 760) - 22);
+  const heightScale = availableHeight / viewport.height;
+  return Math.min(widthScale, heightScale);
+}
 function isStaticHosted(){
   return location.protocol === 'file:' || /^emitrawala\.online$|github\.io$/i.test(location.hostname);
 }
@@ -583,6 +602,11 @@ function getCurrentFormSchema(){
 
 function buildDataForm(){
   const root=$('dataForm'); root.innerHTML='';
+  const formPanel = root.closest('.panel');
+  if(formPanel){
+    formPanel.scrollTop = 0;
+    formPanel.scrollLeft = 0;
+  }
   for (const group of getCurrentFormSchema()) {
     const section=document.createElement('section'); section.className='dataGroup';
     const head=document.createElement('div'); head.className='dataGroupHead';
@@ -911,27 +935,49 @@ async function init(){
 
 async function renderPreview(){
   if(!templateBytes || !config) return;
+  const renderId = ++activePreviewRenderId;
   if(shouldLazyMobilePreview()){
+    setPreviewBusy(false);
     renderMobilePreviewPlaceholder();
     return;
   }
-  const shell=$('previewShell'); shell.innerHTML='';
-  const pdf = await pdfjsLib.getDocument({data: templateBytes.slice(0)}).promise;
-  pdfPageSizes=[];
-  for(let p=1; p<=pdf.numPages; p++){
-    const page = await pdf.getPage(p);
-    const viewport1 = page.getViewport({scale:1});
-    pdfPageSizes[p] = {w: viewport1.width, h: viewport1.height};
-    const maxW = Math.min(shell.clientWidth ? shell.clientWidth-34 : 850, 850);
-    const scale = maxW / viewport1.width;
-    const viewport = page.getViewport({scale});
-    const wrap=document.createElement('div'); wrap.className='pageWrap'; wrap.dataset.page=p;
-    const canvas=document.createElement('canvas'); canvas.width=viewport.width; canvas.height=viewport.height;
-    wrap.appendChild(canvas); shell.appendChild(wrap);
-    await page.render({canvasContext: canvas.getContext('2d'), viewport}).promise;
-    addFieldsForPage(wrap, p);
+  const shell=$('previewShell');
+  setPreviewBusy(true);
+  shell.innerHTML='<div class="panel small">PDF preview load ho raha hai...</div>';
+  shell.scrollTop = 0;
+  shell.scrollLeft = 0;
+  await nextFrame();
+  try{
+    if(renderId !== activePreviewRenderId) return;
+    const pdf = await pdfjsLib.getDocument({data: templateBytes.slice(0)}).promise;
+    if(renderId !== activePreviewRenderId) return;
+    shell.innerHTML='';
+    pdfPageSizes=[];
+    for(let p=1; p<=pdf.numPages; p++){
+      if(renderId !== activePreviewRenderId) return;
+      const page = await pdf.getPage(p);
+      const viewport1 = page.getViewport({scale:1});
+      pdfPageSizes[p] = {w: viewport1.width, h: viewport1.height};
+      const scale = getPreviewScale(shell, viewport1);
+      const viewport = page.getViewport({scale});
+      const wrap=document.createElement('div'); wrap.className='pageWrap'; wrap.dataset.page=p;
+      const canvas=document.createElement('canvas'); canvas.width=viewport.width; canvas.height=viewport.height;
+      wrap.appendChild(canvas); shell.appendChild(wrap);
+      await page.render({canvasContext: canvas.getContext('2d'), viewport}).promise;
+      if(renderId !== activePreviewRenderId) return;
+      addFieldsForPage(wrap, p);
+      await nextFrame();
+    }
+    document.body.classList.toggle('editOn', $('editMode').checked);
+  }catch(error){
+    if(renderId === activePreviewRenderId){
+      console.error(error);
+      shell.innerHTML='<div class="panel small bad">PDF preview load nahi hua. Page refresh karke dobara try karein.</div>';
+      setStatus('Preview error: ' + error.message, 'bad');
+    }
+  }finally{
+    if(renderId === activePreviewRenderId) setPreviewBusy(false);
   }
-  document.body.classList.toggle('editOn', $('editMode').checked);
 }
 
 function addFieldsForPage(wrap, pageNo){
