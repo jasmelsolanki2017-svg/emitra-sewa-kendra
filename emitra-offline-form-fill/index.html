@@ -361,6 +361,7 @@ let mobilePreviewRequested = !MOBILE_PREVIEW_QUERY.matches;
 const DATA_LOCAL_KEY = 'rajasthanFormsSharedUserData';
 const AUTO_HINDI_LOCAL_KEY = 'rajasthanFormsAutoHindiTyping';
 const TYPING_MODE_LOCAL_KEY = 'rajasthanFormsTypingMode';
+const DELETE_FORM_CONFIRM_CODE = 'DELETE';
 let sharedFormData = {};
 try { sharedFormData = JSON.parse(localStorage.getItem(DATA_LOCAL_KEY) || '{}') || {}; } catch(e) { sharedFormData = {}; }
 const $ = id => document.getElementById(id);
@@ -1285,6 +1286,11 @@ async function deletePdfForm(){
   }
   const currentTitle = getFormMeta(currentFormKey).title || currentFormKey;
   if(!confirm(`"${currentTitle}" PDF form delete karna hai?`)) return;
+  const enteredCode = String(prompt(`Safety code likhein: ${DELETE_FORM_CONFIRM_CODE}`) || '').trim();
+  if(enteredCode !== DELETE_FORM_CONFIRM_CODE){
+    setStatus('Safety code galat hai. PDF form delete nahi hua.', 'bad');
+    return;
+  }
   const combined = getCombinedConfigForDownload();
   delete combined.forms[currentFormKey];
   const nextFormKey = Object.keys(combined.forms)[0] || Object.keys(FORMS)[0];
