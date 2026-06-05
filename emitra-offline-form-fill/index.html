@@ -41,6 +41,7 @@
     button,.btn{border:0;background:var(--blue);color:white;padding:9px 12px;border-radius:6px;cursor:pointer;font-weight:900;display:inline-flex;gap:7px;align-items:center;justify-content:center;text-decoration:none;font-size:13px}
     button:hover,.btn:hover{background:var(--orange);color:var(--deep)}
     button.secondary,.btn.secondary{background:var(--soft);color:var(--blue);border:1px solid #bdd0e5} button.warn{background:#d97706} button.danger{background:var(--danger)}
+    button.clickFeedback,.btn.clickFeedback{outline:3px solid rgba(255,122,0,.45);box-shadow:0 0 0 4px rgba(255,122,0,.14),0 2px 8px rgba(0,87,168,.18);transform:translateY(1px)}
     button:disabled{opacity:.6;cursor:not-allowed}
     input,select,textarea{width:100%;border:1px solid #bdd0e5;border-radius:7px;padding:9px 10px;font:inherit;background:white;color:var(--text);font-size:13px}
     textarea{min-height:64px;resize:vertical}
@@ -612,6 +613,21 @@ function setSharedValue(id, value){
 }
 
 function setStatus(msg, cls='') { const el=$('status'); el.textContent = msg; el.className = cls; }
+function getControlLabel(control){
+  return (control.getAttribute('aria-label') || control.title || control.textContent || control.value || 'Button').replace(/\s+/g, ' ').trim();
+}
+function showButtonClickFeedback(control){
+  if(!control || control.disabled) return;
+  const label = getControlLabel(control);
+  setStatus(label + ' clicked', 'ok');
+  control.classList.add('clickFeedback');
+  clearTimeout(control._clickFeedbackTimer);
+  control._clickFeedbackTimer = setTimeout(()=>control.classList.remove('clickFeedback'), 650);
+}
+document.addEventListener('click', event=>{
+  const control = event.target.closest('button,.btn');
+  if(control) showButtonClickFeedback(control);
+}, true);
 function shouldLazyMobilePreview(){
   return MOBILE_PREVIEW_QUERY.matches && !mobilePreviewRequested && !authState.isAdmin;
 }
