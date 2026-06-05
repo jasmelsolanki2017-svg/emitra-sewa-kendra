@@ -268,8 +268,20 @@ body.dark-mode .job-tool-btn:hover{background:#ffb15c!important;border-color:#ff
 @media(max-width:768px){.sarkari-blue-layout{font-size:13px;border-width:1px}.sarkari-blue-title-area{padding:18px 10px 14px}.sarkari-blue-content{padding:10px 12px 14px}.sarkari-blue-content .content-table,.sarkari-blue-table{font-size:12px;min-width:480px}.sarkari-blue-content .structured-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}}
 </style>
 <link rel="stylesheet" href="mobile-responsive-fix.css">
+<style>
+body.current-affairs-static #importantPanel,
+body.current-affairs-static #jobInfoPanel,
+body.current-affairs-static #feePanel,
+body.current-affairs-static #agePanel,
+body.current-affairs-static #vacancyPanel,
+body.current-affairs-static #eligibilityPanel,
+body.current-affairs-static #selectionPanel,
+body.current-affairs-static #applyProcessPanel,
+body.current-affairs-static #linksPanel,
+body.current-affairs-static #jobToolsPanel{display:none;}
+</style>
 </head>
-<body>
+<body class="current-affairs-static">
 <nav>
   <a class="logo" href="index.html">E-MITRA <span>WALA</span></a>
   <ul>
@@ -291,7 +303,7 @@ body.dark-mode .job-tool-btn:hover{background:#ffb15c!important;border-color:#ff
 
 <header class="hero">
   <div class="hero-inner">
-    <span class="tag" id="jobType">Job Details</span>
+    <span class="tag" id="jobType">Current Affairs</span>
     <h1 id="jobTitle">आज का करेंट अफेयर्स - 05 जून 2026</h1>
     <div class="meta-badges" id="metaBadges"></div>
     <p id="jobIntro">Important current affairs questions, answers and explanations</p>
@@ -312,14 +324,20 @@ body.dark-mode .job-tool-btn:hover{background:#ffb15c!important;border-color:#ff
           <h2>आज का करेंट अफेयर्स - 05 जून 2026</h2>
             <div class="content-box">
               <p>Important current affairs questions, answers and explanations.</p>
-              <table class="detail-table"><tbody><tr><th>Date</th><td>2026-06-05</td></tr></tbody></table>
+              <p><strong class="manual-label">Date:</strong> 2026-06-05</p>
+
+              <p><strong class="manual-label">Source/Date Note:</strong> Source: Official news updates and exam-oriented current affairs references | Updated: 2026-06-05</p>
             </div>
 
-            <section class="panel">
-              <h2>Questions</h2>
-              <div class="content-box"><div class="mcq-list"></div></div>
-            </section>
 
+            <section class="panel">
+              <h2>More Current Affairs</h2>
+              <div class="community-actions">
+                <a class="btn whatsapp" href="https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q" target="_blank" rel="noopener noreferrer">Join WhatsApp Channel</a>
+                <a class="btn" href="../../current-affairs.html">Related Current Affairs</a>
+                <a class="btn" href="../../mock-test.html">Mock Test</a>
+              </div>
+            </section>
         </section>
         <section class="panel" id="featurePanel" style="display:none;">
           <h2>Overview Table</h2>
@@ -339,6 +357,7 @@ body.dark-mode .job-tool-btn:hover{background:#ffb15c!important;border-color:#ff
           <h2>Important Dates</h2>
           <div class="table-wrap">
             <table class="detail-table">
+              <thead><tr><th>विवरण</th><th>तारीख</th></tr></thead>
               <tbody id="importantList"></tbody>
             </table>
           </div>
@@ -618,8 +637,8 @@ const normalizeTextValue = (value = "") => String(value ?? "").replace(/\s+/g, "
 const formatReadableDate = (value = "") => {
   const date = parseLooseDate(value);
   if(!date){ return String(value || "").trim(); }
-  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  return `${String(date.getDate()).padStart(2, "0")}-${months[date.getMonth()]}-${date.getFullYear()}`;
+  const months = ["जनवरी","फरवरी","मार्च","अप्रैल","मई","जून","जुलाई","अगस्त","सितंबर","अक्टूबर","नवंबर","दिसंबर"];
+  return `${String(date.getDate()).padStart(2, "0")} ${months[date.getMonth()]} ${date.getFullYear()}`;
 };
 
 const valueLooksLikeDate = (value = "") => Boolean(parseLooseDate(value));
@@ -631,6 +650,87 @@ const shouldFormatDateKey = (key = "") => {
   const label = String(key || "");
   if(nonDateKeyPattern.test(label) || nonDateKeyPattern.test(normalized)){ return false; }
   return dateKeyPattern.test(label) || dateKeyPattern.test(normalized);
+};
+
+const importantDateLabelMap = {
+  notificationDate:"Notification Date",
+  postDate:"Notification Date",
+  startDate:"Application Start Date",
+  applicationStartDate:"Application Start Date",
+  lastApplyDate:"Last Date",
+  lastDate:"Last Date",
+  lastFeeDate:"Fee Payment Last Date",
+  feePaymentLastDate:"Fee Payment Last Date",
+  examDate:"Exam Date",
+  admitCardDate:"Admit Card Available",
+  admitCardAvailable:"Admit Card Available",
+  resultDate:"Result Date",
+  answerKeyDate:"Answer Key Available"
+};
+
+const canonicalImportantDateLabel = (label = "") => {
+  const normalized = normalizeRowLabel(label);
+  if(/notification|post date|advertisement/.test(normalized)){ return "notification date"; }
+  if(/application.*start|start.*application|start date/.test(normalized)){ return "application start date"; }
+  if(/fee.*last|last.*fee|payment.*last/.test(normalized)){ return "fee payment last date"; }
+  if(/last.*date|application.*last/.test(normalized)){ return "last date"; }
+  if(/exam.*city/.test(normalized)){ return "exam city available"; }
+  if(/exam/.test(normalized)){ return "exam date"; }
+  if(/admit/.test(normalized)){ return "admit card available"; }
+  if(/answer/.test(normalized)){ return "answer key available"; }
+  if(/result/.test(normalized)){ return "result date"; }
+  return normalized;
+};
+
+const isTimelineDateEventRow = (row = {}) => {
+  const label = normalizeRowLabel(row.label || row.key || "");
+  return /^(date|event|timeline|date events|dateevents|events|schedule|important events|important date events)$/.test(label);
+};
+
+const importantDateRow = (label, value, extra = {}) => ({
+  label,
+  value,
+  format:"date",
+  ...extra
+});
+
+const buildImportantDateRows = (job = {}, derivedStartDate = "", displayLastDate = "") => {
+  const baseRows = [
+    importantDateRow("Notification Date", job.postDate),
+    importantDateRow("Application Start Date", job.startDate || derivedStartDate),
+    importantDateRow("Last Date", displayLastDate || job.lastApplyDate || job.lastDate, { className:"danger-date" }),
+    importantDateRow("Fee Payment Last Date", job.lastFeeDate),
+    importantDateRow("Correction Last Date", job.correctionDate || job.correctionLastDate),
+    importantDateRow("Exam Date", job.examDate),
+    importantDateRow("Exam City Available", job.examCityDate),
+    importantDateRow("Admit Card Available", job.admitCardDate),
+    importantDateRow("Answer Key Available", job.answerKeyDate),
+    importantDateRow("Result Date", job.resultDate),
+    importantDateRow("Tier II / Second Exam Date", job.tierTwoExamDate || job.tier2ExamDate)
+  ];
+  const filledBaseRows = baseRows.filter((row) => isFilledValue(row.value, row.options));
+  const hasStandardDates = filledBaseRows.length > 0;
+  const structuredRows = flexibleRowsFromValue(getFlexibleField(job, "importantDates"), importantDateLabelMap)
+    .filter((row) => !(hasStandardDates && isTimelineDateEventRow(row)))
+    .map((row) => ({
+      ...row,
+      label:importantDateLabelMap[row.key] || row.label,
+      format:"date",
+      htmlValue:renderFlexibleCell(row.value, { formatDate:shouldFormatDateKey(row.key || row.label) || valueLooksLikeDate(row.value) })
+    }));
+  const rows = [];
+  const seen = new Set();
+  [...baseRows, ...structuredRows].forEach((row) => {
+    if(!isFilledValue(row.value, row.options)){ return; }
+    if(isTimelineDateEventRow(row) && hasStandardDates){ return; }
+    const labelKey = canonicalImportantDateLabel(row.dedupeLabel || row.label);
+    const valueKey = valueLooksLikeDate(row.value) ? formatReadableDate(row.value) : normalizeTextValue(row.value).toLowerCase();
+    const key = `${labelKey}|${valueKey}`;
+    if(seen.has(key) || (labelKey === "date" && hasStandardDates) || (labelKey === "event" && hasStandardDates)){ return; }
+    seen.add(key);
+    rows.push({ ...row, label:row.label || "Date" });
+  });
+  return rows;
 };
 
 const safeUrl = (value = "#") => {
@@ -783,13 +883,15 @@ const parseLooseDate = (value = "") => {
     const date = new Date(numeric);
     return Number.isNaN(date.getTime()) ? null : date;
   }
-  const months = { jan:0, january:0, feb:1, february:1, mar:2, march:2, apr:3, april:3, may:4, jun:5, june:5, jul:6, july:6, aug:7, august:7, sep:8, sept:8, september:8, oct:9, october:9, nov:10, november:10, dec:11, december:11 };
+  const months = { jan:0, january:0, feb:1, february:1, mar:2, march:2, apr:3, april:3, may:4, jun:5, june:5, jul:6, july:6, aug:7, august:7, sep:8, sept:8, september:8, oct:9, october:9, nov:10, november:10, dec:11, december:11, जनवरी:0, फरवरी:1, मार्च:2, अप्रैल:3, मई:4, जून:5, जुलाई:6, अगस्त:7, सितंबर:8, सितम्बर:8, अक्टूबर:9, नवंबर:10, नवम्बर:10, दिसंबर:11, दिसम्बर:11 };
   let match = text.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})$/);
   if(match){ return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3])); }
   match = text.match(/^(\d{1,2})[-/.\s]+(\d{1,2})[-/.\s]+(\d{4})$/);
   if(match){ return new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1])); }
   match = text.match(/^(\d{1,2})[-/.\s]+([a-zA-Z]+)[-/.\s]+(\d{4})$/);
   if(match && months[match[2].toLowerCase()] !== undefined){ return new Date(Number(match[3]), months[match[2].toLowerCase()], Number(match[1])); }
+  match = text.match(/^(\d{1,2})[-/.\s]+([^\d\s]+)[-/.\s]+(\d{4})$/);
+  if(match && months[match[2]] !== undefined){ return new Date(Number(match[3]), months[match[2]], Number(match[1])); }
   const date = new Date(text);
   return Number.isNaN(date.getTime()) ? null : date;
 };
@@ -864,10 +966,42 @@ const normalizePostTarget = (value = "") => {
   const map = { latestjob:"latestJob", jobs:"latestJob", job:"latestJob", notification:"notification", admitcard:"admitCard", result:"result", syllabus:"syllabus", answerkey:"answerKey", admission:"admission", currentaffairs:"currentAffairs", currentaffair:"currentAffairs", current:"currentAffairs", ca:"currentAffairs" };
   return map[key] || "latestJob";
 };
+const getObjectContent = (source = {}) => source && typeof source.content === "object" && !Array.isArray(source.content) ? source.content : {};
+const getCurrentAffairsQuestionSource = (job = {}) => {
+  const article = job.advancedArticleData && typeof job.advancedArticleData === "object" ? job.advancedArticleData : {};
+  const content = getObjectContent(job);
+  const articleContent = getObjectContent(article);
+  return Array.isArray(job.mcqs) ? job.mcqs
+    : Array.isArray(job.practiceQuestions) ? job.practiceQuestions
+      : Array.isArray(job.questions) ? job.questions
+        : Array.isArray(job.currentAffairs) ? job.currentAffairs
+          : Array.isArray(job.currentAffairsData) ? job.currentAffairsData
+            : Array.isArray(job.currentAffairsData?.currentAffairs) ? job.currentAffairsData.currentAffairs
+              : Array.isArray(article.mcqs) ? article.mcqs
+                : Array.isArray(article.practiceQuestions) ? article.practiceQuestions
+                  : Array.isArray(article.questions) ? article.questions
+                    : Array.isArray(article.currentAffairs) ? article.currentAffairs
+                      : Array.isArray(content.mcqs) ? content.mcqs
+                        : Array.isArray(content.practiceQuestions) ? content.practiceQuestions
+                          : Array.isArray(content.questions) ? content.questions
+                            : Array.isArray(articleContent.mcqs) ? articleContent.mcqs
+                              : Array.isArray(articleContent.practiceQuestions) ? articleContent.practiceQuestions
+                                : Array.isArray(articleContent.questions) ? articleContent.questions : [];
+};
+const hasCurrentAffairsQuestions = (job = {}) => getCurrentAffairsQuestionSource(job).some((item) => {
+  if(!item || typeof item !== "object"){ return false; }
+  const options = Array.isArray(item.options) ? item.options : [item.optionA || item.a, item.optionB || item.b, item.optionC || item.c, item.optionD || item.d];
+  return String(item.question || item.q || item.title || "").trim() && options.some((option) => String(option || "").trim());
+});
 const isCurrentAffairsPost = (job = {}) => {
   const article = job.advancedArticleData && typeof job.advancedArticleData === "object" ? job.advancedArticleData : {};
-  return [job.postTarget, job.postType, article.postTarget, article.postType, job.category, job.type]
-    .some((value) => normalizePostTarget(value) === "currentAffairs");
+  return [job.postTarget, job.postType, article.postTarget, article.postType, job.type, article.type]
+    .some((value) => normalizePostTarget(value) === "currentAffairs")
+    || Array.isArray(job.currentAffairs)
+    || Array.isArray(article.currentAffairs)
+    || Array.isArray(job.currentAffairsData)
+    || Array.isArray(job.currentAffairsData?.currentAffairs)
+    || hasCurrentAffairsQuestions(job);
 };
 const slugifyText = (value = "") => String(value || "").toLowerCase().replace(/['"]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 120) || `job-${Date.now()}`;
 const parsePostWiseApplyLinks = (value = "") => String(value || "").split(/\r?\n/).map((line) => line.trim()).filter(Boolean).map((line) => {
@@ -1754,7 +1888,7 @@ const normalizeMcqItems = (items = []) => (Array.isArray(items) ? items : []).ma
 const renderMcqSection = (job = {}) => {
   const mcqBox = document.getElementById("mcqContent");
   const mcqPanel = document.getElementById("mcqPanel");
-  const mcqs = normalizeMcqItems(job.mcqs);
+  const mcqs = normalizeMcqItems(isCurrentAffairsPost(job) ? getCurrentAffairsQuestionSource(job) : job.mcqs);
   if(!mcqs.length){
     mcqBox.innerHTML = "";
     mcqPanel.style.display = "none";
@@ -1808,11 +1942,16 @@ const hidePanels = (ids = []) => ids.forEach((id) => {
   if(panel){ panel.style.display = "none"; }
 });
 
-const renderCurrentAffairsDetail = ({ jobId = "", job = {}, title = "", description = "", canonicalUrl = "" }) => {
+const renderCurrentAffairsDetail = ({ jobId = "", job = {}, title = "", description = "", canonicalUrl = "", allJobs = [] }) => {
   const introText = Array.isArray(job.intro) ? job.intro.map((item) => String(item || "").trim()).filter(Boolean).join("\n\n") : "";
   const dateText = job.postDate || job.date || job.content?.date || job["तारीख"] || job.currentAffairsData?.["तारीख"] || "";
   const categoryText = job.category || job.content?.category || job["श्रेणी"] || job.currentAffairsData?.["श्रेणी"] || "";
   const newsItems = normalizeCurrentAffairsNewsItems(job);
+  const sourceNames = Array.from(new Set(newsItems.map((item) => item.source).filter(Boolean))).slice(0, 4);
+  const sourceDateNote = [
+    sourceNames.length ? `Source: ${sourceNames.join(", ")}` : "Source: Official news updates and exam-oriented current affairs references",
+    dateText ? `Updated: ${dateText}` : ""
+  ].filter(Boolean).join(" | ");
   document.getElementById("jobType").textContent = "Current Affairs";
   document.getElementById("jobTitle").textContent = title;
   document.getElementById("jobIntro").innerHTML = renderFormattedText(introText || description || title);
@@ -1820,24 +1959,21 @@ const renderCurrentAffairsDetail = ({ jobId = "", job = {}, title = "", descript
   document.getElementById("sheetSubTitle").innerHTML = renderFormattedText(introText || description || "Important current affairs questions, answers and explanations.");
   renderArticleMeta(job);
   const shortInfoHeading = document.querySelector("#shortInfoPanel h2");
-  if(shortInfoHeading){ shortInfoHeading.textContent = "Intro"; }
+  if(shortInfoHeading){ shortInfoHeading.textContent = "Current Affairs"; }
   renderMetaBadges([
     { label:"Date", value:dateText, icon:"fa-solid fa-calendar-days" }
   ]);
   hidePanels([
-    "featurePanel", "jobInfoPanel", "feePanel", "agePanel", "vacancyPanel",
+    "featurePanel", "importantPanel", "jobInfoPanel", "feePanel", "agePanel", "vacancyPanel",
     "eligibilityPanel", "selectionPanel", "applyProcessPanel", "extraPanel",
-    "linksPanel", "jobToolsPanel", "communityPanel"
+    "linksPanel", "jobToolsPanel"
   ]);
-  renderTextBlock("shortInfoContent", "shortInfoPanel", introText);
-  const importantPanel = document.getElementById("importantPanel");
-  const importantHeading = importantPanel ? importantPanel.querySelector("h2") : null;
-  if(importantHeading){ importantHeading.textContent = "Date"; }
-  renderList("importantList", "importantPanel", [
-    { label:"Date", value:dateText },
-    { label:"Category", value:categoryText },
-    { label:"News Updates", value:newsItems.length ? `${newsItems.length}` : "" }
-  ]);
+  renderTextBlock("shortInfoContent", "shortInfoPanel", [
+    dateText ? `Date: ${dateText}` : "",
+    categoryText ? `Category: ${categoryText}` : "",
+    introText || description || "",
+    sourceDateNote
+  ].filter(Boolean).join("\n\n"));
   const importantManual = document.getElementById("importantManual");
   if(importantManual){ importantManual.innerHTML = ""; }
   const contentPanel = document.getElementById("pageContentPanel");
@@ -1855,7 +1991,9 @@ const renderCurrentAffairsDetail = ({ jobId = "", job = {}, title = "", descript
   const mcqHeading = document.querySelector("#mcqPanel h2");
   if(mcqHeading){ mcqHeading.textContent = "Questions"; }
   renderMcqSection(job);
-  const faqItems = renderFaqSection(job, title);
+  hidePanels(["faqPanel"]);
+  const faqItems = [];
+  renderCurrentAffairsLinks({ currentId:jobId, currentJob:job, allJobs });
   const sidebar = document.querySelector(".detail-sidebar");
   if(sidebar){ sidebar.style.display = "none"; }
   setJsonLd(buildJobSchemaGraph({ job, title, description, canonicalUrl, faqItems }));
@@ -1876,6 +2014,24 @@ const isSeparatorRow = (line) => /^\s*\|?[\s:-]+\|[\s|:-]*$/.test(line);
 
 const isMeaningfulCell = (value) => {
   return isFilledValue(value);
+};
+
+const renderCurrentAffairsLinks = ({ currentId = "", currentJob = {}, allJobs = [] }) => {
+  const communityPanel = document.getElementById("communityPanel");
+  if(!communityPanel){ return; }
+  const relatedRows = (Array.isArray(allJobs) ? allJobs : [])
+    .filter((item) => item && item.id !== currentId && isJobVisible(item.job || {}) && isCurrentAffairsPost(item.job || {}))
+    .slice(0, 5);
+  communityPanel.innerHTML = `
+    <h2>More Current Affairs</h2>
+    <div class="community-actions">
+      <a class="btn whatsapp" href="https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q" target="_blank" rel="noopener noreferrer">Join WhatsApp Channel</a>
+      <a class="btn" href="/current-affairs.html"><i class="fa-solid fa-newspaper"></i> Related Current Affairs</a>
+      <a class="btn" href="/mock-test.html"><i class="fa-solid fa-clipboard-check"></i> Mock Test</a>
+    </div>
+    ${relatedRows.length ? `<div class="related-list">${relatedRows.map((item) => `<a href="${canonicalJobHref(item.id, item.job)}">${escapeHTML((item.job || {}).title || "Current Affairs")}</a>`).join("")}</div>` : ""}
+  `;
+  communityPanel.style.display = "block";
 };
 
 const renderTableBlock = (lines) => {
@@ -2329,19 +2485,7 @@ const renderSarkariBlueLayout = (job = {}, title = "Job Update", displayLastDate
   const orgName = job.organization || job.organisation || job.department || job.board || job.company || "E-MITRA WALA";
   const postTitle = job.shortTitle || job.postName || title;
   const notificationLine = job.notificationNo || job.advtNo || job.advertisementNo || job.advt || job.notification || job.seoTitle || title;
-  const importantRows = [
-    { label:"Notification Date", value:job.postDate },
-    { label:"Application Start Date", value:job.startDate || derivedStartDate },
-    { label:"Last Date", value:displayLastDate || job.lastApplyDate || job.lastDate, className:"danger-date", format:"date" },
-    { label:"Fee Payment Last Date", value:job.lastFeeDate, format:"date" },
-    { label:"Correction Last Date", value:job.correctionDate || job.correctionLastDate },
-    { label:"Exam Date", value:job.examDate },
-    { label:"Exam City Available", value:job.examCityDate },
-    { label:"Admit Card", value:job.admitCardDate },
-    { label:"Answer Key", value:job.answerKeyDate },
-    { label:"Result Date", value:job.resultDate },
-    ...flexibleRowsFromValue(getFlexibleField(job, "importantDates")).map((row) => ({ ...row, htmlValue:renderFlexibleCell(row.value, { formatDate:shouldFormatDateKey(row.key || row.label) }) }))
-  ];
+  const importantRows = buildImportantDateRows(job, derivedStartDate, displayLastDate);
   const feeValue = getFlexibleField(job, "applicationFee");
   const feeRows = applicationFeeRowsFromValue(feeValue);
   const feeBody = feeRows.length
@@ -2564,7 +2708,7 @@ const renderJobDetail = (jobId, rawJob, allJobs = []) => {
     setMeta('meta[name="twitter:title"]', "content", job.seoTitle || title);
     setMeta('meta[name="twitter:description"]', "content", description);
     if(isCurrentAffairsPost(job)){
-      renderCurrentAffairsDetail({ jobId, job, title, description, canonicalUrl });
+      renderCurrentAffairsDetail({ jobId, job, title, description, canonicalUrl, allJobs });
       return;
     }
     const faqItems = renderFaqSection(job, title);
@@ -2666,50 +2810,14 @@ const renderJobDetail = (jobId, rawJob, allJobs = []) => {
     const useNestedOverview = nestedOverviewRows.length;
     renderList("featureTable", "featurePanel", useNestedOverview ? nestedOverviewRows : (hasDefaultOverview ? defaultOverviewRows : nestedOverviewRows));
 
-    const structuredImportantDates = flexibleRowsFromValue(getFlexibleField(job, "importantDates"), {
-      startDate:"Application Start Date",
-      applicationStartDate:"Application Start Date",
-      lastApplyDate:"Last Date Apply Online",
-      lastDate:"Last Date Apply Online",
-      lastFeeDate:"Last Date Fee Payment",
-      examDate:"Exam Date",
-      admitCardDate:"Admit Card Date",
-      resultDate:"Result Date"
-    }).map((row) => ({ ...row, htmlValue:renderFlexibleCell(row.value, { formatDate:shouldFormatDateKey(row.key || row.label) }) }));
-    // Avoid duplicate rows when the same date exists in both fixed fields and flexible "importantDates".
-    const baseImportantRows = [
-      { label:"Application Start Date", value:job.startDate || derivedStartDate },
-      { label:"Application Last Date", dedupeLabel:"application last date", value:displayLastDate, className:"danger-date", format:"date" },
-      { label:"Fee Payment Last Date", dedupeLabel:"fee payment last date", value:job.lastFeeDate, format:"date" },
-      { label:"Tier I / Main Exam Date", value:job.examDate },
-      { label:"Exam City Available", value:job.examCityDate },
-      { label:"Admit Card Date", value:job.admitCardDate },
-      { label:"Answer Key Available", value:job.answerKeyDate },
-      { label:"Result Date", value:job.resultDate },
-      { label:"Tier II / Second Exam Date", value:job.tierTwoExamDate || job.tier2ExamDate }
-    ];
-    const existingImportantLabels = new Set(
-      baseImportantRows.filter((row) => isFilledValue(row.value, row.options)).map((row) => canonicalRowLabel(row.dedupeLabel || row.label)).filter(Boolean)
-    );
-    const uniqueStructuredImportant = [];
-    const addedImportantLabels = new Set(existingImportantLabels);
-    structuredImportantDates.forEach((row) => {
-      const label = canonicalRowLabel(row.label || "");
-      if(label && !addedImportantLabels.has(label)){
-        addedImportantLabels.add(label);
-        uniqueStructuredImportant.push(row);
-      }
-    });
-    renderList("importantList", "importantPanel", [
-      ...baseImportantRows,
-      ...uniqueStructuredImportant
-    ]);
+    const importantRows = buildImportantDateRows(job, derivedStartDate, displayLastDate);
+    renderList("importantList", "importantPanel", importantRows);
     const importantHeading = document.querySelector("#importantPanel h2");
     if(importantHeading){ importantHeading.textContent = langLabel("importantDates"); }
-    const renderedImportantLabels = new Set([
-      ...baseImportantRows,
-      ...uniqueStructuredImportant
-    ].filter((row) => isFilledValue(row.value, row.options)).map((row) => canonicalRowLabel(row.dedupeLabel || row.label)).filter(Boolean));
+    const renderedImportantLabels = new Set(importantRows.flatMap((row) => [
+      canonicalImportantDateLabel(row.dedupeLabel || row.label),
+      canonicalRowLabel(row.dedupeLabel || row.label)
+    ]).filter(Boolean));
     renderManualContent("importantManual", "importantPanel", removeKnownManualRows(job.importantDatesManual, renderedImportantLabels), "Other Important Dates");
 
     const overviewKeys = new Set(uniqueRows(defaultOverviewRows).map((row) => `${canonicalRowLabel(row.label)}|${normalizeTextValue(row.value).toLowerCase()}`));

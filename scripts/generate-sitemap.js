@@ -679,7 +679,19 @@ const noindexExcludedStaticPages = (usefulRows = []) => {
       const filePath = path.join(POST_ROOT, entry.name, "index.html");
       if (!fs.existsSync(filePath)) return;
       const html = fs.readFileSync(filePath, "utf8");
-      const nextHtml = withNoindexMeta(html);
+      let refreshedHtml = html;
+      const payloadMatch = html.match(/window\.__EMITRA_STATIC_POST__=([\s\S]*?);<\/script>/);
+      if (payloadMatch) {
+        try {
+          const payload = JSON.parse(payloadMatch[1]);
+          if (payload && payload.job) {
+            refreshedHtml = renderStaticPostHtml(payload.id || `static-${entry.name}`, { ...payload.job, slug:entry.name });
+          }
+        } catch (_error) {
+          refreshedHtml = html;
+        }
+      }
+      const nextHtml = withNoindexMeta(refreshedHtml);
       if (nextHtml !== html) {
         fs.writeFileSync(filePath, nextHtml, "utf8");
         updated += 1;
