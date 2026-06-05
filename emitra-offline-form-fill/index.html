@@ -170,10 +170,10 @@
         <button id="resetConfigBtn" class="danger">Reset</button>
       </div>
       <div class="fileRow">
-        <label class="small">Template PDF replace/upload</label>
-        <input type="file" id="pdfFile" accept="application/pdf" />
-        <label class="small">Combined Config JSON upload</label>
-        <input type="file" id="configFile" accept="application/json" />
+        <label class="small"><b>Folder upload</b> - folder me 1 PDF aur 1 config JSON rakhein</label>
+        <input type="file" id="folderUploadInput" webkitdirectory directory multiple />
+        <input type="file" id="pdfFile" accept="application/pdf" hidden />
+        <input type="file" id="configFile" accept="application/json" hidden />
       </div>
       <h3>Selected Field</h3>
       <div id="selectedInfo" class="small bad">Koi field selected nahi hai.</div>
@@ -1437,6 +1437,67 @@ function makeFormKeyFromTitle(title){
   }
   return key;
 }
+function getUploadFolderName(file){
+  const relativePath = String(file?.webkitRelativePath || '');
+  const firstPart = relativePath.split(/[\\/]/).filter(Boolean)[0];
+  return firstPart || String(file?.name || '').replace(/\.[^.]+$/, '') || 'Uploaded PDF Form';
+}
+function getSingleFormConfigFromUpload(uploaded, preferredKey = ''){
+  if(uploaded?.forms && typeof uploaded.forms === 'object'){
+    const keys = Object.keys(uploaded.forms);
+    const selectedKey = preferredKey && uploaded.forms[preferredKey] ? preferredKey : keys[0];
+    if(!selectedKey) throw new Error('Uploaded config me forms object empty hai');
+    return { key:selectedKey, config:uploaded.forms[selectedKey] };
+  }
+  return { key:'', config:uploaded };
+}
+async function importPdfFormFolder(){
+  if(!authState.isAdmin){
+    setStatus('Folder se form add karne ke liye admin login chahiye.', 'bad');
+    return;
+  }
+  const input = $('folderUploadInput');
+  const files = Array.from(input?.files || []);
+  if(!files.length) return;
+  try{
+    if(!allConfigs) await loadCombinedConfig();
+    const pdfFile = files.find(file => /\.pdf$/i.test(file.name));
+    const jsonFile = files.find(file => /\.json$/i.test(file.name));
+    if(!pdfFile || !jsonFile){
+      throw new Error('Folder me ek PDF file aur ek config JSON file honi chahiye.');
+    }
+    const uploadedJson = JSON.parse(await jsonFile.text());
+    const folderName = getUploadFolderName(pdfFile);
+    const imported = getSingleFormConfigFromUpload(uploadedJson);
+    const formTitle = String(imported.config?.title || uploadedJson.title || folderName).trim() || folderName;
+    const formKey = makeFormKeyFromTitle(formTitle);
+    const importedConfig = sanitizeConfigFields({
+      ...structuredClone(imported.config || {}),
+      title:formTitle,
+      downloadName:imported.config?.downloadName || `${formKey}-filled.pdf`
+    });
+    if(!Array.isArray(importedConfig.fields)){
+      throw new Error('Config JSON me fields array missing hai.');
+    }
+    if(!allConfigs.forms) allConfigs.forms = {};
+    currentFormKey = formKey;
+    allConfigs.forms[formKey] = importedConfig;
+    config = sanitizeConfigFields(structuredClone(importedConfig));
+    defaultConfig = sanitizeConfigFields(structuredClone(importedConfig));
+    rebuildFormSelect();
+    templateBytes = await pdfFile.arrayBuffer();
+    await uploadTemplatePdfForEveryone(pdfFile, { newFormKey:formKey, formTitle });
+    rebuildFormSelect();
+    await saveConfigForEveryone();
+    await loadSelectedForm();
+    setStatus(`Folder upload se "${formTitle}" form add ho gaya.`, 'ok');
+  }catch(error){
+    console.error(error);
+    setStatus('Folder upload error: ' + error.message, 'bad');
+  }finally{
+    if(input) input.value = '';
+  }
+}
 async function uploadTemplatePdfForEveryone(file, options = {}){
   if(!authState.isAdmin) {
     setStatus('PDF sirf browser preview me upload hua. Sabke liye save karne ke liye admin login chahiye.', 'bad');
@@ -1541,6 +1602,7 @@ $('addInputBtn').addEventListener('click',addCustomInput);
 $('deleteFieldBtn').addEventListener('click',deleteMappedField);
 $('downloadConfigBtn').addEventListener('click',downloadConfig);
 $('resetConfigBtn').addEventListener('click',async()=>{localStorage.removeItem(getFormMeta(currentFormKey).localKey); config=sanitizeConfigFields(structuredClone(defaultConfig)); selectedFieldId=null; await renderPreview(); setStatus('Reset done','ok');});
+$('folderUploadInput').addEventListener('change',importPdfFormFolder);
 $('pdfFile').addEventListener('change',async e=>{
   const f=e.target.files[0]; if(!f)return;
   try{
