@@ -256,6 +256,11 @@ function rebuildFormSelect(){
 const DISABLED_FIELD_IDS = new Set(['w1Date','w2Date','bf_w1_date','bf_w2_date']);
 function sanitizeConfigFields(cfg){
   if(cfg && Array.isArray(cfg.fields)) cfg.fields = cfg.fields.filter(f => !DISABLED_FIELD_IDS.has(f.id));
+  if(cfg && Array.isArray(cfg.fields)){
+    const maxPage = cfg.fields.reduce((page, field)=>Math.max(page, Number(field.page) || 1), 1);
+    const configuredPageCount = Number(cfg.pageCount);
+    cfg.pageCount = Number.isFinite(configuredPageCount) && configuredPageCount >= maxPage ? configuredPageCount : maxPage;
+  }
   return cfg;
 }
 
@@ -1321,8 +1326,9 @@ async function printPdf(){
 function getCombinedConfigForDownload(){
   const combined = structuredClone(allConfigs || {version:'1.0', forms:{}});
   if(!combined.forms) combined.forms = {};
-  combined.forms[currentFormKey] = structuredClone(config);
+  combined.forms[currentFormKey] = sanitizeConfigFields(structuredClone(config));
   for(const form of Object.values(combined.forms)){
+    sanitizeConfigFields(form);
     if(!form || !Array.isArray(form.customDataFields)) continue;
     form.customDataFields = form.customDataFields.map(field => ({...field, defaultValue: ''}));
   }

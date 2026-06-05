@@ -2209,11 +2209,19 @@ function validateFormsFieldsConfig(config = {}) {
     if (!form || typeof form !== "object" || !Array.isArray(form.fields)) {
       throw new Error(`${formKey} form fields missing hain`);
     }
+    const configuredPageCount = Number(form.pageCount);
+    const maxFieldPage = form.fields.reduce((maxPage, field) => {
+      const page = Number(field?.page);
+      return Number.isFinite(page) ? Math.max(maxPage, page) : maxPage;
+    }, 1);
+    const maxAllowedPage = Number.isFinite(configuredPageCount) && configuredPageCount >= 1
+      ? Math.max(configuredPageCount, maxFieldPage)
+      : maxFieldPage;
     form.fields.forEach((field, index) => {
       if (!field || typeof field !== "object") throw new Error(`${formKey} field ${index + 1} invalid hai`);
       if (!field.id) throw new Error(`${formKey} field ${index + 1} id missing hai`);
       const page = Number(field.page);
-      if (!Number.isFinite(page) || page < 1 || page > 10) throw new Error(`${formKey} field ${field.id} page invalid hai`);
+      if (!Number.isFinite(page) || page < 1 || page > maxAllowedPage) throw new Error(`${formKey} field ${field.id} page invalid hai`);
       ["xPct", "yPct", "wPct", "hPct", "fontSize"].forEach((key) => {
         if (!Number.isFinite(Number(field[key]))) throw new Error(`${formKey} field ${field.id} ${key} invalid hai`);
       });

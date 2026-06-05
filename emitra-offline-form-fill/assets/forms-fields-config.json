@@ -804,7 +804,8 @@
           "hPct": 0.018244,
           "fontSize": 10
         }
-      ]
+      ],
+      "pageCount": 3
     },
     "bonafide": {
       "version": "1.0",
@@ -1746,7 +1747,8 @@
           "hPct": 0.010476,
           "fontSize": 9
         }
-      ]
+      ],
+      "pageCount": 3
     },
     "marriage": {
       "version": "marriage-certificate-rajasthan-2026-v1",
@@ -4838,7 +4840,8 @@
           "hPct": 0.02,
           "fontSize": 11.5
         }
-      ]
+      ],
+      "pageCount": 11
     }
   }
 }
