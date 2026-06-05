@@ -448,7 +448,7 @@ const FILL_COLOR_LOCAL_KEY = 'rajasthanFormsFillColor';
 const DEFAULT_FILL_COLOR = '#38bdf8';
 const DELETE_FORM_CONFIRM_CODE = 'DELETE';
 let sharedFormData = {};
-try { localStorage.removeItem(DATA_LOCAL_KEY); } catch(e) {}
+try { sharedFormData = JSON.parse(localStorage.getItem(DATA_LOCAL_KEY) || '{}') || {}; } catch(e) { sharedFormData = {}; }
 const $ = id => document.getElementById(id);
 const navTools = document.querySelector('.nav-tools');
 if(navTools){
@@ -603,10 +603,12 @@ function saveSharedFormData(){
       if (el) sharedFormData[id] = el.value;
     }
   }
+  try { localStorage.setItem(DATA_LOCAL_KEY, JSON.stringify(sharedFormData)); } catch(e) {}
 }
 
 function setSharedValue(id, value){
   sharedFormData[id] = value;
+  try { localStorage.setItem(DATA_LOCAL_KEY, JSON.stringify(sharedFormData)); } catch(e) {}
 }
 
 function setStatus(msg, cls='') { const el=$('status'); el.textContent = msg; el.className = cls; }
@@ -742,8 +744,10 @@ function buildDataForm(){
         for (const opt of opts){ const [v,t]=opt.split('='); const o=document.createElement('option'); o.value=v; o.textContent=t; input.appendChild(o); }
       } else input=document.createElement('input');
       input.id='data_'+id;
+      input.name = 'data_' + id;
       input.value = Object.prototype.hasOwnProperty.call(sharedFormData, id) ? sharedFormData[id] : '';
       input.autocomplete = 'off';
+      input.setAttribute('autocomplete','off');
       const dateField = id === 'dob' || id === 'date';
       const hindiField = shouldAutoHindiField(id, type);
       if(hindiField) {
@@ -773,9 +777,11 @@ function buildDataForm(){
         dateRow.className = 'dateInputRow';
         const picker = document.createElement('input');
         picker.type = 'date';
+        picker.name = 'data_' + id + '_calendar';
         picker.className = 'datePickerInput';
         picker.title = 'Calendar se date choose karein';
         picker.setAttribute('aria-label', label + ' calendar');
+        picker.setAttribute('autocomplete','off');
         picker.value = dateTextToCalendarValue(input.value);
         input.addEventListener('change', () => { picker.value = dateTextToCalendarValue(input.value); });
         input.addEventListener('blur', () => { picker.value = dateTextToCalendarValue(input.value); });
@@ -810,6 +816,7 @@ function resetFormData(useSample){
     }
   }
   sharedFormData = {...sharedFormData, ...nextData};
+  try { localStorage.setItem(DATA_LOCAL_KEY, JSON.stringify(sharedFormData)); } catch(e) {}
   buildDataForm();
   refreshOverlayTexts();
   setStatus(useSample ? 'Sample data set ho gaya.' : 'Form data clear ho gaya.', 'ok');
