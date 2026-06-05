@@ -450,7 +450,7 @@ const FILL_COLOR_LOCAL_KEY = 'rajasthanFormsFillColor';
 const DEFAULT_FILL_COLOR = '#38bdf8';
 const DELETE_FORM_CONFIRM_CODE = 'DELETE';
 let sharedFormData = {};
-try { sharedFormData = JSON.parse(localStorage.getItem(DATA_LOCAL_KEY) || '{}') || {}; } catch(e) { sharedFormData = {}; }
+try { localStorage.removeItem(DATA_LOCAL_KEY); } catch(e) {}
 const $ = id => document.getElementById(id);
 const navTools = document.querySelector('.nav-tools');
 if(navTools){
@@ -605,12 +605,10 @@ function saveSharedFormData(){
       if (el) sharedFormData[id] = el.value;
     }
   }
-  try { localStorage.setItem(DATA_LOCAL_KEY, JSON.stringify(sharedFormData)); } catch(e) {}
 }
 
 function setSharedValue(id, value){
   sharedFormData[id] = value;
-  try { localStorage.setItem(DATA_LOCAL_KEY, JSON.stringify(sharedFormData)); } catch(e) {}
 }
 
 function setStatus(msg, cls='') { const el=$('status'); el.textContent = msg; el.className = cls; }
@@ -746,7 +744,7 @@ function buildDataForm(){
         for (const opt of opts){ const [v,t]=opt.split('='); const o=document.createElement('option'); o.value=v; o.textContent=t; input.appendChild(o); }
       } else input=document.createElement('input');
       input.id='data_'+id;
-      input.value = Object.prototype.hasOwnProperty.call(sharedFormData, id) ? sharedFormData[id] : (def || '');
+      input.value = Object.prototype.hasOwnProperty.call(sharedFormData, id) ? sharedFormData[id] : '';
       input.autocomplete = 'off';
       const dateField = id === 'dob' || id === 'date';
       const hindiField = shouldAutoHindiField(id, type);
@@ -814,7 +812,6 @@ function resetFormData(useSample){
     }
   }
   sharedFormData = {...sharedFormData, ...nextData};
-  try { localStorage.setItem(DATA_LOCAL_KEY, JSON.stringify(sharedFormData)); } catch(e) {}
   buildDataForm();
   refreshOverlayTexts();
   setStatus(useSample ? 'Sample data set ho gaya.' : 'Form data clear ho gaya.', 'ok');
@@ -901,7 +898,6 @@ function normalizeCollectedDate(data, id){
   sharedFormData[id] = normalized;
   const el = $('data_' + id);
   if(el && el.value !== normalized) el.value = normalized;
-  try { localStorage.setItem(DATA_LOCAL_KEY, JSON.stringify(sharedFormData)); } catch(e) {}
 }
 
 function parseSimpleDate(str){
@@ -933,7 +929,6 @@ function syncAgeFromDob(data){
   sharedFormData.age = data.age;
   const ageEl = $('data_age');
   if(ageEl && ageEl.value !== data.age) ageEl.value = data.age;
-  try { localStorage.setItem(DATA_LOCAL_KEY, JSON.stringify(sharedFormData)); } catch(e) {}
 }
 
 function getCandidateAge(data){
@@ -1306,6 +1301,10 @@ function getCombinedConfigForDownload(){
   const combined = structuredClone(allConfigs || {version:'1.0', forms:{}});
   if(!combined.forms) combined.forms = {};
   combined.forms[currentFormKey] = structuredClone(config);
+  for(const form of Object.values(combined.forms)){
+    if(!form || !Array.isArray(form.customDataFields)) continue;
+    form.customDataFields = form.customDataFields.map(field => ({...field, defaultValue: ''}));
+  }
   return combined;
 }
 function downloadConfig(){
