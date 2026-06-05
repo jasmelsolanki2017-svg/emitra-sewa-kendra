@@ -1103,31 +1103,40 @@ const renderCurrentAffairsFallbackHtml = (job = {}, title = "Current Affairs", d
   const categoryText = toText(job.category || job.content?.category || job["श्रेणी"] || job.currentAffairsData?.["श्रेणी"]);
   const newsItems = getCurrentAffairsNewsItems(job);
   const questions = getCurrentAffairsQuestions(job);
-  const faqs = normalizeCurrentAffairsFaqItems(job.faq);
+  const sourceNames = Array.from(new Set(newsItems.map((item) => item.source).filter(Boolean))).slice(0, 4);
+  const sourceDateNote = [
+    sourceNames.length ? `Source: ${sourceNames.join(", ")}` : "Source: Official news updates and exam-oriented current affairs references",
+    dateText ? `Updated: ${dateText}` : ""
+  ].filter(Boolean).join(" | ");
   const questionHtml = questions.map((item, index) => `<article class="mcq-card">
                 <div class="mcq-question">Q${index + 1}. ${htmlEscape(item.question)}</div>
                 <div class="mcq-options">${item.options.map((option, optionIndex) => `<div class="mcq-option">${String.fromCharCode(65 + optionIndex)}. ${htmlEscape(option)}</div>`).join("")}</div>
                 ${item.answer ? `<div class="mcq-answer"><span class="manual-label">Correct Answer:</span> ${htmlEscape(item.answer)}</div>` : ""}
                 ${item.explanation ? `<div class="mcq-explanation"><span class="manual-label">Explanation:</span> ${htmlEscape(item.explanation)}</div>` : ""}
               </article>`).join("");
-  const faqHtml = faqs.length ? `<section class="panel">
-              <h2>FAQ</h2>
-              <div class="content-box">${faqs.map((item) => `<div class="content-section"><h2 class="sarkari-section-title">${htmlEscape(item.question)}</h2><p>${htmlEscape(item.answer)}</p></div>`).join("")}</div>
-            </section>` : "";
   return `<h2>${htmlEscape(title)}</h2>
             <div class="content-box">
               ${intro ? `<p>${htmlEscape(intro)}</p>` : ""}
-              ${dateText || categoryText ? `<table class="detail-table"><tbody>${dateText ? `<tr><th>Date</th><td>${htmlEscape(dateText)}</td></tr>` : ""}${categoryText ? `<tr><th>Category</th><td>${htmlEscape(categoryText)}</td></tr>` : ""}</tbody></table>` : ""}
+              ${dateText ? `<p><strong class="manual-label">Date:</strong> ${htmlEscape(dateText)}</p>` : ""}
+              ${categoryText ? `<p><strong class="manual-label">Category:</strong> ${htmlEscape(categoryText)}</p>` : ""}
+              <p><strong class="manual-label">Source/Date Note:</strong> ${htmlEscape(sourceDateNote)}</p>
             </div>
             ${newsItems.length ? `<section class="panel">
               <h2>समाचार</h2>
               <div class="content-box">${renderCurrentAffairsNewsHtml(newsItems)}</div>
             </section>` : ""}
-            <section class="panel">
+            ${questions.length ? `<section class="panel">
               <h2>Questions</h2>
               <div class="content-box"><div class="mcq-list">${questionHtml}</div></div>
-            </section>
-            ${faqHtml}`;
+            </section>` : ""}
+            <section class="panel">
+              <h2>More Current Affairs</h2>
+              <div class="community-actions">
+                <a class="btn whatsapp" href="https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q" target="_blank" rel="noopener noreferrer">Join WhatsApp Channel</a>
+                <a class="btn" href="current-affairs.html">Related Current Affairs</a>
+                <a class="btn" href="mock-test.html">Mock Test</a>
+              </div>
+            </section>`;
 };
 
 const renderPrerenderedJobDetail = (id = "", job = {}) => {
@@ -1768,7 +1777,7 @@ const buildDailyCurrentAffairsPrompt = (dateLabel = "") => [
   '  "shortInfo": "",',
   '  "metaDescription": ""',
   "}",
-  "Rules: 8-12 news points, 8-10 MCQ questions, 4-5 FAQs. Facts invent mat karo; uncertain facts ko general exam-revision wording me rakho."
+  "Rules: 8-12 news points, 15-20 MCQ questions, har MCQ me A/B/C/D options, correct answer aur 2-3 line explanation do. 4-5 FAQs bhi do. Facts invent mat karo; uncertain facts ko general exam-revision wording me rakho."
 ].join("\n");
 
 const normalizeDailyCurrentAffairsJson = (value = {}) => {
@@ -1821,7 +1830,7 @@ const generateDailyCurrentAffairsPayload = async ({ date = new Date(), aiProvide
         prompt,
         system: "You create concise, factual Hindi daily current affairs study material for Indian competitive exam aspirants.",
         temperature: 0.25,
-        maxTokens: 2200
+        maxTokens: 3600
       });
       const normalized = normalizeDailyCurrentAffairsJson(parseJsonFromAiText(result.text));
       if (normalized.news.length || normalized.questions.length) {

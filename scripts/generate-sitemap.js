@@ -83,8 +83,13 @@ const normalizePostTarget = (value = "") => {
 
 const isCurrentAffairsPost = (job = {}) => {
   const article = job.advancedArticleData && typeof job.advancedArticleData === "object" ? job.advancedArticleData : {};
-  return [job.postTarget, job.postType, article.postTarget, article.postType, job.category, job.type]
-    .some((value) => normalizePostTarget(value) === "currentAffairs");
+  return [job.postTarget, job.postType, article.postTarget, article.postType, job.type, article.type]
+    .some((value) => normalizePostTarget(value) === "currentAffairs")
+    || Array.isArray(job.currentAffairs)
+    || Array.isArray(article.currentAffairs)
+    || Array.isArray(job.currentAffairsData)
+    || Array.isArray(job.currentAffairsData?.currentAffairs)
+    || getCurrentAffairsQuestions(job).length > 0;
 };
 
 const sitemapDate = (value = "") => {
@@ -328,31 +333,40 @@ const renderCurrentAffairsFallbackHtml = (job = {}, title = "Current Affairs", d
   const categoryText = String(job.category || job.content?.category || job["श्रेणी"] || job.currentAffairsData?.["श्रेणी"] || "").trim();
   const newsItems = getCurrentAffairsNewsItems(job);
   const questions = getCurrentAffairsQuestions(job);
-  const faqs = normalizeCurrentAffairsFaqItems(job.faq);
+  const sourceNames = Array.from(new Set(newsItems.map((item) => item.source).filter(Boolean))).slice(0, 4);
+  const sourceDateNote = [
+    sourceNames.length ? `Source: ${sourceNames.join(", ")}` : "Source: Official news updates and exam-oriented current affairs references",
+    dateText ? `Updated: ${dateText}` : ""
+  ].filter(Boolean).join(" | ");
   const questionHtml = questions.map((item, index) => `<article class="mcq-card">
                 <div class="mcq-question">Q${index + 1}. ${htmlEscape(item.question)}</div>
                 <div class="mcq-options">${item.options.map((option, optionIndex) => `<div class="mcq-option">${String.fromCharCode(65 + optionIndex)}. ${htmlEscape(option)}</div>`).join("")}</div>
                 ${item.answer ? `<div class="mcq-answer"><span class="manual-label">Correct Answer:</span> ${htmlEscape(item.answer)}</div>` : ""}
                 ${item.explanation ? `<div class="mcq-explanation"><span class="manual-label">Explanation:</span> ${htmlEscape(item.explanation)}</div>` : ""}
               </article>`).join("");
-  const faqHtml = faqs.length ? `<section class="panel">
-              <h2>FAQ</h2>
-              <div class="content-box">${faqs.map((item) => `<div class="content-section"><h2 class="sarkari-section-title">${htmlEscape(item.question)}</h2><p>${htmlEscape(item.answer)}</p></div>`).join("")}</div>
-            </section>` : "";
   return `<h2>${htmlEscape(title)}</h2>
             <div class="content-box">
               ${intro ? `<p>${htmlEscape(intro)}</p>` : ""}
-              ${dateText || categoryText ? `<table class="detail-table"><tbody>${dateText ? `<tr><th>Date</th><td>${htmlEscape(dateText)}</td></tr>` : ""}${categoryText ? `<tr><th>Category</th><td>${htmlEscape(categoryText)}</td></tr>` : ""}</tbody></table>` : ""}
+              ${dateText ? `<p><strong class="manual-label">Date:</strong> ${htmlEscape(dateText)}</p>` : ""}
+              ${categoryText ? `<p><strong class="manual-label">Category:</strong> ${htmlEscape(categoryText)}</p>` : ""}
+              <p><strong class="manual-label">Source/Date Note:</strong> ${htmlEscape(sourceDateNote)}</p>
             </div>
             ${newsItems.length ? `<section class="panel">
               <h2>समाचार</h2>
               <div class="content-box">${renderCurrentAffairsNewsHtml(newsItems)}</div>
             </section>` : ""}
-            <section class="panel">
+            ${questions.length ? `<section class="panel">
               <h2>Questions</h2>
               <div class="content-box"><div class="mcq-list">${questionHtml}</div></div>
-            </section>
-            ${faqHtml}`;
+            </section>` : ""}
+            <section class="panel">
+              <h2>More Current Affairs</h2>
+              <div class="community-actions">
+                <a class="btn whatsapp" href="https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q" target="_blank" rel="noopener noreferrer">Join WhatsApp Channel</a>
+                <a class="btn" href="../../current-affairs.html">Related Current Affairs</a>
+                <a class="btn" href="../../mock-test.html">Mock Test</a>
+              </div>
+            </section>`;
 };
 
 const renderStaticPostHtml = (id = "", job = {}) => {
@@ -374,15 +388,30 @@ const renderStaticPostHtml = (id = "", job = {}) => {
               <p><a class="auto-link" href="${htmlEscape(canonicalUrl)}">Canonical job detail link</a> | <a class="auto-link" href="../../job-form.html">All Latest Jobs</a></p>
             </div>`;
   const staticPayload = `<script>window.__EMITRA_STATIC_POST__=${JSON.stringify({ id, job: { ...job, slug: seo.slug, canonicalUrl } }).replace(/</g, "\\u003c")};</script>`;
+  const currentAffairsStaticStyle = currentAffairs ? `<style>
+body.current-affairs-static #importantPanel,
+body.current-affairs-static #jobInfoPanel,
+body.current-affairs-static #feePanel,
+body.current-affairs-static #agePanel,
+body.current-affairs-static #vacancyPanel,
+body.current-affairs-static #eligibilityPanel,
+body.current-affairs-static #selectionPanel,
+body.current-affairs-static #applyProcessPanel,
+body.current-affairs-static #linksPanel,
+body.current-affairs-static #jobToolsPanel{display:none;}
+</style>` : "";
   const html = fs.readFileSync(JOB_DETAIL_PATH, "utf8")
     .replace(/<head>/i, "<head>\n<base href=\"../../\">")
+    .replace(/<body>/i, currentAffairs ? `<body class="current-affairs-static">` : "<body>")
     .replace(/<title>[\s\S]*?<\/title>/i, `<title>${htmlEscape(seo.seoTitle)}</title>`)
+    .replace(/<\/head>/i, `${currentAffairsStaticStyle}\n</head>`)
     .replace(/<meta name="description" content="[^"]*">/i, `<meta name="description" content="${htmlEscape(seo.metaDescription)}">`)
     .replace(/<meta property="og:title" content="[^"]*">/i, `<meta property="og:title" content="${htmlEscape(seo.seoTitle)}">`)
     .replace(/<meta property="og:description" content="[^"]*">/i, `<meta property="og:description" content="${htmlEscape(seo.metaDescription)}">`)
     .replace(/<meta property="og:url" content="[^"]*">/i, `<meta property="og:url" content="${htmlEscape(canonicalUrl)}">`)
     .replace(/<link rel="canonical" href="[^"]*">/i, `<link rel="canonical" href="${htmlEscape(canonicalUrl)}">`)
     .replace(/<script type="application\/ld\+json" id="jobSchemaJsonLd">[\s\S]*?<\/script>/i, `<script type="application/ld+json" id="jobSchemaJsonLd">\n${JSON.stringify(buildSchemaGraph({ id, job, canonicalUrl }), null, 2)}\n</script>`)
+    .replace(/<span class="tag" id="jobType">[\s\S]*?<\/span>/i, currentAffairs ? `<span class="tag" id="jobType">Current Affairs</span>` : `<span class="tag" id="jobType">Job Details</span>`)
     .replace(/<h1 id="jobTitle">[\s\S]*?<\/h1>/i, `<h1 id="jobTitle">${htmlEscape(seo.title)}</h1>`)
     .replace(/<p id="jobIntro">[\s\S]*?<\/p>/i, `<p id="jobIntro">${htmlEscape(seo.metaDescription)}</p>`)
     .replace(/<aside class="detail-sidebar"/i, currentAffairs ? `<aside class="detail-sidebar" style="display:none;"` : `<aside class="detail-sidebar"`)
@@ -406,6 +435,74 @@ const normalizeJob = (value) => {
 const isPublishedJob = (job = {}) => String(job.postStatus || "published").toLowerCase() !== "draft";
 
 const isLatestJobTarget = (job = {}) => !job.postTarget || job.postTarget === "latestJob";
+
+const visibleText = (value = "") => String(value || "")
+  .replace(/<script[\s\S]*?<\/script>/gi, " ")
+  .replace(/<style[\s\S]*?<\/style>/gi, " ")
+  .replace(/<[^>]+>/g, " ")
+  .replace(/\s+/g, " ")
+  .trim();
+
+const wordCount = (value = "") => visibleText(value).split(/\s+/).filter((word) => word.length > 1).length;
+
+const lowValuePattern = /\b(?:dummy|sample|test|testing|demo|empty|untitled|lorem|fgf|asdf|qwerty)\b|^job-\d+$/i;
+
+const postQualityText = (job = {}) => [
+  job.title,
+  job.seoTitle,
+  job.shortInfo,
+  job.metaDescription,
+  job.department,
+  job.postName,
+  job.qualification,
+  job.howToApply,
+  job.importantDatesManual,
+  job.applicationFeeManual,
+  job.ageLimitManual,
+  job.vacancyDetailsManual,
+  job.eligibilityManual,
+  job.pageContent,
+  job.contentText,
+  Array.isArray(job.intro) ? job.intro.join(" ") : "",
+  Array.isArray(job.sections) ? job.sections.map((section) => `${section.heading || section.title || ""} ${section.content || section.text || ""}`).join(" ") : "",
+  Array.isArray(job.faq) ? job.faq.map((item) => `${item.question || ""} ${item.answer || ""}`).join(" ") : "",
+  Array.isArray(job.mcqs) ? job.mcqs.map((item) => `${item.question || ""} ${(item.options || []).join(" ")} ${item.answer || ""} ${item.explanation || ""}`).join(" ") : ""
+].filter(Boolean).join(" ");
+
+const getPostQuality = (id = "", job = {}) => {
+  const seo = buildSeoFields(job, id);
+  const title = String(job.title || seo.title || "").trim();
+  const slug = String(job.slug || seo.slug || id || "").trim();
+  const text = postQualityText(job);
+  const currentAffairs = isCurrentAffairsPost(job);
+  const questionCount = getCurrentAffairsQuestions(job).length;
+  const hasRealTitle = title.length >= 8 && !lowValuePattern.test(title) && !lowValuePattern.test(slug);
+  const hasUsefulJobStructure = [
+    job.shortInfo || job.metaDescription,
+    job.lastApplyDate || job.lastDate || job.importantDatesManual || job.importantDates,
+    job.qualification || job.eligibilityManual,
+    job.applyLink || job.detailLink || job.officialWebsite || job.importantLinks,
+    job.faq || job.faqs
+  ].filter((value) => {
+    if (Array.isArray(value)) return value.length > 0;
+    return String(value || "").trim() && !/^#?$/.test(String(value || "").trim());
+  }).length;
+  const useful = isPublishedJob(job)
+    && hasRealTitle
+    && (currentAffairs
+      ? questionCount >= 8 || wordCount(text) >= 250
+      : hasUsefulJobStructure >= 3 || wordCount(text) >= 300);
+  return {
+    useful,
+    currentAffairs,
+    questionCount,
+    words: wordCount(text),
+    slug,
+    reason: useful ? "" : "thin-or-dummy-content"
+  };
+};
+
+const isUsefulPublishedPost = ({ id = "", job = {} } = {}) => getPostQuality(id, job).useful;
 
 const displayOrder = (job = {}) => {
   const number = Number(job.displayOrder || 0);
@@ -475,7 +572,7 @@ const buildAllStaticRows = (latestRows = [], portalData = {}) => {
       item = item || {};
       if (item.sourceJobId && latestIds.has(String(item.sourceJobId))) return;
       const row = portalItemToJobRow(category, id, item);
-      if (!row || !isPublishedJob(row.job)) return;
+      if (!row || !isPublishedJob(row.job) || !isUsefulPublishedPost(row)) return;
       const slug = buildSeoFields(row.job, row.id).slug.toLowerCase();
       if (latestSlugs.has(slug)) return;
       latestSlugs.add(slug);
@@ -486,7 +583,7 @@ const buildAllStaticRows = (latestRows = [], portalData = {}) => {
 };
 
 const buildHomeFallbackHtml = (rows = []) => {
-  const topRows = dedupeJobRows(sortJobs(rows.filter(({ job }) => isPublishedJob(job) && isLatestJobTarget(job)))).slice(0, 9);
+  const topRows = dedupeJobRows(sortJobs(rows.filter((row) => isPublishedJob(row.job) && isUsefulPublishedPost(row) && isLatestJobTarget(row.job)))).slice(0, 9);
   if (!topRows.length) {
     return `    <article class="home-job-card">
       <span>Latest Jobs</span>
@@ -525,7 +622,7 @@ const updateIndexFallback = (rows = []) => {
 
 const updateStaticPostPages = (rows = []) => {
   fs.mkdirSync(POST_ROOT, { recursive: true });
-  rows.forEach(({ id, job }) => {
+  rows.filter(isUsefulPublishedPost).forEach(({ id, job }) => {
     const seo = buildSeoFields(job, id);
     const dir = path.join(POST_ROOT, seo.slug);
     fs.mkdirSync(dir, { recursive: true });
@@ -554,11 +651,41 @@ const readExistingStaticPostRows = (rows = []) => {
           title: title.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim(),
           slug,
           postStatus: "published",
+          pageContent: visibleText(html),
           updatedAt: stat.mtimeMs
         }
       };
     })
-    .filter(Boolean);
+    .filter(Boolean)
+    .filter(isUsefulPublishedPost);
+};
+
+const withNoindexMeta = (html = "") => {
+  if (/<meta\s+name=["']robots["'][^>]*>/i.test(html)) {
+    return html.replace(/<meta\s+name=["']robots["'][^>]*>/i, '<meta name="robots" content="noindex,follow">');
+  }
+  return html.replace(/<head>/i, '<head>\n<meta name="robots" content="noindex,follow">');
+};
+
+const noindexExcludedStaticPages = (usefulRows = []) => {
+  if (!fs.existsSync(POST_ROOT)) return 0;
+  const usefulSlugs = new Set(usefulRows.map(({ id, job }) => buildSeoFields(job, id).slug.toLowerCase()));
+  let updated = 0;
+  fs.readdirSync(POST_ROOT, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .forEach((entry) => {
+      const slug = entry.name.toLowerCase();
+      if (usefulSlugs.has(slug)) return;
+      const filePath = path.join(POST_ROOT, entry.name, "index.html");
+      if (!fs.existsSync(filePath)) return;
+      const html = fs.readFileSync(filePath, "utf8");
+      const nextHtml = withNoindexMeta(html);
+      if (nextHtml !== html) {
+        fs.writeFileSync(filePath, nextHtml, "utf8");
+        updated += 1;
+      }
+    });
+  return updated;
 };
 
 const update404PostRedirects = (rows = []) => {
@@ -593,9 +720,9 @@ async function main() {
   const portalData = await fetchJson(`${FIREBASE_URL}/portalItems.json`).catch(() => ({}));
   const latestRows = Object.entries(jobs || {})
     .map(([id, value]) => ({ id, job: normalizeJob(value) }))
-    .filter(({ job }) => isPublishedJob(job));
+    .filter((row) => isPublishedJob(row.job) && isUsefulPublishedPost(row));
   const rows = buildAllStaticRows(latestRows, portalData);
-  const sitemapRows = [...rows, ...readExistingStaticPostRows(rows)];
+  const sitemapRows = [...rows, ...readExistingStaticPostRows(rows)].filter(isUsefulPublishedPost);
   const entries = sitemapRows
     .map(({ id, job }) => sitemapEntry({
       loc: jobUrl(id, job),
@@ -614,9 +741,10 @@ ${entries.join("\n")}
   fs.writeFileSync(JOB_SITEMAP_PATH, jobSitemapXml, "utf8");
   updateIndexFallback(rows);
   updateStaticPostPages(rows);
+  const noindexedCount = noindexExcludedStaticPages(sitemapRows);
   update404PostRedirects(sitemapRows);
   patch404SlugMatching();
-  console.log(`sitemap.xml, sitemap-jobs.xml, index.html fallback, 404 redirects and post pages updated with ${rows.length} dynamic LatestJobs URLs and ${sitemapRows.length - rows.length} preserved static post URLs`);
+  console.log(`sitemap.xml, sitemap-jobs.xml, index.html fallback, 404 redirects and post pages updated with ${rows.length} useful dynamic URLs, ${sitemapRows.length - rows.length} preserved static URLs, ${noindexedCount} excluded static pages noindexed`);
 }
 
 main().catch((error) => {

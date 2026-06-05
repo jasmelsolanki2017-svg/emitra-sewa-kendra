@@ -267,8 +267,20 @@ body.dark-mode .job-tool-btn:hover{background:#ffb15c!important;border-color:#ff
 @media(max-width:768px){.sarkari-blue-layout{font-size:13px;border-width:1px}.sarkari-blue-title-area{padding:18px 10px 14px}.sarkari-blue-content{padding:10px 12px 14px}.sarkari-blue-content .content-table,.sarkari-blue-table{font-size:12px;min-width:480px}.sarkari-blue-content .structured-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}}
 </style>
 <link rel="stylesheet" href="mobile-responsive-fix.css">
+<style>
+body.current-affairs-static #importantPanel,
+body.current-affairs-static #jobInfoPanel,
+body.current-affairs-static #feePanel,
+body.current-affairs-static #agePanel,
+body.current-affairs-static #vacancyPanel,
+body.current-affairs-static #eligibilityPanel,
+body.current-affairs-static #selectionPanel,
+body.current-affairs-static #applyProcessPanel,
+body.current-affairs-static #linksPanel,
+body.current-affairs-static #jobToolsPanel{display:none;}
+</style>
 </head>
-<body>
+<body class="current-affairs-static">
 <nav>
   <a class="logo" href="index.html">E-MITRA <span>WALA</span></a>
   <ul>
@@ -290,7 +302,7 @@ body.dark-mode .job-tool-btn:hover{background:#ffb15c!important;border-color:#ff
 
 <header class="hero">
   <div class="hero-inner">
-    <span class="tag" id="jobType">Job Details</span>
+    <span class="tag" id="jobType">Current Affairs</span>
     <h1 id="jobTitle">Current Affairs Update</h1>
     <div class="meta-badges" id="metaBadges"></div>
     <p id="jobIntro">Important current affairs questions, answers and explanations</p>
@@ -311,7 +323,8 @@ body.dark-mode .job-tool-btn:hover{background:#ffb15c!important;border-color:#ff
           <h2>Current Affairs Update</h2>
             <div class="content-box">
               <p>Important current affairs questions, answers and explanations.</p>
-              <table class="detail-table"><tbody><tr><th>Date</th><td>2026-05-27</td></tr><tr><th>Category</th><td>करेंट अफेयर्स</td></tr></tbody></table>
+              <p><strong class="manual-label">Date:</strong> 2026-05-27</p>
+              <p><strong class="manual-label">Category:</strong> करेंट अफेयर्स</p>
             </div>
             <section class="panel">
               <h2>समाचार</h2>
@@ -320,38 +333,42 @@ body.dark-mode .job-tool-btn:hover{background:#ffb15c!important;border-color:#ff
                 <p><strong class="manual-label">महत्व:</strong> योगासन को अंतरराष्ट्रीय खेल के रूप में पहचान मिली</p>
                 <p><strong class="manual-label">श्रेणी:</strong> खेल</p>
                 <p>केंद्रीय खेल मंत्री मनसुख मंडाविया ने नई दिल्ली में पहली विश्व योगासन चैम्पियनशिप का शुभारंभ किया।</p>
-                
+
               </div><div class="content-section">
                 <h2 class="sarkari-section-title">आरबीआई ने रेपो रेट 5.75% पर स्थिर रखा</h2>
                 <p><strong class="manual-label">महत्व:</strong> बैंकिंग और प्रतियोगी परीक्षाओं के लिए महत्वपूर्ण</p>
                 <p><strong class="manual-label">श्रेणी:</strong> अर्थव्यवस्था</p>
                 <p>भारतीय रिजर्व बैंक ने रेपो रेट में कोई बदलाव नहीं किया और GDP वृद्धि अनुमान बढ़ाया।</p>
-                
+
               </div><div class="content-section">
                 <h2 class="sarkari-section-title">भारत-यूएई के बीच पहली रुपया-दिरहम व्यापार डील</h2>
                 <p><strong class="manual-label">महत्व:</strong> द्विपक्षीय व्यापार और मुद्रा स्वतंत्रता को बढ़ावा</p>
                 <p><strong class="manual-label">श्रेणी:</strong> अंतरराष्ट्रीय संबंध</p>
                 <p>भारत और यूएई ने अमेरिकी डॉलर के बिना स्थानीय मुद्राओं में व्यापार समझौता पूरा किया।</p>
-                
+
               </div><div class="content-section">
                 <h2 class="sarkari-section-title">निसार सैटेलाइट का सफल प्रक्षेपण</h2>
                 <p><strong class="manual-label">महत्व:</strong> भारत-अमेरिका अंतरिक्ष सहयोग में बड़ी उपलब्धि</p>
                 <p><strong class="manual-label">श्रेणी:</strong> विज्ञान एवं तकनीक</p>
                 <p>इसरो और नासा ने संयुक्त रूप से निसार अर्थ ऑब्जर्वेशन सैटेलाइट लॉन्च किया।</p>
-                
+
               </div><div class="content-section">
                 <h2 class="sarkari-section-title">भारत ने नए जलवायु लक्ष्य प्रस्तुत किए</h2>
                 <p><strong class="manual-label">महत्व:</strong> नवीकरणीय ऊर्जा और कार्बन उत्सर्जन में कमी पर जोर</p>
                 <p><strong class="manual-label">श्रेणी:</strong> पर्यावरण</p>
                 <p>भारत ने COP31 से पहले UNFCCC को अपने अपडेटेड जलवायु लक्ष्य सौंपे।</p>
-                
+
               </div></div>
             </section>
+
             <section class="panel">
-              <h2>Questions</h2>
-              <div class="content-box"><div class="mcq-list"></div></div>
+              <h2>More Current Affairs</h2>
+              <div class="community-actions">
+                <a class="btn whatsapp" href="https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q" target="_blank" rel="noopener noreferrer">Join WhatsApp Channel</a>
+                <a class="btn" href="../../current-affairs.html">Related Current Affairs</a>
+                <a class="btn" href="../../mock-test.html">Mock Test</a>
+              </div>
             </section>
-            
         </section>
         <section class="panel" id="featurePanel" style="display:none;">
           <h2>Overview Table</h2>
@@ -527,7 +544,7 @@ body.dark-mode .job-tool-btn:hover{background:#ffb15c!important;border-color:#ff
 })();
 </script>
 
-<script>window.__EMITRA_STATIC_POST__={"id":"-OtcLvY1kSL1o18ORxdM","job":{"advancedArticleData":{"postTarget":"currentAffairs","shortInfo":"Important current affairs questions, answers and explanations.","slug":"current-affairs-update-8orxdm","title":"Current Affairs Update"},"canonicalUrl":"https://emitrawala.online/post/current-affairs-update-8orxdm/","currentAffairsData":{"तारीख":"2026-05-27","श्रेणी":"करेंट अफेयर्स","समाचार":[{"महत्व":"योगासन को अंतरराष्ट्रीय खेल के रूप में पहचान मिली","शीर्षक":"भारत में पहला विश्व योगासन चैम्पियनशिप 2026 शुरू","श्रेणी":"खेल","सारांश":"केंद्रीय खेल मंत्री मनसुख मंडाविया ने नई दिल्ली में पहली विश्व योगासन चैम्पियनशिप का शुभारंभ किया।"},{"महत्व":"बैंकिंग और प्रतियोगी परीक्षाओं के लिए महत्वपूर्ण","शीर्षक":"आरबीआई ने रेपो रेट 5.75% पर स्थिर रखा","श्रेणी":"अर्थव्यवस्था","सारांश":"भारतीय रिजर्व बैंक ने रेपो रेट में कोई बदलाव नहीं किया और GDP वृद्धि अनुमान बढ़ाया।"},{"महत्व":"द्विपक्षीय व्यापार और मुद्रा स्वतंत्रता को बढ़ावा","शीर्षक":"भारत-यूएई के बीच पहली रुपया-दिरहम व्यापार डील","श्रेणी":"अंतरराष्ट्रीय संबंध","सारांश":"भारत और यूएई ने अमेरिकी डॉलर के बिना स्थानीय मुद्राओं में व्यापार समझौता पूरा किया।"},{"महत्व":"भारत-अमेरिका अंतरिक्ष सहयोग में बड़ी उपलब्धि","शीर्षक":"निसार सैटेलाइट का सफल प्रक्षेपण","श्रेणी":"विज्ञान एवं तकनीक","सारांश":"इसरो और नासा ने संयुक्त रूप से निसार अर्थ ऑब्जर्वेशन सैटेलाइट लॉन्च किया।"},{"महत्व":"नवीकरणीय ऊर्जा और कार्बन उत्सर्जन में कमी पर जोर","शीर्षक":"भारत ने नए जलवायु लक्ष्य प्रस्तुत किए","श्रेणी":"पर्यावरण","सारांश":"भारत ने COP31 से पहले UNFCCC को अपने अपडेटेड जलवायु लक्ष्य सौंपे।"}],"स्रोत":["वजिराम एंड रवि","टाइम्स ऑफ इंडिया","करेंट अफेयर्स पोर्टल"]},"displayOrder":"1","jsonLd":{"@context":"https://schema.org","@graph":[{"@id":"https://emitrawala.online/post/current-affairs-update-8orxdm/#breadcrumb","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","item":"https://emitrawala.online/","name":"Home","position":1},{"@type":"ListItem","item":"https://emitrawala.online/job-form.html","name":"Latest Jobs","position":2},{"@type":"ListItem","item":"https://emitrawala.online/post/current-affairs-update-8orxdm/","name":"Current Affairs Update","position":3}]},{"@id":"https://emitrawala.online/post/current-affairs-update-8orxdm/#article","@type":"Article","dateModified":"2026-05-27T08:02:41.898Z","description":"Important current affairs questions, answers and explanations","headline":"Current Affairs Update| E-MITRA WALA","mainEntityOfPage":"https://emitrawala.online/post/current-affairs-update-8orxdm/","publisher":{"@type":"Organization","name":"E-MITRA WALA","url":"https://emitrawala.online/"},"title":"Current Affairs Update","url":"https://emitrawala.online/post/current-affairs-update-8orxdm/"}]},"metaDescription":"Important current affairs questions, answers and explanations","postDate":"","postStatus":"published","postTarget":"currentAffairs","seoTitle":"Current Affairs Update| E-MITRA WALA","seoUpdatedAt":1780622127429,"shortInfo":"Important current affairs questions, answers and explanations.","slug":"current-affairs-update-8orxdm","title":"Current Affairs Update","type":"Current Affairs","updatedAt":1779868961898,"तारीख":"2026-05-27","श्रेणी":"करेंट अफेयर्स","समाचार":[{"महत्व":"योगासन को अंतरराष्ट्रीय खेल के रूप में पहचान मिली","शीर्षक":"भारत में पहला विश्व योगासन चैम्पियनशिप 2026 शुरू","श्रेणी":"खेल","सारांश":"केंद्रीय खेल मंत्री मनसुख मंडाविया ने नई दिल्ली में पहली विश्व योगासन चैम्पियनशिप का शुभारंभ किया।"},{"महत्व":"बैंकिंग और प्रतियोगी परीक्षाओं के लिए महत्वपूर्ण","शीर्षक":"आरबीआई ने रेपो रेट 5.75% पर स्थिर रखा","श्रेणी":"अर्थव्यवस्था","सारांश":"भारतीय रिजर्व बैंक ने रेपो रेट में कोई बदलाव नहीं किया और GDP वृद्धि अनुमान बढ़ाया।"},{"महत्व":"द्विपक्षीय व्यापार और मुद्रा स्वतंत्रता को बढ़ावा","शीर्षक":"भारत-यूएई के बीच पहली रुपया-दिरहम व्यापार डील","श्रेणी":"अंतरराष्ट्रीय संबंध","सारांश":"भारत और यूएई ने अमेरिकी डॉलर के बिना स्थानीय मुद्राओं में व्यापार समझौता पूरा किया।"},{"महत्व":"भारत-अमेरिका अंतरिक्ष सहयोग में बड़ी उपलब्धि","शीर्षक":"निसार सैटेलाइट का सफल प्रक्षेपण","श्रेणी":"विज्ञान एवं तकनीक","सारांश":"इसरो और नासा ने संयुक्त रूप से निसार अर्थ ऑब्जर्वेशन सैटेलाइट लॉन्च किया।"},{"महत्व":"नवीकरणीय ऊर्जा और कार्बन उत्सर्जन में कमी पर जोर","शीर्षक":"भारत ने नए जलवायु लक्ष्य प्रस्तुत किए","श्रेणी":"पर्यावरण","सारांश":"भारत ने COP31 से पहले UNFCCC को अपने अपडेटेड जलवायु लक्ष्य सौंपे।"}],"स्रोत":["वजिराम एंड रवि","टाइम्स ऑफ इंडिया","करेंट अफेयर्स पोर्टल"]}};</script>
+<script>window.__EMITRA_STATIC_POST__={"id":"-OtcLvY1kSL1o18ORxdM","job":{"advancedArticleData":{"postTarget":"currentAffairs","shortInfo":"Important current affairs questions, answers and explanations.","slug":"current-affairs-update-8orxdm","title":"Current Affairs Update"},"canonicalUrl":"https://emitrawala.online/post/current-affairs-update-8orxdm/","currentAffairsData":{"तारीख":"2026-05-27","श्रेणी":"करेंट अफेयर्स","समाचार":[{"महत्व":"योगासन को अंतरराष्ट्रीय खेल के रूप में पहचान मिली","शीर्षक":"भारत में पहला विश्व योगासन चैम्पियनशिप 2026 शुरू","श्रेणी":"खेल","सारांश":"केंद्रीय खेल मंत्री मनसुख मंडाविया ने नई दिल्ली में पहली विश्व योगासन चैम्पियनशिप का शुभारंभ किया।"},{"महत्व":"बैंकिंग और प्रतियोगी परीक्षाओं के लिए महत्वपूर्ण","शीर्षक":"आरबीआई ने रेपो रेट 5.75% पर स्थिर रखा","श्रेणी":"अर्थव्यवस्था","सारांश":"भारतीय रिजर्व बैंक ने रेपो रेट में कोई बदलाव नहीं किया और GDP वृद्धि अनुमान बढ़ाया।"},{"महत्व":"द्विपक्षीय व्यापार और मुद्रा स्वतंत्रता को बढ़ावा","शीर्षक":"भारत-यूएई के बीच पहली रुपया-दिरहम व्यापार डील","श्रेणी":"अंतरराष्ट्रीय संबंध","सारांश":"भारत और यूएई ने अमेरिकी डॉलर के बिना स्थानीय मुद्राओं में व्यापार समझौता पूरा किया।"},{"महत्व":"भारत-अमेरिका अंतरिक्ष सहयोग में बड़ी उपलब्धि","शीर्षक":"निसार सैटेलाइट का सफल प्रक्षेपण","श्रेणी":"विज्ञान एवं तकनीक","सारांश":"इसरो और नासा ने संयुक्त रूप से निसार अर्थ ऑब्जर्वेशन सैटेलाइट लॉन्च किया।"},{"महत्व":"नवीकरणीय ऊर्जा और कार्बन उत्सर्जन में कमी पर जोर","शीर्षक":"भारत ने नए जलवायु लक्ष्य प्रस्तुत किए","श्रेणी":"पर्यावरण","सारांश":"भारत ने COP31 से पहले UNFCCC को अपने अपडेटेड जलवायु लक्ष्य सौंपे।"}],"स्रोत":["वजिराम एंड रवि","टाइम्स ऑफ इंडिया","करेंट अफेयर्स पोर्टल"]},"displayOrder":"1","jsonLd":{"@context":"https://schema.org","@graph":[{"@id":"https://emitrawala.online/post/current-affairs-update-8orxdm/#breadcrumb","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","item":"https://emitrawala.online/","name":"Home","position":1},{"@type":"ListItem","item":"https://emitrawala.online/job-form.html","name":"Latest Jobs","position":2},{"@type":"ListItem","item":"https://emitrawala.online/post/current-affairs-update-8orxdm/","name":"Current Affairs Update","position":3}]},{"@id":"https://emitrawala.online/post/current-affairs-update-8orxdm/#article","@type":"Article","dateModified":"2026-05-27T08:02:41.898Z","description":"Important current affairs questions, answers and explanations","headline":"Current Affairs Update| E-MITRA WALA","mainEntityOfPage":"https://emitrawala.online/post/current-affairs-update-8orxdm/","publisher":{"@type":"Organization","name":"E-MITRA WALA","url":"https://emitrawala.online/"},"title":"Current Affairs Update","url":"https://emitrawala.online/post/current-affairs-update-8orxdm/"}]},"metaDescription":"Important current affairs questions, answers and explanations","postDate":"","postStatus":"published","postTarget":"currentAffairs","seoTitle":"Current Affairs Update| E-MITRA WALA","seoUpdatedAt":1780623558521,"shortInfo":"Important current affairs questions, answers and explanations.","slug":"current-affairs-update-8orxdm","title":"Current Affairs Update","type":"Current Affairs","updatedAt":1779868961898,"तारीख":"2026-05-27","श्रेणी":"करेंट अफेयर्स","समाचार":[{"महत्व":"योगासन को अंतरराष्ट्रीय खेल के रूप में पहचान मिली","शीर्षक":"भारत में पहला विश्व योगासन चैम्पियनशिप 2026 शुरू","श्रेणी":"खेल","सारांश":"केंद्रीय खेल मंत्री मनसुख मंडाविया ने नई दिल्ली में पहली विश्व योगासन चैम्पियनशिप का शुभारंभ किया।"},{"महत्व":"बैंकिंग और प्रतियोगी परीक्षाओं के लिए महत्वपूर्ण","शीर्षक":"आरबीआई ने रेपो रेट 5.75% पर स्थिर रखा","श्रेणी":"अर्थव्यवस्था","सारांश":"भारतीय रिजर्व बैंक ने रेपो रेट में कोई बदलाव नहीं किया और GDP वृद्धि अनुमान बढ़ाया।"},{"महत्व":"द्विपक्षीय व्यापार और मुद्रा स्वतंत्रता को बढ़ावा","शीर्षक":"भारत-यूएई के बीच पहली रुपया-दिरहम व्यापार डील","श्रेणी":"अंतरराष्ट्रीय संबंध","सारांश":"भारत और यूएई ने अमेरिकी डॉलर के बिना स्थानीय मुद्राओं में व्यापार समझौता पूरा किया।"},{"महत्व":"भारत-अमेरिका अंतरिक्ष सहयोग में बड़ी उपलब्धि","शीर्षक":"निसार सैटेलाइट का सफल प्रक्षेपण","श्रेणी":"विज्ञान एवं तकनीक","सारांश":"इसरो और नासा ने संयुक्त रूप से निसार अर्थ ऑब्जर्वेशन सैटेलाइट लॉन्च किया।"},{"महत्व":"नवीकरणीय ऊर्जा और कार्बन उत्सर्जन में कमी पर जोर","शीर्षक":"भारत ने नए जलवायु लक्ष्य प्रस्तुत किए","श्रेणी":"पर्यावरण","सारांश":"भारत ने COP31 से पहले UNFCCC को अपने अपडेटेड जलवायु लक्ष्य सौंपे।"}],"स्रोत":["वजिराम एंड रवि","टाइम्स ऑफ इंडिया","करेंट अफेयर्स पोर्टल"]}};</script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
@@ -896,10 +913,42 @@ const normalizePostTarget = (value = "") => {
   const map = { latestjob:"latestJob", jobs:"latestJob", job:"latestJob", notification:"notification", admitcard:"admitCard", result:"result", syllabus:"syllabus", answerkey:"answerKey", admission:"admission", currentaffairs:"currentAffairs", currentaffair:"currentAffairs", current:"currentAffairs", ca:"currentAffairs" };
   return map[key] || "latestJob";
 };
+const getObjectContent = (source = {}) => source && typeof source.content === "object" && !Array.isArray(source.content) ? source.content : {};
+const getCurrentAffairsQuestionSource = (job = {}) => {
+  const article = job.advancedArticleData && typeof job.advancedArticleData === "object" ? job.advancedArticleData : {};
+  const content = getObjectContent(job);
+  const articleContent = getObjectContent(article);
+  return Array.isArray(job.mcqs) ? job.mcqs
+    : Array.isArray(job.practiceQuestions) ? job.practiceQuestions
+      : Array.isArray(job.questions) ? job.questions
+        : Array.isArray(job.currentAffairs) ? job.currentAffairs
+          : Array.isArray(job.currentAffairsData) ? job.currentAffairsData
+            : Array.isArray(job.currentAffairsData?.currentAffairs) ? job.currentAffairsData.currentAffairs
+              : Array.isArray(article.mcqs) ? article.mcqs
+                : Array.isArray(article.practiceQuestions) ? article.practiceQuestions
+                  : Array.isArray(article.questions) ? article.questions
+                    : Array.isArray(article.currentAffairs) ? article.currentAffairs
+                      : Array.isArray(content.mcqs) ? content.mcqs
+                        : Array.isArray(content.practiceQuestions) ? content.practiceQuestions
+                          : Array.isArray(content.questions) ? content.questions
+                            : Array.isArray(articleContent.mcqs) ? articleContent.mcqs
+                              : Array.isArray(articleContent.practiceQuestions) ? articleContent.practiceQuestions
+                                : Array.isArray(articleContent.questions) ? articleContent.questions : [];
+};
+const hasCurrentAffairsQuestions = (job = {}) => getCurrentAffairsQuestionSource(job).some((item) => {
+  if(!item || typeof item !== "object"){ return false; }
+  const options = Array.isArray(item.options) ? item.options : [item.optionA || item.a, item.optionB || item.b, item.optionC || item.c, item.optionD || item.d];
+  return String(item.question || item.q || item.title || "").trim() && options.some((option) => String(option || "").trim());
+});
 const isCurrentAffairsPost = (job = {}) => {
   const article = job.advancedArticleData && typeof job.advancedArticleData === "object" ? job.advancedArticleData : {};
-  return [job.postTarget, job.postType, article.postTarget, article.postType, job.category, job.type]
-    .some((value) => normalizePostTarget(value) === "currentAffairs");
+  return [job.postTarget, job.postType, article.postTarget, article.postType, job.type, article.type]
+    .some((value) => normalizePostTarget(value) === "currentAffairs")
+    || Array.isArray(job.currentAffairs)
+    || Array.isArray(article.currentAffairs)
+    || Array.isArray(job.currentAffairsData)
+    || Array.isArray(job.currentAffairsData?.currentAffairs)
+    || hasCurrentAffairsQuestions(job);
 };
 const slugifyText = (value = "") => String(value || "").toLowerCase().replace(/['"]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 120) || `job-${Date.now()}`;
 const parsePostWiseApplyLinks = (value = "") => String(value || "").split(/\r?\n/).map((line) => line.trim()).filter(Boolean).map((line) => {
@@ -1786,7 +1835,7 @@ const normalizeMcqItems = (items = []) => (Array.isArray(items) ? items : []).ma
 const renderMcqSection = (job = {}) => {
   const mcqBox = document.getElementById("mcqContent");
   const mcqPanel = document.getElementById("mcqPanel");
-  const mcqs = normalizeMcqItems(job.mcqs);
+  const mcqs = normalizeMcqItems(isCurrentAffairsPost(job) ? getCurrentAffairsQuestionSource(job) : job.mcqs);
   if(!mcqs.length){
     mcqBox.innerHTML = "";
     mcqPanel.style.display = "none";
@@ -1840,7 +1889,7 @@ const hidePanels = (ids = []) => ids.forEach((id) => {
   if(panel){ panel.style.display = "none"; }
 });
 
-const renderCurrentAffairsDetail = ({ jobId = "", job = {}, title = "", description = "", canonicalUrl = "" }) => {
+const renderCurrentAffairsDetail = ({ jobId = "", job = {}, title = "", description = "", canonicalUrl = "", allJobs = [] }) => {
   const introText = Array.isArray(job.intro) ? job.intro.map((item) => String(item || "").trim()).filter(Boolean).join("\n\n") : "";
   const dateText = job.postDate || job.date || job.content?.date || job["तारीख"] || job.currentAffairsData?.["तारीख"] || "";
   const categoryText = job.category || job.content?.category || job["श्रेणी"] || job.currentAffairsData?.["श्रेणी"] || "";
@@ -1852,24 +1901,20 @@ const renderCurrentAffairsDetail = ({ jobId = "", job = {}, title = "", descript
   document.getElementById("sheetSubTitle").innerHTML = renderFormattedText(introText || description || "Important current affairs questions, answers and explanations.");
   renderArticleMeta(job);
   const shortInfoHeading = document.querySelector("#shortInfoPanel h2");
-  if(shortInfoHeading){ shortInfoHeading.textContent = "Intro"; }
+  if(shortInfoHeading){ shortInfoHeading.textContent = "Current Affairs"; }
   renderMetaBadges([
     { label:"Date", value:dateText, icon:"fa-solid fa-calendar-days" }
   ]);
   hidePanels([
-    "featurePanel", "jobInfoPanel", "feePanel", "agePanel", "vacancyPanel",
+    "featurePanel", "importantPanel", "jobInfoPanel", "feePanel", "agePanel", "vacancyPanel",
     "eligibilityPanel", "selectionPanel", "applyProcessPanel", "extraPanel",
-    "linksPanel", "jobToolsPanel", "communityPanel"
+    "linksPanel", "jobToolsPanel"
   ]);
-  renderTextBlock("shortInfoContent", "shortInfoPanel", introText);
-  const importantPanel = document.getElementById("importantPanel");
-  const importantHeading = importantPanel ? importantPanel.querySelector("h2") : null;
-  if(importantHeading){ importantHeading.textContent = "Date"; }
-  renderList("importantList", "importantPanel", [
-    { label:"Date", value:dateText },
-    { label:"Category", value:categoryText },
-    { label:"News Updates", value:newsItems.length ? `${newsItems.length}` : "" }
-  ]);
+  renderTextBlock("shortInfoContent", "shortInfoPanel", [
+    dateText ? `Date: ${dateText}` : "",
+    categoryText ? `Category: ${categoryText}` : "",
+    introText || description || ""
+  ].filter(Boolean).join("\n\n"));
   const importantManual = document.getElementById("importantManual");
   if(importantManual){ importantManual.innerHTML = ""; }
   const contentPanel = document.getElementById("pageContentPanel");
@@ -1887,7 +1932,9 @@ const renderCurrentAffairsDetail = ({ jobId = "", job = {}, title = "", descript
   const mcqHeading = document.querySelector("#mcqPanel h2");
   if(mcqHeading){ mcqHeading.textContent = "Questions"; }
   renderMcqSection(job);
-  const faqItems = renderFaqSection(job, title);
+  hidePanels(["faqPanel"]);
+  const faqItems = [];
+  renderCurrentAffairsLinks({ currentId:jobId, currentJob:job, allJobs });
   const sidebar = document.querySelector(".detail-sidebar");
   if(sidebar){ sidebar.style.display = "none"; }
   setJsonLd(buildJobSchemaGraph({ job, title, description, canonicalUrl, faqItems }));
@@ -1908,6 +1955,24 @@ const isSeparatorRow = (line) => /^\s*\|?[\s:-]+\|[\s|:-]*$/.test(line);
 
 const isMeaningfulCell = (value) => {
   return isFilledValue(value);
+};
+
+const renderCurrentAffairsLinks = ({ currentId = "", currentJob = {}, allJobs = [] }) => {
+  const communityPanel = document.getElementById("communityPanel");
+  if(!communityPanel){ return; }
+  const relatedRows = (Array.isArray(allJobs) ? allJobs : [])
+    .filter((item) => item && item.id !== currentId && isJobVisible(item.job || {}) && isCurrentAffairsPost(item.job || {}))
+    .slice(0, 5);
+  communityPanel.innerHTML = `
+    <h2>More Current Affairs</h2>
+    <div class="community-actions">
+      <a class="btn whatsapp" href="https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q" target="_blank" rel="noopener noreferrer">Join WhatsApp Channel</a>
+      <a class="btn" href="/current-affairs.html"><i class="fa-solid fa-newspaper"></i> Related Current Affairs</a>
+      <a class="btn" href="/mock-test.html"><i class="fa-solid fa-clipboard-check"></i> Mock Test</a>
+    </div>
+    ${relatedRows.length ? `<div class="related-list">${relatedRows.map((item) => `<a href="${canonicalJobHref(item.id, item.job)}">${escapeHTML((item.job || {}).title || "Current Affairs")}</a>`).join("")}</div>` : ""}
+  `;
+  communityPanel.style.display = "block";
 };
 
 const renderTableBlock = (lines) => {
@@ -2596,7 +2661,7 @@ const renderJobDetail = (jobId, rawJob, allJobs = []) => {
     setMeta('meta[name="twitter:title"]', "content", job.seoTitle || title);
     setMeta('meta[name="twitter:description"]', "content", description);
     if(isCurrentAffairsPost(job)){
-      renderCurrentAffairsDetail({ jobId, job, title, description, canonicalUrl });
+      renderCurrentAffairsDetail({ jobId, job, title, description, canonicalUrl, allJobs });
       return;
     }
     const faqItems = renderFaqSection(job, title);

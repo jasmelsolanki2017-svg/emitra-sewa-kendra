@@ -324,6 +324,7 @@ body.dark-mode .job-tool-btn:hover{background:#ffb15c!important;border-color:#ff
 @media(max-width:768px){.sarkari-blue-layout{font-size:13px;border-width:1px}.sarkari-blue-title-area{padding:18px 10px 14px}.sarkari-blue-content{padding:10px 12px 14px}.sarkari-blue-content .content-table,.sarkari-blue-table{font-size:12px;min-width:480px}.sarkari-blue-content .structured-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}}
 </style>
 <link rel="stylesheet" href="mobile-responsive-fix.css">
+
 </head>
 <body>
 <nav>
@@ -915,10 +916,42 @@ const normalizePostTarget = (value = "") => {
   const map = { latestjob:"latestJob", jobs:"latestJob", job:"latestJob", notification:"notification", admitcard:"admitCard", result:"result", syllabus:"syllabus", answerkey:"answerKey", admission:"admission", currentaffairs:"currentAffairs", currentaffair:"currentAffairs", current:"currentAffairs", ca:"currentAffairs" };
   return map[key] || "latestJob";
 };
+const getObjectContent = (source = {}) => source && typeof source.content === "object" && !Array.isArray(source.content) ? source.content : {};
+const getCurrentAffairsQuestionSource = (job = {}) => {
+  const article = job.advancedArticleData && typeof job.advancedArticleData === "object" ? job.advancedArticleData : {};
+  const content = getObjectContent(job);
+  const articleContent = getObjectContent(article);
+  return Array.isArray(job.mcqs) ? job.mcqs
+    : Array.isArray(job.practiceQuestions) ? job.practiceQuestions
+      : Array.isArray(job.questions) ? job.questions
+        : Array.isArray(job.currentAffairs) ? job.currentAffairs
+          : Array.isArray(job.currentAffairsData) ? job.currentAffairsData
+            : Array.isArray(job.currentAffairsData?.currentAffairs) ? job.currentAffairsData.currentAffairs
+              : Array.isArray(article.mcqs) ? article.mcqs
+                : Array.isArray(article.practiceQuestions) ? article.practiceQuestions
+                  : Array.isArray(article.questions) ? article.questions
+                    : Array.isArray(article.currentAffairs) ? article.currentAffairs
+                      : Array.isArray(content.mcqs) ? content.mcqs
+                        : Array.isArray(content.practiceQuestions) ? content.practiceQuestions
+                          : Array.isArray(content.questions) ? content.questions
+                            : Array.isArray(articleContent.mcqs) ? articleContent.mcqs
+                              : Array.isArray(articleContent.practiceQuestions) ? articleContent.practiceQuestions
+                                : Array.isArray(articleContent.questions) ? articleContent.questions : [];
+};
+const hasCurrentAffairsQuestions = (job = {}) => getCurrentAffairsQuestionSource(job).some((item) => {
+  if(!item || typeof item !== "object"){ return false; }
+  const options = Array.isArray(item.options) ? item.options : [item.optionA || item.a, item.optionB || item.b, item.optionC || item.c, item.optionD || item.d];
+  return String(item.question || item.q || item.title || "").trim() && options.some((option) => String(option || "").trim());
+});
 const isCurrentAffairsPost = (job = {}) => {
   const article = job.advancedArticleData && typeof job.advancedArticleData === "object" ? job.advancedArticleData : {};
-  return [job.postTarget, job.postType, article.postTarget, article.postType, job.category, job.type]
-    .some((value) => normalizePostTarget(value) === "currentAffairs");
+  return [job.postTarget, job.postType, article.postTarget, article.postType, job.type, article.type]
+    .some((value) => normalizePostTarget(value) === "currentAffairs")
+    || Array.isArray(job.currentAffairs)
+    || Array.isArray(article.currentAffairs)
+    || Array.isArray(job.currentAffairsData)
+    || Array.isArray(job.currentAffairsData?.currentAffairs)
+    || hasCurrentAffairsQuestions(job);
 };
 const slugifyText = (value = "") => String(value || "").toLowerCase().replace(/['"]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 120) || `job-${Date.now()}`;
 const parsePostWiseApplyLinks = (value = "") => String(value || "").split(/\r?\n/).map((line) => line.trim()).filter(Boolean).map((line) => {
@@ -1805,7 +1838,7 @@ const normalizeMcqItems = (items = []) => (Array.isArray(items) ? items : []).ma
 const renderMcqSection = (job = {}) => {
   const mcqBox = document.getElementById("mcqContent");
   const mcqPanel = document.getElementById("mcqPanel");
-  const mcqs = normalizeMcqItems(job.mcqs);
+  const mcqs = normalizeMcqItems(isCurrentAffairsPost(job) ? getCurrentAffairsQuestionSource(job) : job.mcqs);
   if(!mcqs.length){
     mcqBox.innerHTML = "";
     mcqPanel.style.display = "none";
@@ -1859,7 +1892,7 @@ const hidePanels = (ids = []) => ids.forEach((id) => {
   if(panel){ panel.style.display = "none"; }
 });
 
-const renderCurrentAffairsDetail = ({ jobId = "", job = {}, title = "", description = "", canonicalUrl = "" }) => {
+const renderCurrentAffairsDetail = ({ jobId = "", job = {}, title = "", description = "", canonicalUrl = "", allJobs = [] }) => {
   const introText = Array.isArray(job.intro) ? job.intro.map((item) => String(item || "").trim()).filter(Boolean).join("\n\n") : "";
   const dateText = job.postDate || job.date || job.content?.date || job["तारीख"] || job.currentAffairsData?.["तारीख"] || "";
   const categoryText = job.category || job.content?.category || job["श्रेणी"] || job.currentAffairsData?.["श्रेणी"] || "";
@@ -1871,24 +1904,20 @@ const renderCurrentAffairsDetail = ({ jobId = "", job = {}, title = "", descript
   document.getElementById("sheetSubTitle").innerHTML = renderFormattedText(introText || description || "Important current affairs questions, answers and explanations.");
   renderArticleMeta(job);
   const shortInfoHeading = document.querySelector("#shortInfoPanel h2");
-  if(shortInfoHeading){ shortInfoHeading.textContent = "Intro"; }
+  if(shortInfoHeading){ shortInfoHeading.textContent = "Current Affairs"; }
   renderMetaBadges([
     { label:"Date", value:dateText, icon:"fa-solid fa-calendar-days" }
   ]);
   hidePanels([
-    "featurePanel", "jobInfoPanel", "feePanel", "agePanel", "vacancyPanel",
+    "featurePanel", "importantPanel", "jobInfoPanel", "feePanel", "agePanel", "vacancyPanel",
     "eligibilityPanel", "selectionPanel", "applyProcessPanel", "extraPanel",
-    "linksPanel", "jobToolsPanel", "communityPanel"
+    "linksPanel", "jobToolsPanel"
   ]);
-  renderTextBlock("shortInfoContent", "shortInfoPanel", introText);
-  const importantPanel = document.getElementById("importantPanel");
-  const importantHeading = importantPanel ? importantPanel.querySelector("h2") : null;
-  if(importantHeading){ importantHeading.textContent = "Date"; }
-  renderList("importantList", "importantPanel", [
-    { label:"Date", value:dateText },
-    { label:"Category", value:categoryText },
-    { label:"News Updates", value:newsItems.length ? `${newsItems.length}` : "" }
-  ]);
+  renderTextBlock("shortInfoContent", "shortInfoPanel", [
+    dateText ? `Date: ${dateText}` : "",
+    categoryText ? `Category: ${categoryText}` : "",
+    introText || description || ""
+  ].filter(Boolean).join("\n\n"));
   const importantManual = document.getElementById("importantManual");
   if(importantManual){ importantManual.innerHTML = ""; }
   const contentPanel = document.getElementById("pageContentPanel");
@@ -1906,7 +1935,9 @@ const renderCurrentAffairsDetail = ({ jobId = "", job = {}, title = "", descript
   const mcqHeading = document.querySelector("#mcqPanel h2");
   if(mcqHeading){ mcqHeading.textContent = "Questions"; }
   renderMcqSection(job);
-  const faqItems = renderFaqSection(job, title);
+  hidePanels(["faqPanel"]);
+  const faqItems = [];
+  renderCurrentAffairsLinks({ currentId:jobId, currentJob:job, allJobs });
   const sidebar = document.querySelector(".detail-sidebar");
   if(sidebar){ sidebar.style.display = "none"; }
   setJsonLd(buildJobSchemaGraph({ job, title, description, canonicalUrl, faqItems }));
@@ -1927,6 +1958,24 @@ const isSeparatorRow = (line) => /^\s*\|?[\s:-]+\|[\s|:-]*$/.test(line);
 
 const isMeaningfulCell = (value) => {
   return isFilledValue(value);
+};
+
+const renderCurrentAffairsLinks = ({ currentId = "", currentJob = {}, allJobs = [] }) => {
+  const communityPanel = document.getElementById("communityPanel");
+  if(!communityPanel){ return; }
+  const relatedRows = (Array.isArray(allJobs) ? allJobs : [])
+    .filter((item) => item && item.id !== currentId && isJobVisible(item.job || {}) && isCurrentAffairsPost(item.job || {}))
+    .slice(0, 5);
+  communityPanel.innerHTML = `
+    <h2>More Current Affairs</h2>
+    <div class="community-actions">
+      <a class="btn whatsapp" href="https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q" target="_blank" rel="noopener noreferrer">Join WhatsApp Channel</a>
+      <a class="btn" href="/current-affairs.html"><i class="fa-solid fa-newspaper"></i> Related Current Affairs</a>
+      <a class="btn" href="/mock-test.html"><i class="fa-solid fa-clipboard-check"></i> Mock Test</a>
+    </div>
+    ${relatedRows.length ? `<div class="related-list">${relatedRows.map((item) => `<a href="${canonicalJobHref(item.id, item.job)}">${escapeHTML((item.job || {}).title || "Current Affairs")}</a>`).join("")}</div>` : ""}
+  `;
+  communityPanel.style.display = "block";
 };
 
 const renderTableBlock = (lines) => {
@@ -2615,7 +2664,7 @@ const renderJobDetail = (jobId, rawJob, allJobs = []) => {
     setMeta('meta[name="twitter:title"]', "content", job.seoTitle || title);
     setMeta('meta[name="twitter:description"]', "content", description);
     if(isCurrentAffairsPost(job)){
-      renderCurrentAffairsDetail({ jobId, job, title, description, canonicalUrl });
+      renderCurrentAffairsDetail({ jobId, job, title, description, canonicalUrl, allJobs });
       return;
     }
     const faqItems = renderFaqSection(job, title);
