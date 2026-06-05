@@ -363,6 +363,8 @@ const renderCurrentAffairsFallbackHtml = (job = {}, title = "Current Affairs", d
               <h2>More Current Affairs</h2>
               <div class="community-actions">
                 <a class="btn whatsapp" href="https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q" target="_blank" rel="noopener noreferrer">Join WhatsApp Channel</a>
+                <a class="btn whatsapp" href="https://wa.me/919509453441" target="_blank" rel="noopener noreferrer">WhatsApp +91 9509453441</a>
+                <a class="btn whatsapp" href="https://wa.me/919509403258" target="_blank" rel="noopener noreferrer">WhatsApp +91 9509403258</a>
                 <a class="btn" href="../../current-affairs.html">Related Current Affairs</a>
                 <a class="btn" href="../../mock-test.html">Mock Test</a>
               </div>
