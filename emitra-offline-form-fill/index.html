@@ -53,6 +53,9 @@
     .dataGroupHead{background:var(--soft);border-bottom:1px solid #c9dff4;padding:9px 11px;display:flex;align-items:center;justify-content:space-between;gap:8px}
     .dataGroupHead span{font-size:12px;color:var(--blue);font-weight:900}
     .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:11px}.field{margin-bottom:0}.field label{font-size:12px;color:#334155;display:block;margin:0 0 4px;font-weight:700}.full{grid-column:1/-1}
+    .dateInputRow{display:grid;grid-template-columns:minmax(0,1fr) 46px;gap:6px;align-items:center}
+    .datePickerInput{min-width:46px;height:39px;padding:7px;color:transparent;cursor:pointer}
+    .datePickerInput::-webkit-calendar-picker-indicator{cursor:pointer;opacity:1}
     .previewShell{padding:12px;overflow:auto;max-height:none;min-height:760px;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
     .pageWrap{position:relative;margin:0 auto 18px;background:white;border:1px solid #cbd5e1;box-shadow:0 2px 10px rgba(0,0,0,.15);width:max-content}
     canvas{display:block}
@@ -73,7 +76,7 @@
     #status{font-size:13px;color:var(--blue);font-weight:900}.selectedGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     @media(max-width:1280px){.wrap{grid-template-columns:minmax(300px,360px) minmax(680px,1fr) minmax(250px,280px);padding-left:2%;padding-right:2%}.previewShell{min-height:720px}}
     @media(max-width:1100px){.toolHeroInner{display:block}.toolStatus{display:inline-flex;margin-top:10px;min-width:0}.wrap{grid-template-columns:1fr;height:auto;overflow:visible}.card{overflow:visible;display:block}.card.form .panel,.card.side .panel{height:auto;overflow:visible}.previewShell{max-height:none;height:auto;min-height:0;overflow:auto}.card.side{order:2}.card.form{order:1}.card.preview{order:3}.pageWrap{transform-origin:top left}.previewShell{padding:6px}.card.preview{overflow:hidden}}
-    @media(max-width:620px){nav{flex-direction:column;align-items:flex-start;padding:12px 4%}nav ul{justify-content:flex-start;gap:12px}.nav-tools{width:100%}.nav-tools-menu{position:static;width:100%;margin-top:8px}.logo img{width:170px;max-width:74vw}.toolHero{padding:12px 4%}.toolHero h1{font-size:22px}.toolHero p{font-size:12px}.toolbar{padding:8px 4%;display:grid;grid-template-columns:1fr 1fr}.toolbar>*{width:100%;max-width:none!important}.toolbar select,.toolbar button{min-height:42px}.toolbar .toggle{grid-column:1/-1;justify-content:space-between}.wrap{display:block;padding:10px 3%;overflow:visible}.card{margin-bottom:12px}.panel{padding:12px}.grid{grid-template-columns:1fr;padding:10px}.formActions{grid-template-columns:1fr 1fr}.previewShell{padding:8px;max-height:72vh;min-height:96px}.pageWrap{max-width:100%;overflow:hidden}.pageWrap canvas{width:100%!important;height:auto!important}.small.mobilePreviewHint{display:block}}
+    @media(max-width:620px){nav{flex-direction:column;align-items:flex-start;padding:12px 4%}nav ul{justify-content:flex-start;gap:12px}.nav-tools{width:100%}.nav-tools-menu{position:static;width:100%;margin-top:8px}.logo img{width:170px;max-width:74vw}.toolHero{padding:12px 4%}.toolHero h1{font-size:22px}.toolHero p{font-size:12px}.toolbar{padding:8px 4%;display:grid;grid-template-columns:1fr 1fr}.toolbar>*{width:100%;max-width:none!important}.toolbar select,.toolbar button{min-height:42px}.toolbar .toggle{grid-column:1/-1;justify-content:space-between}.wrap{display:block;padding:10px 3%;overflow:visible}.card{margin-bottom:12px}.panel{padding:12px}.grid{grid-template-columns:1fr;padding:10px}.dateInputRow{grid-template-columns:minmax(0,1fr) 44px}.formActions{grid-template-columns:1fr 1fr}.previewShell{padding:8px;max-height:72vh;min-height:96px}.pageWrap{max-width:100%;overflow:hidden}.pageWrap canvas{width:100%!important;height:auto!important}.small.mobilePreviewHint{display:block}}
   </style>
 </head>
 <body>
@@ -657,7 +660,32 @@ function buildDataForm(){
       });
       input.addEventListener('change', ()=>{ applyAutoHindiToInput(input); normalizeDateInputIfNeeded(input, id); setSharedValue(id, input.value); refreshOverlayTexts(); });
       input.addEventListener('blur', ()=>{ applyAutoHindiToInput(input); normalizeDateInputIfNeeded(input, id); setSharedValue(id, input.value); refreshOverlayTexts(); });
-      wrap.appendChild(input); grid.appendChild(wrap);
+      if(dateField){
+        input.placeholder = 'DD-MM-YYYY';
+        const dateRow = document.createElement('div');
+        dateRow.className = 'dateInputRow';
+        const picker = document.createElement('input');
+        picker.type = 'date';
+        picker.className = 'datePickerInput';
+        picker.title = 'Calendar se date choose karein';
+        picker.setAttribute('aria-label', label + ' calendar');
+        picker.value = dateTextToCalendarValue(input.value);
+        input.addEventListener('change', () => { picker.value = dateTextToCalendarValue(input.value); });
+        input.addEventListener('blur', () => { picker.value = dateTextToCalendarValue(input.value); });
+        picker.addEventListener('change', () => {
+          const formatted = calendarValueToDateText(picker.value);
+          if(!formatted) return;
+          input.value = formatted;
+          setSharedValue(id, input.value);
+          refreshOverlayTexts();
+        });
+        dateRow.appendChild(input);
+        dateRow.appendChild(picker);
+        wrap.appendChild(dateRow);
+      } else {
+        wrap.appendChild(input);
+      }
+      grid.appendChild(wrap);
     }
     root.appendChild(section);
   }
@@ -681,7 +709,8 @@ function resetFormData(useSample){
   setStatus(useSample ? 'Sample data set ho gaya.' : 'Form data clear ho gaya.', 'ok');
 }
 
-function collectData(){
+function collectData(options = {}){
+  const normalizeDates = options.normalizeDates !== false;
   saveSharedFormData();
   const data = {...sharedFormData};
   for (const group of getCurrentFormSchema()) for (const [id] of group.fields) {
@@ -689,8 +718,10 @@ function collectData(){
     if (el) data[id]=el.value.trim();
     else if (data[id] == null) data[id]='';
   }
-  normalizeCollectedDate(data, 'dob');
-  normalizeCollectedDate(data, 'date');
+  if(normalizeDates){
+    normalizeCollectedDate(data, 'dob');
+    normalizeCollectedDate(data, 'date');
+  }
   const dob = (data.dob||'').split(/[\/\-.]/); data.dobDay=dob[0]||''; data.dobMonth=dob[1]||''; data.dobYear=dob[2]||'';
   const date = (data.date||'').split(/[\/\-.]/); data.dateDay=date[0]||''; data.dateMonth=date[1]||''; data.dateYear=date[2]||'';
   syncAgeFromDob(data);
@@ -724,6 +755,24 @@ function normalizeDateValue(str){
   const dt = new Date(year, month - 1, day);
   if(dt.getFullYear() !== year || dt.getMonth() !== month - 1 || dt.getDate() !== day) return raw;
   return `${pad2(day)}-${pad2(month)}-${year}`;
+}
+
+function dateTextToCalendarValue(str){
+  const normalized = normalizeDateValue(str);
+  const match = String(normalized || '').match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);
+  if(!match) return '';
+  const day = Number(match[1]);
+  const month = Number(match[2]);
+  const year = Number(match[3]);
+  const dt = new Date(year, month - 1, day);
+  if(dt.getFullYear() !== year || dt.getMonth() !== month - 1 || dt.getDate() !== day) return '';
+  return `${year}-${pad2(month)}-${pad2(day)}`;
+}
+
+function calendarValueToDateText(str){
+  const match = String(str || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if(!match) return '';
+  return `${match[3]}-${match[2]}-${match[1]}`;
 }
 
 function normalizeDateInputIfNeeded(input, id){
@@ -1011,7 +1060,7 @@ function positionDiv(div, field, canvas, pageSize){
   div.style.fontSize=(field.fontSize * canvas.width / pageSize.w)+'px';
 }
 function refreshOverlayTexts(){
-  const data=collectData();
+  const data=collectData({normalizeDates:false});
   document.querySelectorAll('.overlayField').forEach(div=>{
     const field=config.fields.find(f=>f.id===div.dataset.fieldId); if(!field) return;
     const val=valueForField(field,data);
