@@ -660,6 +660,7 @@ function renderUserFiles(){
         <button type="button" class="file-menu-btn" aria-label="File actions"><i class="fa-solid fa-ellipsis-vertical"></i></button>
       </div>
       ${renderFileThumbnail(item.file)}
+      <strong class="file-name-label" title="${escapeHTML(item.file.name || "Document")}">${escapeHTML(cleanDisplayFileName(item.file.name || "Document"))}</strong>
       <small>${formatBytes(item.file.size)} - ${item.file.uploadedAt ? new Date(item.file.uploadedAt).toLocaleString("hi-IN") : "Recently uploaded"}</small>
       <span class="file-folder-label">${escapeHTML(getFolderName(getFileFolderId(item.file)))}</span>
       <div class="file-actions">
