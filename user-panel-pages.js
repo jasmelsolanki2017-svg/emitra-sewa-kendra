@@ -194,6 +194,27 @@ const getPreviewKind = (file = {}) => {
   return "";
 };
 
+const renderFileThumbnail = (file = {}) => {
+  const url = getFileUrl(file);
+  const name = escapeHTML(cleanDisplayFileName(file.name || "Document"));
+  const kind = getPreviewKind(file);
+  if(kind === "image" && url){
+    return `<button type="button" class="file-thumb image-thumb" onclick="previewUserFileByPath('${escapeHTML(file.path || "")}')" aria-label="Preview ${name}"><img src="${url.replace(/"/g, "&quot;")}" alt="${name}" loading="lazy"></button>`;
+  }
+  if(kind === "pdf" && url){
+    return `<button type="button" class="file-thumb pdf-thumb" onclick="previewUserFileByPath('${escapeHTML(file.path || "")}')" aria-label="Preview ${name}"><iframe src="${url.replace(/"/g, "&quot;")}#toolbar=0&navpanes=0&scrollbar=0" title="${name}" loading="lazy"></iframe><span>PDF</span></button>`;
+  }
+  const label = kind ? kind.toUpperCase() : "FILE";
+  const icon = kind === "video" ? "fa-file-video" : kind === "audio" ? "fa-file-audio" : kind === "text" ? "fa-file-lines" : "fa-file";
+  return `<button type="button" class="file-thumb icon-thumb" onclick="previewUserFileByPath('${escapeHTML(file.path || "")}')" aria-label="Preview ${name}"><i class="fa-solid ${icon}"></i><span>${escapeHTML(label)}</span></button>`;
+};
+
+const fileTypeIcon = (file = {}) => {
+  const kind = getPreviewKind(file);
+  const icon = kind === "image" ? "fa-image" : kind === "pdf" ? "fa-file-pdf" : kind === "video" ? "fa-file-video" : kind === "audio" ? "fa-file-audio" : kind === "text" ? "fa-file-lines" : "fa-file";
+  return `<i class="fa-solid ${icon}"></i>`;
+};
+
 const ensurePreviewModal = () => {
   let modal = document.getElementById("filePreviewModal");
   if(modal){ return modal; }
@@ -633,11 +654,14 @@ function renderUserFiles(){
   }
   list.innerHTML = folderFiles.map((item) => `
     <div class="file-row">
-      <div>
+      <div class="file-card-head">
+        <span class="file-type-icon">${fileTypeIcon(item.file)}</span>
         <strong title="${escapeHTML(item.file.name || "Document")}">${escapeHTML(cleanDisplayFileName(item.file.name || "Document"))}</strong>
-        <small>${formatBytes(item.file.size)} - ${item.file.uploadedAt ? new Date(item.file.uploadedAt).toLocaleString("hi-IN") : "Recently uploaded"}</small>
-        <span class="file-folder-label">${escapeHTML(getFolderName(getFileFolderId(item.file)))}</span>
+        <button type="button" class="file-menu-btn" aria-label="File actions"><i class="fa-solid fa-ellipsis-vertical"></i></button>
       </div>
+      ${renderFileThumbnail(item.file)}
+      <small>${formatBytes(item.file.size)} - ${item.file.uploadedAt ? new Date(item.file.uploadedAt).toLocaleString("hi-IN") : "Recently uploaded"}</small>
+      <span class="file-folder-label">${escapeHTML(getFolderName(getFileFolderId(item.file)))}</span>
       <div class="file-actions">
         <button class="preview-file" onclick="previewUserFile('${escapeHTML(item.id)}')">Preview</button>
         <button onclick="downloadUserFile('${escapeHTML(item.id)}')">Download</button>
@@ -881,6 +905,15 @@ window.downloadUserFile = (id) => {
 
 window.previewUserFile = (id) => {
   const item = currentFiles.find((entry) => entry.id === id);
+  if(!item){
+    alert("Preview link nahi mila.");
+    return;
+  }
+  openFilePreview(item.file);
+};
+
+window.previewUserFileByPath = (path) => {
+  const item = currentFiles.find((entry) => String(entry.file.path || "") === String(path || ""));
   if(!item){
     alert("Preview link nahi mila.");
     return;
