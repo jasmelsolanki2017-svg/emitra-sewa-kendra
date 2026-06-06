@@ -32,6 +32,7 @@ let currentFolders = [];
 let activeFolderId = "__all";
 let currentRequestNotifications = [];
 let storageFallbackToken = 0;
+const selectedFileIds = new Set();
 
 const pageType = document.body.dataset.page || "";
 const allFolderId = "__all";
@@ -131,6 +132,8 @@ const getFileUrl = (file = {}) => {
     : file.downloadUrl || getSupabasePublicUrl(file.path);
 };
 
+const getFileEntry = (id = "") => currentFiles.find((entry) => entry.id === id);
+
 const safeFileRowId = (path = "") => `storage_${btoa(unescape(encodeURIComponent(path))).replace(/=+$/g, "").replace(/[^a-zA-Z0-9_-]/g, "_")}`;
 
 const cleanDisplayFileName = (name = "") => {
@@ -224,6 +227,56 @@ const renderFileThumbnail = (file = {}) => {
   const icon = kind === "video" ? "fa-file-video" : kind === "audio" ? "fa-file-audio" : kind === "text" ? "fa-file-lines" : "fa-file";
   return `<button type="button" class="file-thumb icon-thumb" onclick="previewUserFileByPath('${escapeHTML(file.path || "")}')" aria-label="Preview ${name}"><i class="fa-solid ${icon}"></i><span>${escapeHTML(label)}</span></button>`;
 };
+
+const getVisibleExplorerFiles = () => currentFiles.filter((item) => !isFolderLocked(getFileFolderId(item.file)));
+
+const updateFileSelectionStatus = () => {
+  const status = document.getElementById("fileSelectionStatus");
+  if(status){ status.innerText = `${selectedFileIds.size} file selected`; }
+};
+
+function renderAllFilesExplorer(){
+  const grid = document.getElementById("allUserFilesGrid");
+  if(!grid){ return; }
+  const files = getVisibleExplorerFiles();
+  const validIds = new Set(files.map((item) => item.id));
+  Array.from(selectedFileIds).forEach((id) => {
+    if(!validIds.has(id)){ selectedFileIds.delete(id); }
+  });
+  updateFileSelectionStatus();
+  if(!files.length){
+    grid.innerHTML = `<div class="message">Abhi koi file upload nahi hai.</div>`;
+    return;
+  }
+  grid.innerHTML = files.map((item) => {
+    const id = escapeHTML(item.id);
+    const name = cleanDisplayFileName(item.file.name || "Document");
+    const selected = selectedFileIds.has(item.id);
+    return `
+      <div class="explorer-file-card${selected ? " selected" : ""}" data-file-card="${id}">
+        <input class="file-select-check" type="checkbox" ${selected ? "checked" : ""} aria-label="Select ${escapeHTML(name)}" onchange="toggleUserFileSelection('${id}', this.checked)">
+        <button type="button" class="file-menu-btn" aria-label="File menu" onclick="toggleUserFileMenu('${id}', event)"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+        ${renderFileThumbnail(item.file)}
+        <strong class="file-name-label" title="${escapeHTML(item.file.name || "Document")}">${escapeHTML(name)}</strong>
+        <span class="file-folder-label">${escapeHTML(getFolderName(getFileFolderId(item.file)))}</span>
+        <div class="file-menu-panel">
+          <button type="button" onclick="previewUserFile('${id}')">Preview</button>
+          <button type="button" onclick="downloadUserFile('${id}')">Download</button>
+          <button type="button" onclick="renameUserFile('${id}')">Rename</button>
+          <button type="button" onclick="moveUserFile('${id}')">Move</button>
+          <button type="button" onclick="copyUserFile('${id}')">Copy</button>
+          <button type="button" class="danger-btn" onclick="deleteUserFile('${id}')">Delete</button>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+const closeFileMenus = () => document.querySelectorAll(".explorer-file-card.menu-open").forEach((card) => card.classList.remove("menu-open"));
+
+document.addEventListener("click", (event) => {
+  if(!event.target.closest?.(".explorer-file-card")){ closeFileMenus(); }
+});
 
 const fileTypeIcon = (file = {}) => {
   const kind = getPreviewKind(file);
@@ -662,6 +715,7 @@ function renderUserFiles(){
   const list = document.getElementById("userFilesList");
   renderStorageInfo();
   renderFolderControls();
+  renderAllFilesExplorer();
   if(!list){ return; }
   const folderFiles = activeFolderId === allFolderId
     ? currentFiles.filter((item) => !isFolderLocked(getFileFolderId(item.file)))
@@ -964,6 +1018,190 @@ window.previewUserFileByPath = (path) => {
   openFilePreview(item.file);
 };
 
+window.toggleUserFileMenu = (id, event) => {
+  if(event){ event.stopPropagation(); }
+  const card = document.querySelector(`[data-file-card="${CSS.escape(id)}"]`);
+  const shouldOpen = card && !card.classList.contains("menu-open");
+  closeFileMenus();
+  if(card && shouldOpen){ card.classList.add("menu-open"); }
+};
+
+window.toggleUserFileSelection = (id, checked) => {
+  if(checked){ selectedFileIds.add(id); }
+  else{ selectedFileIds.delete(id); }
+  renderAllFilesExplorer();
+};
+
+window.toggleSelectAllUserFiles = () => {
+  const files = getVisibleExplorerFiles();
+  if(selectedFileIds.size && selectedFileIds.size === files.length){
+    selectedFileIds.clear();
+  }else{
+    files.forEach((item) => selectedFileIds.add(item.id));
+  }
+  renderAllFilesExplorer();
+};
+
+const getSelectedFileEntries = () => Array.from(selectedFileIds).map(getFileEntry).filter(Boolean);
+
+const promptTargetFolderId = (message = "Folder name likhein") => {
+  const rows = getUploadFolderRows().filter(({ id }) => !isFolderLocked(id));
+  const names = rows.map(({ folder }) => folder.name || "Folder").join(", ");
+  const input = prompt(`${message}\nAvailable: ${names}\nBlank = General`);
+  if(input === null){ return ""; }
+  const name = String(input || "").trim();
+  if(!name){ return generalFolderId; }
+  const match = rows.find(({ folder }) => String(folder.name || "").trim().toLowerCase() === name.toLowerCase());
+  if(!match){
+    alert("Folder name match nahi hua.");
+    return "";
+  }
+  return match.id;
+};
+
+const upsertUserFileRecord = async (id, file) => {
+  if(!currentUser){ throw new Error("Login required."); }
+  const record = { ...file, storageOnly:false, updatedAt:Date.now() };
+  await set(ref(db, "memberFiles/" + currentUser.uid + "/" + id), record);
+  const index = currentFiles.findIndex((entry) => entry.id === id);
+  if(index >= 0){ currentFiles[index] = { id, file:record }; }
+  else{ currentFiles.unshift({ id, file:record }); }
+};
+
+window.renameUserFile = async (id) => {
+  closeFileMenus();
+  const item = getFileEntry(id);
+  if(!item){ alert("File data nahi mila."); return; }
+  const currentName = cleanDisplayFileName(item.file.name || "Document");
+  const nextName = prompt("New file name likhein", currentName);
+  if(nextName === null){ return; }
+  const name = String(nextName || "").trim();
+  if(!name){ alert("File name blank nahi ho sakta."); return; }
+  try{
+    await upsertUserFileRecord(id, { ...item.file, name });
+    setText("uploadStatus", "File rename ho gayi.");
+    renderUserFiles();
+  }catch(error){
+    alert("Rename nahi hua: " + error.message);
+  }
+};
+
+const moveFileRecordToFolder = async (id, folderId) => {
+  const item = getFileEntry(id);
+  if(!item){ throw new Error("File data nahi mila."); }
+  const folderName = getFolderName(folderId);
+  await upsertUserFileRecord(id, { ...item.file, folderId, folderName });
+};
+
+window.moveUserFile = async (id) => {
+  closeFileMenus();
+  const folderId = promptTargetFolderId("Move ke liye folder name likhein");
+  if(!folderId){ return; }
+  try{
+    await moveFileRecordToFolder(id, folderId);
+    setText("uploadStatus", "File move ho gayi.");
+    renderUserFiles();
+  }catch(error){
+    alert("Move nahi hua: " + error.message);
+  }
+};
+
+const copyFileToFolder = async (id, folderId) => {
+  if(!currentUser){ throw new Error("Login required."); }
+  const item = getFileEntry(id);
+  if(!item?.file?.path){ throw new Error("File path nahi mila."); }
+  if(!String(item.file.path).startsWith(currentUser.uid + "/")){ throw new Error("Ye file aapke account folder ki nahi hai."); }
+  const used = Number(currentMember.storageUsedBytes || 0);
+  const limit = getStorageLimitBytes();
+  const size = Number(item.file.size || 0);
+  if(used + size > limit){ throw new Error("Storage limit full hai."); }
+  const folderName = getFolderName(folderId);
+  const fileRecordRef = push(ref(db, "memberFiles/" + currentUser.uid));
+  const folderSegment = getFolderPathSegment(folderId, folderName);
+  const cleanName = cleanFileName(item.file.name || "file");
+  const nextPath = `${currentUser.uid}/${folderSegment}/${fileRecordRef.key}-${cleanName}`;
+  const { error } = await supabase.storage.from(getFileBucket(item.file)).copy(item.file.path, nextPath);
+  if(error){ throw error; }
+  const fileRecord = {
+    ...item.file,
+    folderId,
+    folderName,
+    path:nextPath,
+    storageProvider:"supabase",
+    bucket:getFileBucket(item.file),
+    downloadUrl:getSupabasePublicUrl(nextPath),
+    storageOnly:false,
+    copiedFrom:id,
+    uploadedAt:Date.now()
+  };
+  await set(fileRecordRef, fileRecord);
+  currentFiles.unshift({ id:fileRecordRef.key, file:fileRecord });
+  await update(ref(db, "members/" + currentUser.uid), {
+    storageUsedBytes:used + size,
+    storageLimitBytes:limit,
+    updatedAt:Date.now()
+  });
+  currentMember.storageUsedBytes = used + size;
+  currentMember.storageLimitBytes = limit;
+};
+
+window.copyUserFile = async (id) => {
+  closeFileMenus();
+  const folderId = promptTargetFolderId("Copy ke liye folder name likhein");
+  if(!folderId){ return; }
+  try{
+    await copyFileToFolder(id, folderId);
+    setText("uploadStatus", "File copy ho gayi.");
+    renderUserFiles();
+  }catch(error){
+    alert("Copy nahi hua: " + error.message);
+  }
+};
+
+window.bulkMoveUserFiles = async () => {
+  const entries = getSelectedFileEntries();
+  if(!entries.length){ alert("Pehle files select karein."); return; }
+  const folderId = promptTargetFolderId("Selected files move karne ke liye folder name likhein");
+  if(!folderId){ return; }
+  try{
+    for(const entry of entries){ await moveFileRecordToFolder(entry.id, folderId); }
+    selectedFileIds.clear();
+    setText("uploadStatus", `${entries.length} file move ho gayi.`);
+    renderUserFiles();
+  }catch(error){
+    alert("Bulk move nahi hua: " + error.message);
+  }
+};
+
+window.bulkCopyUserFiles = async () => {
+  const entries = getSelectedFileEntries();
+  if(!entries.length){ alert("Pehle files select karein."); return; }
+  const folderId = promptTargetFolderId("Selected files copy karne ke liye folder name likhein");
+  if(!folderId){ return; }
+  try{
+    for(const entry of entries){ await copyFileToFolder(entry.id, folderId); }
+    selectedFileIds.clear();
+    setText("uploadStatus", `${entries.length} file copy ho gayi.`);
+    renderUserFiles();
+  }catch(error){
+    alert("Bulk copy nahi hua: " + error.message);
+  }
+};
+
+window.bulkDeleteUserFiles = async () => {
+  const entries = getSelectedFileEntries();
+  if(!entries.length){ alert("Pehle files select karein."); return; }
+  if(!confirm(`${entries.length} selected files delete karni hain?`)){ return; }
+  try{
+    for(const entry of entries){ await deleteUserFileEntry(entry.id); }
+    selectedFileIds.clear();
+    setText("uploadStatus", `${entries.length} file delete ho gayi.`);
+    renderUserFiles();
+  }catch(error){
+    alert("Bulk delete nahi hua: " + error.message);
+  }
+};
+
 window.closeFilePreview = () => {
   const modal = document.getElementById("filePreviewModal");
   const body = document.getElementById("filePreviewBody");
@@ -971,34 +1209,38 @@ window.closeFilePreview = () => {
   if(modal){ modal.classList.remove("open"); }
 };
 
-window.deleteUserFile = async (id) => {
+const deleteUserFileEntry = async (id) => {
   if(!currentUser){
-    alert("Login required.");
-    return;
+    throw new Error("Login required.");
   }
   const item = currentFiles.find((entry) => entry.id === id);
   if(!item){
-    alert("File data nahi mila.");
-    return;
+    throw new Error("File data nahi mila.");
   }
+  if(item.file.path){
+    if(!String(item.file.path).startsWith(currentUser.uid + "/")){
+      throw new Error("Ye file aapke account folder ki nahi hai.");
+    }
+    const { error } = await supabase.storage.from(getFileBucket(item.file)).remove([item.file.path]);
+    if(error){ throw error; }
+  }
+  if(!item.file.storageOnly){
+    await remove(ref(db, "memberFiles/" + currentUser.uid + "/" + id));
+  }
+  currentFiles = currentFiles.filter((entry) => entry.id !== id);
+  selectedFileIds.delete(id);
+  const used = Math.max(0, Number(currentMember.storageUsedBytes || 0) - Number(item.file.size || 0));
+  await update(ref(db, "members/" + currentUser.uid), {
+    storageUsedBytes:used,
+    updatedAt:Date.now()
+  });
+  currentMember.storageUsedBytes = used;
+};
+
+window.deleteUserFile = async (id) => {
   if(!confirm("Ye file delete karni hai?")){ return; }
   try{
-    if(item.file.path){
-      if(!String(item.file.path).startsWith(currentUser.uid + "/")){
-        throw new Error("Ye file aapke account folder ki nahi hai.");
-      }
-      const { error } = await supabase.storage.from(getFileBucket(item.file)).remove([item.file.path]);
-      if(error){ throw error; }
-    }
-    if(!item.file.storageOnly){
-      await remove(ref(db, "memberFiles/" + currentUser.uid + "/" + id));
-    }
-    currentFiles = currentFiles.filter((entry) => entry.id !== id);
-    const used = Math.max(0, Number(currentMember.storageUsedBytes || 0) - Number(item.file.size || 0));
-    await update(ref(db, "members/" + currentUser.uid), {
-      storageUsedBytes:used,
-      updatedAt:Date.now()
-    });
+    await deleteUserFileEntry(id);
     setText("uploadStatus", "File delete ho gayi.");
     renderUserFiles();
   } catch(error){

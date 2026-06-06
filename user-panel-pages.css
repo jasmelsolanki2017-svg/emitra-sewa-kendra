@@ -226,6 +226,26 @@ nav button,.primary-btn{background:var(--yellow);border-color:var(--yellow);colo
 .file-actions button{padding:6px 7px!important;font-size:10px!important;}
 .file-actions .delete-file{background:#d10000;}
 .file-actions .preview-file{background:#138a36;}
+.file-explorer-section{margin-top:18px;}
+.file-explorer-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.file-explorer-sub{color:var(--muted);font-size:12px;font-weight:800;margin-top:-6px;}
+.bulk-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end;}
+.bulk-actions button,.file-menu-panel button{border:0;border-radius:6px;background:var(--blue);color:white;font-weight:900;padding:7px 10px;cursor:pointer;font-size:11px;}
+.bulk-actions .danger-btn,.file-menu-panel .danger-btn{background:#d10000;}
+.file-selection-status{background:#f9fbff;border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin:8px 0 12px;color:var(--blue);font-size:12px;font-weight:900;}
+.all-file-grid{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:18px 14px;align-items:start;}
+.all-file-grid .message{grid-column:1/-1;}
+.explorer-file-card{position:relative;min-width:0;text-align:center;border-radius:8px;padding:4px 4px 8px;background:transparent;}
+.explorer-file-card.selected{background:#eaf4ff;box-shadow:inset 0 0 0 2px var(--blue);}
+.file-select-check{position:absolute;left:5px;top:5px;z-index:2;width:17px;height:17px;accent-color:var(--blue);}
+.explorer-file-card .file-menu-btn{position:absolute;right:3px;top:3px;z-index:3;background:rgba(255,255,255,.86);}
+.explorer-file-card .file-thumb{width:100%;height:74px;margin-bottom:6px;background:#f5f7fb;}
+.explorer-file-card .file-name-label{font-size:10px!important;line-height:1.2;min-height:26px;-webkit-line-clamp:2;}
+.explorer-file-card .file-folder-label{display:block;color:var(--muted);font-size:9px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.file-menu-panel{position:absolute;right:2px;top:28px;z-index:20;display:none;min-width:118px;background:white;border:1px solid var(--line);border-radius:8px;padding:6px;box-shadow:0 10px 26px rgba(8,31,74,.18);}
+.explorer-file-card.menu-open .file-menu-panel{display:grid;gap:5px;}
+.file-menu-panel button{width:100%;justify-content:flex-start;text-align:left;padding:7px 8px;background:#f2f7ff;color:var(--blue);}
+.file-menu-panel button:hover{background:var(--blue);color:white;}
 .preview-modal{position:fixed;inset:0;background:rgba(3,34,77,.72);display:none;align-items:center;justify-content:center;padding:18px;z-index:9000;}
 .preview-modal.open{display:flex;}
 .preview-dialog{width:min(980px,96vw);height:min(760px,88vh);background:white;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,.35);display:flex;flex-direction:column;overflow:hidden;}
@@ -244,7 +264,7 @@ footer{background:var(--blue);color:white;text-align:center;padding:16px;margin-
 footer a{color:#ffb15c;text-decoration:none;font-weight:800;margin:0 8px;}
 
 body.dark-mode{background:#07111f !important;color:#e8f1ff !important;}
-body.dark-mode .section,body.dark-mode nav,body.dark-mode .row,body.dark-mode .job-card,body.dark-mode .file-row,body.dark-mode .cloud-link,body.dark-mode .download-card,body.dark-mode .preview-dialog,body.dark-mode .folder-tools{background:#101b2d !important;color:#e8f1ff !important;border-color:#24405f !important;}
+body.dark-mode .section,body.dark-mode nav,body.dark-mode .row,body.dark-mode .job-card,body.dark-mode .file-row,body.dark-mode .cloud-link,body.dark-mode .download-card,body.dark-mode .preview-dialog,body.dark-mode .folder-tools,body.dark-mode .file-menu-panel{background:#101b2d !important;color:#e8f1ff !important;border-color:#24405f !important;}
 body.dark-mode h1,body.dark-mode h2,body.dark-mode h3,body.dark-mode strong{color:#ffb15c !important;}
 body.dark-mode p,body.dark-mode small,body.dark-mode .message{color:#cbd8ea !important;background:#081322 !important;}
 
@@ -266,4 +286,8 @@ body.dark-mode p,body.dark-mode small,body.dark-mode .message{color:#cbd8ea !imp
   .data-grid .section:last-child{max-height:none;}
   .request-reply-box{grid-template-columns:1fr;}
   .file-actions{justify-content:flex-start;flex-wrap:wrap;}
+  .file-explorer-head{display:block;}
+  .bulk-actions{justify-content:flex-start;margin-top:8px;}
+  .all-file-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px 10px;}
+  .explorer-file-card .file-thumb{height:82px;}
 }
