@@ -228,54 +228,30 @@ const renderFileThumbnail = (file = {}) => {
   return `<button type="button" class="file-thumb icon-thumb" onclick="previewUserFileByPath('${escapeHTML(file.path || "")}')" aria-label="Preview ${name}"><i class="fa-solid ${icon}"></i><span>${escapeHTML(label)}</span></button>`;
 };
 
-const getVisibleExplorerFiles = () => currentFiles.filter((item) => !isFolderLocked(getFileFolderId(item.file)));
+const getVisibleUserFiles = () => {
+  if(isFolderLocked(activeFolderId)){ return []; }
+  return activeFolderId === allFolderId
+    ? currentFiles.filter((item) => !isFolderLocked(getFileFolderId(item.file)))
+    : currentFiles.filter((item) => getFileFolderId(item.file) === activeFolderId);
+};
 
 const updateFileSelectionStatus = () => {
   const status = document.getElementById("fileSelectionStatus");
   if(status){ status.innerText = `${selectedFileIds.size} file selected`; }
 };
 
-function renderAllFilesExplorer(){
-  const grid = document.getElementById("allUserFilesGrid");
-  if(!grid){ return; }
-  const files = getVisibleExplorerFiles();
+function syncSelectedFilesWithVisible(files = getVisibleUserFiles()){
   const validIds = new Set(files.map((item) => item.id));
   Array.from(selectedFileIds).forEach((id) => {
     if(!validIds.has(id)){ selectedFileIds.delete(id); }
   });
   updateFileSelectionStatus();
-  if(!files.length){
-    grid.innerHTML = `<div class="message">Abhi koi file upload nahi hai.</div>`;
-    return;
-  }
-  grid.innerHTML = files.map((item) => {
-    const id = escapeHTML(item.id);
-    const name = cleanDisplayFileName(item.file.name || "Document");
-    const selected = selectedFileIds.has(item.id);
-    return `
-      <div class="explorer-file-card${selected ? " selected" : ""}" data-file-card="${id}">
-        <input class="file-select-check" type="checkbox" ${selected ? "checked" : ""} aria-label="Select ${escapeHTML(name)}" onchange="toggleUserFileSelection('${id}', this.checked)">
-        <button type="button" class="file-menu-btn" aria-label="File menu" onclick="toggleUserFileMenu('${id}', event)"><i class="fa-solid fa-ellipsis-vertical"></i></button>
-        ${renderFileThumbnail(item.file)}
-        <strong class="file-name-label" title="${escapeHTML(item.file.name || "Document")}">${escapeHTML(name)}</strong>
-        <span class="file-folder-label">${escapeHTML(getFolderName(getFileFolderId(item.file)))}</span>
-        <div class="file-menu-panel">
-          <button type="button" onclick="previewUserFile('${id}')">Preview</button>
-          <button type="button" onclick="downloadUserFile('${id}')">Download</button>
-          <button type="button" onclick="renameUserFile('${id}')">Rename</button>
-          <button type="button" onclick="moveUserFile('${id}')">Move</button>
-          <button type="button" onclick="copyUserFile('${id}')">Copy</button>
-          <button type="button" class="danger-btn" onclick="deleteUserFile('${id}')">Delete</button>
-        </div>
-      </div>
-    `;
-  }).join("");
 }
 
-const closeFileMenus = () => document.querySelectorAll(".explorer-file-card.menu-open").forEach((card) => card.classList.remove("menu-open"));
+const closeFileMenus = () => document.querySelectorAll(".file-list .file-row.menu-open").forEach((card) => card.classList.remove("menu-open"));
 
 document.addEventListener("click", (event) => {
-  if(!event.target.closest?.(".explorer-file-card")){ closeFileMenus(); }
+  if(!event.target.closest?.(".file-list .file-row")){ closeFileMenus(); }
 });
 
 const fileTypeIcon = (file = {}) => {
@@ -715,11 +691,9 @@ function renderUserFiles(){
   const list = document.getElementById("userFilesList");
   renderStorageInfo();
   renderFolderControls();
-  renderAllFilesExplorer();
   if(!list){ return; }
-  const folderFiles = activeFolderId === allFolderId
-    ? currentFiles.filter((item) => !isFolderLocked(getFileFolderId(item.file)))
-    : currentFiles.filter((item) => getFileFolderId(item.file) === activeFolderId);
+  const folderFiles = getVisibleUserFiles();
+  syncSelectedFilesWithVisible(folderFiles);
   if(isFolderLocked(activeFolderId)){
     list.innerHTML = `<div class="message locked-folder-message"><i class="fa-solid fa-lock"></i> ${escapeHTML(getFolderName(activeFolderId))} folder locked hai. Open karne ke liye password lagayein.</div>`;
     return;
@@ -729,20 +703,20 @@ function renderUserFiles(){
     return;
   }
   list.innerHTML = folderFiles.map((item) => `
-    <div class="file-row">
-      <div class="file-card-head">
-        <span class="file-type-icon">${fileTypeIcon(item.file)}</span>
-        <strong title="${escapeHTML(item.file.name || "Document")}">${escapeHTML(cleanDisplayFileName(item.file.name || "Document"))}</strong>
-        <button type="button" class="file-menu-btn" aria-label="File actions"><i class="fa-solid fa-ellipsis-vertical"></i></button>
-      </div>
+    <div class="file-row${selectedFileIds.has(item.id) ? " selected" : ""}" data-file-card="${escapeHTML(item.id)}">
+      <input class="file-select-check" type="checkbox" ${selectedFileIds.has(item.id) ? "checked" : ""} aria-label="Select ${escapeHTML(cleanDisplayFileName(item.file.name || "Document"))}" onchange="toggleUserFileSelection('${escapeHTML(item.id)}', this.checked)">
+      <button type="button" class="file-menu-btn" aria-label="File actions" onclick="toggleUserFileMenu('${escapeHTML(item.id)}', event)"><i class="fa-solid fa-ellipsis-vertical"></i></button>
       ${renderFileThumbnail(item.file)}
       <strong class="file-name-label" title="${escapeHTML(item.file.name || "Document")}">${escapeHTML(cleanDisplayFileName(item.file.name || "Document"))}</strong>
       <small>${formatBytes(item.file.size)} - ${item.file.uploadedAt ? new Date(item.file.uploadedAt).toLocaleString("hi-IN") : "Recently uploaded"}</small>
       <span class="file-folder-label">${escapeHTML(getFolderName(getFileFolderId(item.file)))}</span>
-      <div class="file-actions">
-        <button class="preview-file" onclick="previewUserFile('${escapeHTML(item.id)}')">Preview</button>
-        <button onclick="downloadUserFile('${escapeHTML(item.id)}')">Download</button>
-        <button class="delete-file" onclick="deleteUserFile('${escapeHTML(item.id)}')">Delete</button>
+      <div class="file-menu-panel">
+        <button type="button" onclick="previewUserFile('${escapeHTML(item.id)}')">Preview</button>
+        <button type="button" onclick="downloadUserFile('${escapeHTML(item.id)}')">Download</button>
+        <button type="button" onclick="renameUserFile('${escapeHTML(item.id)}')">Rename</button>
+        <button type="button" onclick="moveUserFile('${escapeHTML(item.id)}')">Move</button>
+        <button type="button" onclick="copyUserFile('${escapeHTML(item.id)}')">Copy</button>
+        <button type="button" class="danger-btn" onclick="deleteUserFile('${escapeHTML(item.id)}')">Delete</button>
       </div>
     </div>
   `).join("");
@@ -1029,17 +1003,17 @@ window.toggleUserFileMenu = (id, event) => {
 window.toggleUserFileSelection = (id, checked) => {
   if(checked){ selectedFileIds.add(id); }
   else{ selectedFileIds.delete(id); }
-  renderAllFilesExplorer();
+  renderUserFiles();
 };
 
 window.toggleSelectAllUserFiles = () => {
-  const files = getVisibleExplorerFiles();
+  const files = getVisibleUserFiles();
   if(selectedFileIds.size && selectedFileIds.size === files.length){
     selectedFileIds.clear();
   }else{
     files.forEach((item) => selectedFileIds.add(item.id));
   }
-  renderAllFilesExplorer();
+  renderUserFiles();
 };
 
 const getSelectedFileEntries = () => Array.from(selectedFileIds).map(getFileEntry).filter(Boolean);

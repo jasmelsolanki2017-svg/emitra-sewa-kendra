@@ -58,6 +58,13 @@
           <button onclick="uploadUserFile()">Upload Files</button>
         </div>
         <p class="message" id="uploadStatus">Aap apni files yahan upload karke baad me download kar sakte hain.</p>
+        <div class="file-selection-toolbar">
+          <span id="fileSelectionStatus">0 file selected</span>
+          <button type="button" onclick="toggleSelectAllUserFiles()">Select All</button>
+          <button type="button" onclick="bulkCopyUserFiles()">Copy</button>
+          <button type="button" onclick="bulkMoveUserFiles()">Move</button>
+          <button type="button" class="danger-btn" onclick="bulkDeleteUserFiles()">Delete</button>
+        </div>
         <div class="file-list" id="userFilesList">
           <div class="message">Files loading...</div>
         </div>
@@ -70,28 +77,10 @@
         </div>
       </section>
     </div>
-    <section class="section file-explorer-section">
-      <div class="file-explorer-head">
-        <div>
-          <h2>All Files</h2>
-          <p class="file-explorer-sub">Pure page par files explorer view me show hongi.</p>
-        </div>
-        <div class="bulk-actions">
-          <button type="button" onclick="toggleSelectAllUserFiles()">Select All</button>
-          <button type="button" onclick="bulkCopyUserFiles()">Copy</button>
-          <button type="button" onclick="bulkMoveUserFiles()">Move</button>
-          <button type="button" class="danger-btn" onclick="bulkDeleteUserFiles()">Delete</button>
-        </div>
-      </div>
-      <div class="file-selection-status" id="fileSelectionStatus">0 file selected</div>
-      <div class="all-file-grid" id="allUserFilesGrid">
-        <div class="message">Files loading...</div>
-      </div>
-    </section>
   </main>
   <a class="whatsapp" target="_blank" rel="noopener noreferrer" href="https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q"><i class="fa-brands fa-whatsapp"></i></a>
   <footer><p>© 2026 E-MITRA WALA | User Panel</p></footer>
   <button class="theme-toggle" type="button" aria-label="Toggle dark mode" title="Dark mode" onclick="toggleDarkMode()"><span class="theme-symbol" aria-hidden="true">☾</span></button>
-  <script type="module" src="user-panel-pages.js?v=20260606-folder-list11"></script>
+  <script type="module" src="user-panel-pages.js?v=20260606-folder-list12"></script>
 </body>
 </html>
