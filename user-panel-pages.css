@@ -116,7 +116,8 @@ nav button,.primary-btn{background:var(--yellow);border-color:var(--yellow);colo
   margin-bottom:8px;
 }
 
-.row strong,.job-card h3,.file-row strong,.cloud-link strong{color:var(--blue);overflow-wrap:anywhere;}
+.row strong,.job-card h3,.cloud-link strong{color:var(--blue);overflow-wrap:anywhere;}
+.file-row strong{color:var(--blue);display:block;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .row a,.job-card a,.cloud-link a{
   display:inline-flex;
   margin-top:9px;
@@ -198,9 +199,9 @@ nav button,.primary-btn{background:var(--yellow);border-color:var(--yellow);colo
 .storage-meter{height:12px;background:#dbe8f7;border-radius:999px;overflow:hidden;margin:8px 0 14px;}
 .storage-meter span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--yellow));}
 .file-row,.cloud-link{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;}
-.file-row small,.cloud-link small{display:block;color:var(--muted);font-weight:700;overflow-wrap:anywhere;}
+.file-row small,.cloud-link small{display:block;color:var(--muted);font-weight:700;overflow-wrap:anywhere;line-height:1.35;}
 .file-folder-label{display:inline-block;margin-top:5px;background:white;border:1px solid var(--line);border-radius:999px;color:var(--blue);font-size:10px;font-weight:900;padding:2px 7px;}
-.file-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end;}
+.file-actions{display:flex;gap:7px;flex-wrap:nowrap;justify-content:flex-end;}
 .file-actions .delete-file{background:#d10000;}
 .file-actions .preview-file{background:#138a36;}
 .preview-modal{position:fixed;inset:0;background:rgba(3,34,77,.72);display:none;align-items:center;justify-content:center;padding:18px;z-index:9000;}
@@ -241,5 +242,5 @@ body.dark-mode p,body.dark-mode small,body.dark-mode .message{color:#cbd8ea !imp
   .section{padding:14px;}
   .data-grid,.storage-tools,.folder-create,.file-row,.cloud-link{grid-template-columns:1fr;}
   .request-reply-box{grid-template-columns:1fr;}
-  .file-actions{justify-content:flex-start;}
+  .file-actions{justify-content:flex-start;flex-wrap:wrap;}
 }

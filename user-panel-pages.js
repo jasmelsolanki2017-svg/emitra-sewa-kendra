@@ -117,6 +117,11 @@ const getFileUrl = (file = {}) => {
 
 const safeFileRowId = (path = "") => `storage_${btoa(unescape(encodeURIComponent(path))).replace(/=+$/g, "").replace(/[^a-zA-Z0-9_-]/g, "_")}`;
 
+const cleanDisplayFileName = (name = "") => {
+  const fileName = String(name || "").split("/").pop() || "Document";
+  return fileName.replace(/^[-_A-Za-z0-9]{16,24}-/, "") || fileName;
+};
+
 const inferFolderFromPath = (path = "") => {
   const parts = String(path || "").split("/");
   const segment = parts[1] || "general";
@@ -157,7 +162,7 @@ async function loadStorageFallbackFiles(user){
         return {
           id:safeFileRowId(path),
           file:{
-            name:item.name || path.split("/").pop() || "Document",
+            name:cleanDisplayFileName(item.name || path),
             size:Number(item.metadata?.size || 0),
             type:item.metadata?.mimetype || "",
             ...folder,
@@ -629,7 +634,7 @@ function renderUserFiles(){
   list.innerHTML = folderFiles.map((item) => `
     <div class="file-row">
       <div>
-        <strong>${escapeHTML(item.file.name || "Document")}</strong>
+        <strong title="${escapeHTML(item.file.name || "Document")}">${escapeHTML(cleanDisplayFileName(item.file.name || "Document"))}</strong>
         <small>${formatBytes(item.file.size)} - ${item.file.uploadedAt ? new Date(item.file.uploadedAt).toLocaleString("hi-IN") : "Recently uploaded"}</small>
         <span class="file-folder-label">${escapeHTML(getFolderName(getFileFolderId(item.file)))}</span>
       </div>
