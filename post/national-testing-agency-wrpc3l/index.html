@@ -1779,6 +1779,13 @@ const renderPostWiseApplyLinks = (value = "") => {
   return links.length > 0;
 };
 
+const appendPostApplyLinks = (links = []) => {
+  const box = document.getElementById("postApplyLinks");
+  const html = asArray(links).map((item) => `<a class="btn" href="${safeUrl(item.url)}" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-link"></i> ${escapeHTML(item.label || "Important Link")}</a>`).join("");
+  if(html){ box.insertAdjacentHTML("beforeend", html); }
+  return Boolean(html);
+};
+
 const renderMetaBadges = (items = []) => {
   const box = document.getElementById("metaBadges");
   if(!box){ return; }
@@ -2557,13 +2564,15 @@ const renderSarkariBlueLinks = (job = {}) => {
     { label:"Syllabus", url:job.syllabusLink, icon:"fa-solid fa-book-open" },
     { label:"Answer Key", url:job.answerKeyLink, icon:"fa-solid fa-key" },
     ...parsePostWiseApplyLinks(job.postWiseApplyLinks).map((item) => ({ ...item, icon:"fa-solid fa-link", className:"apply" })),
-    ...asArray(getFlexibleField(job, "importantLinks")).map((item) => typeof item === "object" ? ({ label:item.label || item.title || item.name || "Important Link", url:item.url || item.href || item.link, icon:"fa-solid fa-link" }) : ({ label:"Important Link", url:item, icon:"fa-solid fa-link" }))
+    ...asArray(getFlexibleField(job, "importantLinks")).map((item) => typeof item === "object" ? ({ label:item.label || item.title || item.name || "Important Link", url:item.url || item.href || item.link, icon:"fa-solid fa-link" }) : ({ label:"Important Link", url:item, icon:"fa-solid fa-link" })),
+    ...asArray(job.extraImportantLinks).map((item) => typeof item === "object" ? ({ label:item.label || item.title || item.name || "Important Link", url:item.url || item.href || item.link, icon:"fa-solid fa-link" }) : ({ label:"Important Link", url:item, icon:"fa-solid fa-link" }))
   ];
   const seen = new Set();
   const html = links.map((item) => {
     const url = safeUrl(item.url);
-    const key = comparableLinkUrl(url);
-    if(!key || seen.has(key)){ return ""; }
+    const comparableUrl = comparableLinkUrl(url);
+    const key = `${String(item.label || "").trim().toLowerCase()}|${comparableUrl}`;
+    if(!comparableUrl || seen.has(key)){ return ""; }
     seen.add(key);
     return `<a class="btn ${item.className || ""}" href="${url}" target="_blank" rel="noopener noreferrer"><i class="${item.icon || "fa-solid fa-link"}" aria-hidden="true"></i> ${escapeHTML(item.label || "Important Link")}</a>`;
   }).filter(Boolean).join("");
@@ -3065,7 +3074,10 @@ const renderJobDetail = (jobId, rawJob, allJobs = []) => {
       button.style.display = visible ? "inline-flex" : "none";
       hasLink = hasLink || visible;
     });
-    const nestedImportant = Array.isArray(job.importantLinks) ? job.importantLinks : [];
+    const nestedImportant = [
+      ...(Array.isArray(job.importantLinks) ? job.importantLinks : []),
+      ...(Array.isArray(job.extraImportantLinks) ? job.extraImportantLinks : [])
+    ];
     const primaryVisibleLinks = linkButtons.map((item) => ({ label:item.label, url:safeUrl(item.url) })).filter((item) => item.url && item.url !== "#");
     const primaryLinkKeys = new Set(primaryVisibleLinks.map((item) => `${String(item.label || "").trim().toLowerCase()}|${comparableLinkUrl(item.url)}`));
     const primaryUrls = new Set(primaryVisibleLinks.map((item) => comparableLinkUrl(item.url)).filter(Boolean));
@@ -3074,7 +3086,7 @@ const renderJobDetail = (jobId, rawJob, allJobs = []) => {
       const url = safeUrl(item.url);
       if(!url || url === "#") return false;
       const comparableUrl = comparableLinkUrl(url);
-      return !primaryUrls.has(comparableUrl) && !primaryLinkKeys.has(`${String(item.label || "").trim().toLowerCase()}|${comparableUrl}`);
+      return !primaryLinkKeys.has(`${String(item.label || "").trim().toLowerCase()}|${comparableUrl}`);
     });
     const visibleImportantUrls = new Set([
       ...Array.from(primaryUrls),
@@ -3082,12 +3094,7 @@ const renderJobDetail = (jobId, rawJob, allJobs = []) => {
       ...parsePostWiseApplyLinks(job.postWiseApplyLinks).map((item) => comparableLinkUrl(item.url)).filter(Boolean)
     ]);
     const hasLinksManual = renderManualContent("linksManual", "linksPanel", job.importantLinksManual, "Other Important Links", { skipUrls:visibleImportantUrls });
-    let hasNestedImportant = false;
-    if(extraImportantLinks.length && !hasPostApplyLinks){
-      const nestedLinksHtml = extraImportantLinks.map((item) => `<a class="btn" href="${safeUrl(item.url)}" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-link"></i> ${escapeHTML(item.label)}</a>`).join("");
-      document.getElementById("postApplyLinks").innerHTML = nestedLinksHtml;
-      hasNestedImportant = Boolean(nestedLinksHtml);
-    }
+    const hasNestedImportant = appendPostApplyLinks(extraImportantLinks);
     renderSidebarLinks([
       ...linkButtons,
       ...extraImportantLinks.map((item) => ({ label:item.label || "Important Link", url:item.url, icon:"fa-solid fa-link" }))
