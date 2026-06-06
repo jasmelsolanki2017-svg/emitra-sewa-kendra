@@ -199,6 +199,11 @@ nav button,.primary-btn{background:var(--yellow);border-color:var(--yellow);colo
 .storage-meter{height:12px;background:#dbe8f7;border-radius:999px;overflow:hidden;margin:8px 0 14px;}
 .storage-meter span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--yellow));}
 .file-row,.cloud-link{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;}
+.file-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;}
+.file-list .message{grid-column:1/-1;}
+.file-list .file-row{align-items:start;}
+.file-list .file-actions{justify-content:flex-start;margin-top:8px;}
+.file-list .file-row{grid-template-columns:1fr;}
 .file-row small,.cloud-link small{display:block;color:var(--muted);font-weight:700;overflow-wrap:anywhere;line-height:1.35;}
 .file-folder-label{display:inline-block;margin-top:5px;background:white;border:1px solid var(--line);border-radius:999px;color:var(--blue);font-size:10px;font-weight:900;padding:2px 7px;}
 .file-actions{display:flex;gap:7px;flex-wrap:nowrap;justify-content:flex-end;}
