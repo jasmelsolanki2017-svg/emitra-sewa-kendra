@@ -36,6 +36,7 @@ let storageFallbackToken = 0;
 const pageType = document.body.dataset.page || "";
 const allFolderId = "__all";
 const generalFolderId = "__general";
+const unlockedFolderIds = new Set([allFolderId, generalFolderId]);
 
 const escapeHTML = (value = "") => String(value)
   .replace(/&/g, "&amp;")
@@ -67,6 +68,14 @@ const cleanFolderName = (name = "") => String(name || "")
   .trim()
   .slice(0, 40);
 
+const hashFolderPassword = async (password = "") => {
+  const text = String(password || "");
+  if(!text){ return ""; }
+  const bytes = new TextEncoder().encode(text);
+  const hash = await crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(hash)).map((byte) => byte.toString(16).padStart(2, "0")).join("");
+};
+
 const getFolderRows = () => [
   { id:allFolderId, folder:{ name:"All", system:true, createdAt:-1 } },
   { id:generalFolderId, folder:{ name:"General", system:true, createdAt:0 } },
@@ -79,6 +88,13 @@ const getFolderName = (folderId = generalFolderId) => {
   if(folderId === allFolderId){ return "All"; }
   const row = getFolderRows().find((item) => item.id === folderId);
   return row?.folder?.name || "General";
+};
+
+const getFolderRow = (folderId = generalFolderId) => getFolderRows().find((item) => item.id === folderId);
+
+const isFolderLocked = (folderId = generalFolderId) => {
+  const row = getFolderRow(folderId);
+  return Boolean(row?.folder?.passwordHash && !unlockedFolderIds.has(folderId));
 };
 
 const getFileFolderId = (file = {}) => {
@@ -626,13 +642,15 @@ function renderFolderControls(){
     folderList.innerHTML = rows.map(({ id, folder }) => {
       const count = counts[id] || 0;
       const activeClass = id === activeFolderId ? " active" : "";
+      const locked = Boolean(folder.passwordHash);
+      const lockIcon = locked ? `<i class="fa-solid ${isFolderLocked(id) ? "fa-lock" : "fa-lock-open"}"></i>` : "";
       const deleteButton = folder.system ? "" : `<button type="button" class="delete-folder" title="Delete folder" onclick="deleteUserFolder('${escapeHTML(id)}', event)">x</button>`;
-      return `<span class="folder-pill${activeClass}"><button type="button" class="folder-open" onclick="setUserFolder('${escapeHTML(id)}')"><span>${escapeHTML(folder.name || "Folder")}</span><span class="folder-count">${count}</span></button>${deleteButton}</span>`;
+      return `<span class="folder-pill${activeClass}"><button type="button" class="folder-open" onclick="setUserFolder('${escapeHTML(id)}')">${lockIcon}<span>${escapeHTML(folder.name || "Folder")}</span><span class="folder-count">${count}</span></button>${deleteButton}</span>`;
     }).join("");
   }
 
   if(folderSelect){
-    const uploadRows = getUploadFolderRows();
+    const uploadRows = getUploadFolderRows().filter(({ id }) => !isFolderLocked(id));
     const uploadIds = uploadRows.map((item) => item.id);
     const selected = folderSelect.value || (activeFolderId === allFolderId ? generalFolderId : activeFolderId);
     folderSelect.innerHTML = uploadRows.map(({ id, folder }) => `<option value="${escapeHTML(id)}">${escapeHTML(folder.name || "Folder")}</option>`).join("");
@@ -646,8 +664,12 @@ function renderUserFiles(){
   renderFolderControls();
   if(!list){ return; }
   const folderFiles = activeFolderId === allFolderId
-    ? currentFiles
+    ? currentFiles.filter((item) => !isFolderLocked(getFileFolderId(item.file)))
     : currentFiles.filter((item) => getFileFolderId(item.file) === activeFolderId);
+  if(isFolderLocked(activeFolderId)){
+    list.innerHTML = `<div class="message locked-folder-message"><i class="fa-solid fa-lock"></i> ${escapeHTML(getFolderName(activeFolderId))} folder locked hai. Open karne ke liye password lagayein.</div>`;
+    return;
+  }
   if(!folderFiles.length){
     list.innerHTML = `<div class="message">${escapeHTML(getFolderName(activeFolderId))} folder me abhi koi file upload nahi hai.</div>`;
     return;
@@ -672,7 +694,18 @@ function renderUserFiles(){
   `).join("");
 }
 
-window.setUserFolder = (folderId = generalFolderId) => {
+window.setUserFolder = async (folderId = generalFolderId) => {
+  if(isFolderLocked(folderId)){
+    const password = prompt(`${getFolderName(folderId)} folder password डालें`);
+    if(password === null){ return; }
+    const inputHash = await hashFolderPassword(password);
+    const expectedHash = getFolderRow(folderId)?.folder?.passwordHash || "";
+    if(inputHash !== expectedHash){
+      alert("Password galat hai.");
+      return;
+    }
+    unlockedFolderIds.add(folderId);
+  }
   activeFolderId = folderId;
   const folderSelect = document.getElementById("uploadFolderSelect");
   if(folderSelect && folderId !== allFolderId){ folderSelect.value = folderId; }
@@ -685,6 +718,7 @@ window.createUserFolder = async () => {
     return;
   }
   const input = document.getElementById("folderNameInput");
+  const passwordInput = document.getElementById("folderPasswordInput");
   const name = cleanFolderName(input?.value || "");
   if(!name){
     alert("Folder name likhein.");
@@ -695,18 +729,26 @@ window.createUserFolder = async () => {
     alert("Ye folder name pehle se hai.");
     return;
   }
+  const passwordHash = await hashFolderPassword(passwordInput?.value || "");
   try{
     const folderRef = push(ref(db, "memberFolders/" + currentUser.uid));
-    await set(folderRef, {
+    const folderData = {
       name,
       createdAt:Date.now(),
       updatedAt:Date.now()
-    });
+    };
+    if(passwordHash){
+      folderData.passwordHash = passwordHash;
+      folderData.locked = true;
+    }
+    await set(folderRef, folderData);
+    if(passwordHash){ unlockedFolderIds.add(folderRef.key); }
     if(!currentFolders.some((item) => item.id === folderRef.key)){
-      currentFolders.push({ id:folderRef.key, folder:{ name, createdAt:Date.now(), updatedAt:Date.now() } });
+      currentFolders.push({ id:folderRef.key, folder:folderData });
     }
     activeFolderId = folderRef.key;
     if(input){ input.value = ""; }
+    if(passwordInput){ passwordInput.value = ""; }
     setText("uploadStatus", `${name} folder ban gaya. Ab upload ke time ye folder select kar sakte hain.`);
     renderFolderControls();
   }catch(error){

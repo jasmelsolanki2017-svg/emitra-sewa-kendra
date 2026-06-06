@@ -186,12 +186,13 @@ nav button,.primary-btn{background:var(--yellow);border-color:var(--yellow);colo
 .data-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,260px);gap:18px;align-items:start;}
 .data-grid .section:last-child{max-height:250px;overflow:auto;}
 .folder-tools{background:#f9fbff;border:1px solid var(--line);border-radius:8px;padding:10px;margin:10px 0 12px;}
-.folder-create{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-bottom:9px;}
+.folder-create{display:grid;grid-template-columns:minmax(0,1fr) minmax(130px,180px) auto;gap:8px;margin-bottom:9px;}
 .folder-create button{border:0;border-radius:6px;background:var(--blue);color:white;font-weight:800;padding:8px 11px;cursor:pointer;font-size:12px;}
 .folder-list{display:flex;gap:7px;flex-wrap:wrap;}
 .folder-pill{background:var(--soft);border:1px solid var(--line);border-radius:6px;color:var(--blue);display:inline-flex;align-items:center;gap:3px;overflow:hidden;}
 .folder-pill.active{background:var(--yellow);border-color:var(--yellow);color:var(--blue-dark);}
 .folder-pill .folder-open{border:0;background:transparent;color:inherit;font-size:12px;font-weight:900;padding:8px 8px 8px 10px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+.folder-pill .folder-open i{font-size:11px;}
 .folder-pill .folder-count{background:rgba(255,255,255,.8);border-radius:999px;padding:1px 6px;font-size:10px;}
 .folder-pill .delete-folder{background:#d10000;color:white;border:0;border-radius:999px;width:20px;height:20px;font-size:12px;font-weight:900;line-height:20px;cursor:pointer;margin-right:6px;}
 .storage-tools{display:grid;grid-template-columns:180px minmax(0,1fr) auto;gap:8px;margin:10px 0;}
@@ -202,6 +203,8 @@ nav button,.primary-btn{background:var(--yellow);border-color:var(--yellow);colo
 .file-row,.cloud-link{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;}
 .file-list{display:grid;grid-template-columns:repeat(auto-fill,96px);gap:14px 18px;align-items:start;justify-content:start;}
 .file-list .message{grid-column:1/-1;}
+.locked-folder-message{border:1px dashed var(--line);border-radius:8px;padding:14px;text-align:center;}
+.locked-folder-message i{color:var(--yellow);margin-right:6px;}
 .file-list .file-row{align-items:start;grid-template-columns:1fr;background:transparent;border:0;border-radius:6px;padding:2px;box-shadow:none;position:relative;overflow:hidden;text-align:center;min-width:0;}
 .file-list .file-actions{justify-content:flex-start;margin-top:8px;}
 .file-card-head{display:none;}
