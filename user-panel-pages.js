@@ -29,10 +29,11 @@ let currentUser = null;
 let currentMember = {};
 let currentFiles = [];
 let currentFolders = [];
-let activeFolderId = "__general";
+let activeFolderId = "__all";
 let currentRequestNotifications = [];
 
 const pageType = document.body.dataset.page || "";
+const allFolderId = "__all";
 const generalFolderId = "__general";
 
 const escapeHTML = (value = "") => String(value)
@@ -66,11 +67,15 @@ const cleanFolderName = (name = "") => String(name || "")
   .slice(0, 40);
 
 const getFolderRows = () => [
+  { id:allFolderId, folder:{ name:"All", system:true, createdAt:-1 } },
   { id:generalFolderId, folder:{ name:"General", system:true, createdAt:0 } },
   ...currentFolders
 ];
 
+const getUploadFolderRows = () => getFolderRows().filter((item) => item.id !== allFolderId);
+
 const getFolderName = (folderId = generalFolderId) => {
+  if(folderId === allFolderId){ return "All"; }
   const row = getFolderRows().find((item) => item.id === folderId);
   return row?.folder?.name || "General";
 };
@@ -521,6 +526,7 @@ function renderFolderControls(){
   }
 
   const counts = {};
+  counts[allFolderId] = currentFiles.length;
   currentFiles.forEach((item) => {
     const folderId = getFileFolderId(item.file);
     counts[folderId] = (counts[folderId] || 0) + 1;
@@ -536,9 +542,11 @@ function renderFolderControls(){
   }
 
   if(folderSelect){
-    const selected = folderSelect.value || activeFolderId;
-    folderSelect.innerHTML = rows.map(({ id, folder }) => `<option value="${escapeHTML(id)}">${escapeHTML(folder.name || "Folder")}</option>`).join("");
-    folderSelect.value = validIds.includes(selected) ? selected : activeFolderId;
+    const uploadRows = getUploadFolderRows();
+    const uploadIds = uploadRows.map((item) => item.id);
+    const selected = folderSelect.value || (activeFolderId === allFolderId ? generalFolderId : activeFolderId);
+    folderSelect.innerHTML = uploadRows.map(({ id, folder }) => `<option value="${escapeHTML(id)}">${escapeHTML(folder.name || "Folder")}</option>`).join("");
+    folderSelect.value = uploadIds.includes(selected) ? selected : generalFolderId;
   }
 }
 
@@ -547,7 +555,9 @@ function renderUserFiles(){
   renderStorageInfo();
   renderFolderControls();
   if(!list){ return; }
-  const folderFiles = currentFiles.filter((item) => getFileFolderId(item.file) === activeFolderId);
+  const folderFiles = activeFolderId === allFolderId
+    ? currentFiles
+    : currentFiles.filter((item) => getFileFolderId(item.file) === activeFolderId);
   if(!folderFiles.length){
     list.innerHTML = `<div class="message">${escapeHTML(getFolderName(activeFolderId))} folder me abhi koi file upload nahi hai.</div>`;
     return;
@@ -571,7 +581,7 @@ function renderUserFiles(){
 window.setUserFolder = (folderId = generalFolderId) => {
   activeFolderId = folderId;
   const folderSelect = document.getElementById("uploadFolderSelect");
-  if(folderSelect){ folderSelect.value = folderId; }
+  if(folderSelect && folderId !== allFolderId){ folderSelect.value = folderId; }
   renderUserFiles();
 };
 
@@ -725,7 +735,7 @@ window.uploadUserFile = async () => {
   const failed = [];
   const folderSelect = document.getElementById("uploadFolderSelect");
   const selectedFolderId = folderSelect?.value || activeFolderId || generalFolderId;
-  const validFolderIds = getFolderRows().map((item) => item.id);
+  const validFolderIds = getUploadFolderRows().map((item) => item.id);
   const folderId = validFolderIds.includes(selectedFolderId) ? selectedFolderId : generalFolderId;
   const folderName = getFolderName(folderId);
   activeFolderId = folderId;
