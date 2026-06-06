@@ -757,7 +757,7 @@ window.uploadUserFile = async () => {
 
       uploadedBytes += Number(file.size || 0);
       uploadedCount += 1;
-      await set(fileRecordRef, {
+      const fileRecord = {
         name:file.name,
         size:file.size,
         type:file.type || "",
@@ -768,7 +768,11 @@ window.uploadUserFile = async () => {
         bucket:supabaseBucket,
         downloadUrl:getSupabasePublicUrl(path),
         uploadedAt:Date.now()
-      });
+      };
+      await set(fileRecordRef, fileRecord);
+      if(!currentFiles.some((item) => item.id === fileRecordRef.key)){
+        currentFiles.unshift({ id:fileRecordRef.key, file:fileRecord });
+      }
     }catch(error){
       failed.push(`${file.name}: ${error.message}`);
     }
@@ -782,6 +786,8 @@ window.uploadUserFile = async () => {
       updatedAt:Date.now()
     });
     input.value = "";
+    currentFiles.sort((a, b) => Number(b.file.uploadedAt || 0) - Number(a.file.uploadedAt || 0));
+    renderUserFiles();
   }
 
   status.innerText = failed.length
