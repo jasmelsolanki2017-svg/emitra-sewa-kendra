@@ -1285,13 +1285,15 @@ async function makePdf(){
     return await pdfDoc.save();
   }
   const pages=pdfDoc.getPages(); const data=collectData();
+  const conditionalData = prepareConditionalData(data);
   const fillRgb = getFillRgb();
   const fillColor = rgb(fillRgb.r, fillRgb.g, fillRgb.b);
   for(const field of config.fields){
-    if(!shouldFillField(field, prepareConditionalData(data))) continue;
+    if(!shouldFillField(field, conditionalData)) continue;
     const page=pages[field.page-1]; if(!page) continue;
     const {width,height}=page.getSize();
     const x=field.xPct*width; const top=field.yPct*height; const w=field.wPct*width; const h=field.hPct*height;
+    if(![x, top, w, h].every(Number.isFinite)) continue;
     if(field.type==='check'){
       if(data[field.source]!==field.equals) continue;
       const cx=x+w*.18, cy=height-top-h*.55;
@@ -1302,8 +1304,8 @@ async function makePdf(){
     let text=valueForField(field,data); if(!text) continue;
     let size=field.fontSize;
     while(size>5 && font.widthOfTextAtSize(text,size)>w-2) size-=0.5;
-    const y=height - top - size - 2;
-    page.drawText(text,{x:x+1.5,y, size, font, color:fillColor, maxWidth:w});
+    const y=Math.max(0, Math.min(height - size, height - top - size - 2));
+    page.drawText(text,{x:x+1.5,y, size, font, color:fillColor});
   }
   return await pdfDoc.save();
 }
