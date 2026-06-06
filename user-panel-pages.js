@@ -31,6 +31,7 @@ let currentFiles = [];
 let currentFolders = [];
 let activeFolderId = "__all";
 let currentRequestNotifications = [];
+let storageFallbackToken = 0;
 
 const pageType = document.body.dataset.page || "";
 const allFolderId = "__all";
@@ -113,6 +114,69 @@ const getFileUrl = (file = {}) => {
     ? getSupabasePublicUrl(file.path)
     : file.downloadUrl || getSupabasePublicUrl(file.path);
 };
+
+const safeFileRowId = (path = "") => `storage_${btoa(unescape(encodeURIComponent(path))).replace(/=+$/g, "").replace(/[^a-zA-Z0-9_-]/g, "_")}`;
+
+const inferFolderFromPath = (path = "") => {
+  const parts = String(path || "").split("/");
+  const segment = parts[1] || "general";
+  if(segment === "general"){ return { folderId:generalFolderId, folderName:"General" }; }
+  const match = currentFolders.find((item) => segment === item.id || segment.startsWith(`${item.id}-`));
+  if(match){ return { folderId:match.id, folderName:match.folder.name || "Folder" }; }
+  return { folderId:generalFolderId, folderName:"General" };
+};
+
+async function listSupabaseUserFiles(prefix, output = []){
+  const { data, error } = await supabase.storage.from(supabaseBucket).list(prefix, {
+    limit:100,
+    offset:0,
+    sortBy:{ column:"created_at", order:"desc" }
+  });
+  if(error){ throw error; }
+  for(const item of data || []){
+    const path = `${prefix}/${item.name}`.replace(/\/+/g, "/");
+    if(item.id || item.metadata?.size){
+      output.push({ path, item });
+    }else{
+      await listSupabaseUserFiles(path, output);
+    }
+  }
+  return output;
+}
+
+async function loadStorageFallbackFiles(user){
+  const token = ++storageFallbackToken;
+  try{
+    const rows = await listSupabaseUserFiles(user.uid);
+    if(token !== storageFallbackToken){ return; }
+    const knownPaths = new Set(currentFiles.map((entry) => String(entry.file.path || "")));
+    const fallbackRows = rows
+      .filter(({ path }) => path && !knownPaths.has(path))
+      .map(({ path, item }) => {
+        const folder = inferFolderFromPath(path);
+        return {
+          id:safeFileRowId(path),
+          file:{
+            name:item.name || path.split("/").pop() || "Document",
+            size:Number(item.metadata?.size || 0),
+            type:item.metadata?.mimetype || "",
+            ...folder,
+            path,
+            storageProvider:"supabase",
+            bucket:supabaseBucket,
+            uploadedAt:item.created_at ? new Date(item.created_at).getTime() : 0,
+            storageOnly:true
+          }
+        };
+      });
+    if(!fallbackRows.length){ return; }
+    currentFiles = [...currentFiles, ...fallbackRows]
+      .sort((a, b) => Number(b.file.uploadedAt || 0) - Number(a.file.uploadedAt || 0));
+    renderUserFiles();
+  }catch(error){
+    console.warn("Supabase storage fallback list failed", error);
+  }
+}
 
 const getPreviewKind = (file = {}) => {
   const type = String(file.type || "").toLowerCase();
@@ -678,6 +742,7 @@ function loadDataFolder(user){
     }
     currentFiles.sort((a, b) => Number(b.file.uploadedAt || 0) - Number(a.file.uploadedAt || 0));
     renderUserFiles();
+    loadStorageFallbackFiles(user);
   });
 
   onValue(ref(db, "memberCloudLinks/" + user.uid), (snapshot) => {
@@ -844,13 +909,17 @@ window.deleteUserFile = async (id) => {
       const { error } = await supabase.storage.from(getFileBucket(item.file)).remove([item.file.path]);
       if(error){ throw error; }
     }
-    await remove(ref(db, "memberFiles/" + currentUser.uid + "/" + id));
+    if(!item.file.storageOnly){
+      await remove(ref(db, "memberFiles/" + currentUser.uid + "/" + id));
+    }
+    currentFiles = currentFiles.filter((entry) => entry.id !== id);
     const used = Math.max(0, Number(currentMember.storageUsedBytes || 0) - Number(item.file.size || 0));
     await update(ref(db, "members/" + currentUser.uid), {
       storageUsedBytes:used,
       updatedAt:Date.now()
     });
     setText("uploadStatus", "File delete ho gayi.");
+    renderUserFiles();
   } catch(error){
     alert("File delete nahi hui: " + error.message);
   }
