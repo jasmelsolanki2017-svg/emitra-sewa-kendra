@@ -465,7 +465,7 @@ const isJobVisible = (job) => {
   return true;
 };
 
-const isLatestJobTarget = (job) => !job.postTarget || job.postTarget === "latestJob";
+const isLatestJobTarget = (job) => !job.postTarget || job.postTarget === "latestJob" || job.postTarget === "admission";
 const getJobDisplayOrder = (job) => {
   const number = Number(job && job.displayOrder || 0);
   return number > 0 ? number : Number.POSITIVE_INFINITY;

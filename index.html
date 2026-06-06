@@ -4196,7 +4196,7 @@ if(String(job.postStatus || "published").toLowerCase() === "draft"){ return fals
 return true;
 };
 
-const isLatestJobTarget = (job) => !job.postTarget || job.postTarget === "latestJob";
+const isLatestJobTarget = (job) => !job.postTarget || job.postTarget === "latestJob" || job.postTarget === "admission";
 const isCurrentAffairsTarget = (job) => job.postTarget === "currentAffairs";
 const getJobDisplayOrder = (job) => {
 const number = Number(job && job.displayOrder || 0);
