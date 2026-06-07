@@ -4207,13 +4207,23 @@ app.post("/verify-pdf", renderPdfVerifyUpload.single("pdf"), async (req, res) =>
     const signatureResult = await runPdfSignatureHelper(tempPath);
     const qrText = String(signatureResult.qrText || "").trim();
     const qrDetected = Boolean(signatureResult.qrFound && qrText);
-    const parsed = await pdfParse(buffer);
-    const text = String(parsed?.text || "");
+    let text = "";
+    try {
+      const parsed = await pdfParse(buffer);
+      text = String(parsed?.text || "");
+    } catch (_err) {
+      text = "";
+    }
     const certificateNumber = detectCertificateNumberFromText(`${qrText} ${text}`);
     const certificateIssuer = String(signatureResult.certificateIssuer || "").trim();
     const signatureStatus = normalizeSignatureStatus(signatureResult.signatureStatus);
     const emitraLookup = await lookupRajasthanEmitraVerification(certificateNumber, qrText);
     const certificateVerified = emitraLookup.verificationStatus === "VERIFIED";
+    const certificateVerificationStatus = certificateVerified
+      ? "VERIFIED"
+      : certificateNumber
+        ? "PENDING / CHECK VIA EMITRA"
+        : emitraLookup.verificationStatus;
     const trustStatus = signatureStatus === "Valid" && /trusted/i.test(String(signatureResult.trustStatus || ""))
       ? "Trusted"
       : signatureResult.embeddedSignatureFound
@@ -4223,6 +4233,8 @@ app.post("/verify-pdf", renderPdfVerifyUpload.single("pdf"), async (req, res) =>
     let message = "Certificate Verification Unknown";
     if (certificateVerified) {
       message = "Certificate Verified via Rajasthan eMitra";
+    } else if (!qrDetected && certificateNumber) {
+      message = "Check via Official eMitra";
     } else if (!qrDetected) {
       message = "QR Not Detected";
     } else if (!certificateNumber) {
@@ -4255,9 +4267,10 @@ app.post("/verify-pdf", renderPdfVerifyUpload.single("pdf"), async (req, res) =>
       message,
       certificateNumber,
       verificationStatus: emitraLookup.verificationStatus,
-      certificateVerificationStatus: emitraLookup.verificationStatus,
+      certificateVerificationStatus,
       source: emitraLookup.source,
       verificationUrl: emitraLookup.verificationUrl,
+      officialVerifyUrl: emitraLookup.verificationUrl,
       signatureStatus,
       signatureMessage,
       qrStatus: qrDetected ? "QR Detected" : "QR Not Detected",
