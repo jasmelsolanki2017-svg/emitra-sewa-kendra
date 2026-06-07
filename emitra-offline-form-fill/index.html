@@ -98,6 +98,14 @@
     @media(min-width:1101px){.card.form,.card.side{position:sticky;top:78px;max-height:calc(100dvh - 94px);overflow:hidden}.card.form .panel,.card.side .panel{max-height:calc(100dvh - 94px);overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}.card.preview{height:calc(100dvh - 94px);min-height:640px;overflow:hidden}.previewShell{height:100%;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}body.adminEditorEnabled .card.form,body.adminEditorEnabled .card.side{position:sticky;top:78px;max-height:calc(100dvh - 94px);overflow:hidden}body.adminEditorEnabled .card.form .panel,body.adminEditorEnabled .card.side .panel{max-height:calc(100dvh - 94px);overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}body.adminEditorEnabled .card.preview{height:calc(100dvh - 94px);min-height:640px;overflow:hidden}body.adminEditorEnabled .previewShell{height:100%;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}}
     .toolsRow{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.fileRow{display:grid;grid-template-columns:1fr;gap:8px;margin-top:8px}
     #status{font-size:13px;color:var(--blue);font-weight:900}.selectedGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .sourceMapBox{margin-top:10px;border:1px solid var(--line);border-radius:8px;background:#fbfdff;overflow:hidden}
+    .sourceMapHead{display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--soft);border-bottom:1px solid #c9dff4;padding:8px 10px;color:var(--blue);font-weight:900;font-size:12px}
+    .sourceMapList{display:grid;gap:6px;max-height:220px;overflow:auto;padding:8px}
+    .sourceMapItem{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px;align-items:center;border:1px solid var(--line);border-radius:7px;background:white;padding:7px 8px;cursor:pointer}
+    .sourceMapItem:hover,.sourceMapItem.active{border-color:var(--blue);background:#eef7ff}
+    .sourceMapItem strong{display:block;color:var(--deep);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .sourceMapItem small{display:block;color:var(--muted);font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .sourceMapCount{background:var(--soft);color:var(--blue);border-radius:999px;padding:2px 7px;font-size:10px;font-weight:900;white-space:nowrap}
     @media(max-width:1280px){.wrap{grid-template-columns:minmax(300px,360px) minmax(680px,1fr) minmax(250px,280px);padding-left:2%;padding-right:2%}.previewShell{min-height:720px}}
     @media(max-width:1180px){.offline-drive-shell{grid-template-columns:210px minmax(0,1fr)}.offline-drive-nav a{padding:12px 10px;font-size:13px}.offline-drive-brand strong{font-size:24px}}
     @media(max-width:1100px){.toolHeroInner{display:block}.toolStatus{display:inline-flex;margin-top:10px;min-width:0}.wrap{grid-template-columns:1fr;height:auto;overflow:visible}.card{overflow:visible;display:block}.card.form .panel,.card.side .panel{height:auto;overflow:visible}.previewShell{max-height:none;height:auto;min-height:0;overflow:auto}.card.side{order:2}.card.form{order:1}.card.preview{order:3}.pageWrap{transform-origin:top left}.previewShell{padding:6px}.card.preview{overflow:hidden}}
@@ -218,6 +226,11 @@
         <div class="field"><label>Page</label><input id="selPage" type="number" min="1" max="3"></div>
         <div class="field full"><label>Label</label><input id="selLabel"></div>
         <div class="field full"><label>Source field id</label><input id="selSource"></div>
+        <div class="field full"><label>Existing source se link karein</label><select id="selSourceSelect"></select></div>
+      </div>
+      <div class="sourceMapBox">
+        <div class="sourceMapHead"><span>Form Sources / Field Links</span><span id="sourceMapTotal">0</span></div>
+        <div id="sourceMapList" class="sourceMapList"></div>
       </div>
       <p class="small">Tip: Arrow keys se selected field 1px move hoga. Shift + Arrow = 10px.</p>
     </div>
@@ -319,6 +332,15 @@ const FIREBASE_CONFIG = {
 };
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+function escapeHtml(value){
+  return String(value ?? '').replace(/[&<>"']/g, (ch) => ({
+    '&':'&amp;',
+    '<':'&lt;',
+    '>':'&gt;',
+    '"':'&quot;',
+    "'":'&#39;'
+  }[ch]));
+}
 
 const FORM_SCHEMAS = {
   caste: [
@@ -784,6 +806,79 @@ function getCurrentFormSchema(){
   }
   return schema;
 }
+function getFormSourceOptions(){
+  const seen = new Set();
+  const options = [];
+  for(const group of getCurrentFormSchema()){
+    for(const [id, label, type] of group.fields){
+      if(!id || seen.has(id)) continue;
+      seen.add(id);
+      options.push({
+        id:String(id),
+        label:String(label || id),
+        group:String(group.group || 'Fields'),
+        type:String(type || 'text')
+      });
+    }
+  }
+  return options;
+}
+function getSourceUsageCounts(){
+  const counts = new Map();
+  for(const field of (config?.fields || [])){
+    const source = String(field.source || '');
+    if(!source) continue;
+    counts.set(source, (counts.get(source) || 0) + 1);
+  }
+  return counts;
+}
+function renderSourceLinkTools(){
+  const select = $('selSourceSelect');
+  const list = $('sourceMapList');
+  const total = $('sourceMapTotal');
+  if(!select || !list) return;
+  const selectedField = config?.fields?.find(f => f.id === selectedFieldId);
+  const selectedSource = String(selectedField?.source || $('selSource')?.value || '');
+  const options = getFormSourceOptions();
+  const counts = getSourceUsageCounts();
+
+  select.innerHTML = '<option value="">Source choose karein...</option>';
+  for(const item of options){
+    const opt = document.createElement('option');
+    opt.value = item.id;
+    opt.textContent = `${item.label} (${item.id})`;
+    if(item.id === selectedSource) opt.selected = true;
+    select.appendChild(opt);
+  }
+
+  list.innerHTML = '';
+  if(total) total.textContent = `${options.length} sources`;
+  for(const item of options){
+    const row = document.createElement('button');
+    row.type = 'button';
+    row.className = 'sourceMapItem' + (item.id === selectedSource ? ' active' : '');
+    row.dataset.sourceId = item.id;
+    const used = counts.get(item.id) || 0;
+    row.innerHTML = `<span><strong>${escapeHtml(item.label)}</strong><small>${escapeHtml(item.group)} | ${escapeHtml(item.id)}</small></span><span class="sourceMapCount">${used} linked</span>`;
+    row.addEventListener('click', () => applySelectedSource(item.id));
+    list.appendChild(row);
+  }
+}
+function applySelectedSource(sourceId){
+  const source = String(sourceId || '').trim();
+  if(!source) return;
+  const input = $('selSource');
+  if(input) input.value = source;
+  const field = config?.fields?.find(f => f.id === selectedFieldId);
+  if(field){
+    field.source = source;
+    refreshOverlayTexts();
+    fillSelectedControls();
+    setStatus(`Selected field ab source "${source}" se linked hai.`, 'ok');
+  } else {
+    renderSourceLinkTools();
+  }
+}
 
 function buildDataForm(){
   const root=$('dataForm'); root.innerHTML='';
@@ -868,6 +963,7 @@ function buildDataForm(){
     }
     root.appendChild(section);
   }
+  renderSourceLinkTools();
 }
 
 function resetFormData(useSample){
@@ -1422,12 +1518,13 @@ function selectField(id){
   fillSelectedControls();
 }
 function fillSelectedControls(){
-  const f=config.fields.find(x=>x.id===selectedFieldId);
-  if(!f){ $('selectedInfo').textContent='Koi field selected nahi hai.'; return; }
+  const f=config?.fields?.find(x=>x.id===selectedFieldId);
+  if(!f){ $('selectedInfo').textContent='Koi field selected nahi hai.'; renderSourceLinkTools(); return; }
   $('selectedInfo').innerHTML=`<b>${f.label}</b><br><span class="mono">${f.id}</span>`;
   $('selX').value=(f.xPct*100).toFixed(3); $('selY').value=(f.yPct*100).toFixed(3);
   $('selW').value=(f.wPct*100).toFixed(3); $('selH').value=(f.hPct*100).toFixed(3);
   $('selFont').value=f.fontSize; $('selPage').value=f.page; $('selLabel').value=f.label; $('selSource').value=f.source;
+  renderSourceLinkTools();
 }
 ['selX','selY','selW','selH','selFont','selPage','selLabel','selSource'].forEach(id=>{
   $(id).addEventListener('input',()=>{
@@ -1437,8 +1534,10 @@ function fillSelectedControls(){
     f.fontSize=parseFloat($('selFont').value)||f.fontSize; f.page=parseInt($('selPage').value)||f.page; f.label=$('selLabel').value; f.source=$('selSource').value;
     const div=document.querySelector(`[data-field-id="${CSS.escape(f.id)}"]`);
     if(div){ const canvas=div.parentElement.querySelector('canvas'); positionDiv(div,f,canvas,pdfPageSizes[f.page]); refreshOverlayTexts(); }
+    if(id === 'selSource') renderSourceLinkTools();
   });
 });
+$('selSourceSelect').addEventListener('change', e=>applySelectedSource(e.target.value));
 
 async function makePdf(){
   if(!templateBytes || !config) throw new Error('Template/config missing');
@@ -1584,10 +1683,12 @@ function makeUniqueInputId(base = 'customInput'){
 async function addMappedField(){
   if(!config?.fields) return;
   const page = getSelectedOrFirstVisiblePage();
+  const selectedSource = $('selSourceSelect')?.value || $('selSource')?.value || 'applicantName';
+  const selectedOption = getFormSourceOptions().find(item => item.id === selectedSource);
   const newField = {
     id: makeUniqueFieldId(`custom_${currentFormKey}`),
-    label: 'New Field',
-    source: 'applicantName',
+    label: selectedOption?.label || 'New Field',
+    source: selectedSource,
     page,
     type: 'text',
     xPct: 0.15,
