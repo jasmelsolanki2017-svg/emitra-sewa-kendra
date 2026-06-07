@@ -105,6 +105,7 @@ footer{background:var(--blue);color:white;text-align:center;padding:22px 6%;marg
         <div class="final-status" id="finalStatus"><i class="fa-solid fa-circle-info"></i><span>अंतिम स्थिति</span></div>
         <div class="result-grid" id="resultGrid"></div>
         <div class="actions">
+          <a class="btn disabled" id="verifiedPdfBtn" href="#" download><i class="fa-solid fa-file-circle-check"></i> Verified PDF Download करें</a>
           <a class="btn disabled" id="reportBtn" href="#" download><i class="fa-solid fa-download"></i> रिपोर्ट डाउनलोड करें</a>
           <a class="btn secondary" id="officialBtn" href="https://emitra.rajasthan.gov.in/emitra/online-verification" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-arrow-up-right-from-square"></i> Official eMitra पर Verify करें</a>
         </div>
@@ -141,8 +142,10 @@ const resultGrid = document.getElementById('resultGrid');
 const resultMark = document.getElementById('resultMark');
 const finalStatus = document.getElementById('finalStatus');
 const reportBtn = document.getElementById('reportBtn');
+const verifiedPdfBtn = document.getElementById('verifiedPdfBtn');
 const VERIFY_API_URL = window.PDF_SIGNATURE_VERIFY_API_URL || 'https://emitra-sewa-kendra.onrender.com/verify-pdf';
 let selectedFile = null;
+let verifiedPdfObjectUrl = '';
 
 function setStatus(text){ statusText.textContent = text; }
 function setProgress(value, show = true){ progress.style.display = show ? 'block' : 'none'; progressBar.style.width = value + '%'; }
@@ -189,6 +192,10 @@ resetBtn.addEventListener('click', () => {
   resultCard.style.display = 'none';
   reportBtn.classList.add('disabled');
   reportBtn.href = '#';
+  verifiedPdfBtn.classList.add('disabled');
+  verifiedPdfBtn.href = '#';
+  if(verifiedPdfObjectUrl) URL.revokeObjectURL(verifiedPdfObjectUrl);
+  verifiedPdfObjectUrl = '';
   setProgress(0, false);
   setStatus('PDF select karein.');
 });
@@ -213,6 +220,10 @@ function valueText(value){
 function renderResult(data){
   reportBtn.classList.add('disabled');
   reportBtn.href = '#';
+  verifiedPdfBtn.classList.add('disabled');
+  verifiedPdfBtn.href = '#';
+  if(verifiedPdfObjectUrl) URL.revokeObjectURL(verifiedPdfObjectUrl);
+  verifiedPdfObjectUrl = '';
   const fields = [
     ['File Name', data.fileName],
     ['File Type', data.fileType],
@@ -245,6 +256,15 @@ function renderResult(data){
   if(data.reportDownloadUrl){
     reportBtn.href = data.reportDownloadUrl;
     reportBtn.classList.remove('disabled');
+  }
+  if(data.valid === true && data.verifiedPdfBase64){
+    const binary = atob(data.verifiedPdfBase64);
+    const bytes = new Uint8Array(binary.length);
+    for(let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    verifiedPdfObjectUrl = URL.createObjectURL(new Blob([bytes], { type:'application/pdf' }));
+    verifiedPdfBtn.href = verifiedPdfObjectUrl;
+    verifiedPdfBtn.download = data.verifiedPdfFileName || 'verified-certificate.pdf';
+    verifiedPdfBtn.classList.remove('disabled');
   }
 }
 

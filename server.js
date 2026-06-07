@@ -9,6 +9,7 @@ const { execFile } = require("child_process");
 const { promisify } = require("util");
 const multer = require("multer");
 const PDFDocument = require("pdfkit");
+const { PDFDocument: LibPdfDocument, StandardFonts, rgb } = require("pdf-lib");
 let admin = null;
 let pdfParse = null;
 let cheerio = null;
@@ -4012,6 +4013,73 @@ function detectCertificateNumberFromText(text = "") {
   return "";
 }
 
+async function createVerifiedPdfBase64(originalPdfBuffer) {
+  const pdfDoc = await LibPdfDocument.load(originalPdfBuffer, { ignoreEncryption: true });
+  const pages = pdfDoc.getPages();
+  if (!pages.length) {
+    throw new Error("PDF page not found");
+  }
+  const firstPage = pages[0];
+  const regularFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+  const stampX = 24;
+  const stampY = 26;
+  const stampW = 235;
+  const stampH = 92;
+  const nowText = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
+
+  firstPage.drawRectangle({
+    x: stampX,
+    y: stampY,
+    width: stampW,
+    height: stampH,
+    borderColor: rgb(0.05, 0.55, 0.21),
+    borderWidth: 1.6,
+    color: rgb(0.93, 0.99, 0.95),
+    opacity: 0.96
+  });
+  firstPage.drawCircle({
+    x: stampX + 24,
+    y: stampY + stampH - 25,
+    size: 13,
+    color: rgb(0.05, 0.55, 0.21)
+  });
+  firstPage.drawText("✓", {
+    x: stampX + 15,
+    y: stampY + stampH - 35,
+    size: 26,
+    font: boldFont,
+    color: rgb(1, 1, 1)
+  });
+
+  const textX = stampX + 46;
+  const topY = stampY + stampH - 22;
+  firstPage.drawText("Signature valid", {
+    x: textX,
+    y: topY,
+    size: 12,
+    font: boldFont,
+    color: rgb(0.02, 0.42, 0.16)
+  });
+  [
+    "Digitally verified by E-MITRA WALA",
+    `Date: ${nowText}`,
+    "Reason: Verified",
+    "Location: Rajasthan"
+  ].forEach((line, index) => {
+    firstPage.drawText(line, {
+      x: textX,
+      y: topY - 17 - (index * 13),
+      size: 9,
+      font: regularFont,
+      color: rgb(0.02, 0.18, 0.10)
+    });
+  });
+
+  const bytes = await pdfDoc.save({ useObjectStreams: false });
+  return Buffer.from(bytes).toString("base64");
+}
+
 const renderPdfVerifyUpload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 20 * 1024 * 1024, files: 1 },
@@ -4086,6 +4154,7 @@ app.post("/verify-pdf", renderPdfVerifyUpload.single("pdf"), async (req, res) =>
       message = "Certificate Issuer Not Detected";
     }
     const valid = signatureVerified && qrDetected && Boolean(certificateIssuer);
+    const verifiedPdfBase64 = valid ? await createVerifiedPdfBase64(buffer) : "";
 
     return res.json({
       valid,
@@ -4099,7 +4168,9 @@ app.post("/verify-pdf", renderPdfVerifyUpload.single("pdf"), async (req, res) =>
       signerName: signatureResult.signerName || "",
       signingDate: signatureResult.signingTime || "",
       documentModifiedAfterSigning: signatureResult.documentModifiedAfterSigning ?? "Unknown",
-      qrText
+      qrText,
+      verifiedPdfBase64,
+      verifiedPdfFileName: valid ? `verified-${path.basename(req.file.originalname || "certificate.pdf")}` : ""
     });
   } catch (error) {
     const status = error.code === "LIMIT_FILE_SIZE" ? 413 : 500;
