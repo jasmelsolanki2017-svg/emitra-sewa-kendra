@@ -98,6 +98,11 @@ const isFolderLocked = (folderId = generalFolderId) => {
   return Boolean(row?.folder?.passwordHash && !unlockedFolderIds.has(folderId));
 };
 
+const isPrivateFolder = (folderId = generalFolderId) => {
+  const row = getFolderRow(folderId);
+  return Boolean(row?.folder?.passwordHash);
+};
+
 const getFileFolderId = (file = {}) => {
   const folderId = String(file.folderId || "").trim();
   return folderId || generalFolderId;
@@ -231,7 +236,7 @@ const renderFileThumbnail = (file = {}) => {
 const getVisibleUserFiles = () => {
   if(isFolderLocked(activeFolderId)){ return []; }
   return activeFolderId === allFolderId
-    ? currentFiles.filter((item) => !isFolderLocked(getFileFolderId(item.file)))
+    ? currentFiles.filter((item) => !isPrivateFolder(getFileFolderId(item.file)))
     : currentFiles.filter((item) => getFileFolderId(item.file) === activeFolderId);
 };
 
@@ -661,7 +666,7 @@ function renderFolderControls(){
   }
 
   const counts = {};
-  counts[allFolderId] = currentFiles.length;
+  counts[allFolderId] = currentFiles.filter((item) => !isPrivateFolder(getFileFolderId(item.file))).length;
   currentFiles.forEach((item) => {
     const folderId = getFileFolderId(item.file);
     counts[folderId] = (counts[folderId] || 0) + 1;
