@@ -1140,11 +1140,7 @@ function prepareConditionalData(data){
     const brideName = String(prepared.brideName || '').trim();
     prepared.coupleNames = [groomName, brideName].filter(Boolean).join(' एवं ');
     prepared.currentAddress = prepared.currentAddress || prepared.groomAddress || prepared.brideAddress || '';
-    prepared.marriagePlaceFull = [
-      prepared.marriagePlace,
-      prepared.marriageDistrict ? 'जिला ' + prepared.marriageDistrict : '',
-      prepared.marriageState ? 'राज्य ' + prepared.marriageState : ''
-    ].filter(Boolean).join(' ');
+    prepared.marriagePlaceFull = prepared.marriagePlace || '';
     return prepared;
   }
   if(currentFormKey !== 'bonafide') return data;
