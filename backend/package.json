@@ -1,0 +1,15 @@
+{
+  "name": "emitra-pdf-verification-backend",
+  "version": "1.0.0",
+  "description": "Standalone PDF verification API for E-MITRA WALA.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "multer": "^2.1.1",
+    "pdf-parse": "^1.1.1"
+  }
+}

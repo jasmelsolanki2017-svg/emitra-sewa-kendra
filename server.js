@@ -39,8 +39,15 @@ try {
 }
 
 const app = express();
+const isAllowedCorsOrigin = (origin = "") => {
+  if (!origin) return true;
+  return origin === "https://emitrawala.online"
+    || origin === "https://www.emitrawala.online"
+    || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin);
+};
 app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
+  const origin = req.headers.origin || "";
+  res.setHeader("Access-Control-Allow-Origin", isAllowedCorsOrigin(origin) ? (origin || "https://emitrawala.online") : "https://emitrawala.online");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Cron-Secret");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   if (req.method === "OPTIONS") {
@@ -178,8 +185,8 @@ function normalizeMobile(value = "") {
 
 app.use(express.json({ limit: "20mb" }));
 app.use((req, res, next) => {
-  const origin = req.headers.origin || "*";
-  res.setHeader("Access-Control-Allow-Origin", origin);
+  const origin = req.headers.origin || "";
+  res.setHeader("Access-Control-Allow-Origin", isAllowedCorsOrigin(origin) ? (origin || "https://emitrawala.online") : "https://emitrawala.online");
   res.setHeader("Vary", "Origin");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
@@ -3988,6 +3995,86 @@ app.get("/api/health", (req, res) => {
 
 app.post("/api/health", (req, res) => {
   res.json(buildServerStatus({ message: "Admin API is running" }));
+});
+
+function detectCertificateNumberFromText(text = "") {
+  const normalized = String(text || "").replace(/\s+/g, " ").trim();
+  const patterns = [
+    /(?:certificate|cert\.?|प्रमाण\s*पत्र)\s*(?:number|no\.?|संख्या|क्रमांक)?\s*[:\-]?\s*([A-Z0-9][A-Z0-9/-]{4,40})/i,
+    /(?:verification|reference|receipt|transaction|application|token)\s*(?:number|no\.?|id)?\s*[:\-]?\s*([A-Z0-9][A-Z0-9/-]{4,40})/i,
+    /\b([A-Z]{2,6}[/-]?\d{4,}[A-Z0-9/-]*)\b/i,
+    /\b(\d{12,16})\b/
+  ];
+  for (const pattern of patterns) {
+    const match = normalized.match(pattern);
+    if (match?.[1]) return match[1].trim();
+  }
+  return "";
+}
+
+const renderPdfVerifyUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 20 * 1024 * 1024, files: 1 },
+  fileFilter: (_req, file, cb) => {
+    const name = String(file.originalname || "").toLowerCase();
+    const type = String(file.mimetype || "").toLowerCase();
+    if (type !== "application/pdf" && !name.endsWith(".pdf")) {
+      return cb(new Error("Only PDF files are allowed"));
+    }
+    return cb(null, true);
+  }
+});
+
+app.post("/verify-pdf", renderPdfVerifyUpload.single("pdf"), async (req, res) => {
+  try {
+    const buffer = req.file?.buffer;
+    if (!buffer) {
+      return res.status(400).json({
+        valid: false,
+        message: "PDF file is required",
+        certificateNumber: "",
+        signatureStatus: "Signature check pending",
+        qrStatus: "QR check pending"
+      });
+    }
+    if (buffer.length < 5 || buffer.slice(0, 5).toString("utf8") !== "%PDF-") {
+      return res.status(400).json({
+        valid: false,
+        message: "Invalid PDF file",
+        certificateNumber: "",
+        signatureStatus: "Signature check pending",
+        qrStatus: "QR check pending"
+      });
+    }
+    if (!pdfParse) {
+      return res.status(503).json({
+        valid: false,
+        message: "PDF parser not available",
+        certificateNumber: "",
+        signatureStatus: "Signature check pending",
+        qrStatus: "QR check pending"
+      });
+    }
+    const parsed = await pdfParse(buffer);
+    const text = String(parsed?.text || "");
+    const certificateNumber = detectCertificateNumberFromText(text);
+    return res.json({
+      valid: true,
+      message: "Document Verified Successfully",
+      certificateNumber,
+      signatureStatus: "Signature check pending",
+      qrStatus: "QR check pending"
+    });
+  } catch (error) {
+    const status = error.code === "LIMIT_FILE_SIZE" ? 413 : 500;
+    return res.status(status).json({
+      valid: false,
+      message: error.code === "LIMIT_FILE_SIZE" ? "PDF 20MB se chhoti honi chahiye" : (error.message || "PDF verification failed"),
+      certificateNumber: "",
+      signatureStatus: "Signature check pending",
+      qrStatus: "QR check pending"
+    });
+  }
 });
 
 app.post("/api/verify-pdf-signature", pdfSignatureUpload.single("pdf"), async (req, res) => {
