@@ -319,6 +319,7 @@ const FONT_URL = 'https://cdn.jsdelivr.net/gh/googlefonts/noto-fonts@main/hinted
 const MIN_FIT_FONT_SIZE = 7;
 const DEFAULT_ADMIN_SERVER_URL = 'https://emitra-sewa-kendra.onrender.com';
 const ADMIN_SERVER_STORAGE_KEY = 'emitraAdminServerUrl';
+const CONFIG_LOCAL_BACKUP_KEY = 'emitraOfflineFormCombinedConfigBackup';
 const ADMIN_EMAIL = 'jasmelsolanki@gmail.com';
 const WATERMARK_TEXT = 'EMITRAWALA.ONLINE';
 const FIREBASE_CONFIG = {
@@ -1306,21 +1307,46 @@ function valueForField(field, data){
 }
 
 async function loadBytes(url){ const r=await fetch(url); if(!r.ok) throw new Error('Load failed: '+url); return await r.arrayBuffer(); }
+function saveConfigBackup(combined){
+  try{
+    localStorage.setItem(CONFIG_LOCAL_BACKUP_KEY, JSON.stringify({
+      savedAt: Date.now(),
+      config: combined
+    }));
+  }catch(_error){}
+}
+function loadConfigBackup(){
+  try{
+    const backup = JSON.parse(localStorage.getItem(CONFIG_LOCAL_BACKUP_KEY) || '{}');
+    return backup?.config?.forms ? backup : null;
+  }catch(_error){
+    return null;
+  }
+}
+function preferNewerConfig(remoteConfig){
+  const backup = loadConfigBackup();
+  if(!backup?.config?.forms) return remoteConfig;
+  const remoteSavedAt = Number(remoteConfig?.savedAt || remoteConfig?.updatedAt || 0);
+  const localSavedAt = Number(backup.savedAt || 0);
+  return localSavedAt >= remoteSavedAt ? backup.config : remoteConfig;
+}
 
 async function loadCombinedConfigs(){
   if (allConfigs) return allConfigs;
+  let remoteConfig = null;
   try{
-    const apiRes = await fetch(adminApiUrl('/api/forms-config'), {cache:'no-store'});
+    const apiRes = await fetch(adminApiUrl('/api/forms-config') + '?t=' + Date.now(), {cache:'no-store'});
     const apiData = await apiRes.json().catch(()=>({}));
     if(apiRes.ok && apiData.ok !== false && apiData.config?.forms){
-      allConfigs = apiData.config;
+      remoteConfig = apiData.config;
     }
   }catch(_error){}
-  if(!allConfigs){
-    const res = await fetch(COMBINED_CONFIG_URL);
+  if(!remoteConfig){
+    const res = await fetch(COMBINED_CONFIG_URL + '?t=' + Date.now(), {cache:'no-store'});
     if(!res.ok) throw new Error('Load failed: '+COMBINED_CONFIG_URL);
-    allConfigs = await res.json();
+    remoteConfig = await res.json();
   }
+  allConfigs = preferNewerConfig(remoteConfig);
   if(!allConfigs.forms) throw new Error('Combined config me forms object missing hai');
   rebuildFormSelect();
   return allConfigs;
@@ -1637,6 +1663,8 @@ async function printPdf(){
 }
 function getCombinedConfigForDownload(){
   const combined = structuredClone(allConfigs || {version:'1.0', forms:{}});
+  combined.updatedAt = Date.now();
+  combined.savedAt = combined.updatedAt;
   if(!combined.forms) combined.forms = {};
   combined.forms[currentFormKey] = sanitizeConfigFields(structuredClone(config));
   for(const form of Object.values(combined.forms)){
@@ -1928,7 +1956,7 @@ async function importPdfFormFolder(){
   const files = Array.from(input?.files || []);
   if(!files.length) return;
   try{
-    if(!allConfigs) await loadCombinedConfig();
+    if(!allConfigs) await loadCombinedConfigs();
     const pdfFile = files.find(file => /\.pdf$/i.test(file.name));
     const jsonFile = files.find(file => /\.json$/i.test(file.name));
     if(!pdfFile || !jsonFile){
@@ -2042,8 +2070,9 @@ async function saveConfigForEveryone(){
   setStatus('Latest config server par update ho raha hai...');
   try{
     const combined = getCombinedConfigForDownload();
-    const result = await callAdminApi('/admin/forms-config/save', { config: combined });
-    allConfigs = result.config || combined;
+    await callAdminApi('/admin/forms-config/save', { config: combined });
+    allConfigs = combined;
+    saveConfigBackup(combined);
     defaultConfig = sanitizeConfigFields(structuredClone(allConfigs.forms[currentFormKey]));
     config = sanitizeConfigFields(structuredClone(defaultConfig));
     await renderPreview();
