@@ -7,6 +7,8 @@ const fs = require("fs");
 const path = require("path");
 const { execFile } = require("child_process");
 const { promisify } = require("util");
+const multer = require("multer");
+const PDFDocument = require("pdfkit");
 let admin = null;
 let pdfParse = null;
 let cheerio = null;
@@ -78,6 +80,8 @@ const SETTINGS_PATH = path.join(__dirname, "settings.json");
 const CRAWLER_SOURCES_PATH = path.join(__dirname, "crawler-sources.json");
 const FORMS_FIELDS_CONFIG_PATH = path.join(__dirname, "emitra-offline-form-fill", "assets", "forms-fields-config.json");
 const FORMS_TEMPLATE_UPLOAD_DIR = path.join(__dirname, "emitra-offline-form-fill", "assets", "uploaded-templates");
+const PDF_SIGNATURE_TEMP_DIR = path.join(__dirname, ".tmp", "pdf-signature-verification");
+const PDF_SIGNATURE_REPORT_DIR = path.join(PDF_SIGNATURE_TEMP_DIR, "reports");
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "jasmelsolanki@gmail.com";
 const SITE_BASE_URL = extractUrl(process.env.SITE_BASE_URL, "https://emitrawala.online");
 const WHATSAPP_CHANNEL_URL = extractHttpUrl(process.env.WHATSAPP_CHANNEL_URL, "https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q");
@@ -2248,6 +2252,195 @@ function decodePdfBase64(value = "") {
   return buffer;
 }
 
+fs.mkdirSync(PDF_SIGNATURE_TEMP_DIR, { recursive: true });
+fs.mkdirSync(PDF_SIGNATURE_REPORT_DIR, { recursive: true });
+
+const pdfSignatureReports = new Map();
+const PDF_SIGNATURE_MAX_BYTES = 20 * 1024 * 1024;
+const PDF_SIGNATURE_TTL_MS = 10 * 60 * 1000;
+
+const pdfSignatureUpload = multer({
+  storage: multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, PDF_SIGNATURE_TEMP_DIR),
+    filename: (_req, file, cb) => {
+      const safeBase = path.basename(file.originalname || "certificate.pdf").replace(/[^a-z0-9._-]+/gi, "-").slice(0, 80);
+      cb(null, `${Date.now()}-${crypto.randomBytes(8).toString("hex")}-${safeBase || "certificate.pdf"}`);
+    }
+  }),
+  limits: { fileSize: PDF_SIGNATURE_MAX_BYTES, files: 1 },
+  fileFilter: (_req, file, cb) => {
+    const name = String(file.originalname || "").toLowerCase();
+    const type = String(file.mimetype || "").toLowerCase();
+    if (type !== "application/pdf" && !name.endsWith(".pdf")) {
+      return cb(new Error("Only PDF files are allowed"));
+    }
+    return cb(null, true);
+  }
+});
+
+function scheduleTempDelete(filePath) {
+  if (!filePath) return;
+  setTimeout(() => {
+    fs.promises.unlink(filePath).catch(() => {});
+  }, PDF_SIGNATURE_TTL_MS).unref?.();
+}
+
+function sanitizeReportText(value = "") {
+  return String(value ?? "").replace(/[\u0000-\u001f\u007f]+/g, " ").trim();
+}
+
+async function readPdfTextSafe(filePath) {
+  if (!pdfParse) {
+    return { text: "", error: "pdf-parse dependency not available" };
+  }
+  try {
+    const data = await pdfParse(await fs.promises.readFile(filePath));
+    return { text: String(data?.text || ""), error: "" };
+  } catch (error) {
+    return { text: "", error: error.message || "PDF text extraction failed" };
+  }
+}
+
+function extractVisiblePdfSignals(text = "") {
+  const normalized = String(text || "").replace(/\s+/g, " ").trim();
+  const lineText = String(text || "");
+  const visibleSignatureTextFound = /Digitally\s+signed\s+by/i.test(normalized);
+  const visibleSignatureStatusText = /Signature\s+Not\s+Verified/i.test(normalized)
+    ? "Signature Not Verified"
+    : /Signature\s+Verified/i.test(normalized)
+      ? "Signature Verified"
+      : "Unknown";
+  const signerName = (
+    normalized.match(/Digitally\s+signed\s+by\s*[:\-]?\s*([A-Z0-9 .,'/_-]{3,120}?)(?:\s+(?:Date|Reason|Location|Signature|$))/i)?.[1] ||
+    ""
+  ).trim();
+  const signingDate = (
+    normalized.match(/(?:Date|Signing\s+Date)\s*[:\-]?\s*([0-9]{1,2}[\/.-][0-9]{1,2}[\/.-][0-9]{2,4}(?:\s+[0-9:.]+\s*(?:AM|PM|IST|[+-]\d{2}:?\d{2})?)?)/i)?.[1] ||
+    ""
+  ).trim();
+  const reason = (normalized.match(/Reason\s*[:\-]?\s*([^|]{3,100}?)(?:\s+(?:Location|Date|ONLINE|$))/i)?.[1] || "").trim();
+  const location = (normalized.match(/Location\s*[:\-]?\s*([^|]{3,100}?)(?:\s+(?:Reason|Date|ONLINE|$))/i)?.[1] || "").trim();
+  const verificationNumber = (
+    normalized.match(/ONLINE\s+VERIFICATION\s+SECTION.{0,260}?(?:Verification|Certificate|Token|Application|Reference|Registration|Number|No\.?)\s*[:\-]?\s*([A-Z0-9/-]{5,40})/i)?.[1] ||
+    normalized.match(/(?:Verification|Certificate|Token|Application|Reference|Registration)\s*(?:Number|No\.?)\s*[:\-]?\s*([A-Z0-9/-]{5,40})/i)?.[1] ||
+    lineText.match(/\b[A-Z]{2,6}[\/-]?\d{4,}[A-Z0-9\/-]*\b/i)?.[0] ||
+    ""
+  ).trim();
+  return {
+    visibleSignatureTextFound,
+    visibleSignatureStatusText,
+    reason,
+    location,
+    visibleSignerName: signerName,
+    visibleSigningDate: signingDate,
+    qrFound: /QR\s*Code|Scan\s+QR|ONLINE\s+VERIFICATION\s+SECTION/i.test(normalized),
+    qrText: "",
+    verificationNumber,
+    knownPhrases: {
+      digitallySignedBy: /Digitally\s+signed\s+by/i.test(normalized),
+      signatureVerified: /Signature\s+Verified/i.test(normalized),
+      signatureNotVerified: /Signature\s+Not\s+Verified/i.test(normalized),
+      reasonApproved: /Reason\s*:\s*Approved/i.test(normalized),
+      locationRajasthan: /Location\s*:\s*Rajasthan/i.test(normalized),
+      onlineVerificationSection: /ONLINE\s+VERIFICATION\s+SECTION/i.test(normalized)
+    }
+  };
+}
+
+async function runPdfSignatureHelper(filePath) {
+  const scriptPath = path.join(__dirname, "tools", "verify_pdf_signature.py");
+  const pythonCandidates = [process.env.PYTHON_BIN, "python", "py"].filter(Boolean);
+  let lastError = "";
+  for (const pythonBin of pythonCandidates) {
+    try {
+      const { stdout } = await execFileAsync(pythonBin, [scriptPath, filePath], {
+        timeout: 45000,
+        maxBuffer: 1024 * 1024
+      });
+      return JSON.parse(stdout || "{}");
+    } catch (error) {
+      lastError = error.stderr || error.message || String(error);
+      if (String(lastError).includes("ENOENT")) continue;
+    }
+  }
+  return {
+    embeddedSignatureFound: false,
+    signatureStatus: "NOT_VERIFIED",
+    documentModifiedAfterSigning: "Unknown",
+    signerName: "",
+    signingTime: "",
+    certificateIssuer: "",
+    certificateSubject: "",
+    certificateValidFrom: "",
+    certificateValidTo: "",
+    trustStatus: "Python helper did not run",
+    errors: [lastError || "Python helper did not run"]
+  };
+}
+
+function getFinalPdfSignatureStatus(helper = {}, visible = {}) {
+  const signatureStatus = String(helper.signatureStatus || "").toUpperCase();
+  const modified = helper.documentModifiedAfterSigning === true || signatureStatus === "MODIFIED";
+  const embeddedSignatureFound = Boolean(helper.embeddedSignatureFound);
+  if (modified) return "Document Modified After Signing";
+  if (signatureStatus === "VALID") return "Digital Signature Valid";
+  if (signatureStatus === "INVALID") return "Invalid Signature";
+  if (embeddedSignatureFound && signatureStatus === "NOT_VERIFIED") return "Signature Not Verified - Certificate trust/chain check required";
+  if (embeddedSignatureFound) return "Signature Not Verified - Certificate trust/chain check required";
+  if (visible.qrFound || visible.verificationNumber) return "Official eMitra Verification Required";
+  return "Original PDF Required for Digital Signature Verification";
+}
+
+function createPdfSignatureReport(result = {}) {
+  const reportId = crypto.randomBytes(16).toString("hex");
+  const reportPath = path.join(PDF_SIGNATURE_REPORT_DIR, `${reportId}.pdf`);
+  const doc = new PDFDocument({ size: "A4", margin: 44, info: { Title: "PDF Signature Verification Report" } });
+  const stream = fs.createWriteStream(reportPath);
+  doc.pipe(stream);
+  doc.rect(0, 0, doc.page.width, 82).fill("#0057a8");
+  doc.fillColor("#ffcf75").fontSize(20).font("Helvetica-Bold").text("E-MITRA WALA", 44, 28);
+  doc.fillColor("#ffffff").fontSize(11).font("Helvetica").text("PDF Certificate Signature Verification Report", 44, 53);
+  doc.moveDown(3);
+  doc.fillColor("#172033").fontSize(11).font("Helvetica-Bold").text("Verification Summary", { underline: true });
+  doc.moveDown(0.7);
+  const rows = [
+    ["File name", result.fileName],
+    ["Verification date/time", new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })],
+    ["Embedded digital signature", result.embeddedSignatureFound ? "Found" : "Not Found"],
+    ["Signature status", result.signatureStatus],
+    ["Document modified after signing", result.documentModifiedAfterSigning],
+    ["Signer name", result.signerName],
+    ["Signing date", result.signingDate],
+    ["Reason", result.reason],
+    ["Location", result.location],
+    ["Certificate issuer", result.certificateIssuer],
+    ["Certificate subject", result.certificateSubject],
+    ["Certificate valid from", result.certificateValidFrom],
+    ["Certificate valid to", result.certificateValidTo],
+    ["Trust status", result.trustStatus],
+    ["QR code found", result.qrFound ? "Yes" : "No"],
+    ["Verification number", result.verificationNumber],
+    ["Final recommendation", result.finalStatus]
+  ];
+  rows.forEach(([label, value]) => {
+    doc.fillColor("#03224d").font("Helvetica-Bold").fontSize(9).text(`${label}:`, { continued: true });
+    doc.fillColor("#172033").font("Helvetica").text(` ${sanitizeReportText(value || "-")}`);
+    doc.moveDown(0.25);
+  });
+  doc.moveDown(0.8);
+  doc.fillColor("#7c2d12").font("Helvetica-Bold").fontSize(10).text("Disclaimer");
+  doc.fillColor("#5d6b7f").font("Helvetica").fontSize(9).text("This report is generated from uploaded file analysis. For final government certificate authenticity, verify on official eMitra portal.");
+  doc.end();
+  return new Promise((resolve, reject) => {
+    stream.on("finish", () => {
+      pdfSignatureReports.set(reportId, { path: reportPath, createdAt: Date.now() });
+      scheduleTempDelete(reportPath);
+      resolve(reportId);
+    });
+    stream.on("error", reject);
+  });
+}
+
 const sendTelegramMessage = async (text) => {
   if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
     const error = new Error("TELEGRAM_BOT_TOKEN aur TELEGRAM_CHAT_ID env me set nahi hain");
@@ -3797,6 +3990,73 @@ app.post("/api/health", (req, res) => {
   res.json(buildServerStatus({ message: "Admin API is running" }));
 });
 
+app.post("/api/verify-pdf-signature", pdfSignatureUpload.single("pdf"), async (req, res) => {
+  const uploadedPath = req.file?.path || "";
+  try {
+    if (!req.file || !uploadedPath) {
+      return res.status(400).json({ success: false, message: "PDF file required" });
+    }
+    const headerBuffer = await fs.promises.readFile(uploadedPath);
+    if (headerBuffer.length < 5 || headerBuffer.slice(0, 5).toString("utf8") !== "%PDF-") {
+      return res.status(400).json({ success: false, message: "Valid PDF file required" });
+    }
+    const [helperResult, textResult] = await Promise.all([
+      runPdfSignatureHelper(uploadedPath),
+      readPdfTextSafe(uploadedPath)
+    ]);
+    const visibleSignals = extractVisiblePdfSignals(textResult.text);
+    const signatureStatus = helperResult.signatureStatus || (helperResult.embeddedSignatureFound ? "NOT_VERIFIED" : "NO_SIGNATURE");
+    const finalStatus = getFinalPdfSignatureStatus(helperResult, visibleSignals);
+    const response = {
+      success: true,
+      fileName: req.file.originalname || "certificate.pdf",
+      fileType: req.file.mimetype || "application/pdf",
+      embeddedSignatureFound: Boolean(helperResult.embeddedSignatureFound),
+      signatureStatus,
+      documentModifiedAfterSigning: helperResult.documentModifiedAfterSigning ?? "Unknown",
+      signerName: helperResult.signerName || visibleSignals.visibleSignerName || "",
+      signingDate: helperResult.signingTime || visibleSignals.visibleSigningDate || "",
+      reason: helperResult.reason || visibleSignals.reason || "",
+      location: helperResult.location || visibleSignals.location || "",
+      certificateIssuer: helperResult.certificateIssuer || "",
+      certificateSubject: helperResult.certificateSubject || "",
+      certificateValidFrom: helperResult.certificateValidFrom || "",
+      certificateValidTo: helperResult.certificateValidTo || "",
+      trustStatus: helperResult.trustStatus || "",
+      visibleSignatureTextFound: visibleSignals.visibleSignatureTextFound,
+      visibleSignatureStatusText: visibleSignals.visibleSignatureStatusText,
+      visiblePhrases: visibleSignals.knownPhrases,
+      qrFound: Boolean(helperResult.qrFound || visibleSignals.qrFound),
+      qrText: helperResult.qrText || visibleSignals.qrText,
+      verificationNumber: visibleSignals.verificationNumber || helperResult.qrText || "",
+      finalStatus,
+      message: finalStatus,
+      errors: [...(helperResult.errors || []), ...(textResult.error ? [textResult.error] : [])].filter(Boolean),
+      reportDownloadUrl: ""
+    };
+    const reportId = await createPdfSignatureReport(response);
+    response.reportDownloadUrl = `/api/verification-report/${reportId}`;
+    return res.json(response);
+  } catch (error) {
+    const status = error.code === "LIMIT_FILE_SIZE" ? 413 : 500;
+    return res.status(status).json({
+      success: false,
+      message: error.code === "LIMIT_FILE_SIZE" ? "PDF 20MB se chhoti honi chahiye" : (error.message || "PDF verification failed")
+    });
+  } finally {
+    if (uploadedPath) fs.promises.unlink(uploadedPath).catch(() => {});
+  }
+});
+
+app.get("/api/verification-report/:id", (req, res) => {
+  const id = String(req.params.id || "").replace(/[^a-f0-9]/gi, "");
+  const record = pdfSignatureReports.get(id);
+  if (!record || !record.path || Date.now() - Number(record.createdAt || 0) > PDF_SIGNATURE_TTL_MS) {
+    return res.status(404).send("Report expired or not found");
+  }
+  return res.download(record.path, "emitra-pdf-signature-verification-report.pdf");
+});
+
 app.get("/sitemap.xml", async (req, res) => {
   try {
     const xml = await buildCombinedSitemap();
@@ -4994,6 +5254,16 @@ const maybeRunDailyCurrentAffairsSchedule = async () => {
     console.error("Daily current affairs failed:", err.message);
   }
 };
+
+app.use((err, _req, res, _next) => {
+  if (err && (err.code === "LIMIT_FILE_SIZE" || err.message === "Only PDF files are allowed")) {
+    return res.status(err.code === "LIMIT_FILE_SIZE" ? 413 : 400).json({
+      success: false,
+      message: err.code === "LIMIT_FILE_SIZE" ? "PDF 20MB se chhoti honi chahiye" : err.message
+    });
+  }
+  return res.status(500).json({ success: false, message: err?.message || "Server error" });
+});
 
 app.listen(PORT, () => {
   console.log(`Admin API running on port ${PORT}`);
