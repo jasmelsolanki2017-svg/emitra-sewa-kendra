@@ -15,72 +15,102 @@
 <body data-page="data-folder">
   <div class="topbar"><div>User Panel</div><div>Time: <span id="liveTime"></span></div></div>
   <div id="sessionTimer" class="session-timer">Logout in: 60:00</div>
-  <header>
-    <div class="hero-wrap">
-      <div class="hero-copy">
-        <h1>My Data Folder</h1>
-        <p>My Documents, uploaded files aur admin data links.</p>
+  <div class="drive-shell">
+    <aside class="drive-sidebar">
+      <a class="drive-brand" href="user-dashboard.html">
+        <span><i class="fa-solid fa-cloud-arrow-up"></i></span>
+        <strong>My<span>Drive</span></strong>
+      </a>
+      <nav class="drive-side-nav" aria-label="MyDrive navigation">
+        <a class="active" href="user-data-folder.html"><i class="fa-solid fa-folder"></i> My Documents</a>
+        <a href="user-important-links.html"><i class="fa-solid fa-users"></i> Shared with Me</a>
+        <a href="user-latest-updates.html"><i class="fa-regular fa-clock"></i> Recent</a>
+        <a href="user-latest-jobs.html"><i class="fa-regular fa-star"></i> Starred</a>
+        <a href="user-download-center.html"><i class="fa-regular fa-trash-can"></i> Trash</a>
+        <a href="user-my-requests.html"><i class="fa-solid fa-wave-square"></i> Activity</a>
+        <a href="user-dashboard.html"><i class="fa-solid fa-gear"></i> Settings</a>
+        <a href="index.html#contact"><i class="fa-regular fa-circle-question"></i> Help & Support</a>
+      </nav>
+      <div class="drive-storage-card">
+        <div class="drive-ring" aria-hidden="true"><span></span></div>
+        <div><strong id="sidebarStorageInfo">Storage checking...</strong><small id="sidebarStoragePercent">0% used</small></div>
+        <button type="button"><i class="fa-solid fa-crown"></i> Upgrade Storage</button>
       </div>
-      <div class="hero-badge">Logged in: <span id="userEmail">Checking...</span></div>
+    </aside>
+    <div class="drive-main">
+      <header class="drive-topbar">
+        <button class="drive-menu-btn" type="button" aria-label="Menu"><i class="fa-solid fa-bars"></i></button>
+        <label class="drive-search" aria-label="Search documents">
+          <input type="search" id="documentSearchInput" placeholder="Search documents, folders..." autocomplete="off">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </label>
+        <div class="drive-top-status">
+          <span class="drive-storage-mini"><i class="fa-solid fa-chart-pie"></i> <span id="topStorageInfo">Storage checking...</span></span>
+          <span class="drive-bell"><i class="fa-regular fa-bell"></i><b>3</b></span>
+          <span class="drive-user"><i class="fa-solid fa-user"></i><span id="userNameLabel">User</span><i class="fa-solid fa-chevron-down"></i></span>
+        </div>
+      </header>
+      <main class="container">
+        <div class="data-grid">
+          <section class="section documents-section">
+            <h2>My Documents</h2>
+            <div class="panel-note"><i class="fa-solid fa-folder-open"></i><span>Uploaded documents ka preview, download aur delete yahin se hoga.</span></div>
+            <div class="folder-tools">
+              <h3>1. Upload & Folder Controls</h3>
+              <div class="folder-create">
+                <input type="text" id="folderNameInput" maxlength="40" placeholder="New folder name, jaise Aadhaar, Marksheet etc.">
+                <input type="password" id="folderPasswordInput" maxlength="40" placeholder="Optional password">
+                <button type="button" onclick="createUserFolder()"><i class="fa-solid fa-plus"></i> Create Folder</button>
+              </div>
+              <div class="folder-list" id="userFolderList">
+                <button type="button" class="folder-pill active">General</button>
+              </div>
+              <div class="storage-line">
+                <p class="message" id="storageInfo">Storage checking...</p>
+                <span id="storagePercentText">0%</span>
+              </div>
+              <div class="storage-meter"><span id="storageBar"></span></div>
+              <div class="storage-tools locked" id="uploadTools">
+                <select id="uploadFolderSelect" aria-label="Upload folder">
+                  <option value="__general">General</option>
+                </select>
+                <input type="file" id="userFileInput" multiple>
+                <button onclick="uploadUserFile()"><i class="fa-solid fa-upload"></i> Upload Files</button>
+              </div>
+              <p class="message" id="uploadStatus">Aap apni files yahan upload karke baad me download kar sakte hain.</p>
+            </div>
+            <div class="gallery-panel">
+              <div class="gallery-head">
+                <h3>2. File Preview / Document Gallery</h3>
+                <div class="file-selection-toolbar">
+                  <span id="fileSelectionStatus">0 file selected</span>
+                  <button type="button" onclick="toggleSelectAllUserFiles()">Select All</button>
+                  <button type="button" onclick="bulkCopyUserFiles()">Copy</button>
+                  <button type="button" onclick="bulkMoveUserFiles()">Move</button>
+                  <button type="button" class="danger-btn" onclick="bulkDeleteUserFiles()">Delete</button>
+                </div>
+              </div>
+              <div class="file-list" id="userFilesList">
+                <div class="message">Files loading...</div>
+              </div>
+            </div>
+          </section>
+          <aside class="section data-links-section">
+            <h2><i class="fa-solid fa-link"></i> Data Links</h2>
+            <div class="panel-note"><span>Yahan aapke important links secure rahenge.</span></div>
+            <button type="button" class="add-link-btn"><i class="fa-solid fa-plus"></i> Add New Link</button>
+            <div class="cloud-link-list" id="cloudLinksList">
+              <div class="message">Data links loading...</div>
+            </div>
+            <a class="view-all-links" href="user-important-links.html">View All Links <i class="fa-solid fa-chevron-right"></i></a>
+          </aside>
+        </div>
+      </main>
+      <footer><p>© 2026 MyDrive. All rights reserved.</p><p><a href="privacy-policy.html">Privacy Policy</a> | <a href="disclaimer.html">Terms of Service</a> | <a href="contact.html">Contact Us</a></p></footer>
     </div>
-  </header>
-  <nav>
-    <a href="user-dashboard.html">User Panel</a>
-    <a href="user-latest-updates.html">Latest Updates</a>
-    <a href="user-important-links.html">Important Links</a>
-    <a href="user-latest-jobs.html">Latest Jobs</a>
-    <a href="user-download-center.html">Download Center</a>
-    <a href="user-my-requests.html">My Requests</a>
-    <button onclick="logoutUser()">Logout</button>
-  </nav>
-  <main class="container">
-    <div class="data-grid">
-      <section class="section">
-        <h2>My Documents</h2>
-        <div class="panel-note"><i class="fa-solid fa-folder-open"></i><span>Uploaded documents ka preview, download aur delete yahin se hoga.</span></div>
-        <div class="folder-tools">
-          <div class="folder-create">
-            <input type="text" id="folderNameInput" maxlength="40" placeholder="New folder name, jaise Aadhaar, Marksheet">
-            <input type="password" id="folderPasswordInput" maxlength="40" placeholder="Optional password">
-            <button type="button" onclick="createUserFolder()">Create Folder</button>
-          </div>
-          <div class="folder-list" id="userFolderList">
-            <button type="button" class="folder-pill active">General</button>
-          </div>
-        </div>
-        <p class="message" id="storageInfo">Storage checking...</p>
-        <div class="storage-meter"><span id="storageBar"></span></div>
-        <div class="storage-tools locked" id="uploadTools">
-          <select id="uploadFolderSelect" aria-label="Upload folder">
-            <option value="__general">General</option>
-          </select>
-          <input type="file" id="userFileInput" multiple>
-          <button onclick="uploadUserFile()">Upload Files</button>
-        </div>
-        <p class="message" id="uploadStatus">Aap apni files yahan upload karke baad me download kar sakte hain.</p>
-        <div class="file-selection-toolbar">
-          <span id="fileSelectionStatus">0 file selected</span>
-          <button type="button" onclick="toggleSelectAllUserFiles()">Select All</button>
-          <button type="button" onclick="bulkCopyUserFiles()">Copy</button>
-          <button type="button" onclick="bulkMoveUserFiles()">Move</button>
-          <button type="button" class="danger-btn" onclick="bulkDeleteUserFiles()">Delete</button>
-        </div>
-        <div class="file-list" id="userFilesList">
-          <div class="message">Files loading...</div>
-        </div>
-      </section>
-      <section class="section">
-        <h2>Data Links</h2>
-        <div class="panel-note"><i class="fa-solid fa-link"></i><span>Admin ke add kiye hue data links yahan show honge.</span></div>
-        <div class="cloud-link-list" id="cloudLinksList">
-          <div class="message">Data links loading...</div>
-        </div>
-      </section>
-    </div>
-  </main>
+  </div>
   <a class="whatsapp" target="_blank" rel="noopener noreferrer" href="https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q"><i class="fa-brands fa-whatsapp"></i></a>
-  <footer><p>© 2026 E-MITRA WALA | User Panel</p></footer>
   <button class="theme-toggle" type="button" aria-label="Toggle dark mode" title="Dark mode" onclick="toggleDarkMode()"><span class="theme-symbol" aria-hidden="true">☾</span></button>
-  <script type="module" src="user-panel-pages.js?v=20260606-folder-list12"></script>
+  <script type="module" src="user-panel-pages.js?v=20260607-drive1"></script>
 </body>
 </html>

@@ -644,9 +644,16 @@ function renderStorageInfo(){
   const limit = getStorageLimitBytes();
   const percent = Math.min(100, Math.round((used / limit) * 100));
   const approved = currentMember.uploadApproved === true;
-  setText("storageInfo", `${formatBytes(used)} used / ${formatBytes(limit)} available`);
+  const storageText = `${formatBytes(used)} used / ${formatBytes(limit)} available`;
+  setText("storageInfo", storageText);
+  setText("topStorageInfo", storageText);
+  setText("sidebarStorageInfo", storageText);
+  setText("storagePercentText", `${percent}%`);
+  setText("sidebarStoragePercent", `${percent}% used`);
   const bar = document.getElementById("storageBar");
   if(bar){ bar.style.width = percent + "%"; }
+  const ring = document.querySelector(".drive-ring");
+  if(ring){ ring.style.background = `conic-gradient(var(--yellow) 0 ${percent}%, rgba(255,255,255,.9) ${percent}% 100%)`; }
   const tools = document.getElementById("uploadTools");
   if(tools){ tools.classList.toggle("locked", !approved); }
   setText("uploadStatus", approved
@@ -692,12 +699,23 @@ function renderFolderControls(){
   }
 }
 
+function renderDriveUserLabel(user){
+  const name = String(currentMember.name || currentMember.displayName || user?.displayName || user?.email?.split("@")[0] || "User").trim();
+  setText("userNameLabel", name || "User");
+}
+
 function renderUserFiles(){
   const list = document.getElementById("userFilesList");
   renderStorageInfo();
   renderFolderControls();
   if(!list){ return; }
-  const folderFiles = getVisibleUserFiles();
+  const searchTerm = String(document.getElementById("documentSearchInput")?.value || "").trim().toLowerCase();
+  const folderFiles = getVisibleUserFiles().filter((item) => {
+    if(!searchTerm){ return true; }
+    const name = cleanDisplayFileName(item.file.name || "Document").toLowerCase();
+    const folder = getFolderName(getFileFolderId(item.file)).toLowerCase();
+    return name.includes(searchTerm) || folder.includes(searchTerm);
+  });
   syncSelectedFilesWithVisible(folderFiles);
   if(isFolderLocked(activeFolderId)){
     list.innerHTML = `<div class="message locked-folder-message"><i class="fa-solid fa-lock"></i> ${escapeHTML(getFolderName(activeFolderId))} folder locked hai. Open karne ke liye password lagayein.</div>`;
@@ -817,6 +835,7 @@ window.deleteUserFolder = async (folderId, event) => {
 function loadDataFolder(user){
   onValue(ref(db, "members/" + user.uid), (snapshot) => {
     currentMember = snapshot.exists() ? snapshot.val() || {} : {};
+    renderDriveUserLabel(user);
     if(currentMember.status === "Deleted" || currentMember.status === "Blocked"){
       alert("Your account access is blocked. Please contact admin.");
       localStorage.removeItem(sessionKey);
@@ -875,6 +894,10 @@ function loadDataFolder(user){
     `).join("");
   });
 }
+
+document.getElementById("documentSearchInput")?.addEventListener("input", () => {
+  if(pageType === "data-folder"){ renderUserFiles(); }
+});
 
 window.uploadUserFile = async () => {
   if(!currentUser){
@@ -1263,6 +1286,7 @@ onAuthStateChanged(auth, (user) => {
 
   currentUser = user;
   setText("userEmail", user.email);
+  renderDriveUserLabel(user);
   loadRequestNotifications(user);
   if(!localStorage.getItem(sessionKey)){
     localStorage.setItem(sessionKey, String(Date.now()));
