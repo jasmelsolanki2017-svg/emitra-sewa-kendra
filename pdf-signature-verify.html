@@ -39,6 +39,7 @@ button:hover,.btn:hover{background:var(--orange);color:var(--deep)}button.second
 .progress{height:10px;background:#e2edf8;border-radius:999px;overflow:hidden;margin-top:12px;display:none}.progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--orange));transition:width .2s ease}
 .status-note{margin-top:10px;font-weight:900;color:var(--blue)}
 .result-card{display:none;margin-top:16px;border-left:6px solid var(--gray)}.result-card.valid{border-left-color:var(--green)}.result-card.warn{border-left-color:var(--yellow)}.result-card.bad{border-left-color:var(--red)}.result-card.gray{border-left-color:var(--gray)}
+.signature-window-title{font-size:15px;color:var(--deep);font-weight:900;margin:0 0 8px;padding-bottom:8px;border-bottom:1px solid var(--line)}
 .final-status{display:flex;align-items:center;gap:10px;border-radius:8px;padding:11px 12px;font-weight:900;margin-bottom:12px;background:#f1f5f9;color:#334155}.result-card.valid .final-status{background:#ecfdf3;color:var(--green)}.result-card.warn .final-status{background:#fff7ed;color:#a15c00}.result-card.bad .final-status{background:#fff1f1;color:var(--red)}
 .result-mark{display:grid;place-items:center;width:86px;height:86px;border-radius:50%;font-size:52px;margin:0 auto 12px;background:#f1f5f9;color:var(--gray);line-height:1}.result-card.valid .result-mark{background:#ecfdf3;color:var(--green)}.result-card.warn .result-mark{background:#fff7ed;color:var(--yellow)}.result-card.bad .result-mark{background:#fff1f1;color:var(--red)}
 .result-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.result-item{border:1px solid var(--line);border-radius:7px;background:#fbfdff;padding:9px}.result-item label{display:block;color:var(--muted);font-size:11px;font-weight:900;text-transform:uppercase}.result-item strong{display:block;color:var(--deep);font-size:14px;overflow-wrap:anywhere;margin-top:2px}
@@ -101,6 +102,7 @@ footer{background:var(--blue);color:white;text-align:center;padding:22px 6%;marg
       <div class="status-note" id="statusText">PDF select karein.</div>
 
       <section class="card result-card" id="resultCard">
+        <h2 class="signature-window-title">Signature Properties</h2>
         <div class="result-mark" id="resultMark">✓</div>
         <div class="final-status" id="finalStatus"><i class="fa-solid fa-circle-info"></i><span>अंतिम स्थिति</span></div>
         <div class="result-grid" id="resultGrid"></div>
@@ -231,14 +233,7 @@ function valueText(value){
   return value === undefined || value === null || value === '' ? '-' : String(value);
 }
 
-function displayFieldValue(label, value, data){
-  if(label === 'Trust Status'){
-    const raw = String(value || '').trim();
-    if(!raw || raw === 'Unknown') return 'Pending Verification';
-    if(raw.toLowerCase() === ('un' + 'trusted') && (data.certificateNumber || /PENDING|CHECK|UNKNOWN/i.test(data.certificateVerificationStatus || data.verificationStatus || ''))){
-      return 'Pending Verification';
-    }
-  }
+function displayFieldValue(_label, value, _data){
   return valueText(value);
 }
 
@@ -270,8 +265,10 @@ function renderResult(data){
   const cardClass = resultClass(data);
   const statusText = data.valid === true
     ? valueText(data.finalStatus || data.message)
-    : data.certificateNumber
-      ? 'Pending Verification'
+    : data.signatureStatus === 'UNKNOWN'
+      ? 'Validity Unknown'
+      : data.certificateNumber
+        ? 'Pending Verification'
       : valueText(data.finalStatus || data.message || 'Validity Unknown');
   resultCard.className = `card result-card ${cardClass}`;
   resultMark.textContent = cardClass === 'bad' ? '✕' : cardClass === 'warn' ? '⚠' : '✓';
