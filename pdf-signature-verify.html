@@ -138,11 +138,25 @@ const resultCard = document.getElementById('resultCard');
 const resultGrid = document.getElementById('resultGrid');
 const finalStatus = document.getElementById('finalStatus');
 const reportBtn = document.getElementById('reportBtn');
+const API_BASE = (window.PDF_SIGNATURE_VERIFY_API_BASE || '').replace(/\/+$/, '');
 let selectedFile = null;
 
 function setStatus(text){ statusText.textContent = text; }
 function setProgress(value, show = true){ progress.style.display = show ? 'block' : 'none'; progressBar.style.width = value + '%'; }
 function isPdf(file){ return file && (file.type === 'application/pdf' || /\.pdf$/i.test(file.name || '')); }
+function apiUrl(path){ return `${API_BASE}${path}`; }
+
+async function readApiJson(response){
+  const contentType = response.headers.get('content-type') || '';
+  const text = await response.text();
+  if(contentType.includes('application/json') || text.trim().startsWith('{')){
+    try { return JSON.parse(text); } catch(_error) {}
+  }
+  if(response.status === 404 || /<!doctype html|<html/i.test(text)){
+    throw new Error('Backend API connect nahi hai. Is page ko Node server/API deploy ke saath chalana hoga.');
+  }
+  throw new Error(text.trim().slice(0, 180) || `Server response ${response.status}`);
+}
 
 function selectFile(file){
   if(!file){ return; }
@@ -230,14 +244,14 @@ verifyBtn.addEventListener('click', async () => {
   verifyBtn.disabled = true;
   setProgress(18);
   setStatus('PDF upload aur signature analysis chal raha hai...');
+  let progressTimer = null;
   try{
-    const progressTimer = setInterval(() => {
+    progressTimer = setInterval(() => {
       const current = parseFloat(progressBar.style.width) || 18;
       if(current < 88) setProgress(Math.min(88, current + 8));
     }, 500);
-    const response = await fetch('/api/verify-pdf-signature', { method:'POST', body:form });
-    clearInterval(progressTimer);
-    const data = await response.json().catch(() => ({}));
+    const response = await fetch(apiUrl('/api/verify-pdf-signature'), { method:'POST', body:form });
+    const data = await readApiJson(response);
     if(!response.ok || data.success === false){
       throw new Error(data.message || 'Verification failed');
     }
@@ -248,6 +262,7 @@ verifyBtn.addEventListener('click', async () => {
     setProgress(0, false);
     setStatus(error.message || 'Verification failed.');
   }finally{
+    if(progressTimer) clearInterval(progressTimer);
     verifyBtn.disabled = false;
   }
 });
