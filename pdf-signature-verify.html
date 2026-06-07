@@ -150,6 +150,7 @@ const VERIFY_API_URL = window.PDF_SIGNATURE_VERIFY_API_URL || 'https://emitra-se
 const OFFICIAL_EMITRA_URL = 'https://emitra.rajasthan.gov.in/emitra/online-verification';
 let selectedFile = null;
 let verifiedPdfObjectUrl = '';
+let reportObjectUrl = '';
 let currentCertificateNumber = '';
 
 function setStatus(text){ statusText.textContent = text; }
@@ -208,6 +209,8 @@ resetBtn.addEventListener('click', () => {
   currentCertificateNumber = '';
   if(verifiedPdfObjectUrl) URL.revokeObjectURL(verifiedPdfObjectUrl);
   verifiedPdfObjectUrl = '';
+  if(reportObjectUrl) URL.revokeObjectURL(reportObjectUrl);
+  reportObjectUrl = '';
   setProgress(0, false);
   setStatus('PDF select karein.');
 });
@@ -249,6 +252,8 @@ function renderResult(data){
     : officialUrl;
   if(verifiedPdfObjectUrl) URL.revokeObjectURL(verifiedPdfObjectUrl);
   verifiedPdfObjectUrl = '';
+  if(reportObjectUrl) URL.revokeObjectURL(reportObjectUrl);
+  reportObjectUrl = '';
   const fields = [
     ['Signature Status', data.signatureStatus],
     ['Signed By', data.signerName],
@@ -274,6 +279,22 @@ function renderResult(data){
   resultMark.textContent = cardClass === 'bad' ? '✕' : cardClass === 'warn' ? '⚠' : '✓';
   finalStatus.innerHTML = `<i class="fa-solid ${cardClass === 'bad' ? 'fa-circle-xmark' : cardClass === 'warn' ? 'fa-triangle-exclamation' : 'fa-circle-check'}"></i><span>${statusText}</span>`;
   resultCard.style.display = 'block';
+  const reportLines = [
+    'E-MITRA WALA PDF Signature Analysis Report',
+    `Generated: ${new Date().toLocaleString('en-IN')}`,
+    '',
+    ...fields.map(([label, value]) => `${label}: ${displayFieldValue(label, value, data)}`),
+    '',
+    `Certificate Number: ${valueText(data.certificateNumber)}`,
+    `Official eMitra URL: ${officialBtn.href}`,
+    '',
+    'Note: Verified PDF download is available only after confirmed valid signature / official verification success.'
+  ];
+  const reportBlob = new Blob([reportLines.join('\n')], { type:'text/plain;charset=utf-8' });
+  reportObjectUrl = URL.createObjectURL(reportBlob);
+  reportBtn.href = reportObjectUrl;
+  reportBtn.download = `pdf-signature-report-${data.certificateNumber || Date.now()}.txt`;
+  reportBtn.classList.remove('disabled');
   if(data.reportDownloadUrl){
     reportBtn.href = data.reportDownloadUrl;
     reportBtn.classList.remove('disabled');
