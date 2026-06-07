@@ -1402,12 +1402,39 @@ function fillSelectedControls(){
 async function makePdf(){
   if(!templateBytes || !config) throw new Error('Template/config missing');
   if(typeof regeneratorRuntime === 'undefined') throw new Error('regeneratorRuntime load nahi hua. Internet/CDN check karo aur page hard refresh karo.');
-  const { PDFDocument, rgb } = PDFLib;
+  const { PDFDocument, StandardFonts, rgb } = PDFLib;
   const pdfDoc = await PDFDocument.load(templateBytes.slice(0));
   pdfDoc.registerFontkit(fontkit);
   let font;
   try{ const fontBytes=await loadBytes(FONT_URL); font=await pdfDoc.embedFont(fontBytes, {subset:true}); }
   catch(e){ alert('Hindi font load nahi hua. Internet/CDN check karo.'); throw e; }
+  const latinFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const getRunFont = (value) => (/^[\x20-\x7E]+$/.test(value) ? latinFont : font);
+  const splitTextRuns = (value) => {
+    const chars = Array.from(String(value || ''));
+    const runs = [];
+    let currentText = '';
+    let currentFont = null;
+    for(const ch of chars){
+      const nextFont = getRunFont(ch);
+      if(currentFont && nextFont !== currentFont){
+        runs.push({ text:currentText, font:currentFont });
+        currentText = '';
+      }
+      currentFont = nextFont;
+      currentText += ch;
+    }
+    if(currentText) runs.push({ text:currentText, font:currentFont || font });
+    return runs;
+  };
+  const widthOfMixedText = (value, size) => splitTextRuns(value).reduce((total, run) => total + run.font.widthOfTextAtSize(run.text, size), 0);
+  const drawMixedText = (page, value, options) => {
+    let cursorX = options.x;
+    for(const run of splitTextRuns(value)){
+      page.drawText(run.text, { ...options, x:cursorX, font:run.font });
+      cursorX += run.font.widthOfTextAtSize(run.text, options.size);
+    }
+  };
   if(!config.fields || config.fields.length===0) {
     return await pdfDoc.save();
   }
@@ -1430,19 +1457,19 @@ async function makePdf(){
     }
     let text=valueForField(field,data); if(!text) continue;
     let size=field.fontSize;
-    while(size>5 && font.widthOfTextAtSize(text,size)>w-2) size-=0.5;
+    while(size>5 && widthOfMixedText(text,size)>w-2) size-=0.5;
     const y=Math.max(0, Math.min(height - size, height - top - size - 2));
-    page.drawText(text,{x:x+1.5,y, size, font, color:fillColor});
+    drawMixedText(page, text, {x:x+1.5,y, size, color:fillColor});
   }
   for(const page of pages){
     const {width} = page.getSize();
     const size = 9;
-    const textWidth = font.widthOfTextAtSize(WATERMARK_TEXT, size);
+    const textWidth = latinFont.widthOfTextAtSize(WATERMARK_TEXT, size);
     page.drawText(WATERMARK_TEXT, {
       x:Math.max(12, width - textWidth - 14),
       y:10,
       size,
-      font,
+      font:latinFont,
       color:rgb(0, 0.34, 0.66)
     });
   }
