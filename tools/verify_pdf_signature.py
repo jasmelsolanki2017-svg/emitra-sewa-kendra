@@ -129,6 +129,7 @@ def run_pyhanko_validation(path):
     from pyhanko.pdf_utils.reader import PdfFileReader
     from pyhanko.sign.fields import enumerate_sig_fields
     from pyhanko.sign.validation import validate_pdf_signature
+    from pyhanko.sign.validation.pdf_embedded import EmbeddedPdfSignature
 
     result = empty_result()
     with open(path, "rb") as handle:
@@ -138,8 +139,11 @@ def run_pyhanko_validation(path):
             return result
 
         result["embeddedSignatureFound"] = True
-        field_name, sig_obj, _field_ref = sig_fields[0]
-        status = validate_pdf_signature(reader, field_name)
+        field_name, sig_obj_ref, field_ref = sig_fields[0]
+        field_obj = field_ref.get_object()
+        sig_obj = sig_obj_ref.get_object()
+        embedded_sig = EmbeddedPdfSignature(reader, field_obj, field_name)
+        status = validate_pdf_signature(embedded_sig)
         signer_cert = getattr(status, "signer_cert", None)
 
         intact = bool(getattr(status, "intact", False))

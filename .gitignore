@@ -3,3 +3,6 @@ backups/
 .env
 .env.local
 *.log
+.tmp/
+__pycache__/
+tools/__pycache__/

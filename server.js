@@ -4074,6 +4074,82 @@ function normalizeSignatureStatus(status = "") {
 
 const verifiedPdfDownloads = new Map();
 
+function parsePdfLiteral(value = "") {
+  return String(value || "")
+    .replace(/\\([()\\])/g, "$1")
+    .replace(/\\r/g, "\r")
+    .replace(/\\n/g, "\n")
+    .trim();
+}
+
+function parsePdfDate(value = "") {
+  const text = String(value || "").trim();
+  const match = text.match(/^D:(\d{4})(\d{2})(\d{2})(\d{2})?(\d{2})?(\d{2})?([+-]\d{2})?'?(\d{2})?/);
+  if (!match) return text;
+  const [, y, mo, d, h = "00", mi = "00", s = "00", zone = "", zm = ""] = match;
+  return `${d}-${mo}-${y} ${h}:${mi}:${s}${zone ? ` ${zone}:${zm || "00"}` : ""}`.trim();
+}
+
+function findPdfLiteralValue(source = "", key = "") {
+  const index = source.indexOf(`/${key}`);
+  if (index < 0) return "";
+  const start = source.indexOf("(", index);
+  if (start < 0) return "";
+  let depth = 0;
+  let escaped = false;
+  for (let i = start; i < source.length; i += 1) {
+    const ch = source[i];
+    if (escaped) {
+      escaped = false;
+      continue;
+    }
+    if (ch === "\\") {
+      escaped = true;
+      continue;
+    }
+    if (ch === "(") depth += 1;
+    if (ch === ")") {
+      depth -= 1;
+      if (depth === 0) return parsePdfLiteral(source.slice(start + 1, i));
+    }
+  }
+  return "";
+}
+
+function extractPdfSignatureFallback(buffer) {
+  const source = buffer.toString("latin1");
+  const sigIndex = source.indexOf("/Type/Sig");
+  const signatureSlice = sigIndex >= 0 ? source.slice(sigIndex, Math.min(source.length, sigIndex + 50000)) : source;
+  const result = {
+    signerName: findPdfLiteralValue(signatureSlice, "Name"),
+    signingTime: parsePdfDate(findPdfLiteralValue(signatureSlice, "M")),
+    reason: findPdfLiteralValue(signatureSlice, "Reason"),
+    location: findPdfLiteralValue(signatureSlice, "Location"),
+    certificateIssuer: "",
+    certificateSubject: "",
+    certificateValidFrom: "",
+    certificateValidTo: ""
+  };
+  const contentsMatch = signatureSlice.match(/\/Contents\s*<([0-9a-fA-F\s]+)>/);
+  if (contentsMatch) {
+    try {
+      const certText = Buffer.from(contentsMatch[1].replace(/\s+/g, ""), "hex").toString("latin1");
+      result.certificateIssuer =
+        certText.match(/XtraTrust Sub CA 2022/i)?.[0]
+        || certText.match(/XtraTrust DigiSign Private Limited/i)?.[0]
+        || "";
+      result.certificateSubject = result.signerName || "";
+      const validityMatch = certText.match(/(\d{12})Z[\s\S]{0,80}?(\d{12})Z/);
+      if (validityMatch) {
+        const fmt = (value) => `${value.slice(4, 6)}-${value.slice(2, 4)}-20${value.slice(0, 2)}`;
+        result.certificateValidFrom = fmt(validityMatch[1]);
+        result.certificateValidTo = fmt(validityMatch[2]);
+      }
+    } catch (_err) {}
+  }
+  return result;
+}
+
 function storeVerifiedPdfDownload(pdfBuffer, fileName = "verified-certificate.pdf") {
   const id = crypto.randomBytes(16).toString("hex");
   const safeName = path.basename(fileName).replace(/[^a-z0-9._-]+/gi, "-") || "verified-certificate.pdf";
@@ -4208,6 +4284,10 @@ app.post("/verify-pdf", renderPdfVerifyUpload.single("pdf"), async (req, res) =>
     await fs.promises.writeFile(tempPath, buffer);
 
     const signatureResult = await runPdfSignatureHelper(tempPath);
+    const signatureFallback = extractPdfSignatureFallback(buffer);
+    ["signerName", "signingTime", "reason", "location", "certificateIssuer", "certificateSubject", "certificateValidFrom", "certificateValidTo"].forEach((key) => {
+      if (!signatureResult[key] && signatureFallback[key]) signatureResult[key] = signatureFallback[key];
+    });
     const qrText = String(signatureResult.qrText || "").trim();
     const qrDetected = Boolean(signatureResult.qrFound && qrText);
     let text = "";

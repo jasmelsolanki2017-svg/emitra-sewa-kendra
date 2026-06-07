@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: emitra-sewa-kendra
+    env: node
+    plan: free
+    buildCommand: npm install && pip install -r tools/requirements-pdf-signature.txt
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SITE_BASE_URL
+        value: https://emitrawala.online
+      - key: PYTHON_BIN
+        value: python
