@@ -35,15 +35,7 @@
     .offline-storage-card small{display:block;color:#ffd198;font-weight:900;font-size:12px;margin-top:3px}
     .offline-storage-card .btn{grid-column:1/-1;border:1px solid rgba(255,255,255,.25);border-radius:6px;background:#0b66bd;color:white;font-weight:900;padding:9px 10px}
     .offline-drive-main{min-width:0;display:flex;flex-direction:column;min-height:100vh}
-    .offline-drive-topbar{background:white;border-bottom:1px solid var(--line);box-shadow:0 4px 22px rgba(8,31,74,.08);padding:18px 26px;display:grid;grid-template-columns:auto minmax(260px,620px) minmax(0,1fr);gap:22px;align-items:center;position:relative;z-index:60}
-    .offline-drive-menu-btn{border:0;background:white;color:#123b6d;font-size:22px;cursor:pointer;padding:6px;border-radius:6px}
-    .offline-drive-menu-btn:hover{background:var(--soft);color:var(--blue)}
-    .offline-drive-search{position:relative;display:block}
-    .offline-drive-search input{width:100%;border:1px solid var(--line);border-radius:8px;padding:13px 42px 13px 18px;font-size:14px;outline:none;background:white}
-    .offline-drive-search i{position:absolute;right:16px;top:50%;transform:translateY(-50%);color:#667085}
-    .offline-drive-status{display:flex;justify-content:flex-end;align-items:center;gap:20px;color:#1f3556;font-weight:800;font-size:13px}
-    .offline-drive-badge,.offline-drive-user{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
-    .offline-drive-badge i,.offline-drive-user i{color:var(--blue)}
+    .offline-floating-menu-btn{display:none;position:fixed;left:14px;top:16px;z-index:90;width:46px;height:46px;border:0;border-radius:8px;background:var(--blue);color:white;font-size:21px;box-shadow:0 8px 20px rgba(0,87,168,.28)}
     nav{background:var(--blue);padding:12px 6%;display:flex;align-items:center;justify-content:space-between;gap:18px;position:relative;z-index:30;box-shadow:0 4px 16px rgba(0,0,0,.16)}
     .logo img{width:190px;max-width:48vw;height:auto;display:block}
     nav ul{display:flex;list-style:none;gap:15px;flex-wrap:wrap;justify-content:flex-end;align-items:center}
@@ -109,8 +101,7 @@
     @media(max-width:1280px){.wrap{grid-template-columns:minmax(300px,360px) minmax(680px,1fr) minmax(250px,280px);padding-left:2%;padding-right:2%}.previewShell{min-height:720px}}
     @media(max-width:1180px){.offline-drive-shell{grid-template-columns:210px minmax(0,1fr)}.offline-drive-nav a{padding:12px 10px;font-size:13px}.offline-drive-brand strong{font-size:24px}}
     @media(max-width:1100px){.toolHeroInner{display:block}.toolStatus{display:inline-flex;margin-top:10px;min-width:0}.wrap{grid-template-columns:1fr;height:auto;overflow:visible}.card{overflow:visible;display:block}.card.form .panel,.card.side .panel{height:auto;overflow:visible}.previewShell{max-height:none;height:auto;min-height:0;overflow:auto}.card.side{order:2}.card.form{order:1}.card.preview{order:3}.pageWrap{transform-origin:top left}.previewShell{padding:6px}.card.preview{overflow:hidden}}
-    @media(max-width:900px){.offline-drive-shell{display:block}.offline-drive-sidebar{position:fixed;inset:0 auto 0 0;width:min(284px,86vw);min-height:100vh;transform:translateX(-105%);transition:transform .25s ease}.offline-drive-page.menu-open .offline-drive-sidebar{transform:translateX(0)}.offline-drive-page.menu-open::after{content:"";position:fixed;inset:0;background:rgba(3,34,77,.42);z-index:70}.offline-drive-topbar{grid-template-columns:auto minmax(0,1fr);padding:14px}.offline-drive-status{grid-column:1/-1;justify-content:space-between;gap:12px;font-size:12px}.offline-storage-card{display:none}}
-    @media(max-width:520px){.offline-drive-badge{display:none}.offline-drive-user span{max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.offline-drive-topbar{gap:12px}.offline-drive-search input{padding:11px 38px 11px 12px;font-size:13px}}
+    @media(max-width:900px){.offline-drive-shell{display:block}.offline-drive-sidebar{position:fixed;inset:0 auto 0 0;width:min(284px,86vw);min-height:100vh;transform:translateX(-105%);transition:transform .25s ease}.offline-drive-page.menu-open .offline-drive-sidebar{transform:translateX(0)}.offline-drive-page.menu-open::after{content:"";position:fixed;inset:0;background:rgba(3,34,77,.42);z-index:70}.offline-floating-menu-btn{display:grid;place-items:center}.offline-storage-card{display:none}.toolHero{padding-left:76px}}
     @media(max-width:620px){nav{flex-direction:column;align-items:flex-start;padding:12px 4%}nav ul{justify-content:flex-start;gap:12px}.nav-tools{width:100%}.nav-tools-menu{position:static;width:100%;margin-top:8px}.logo img{width:170px;max-width:74vw}.toolHero{padding:12px 4%}.toolHero h1{font-size:22px}.toolHero p{font-size:12px}.toolbar{padding:8px 4%;display:grid;grid-template-columns:1fr 1fr}.toolbar>*{width:100%;max-width:none!important}.toolbar select,.toolbar button{min-height:42px}.toolbar .toggle,.toolbar .colorControl{grid-column:1/-1;justify-content:space-between}.colorControl input[type="color"]{width:52px}.wrap{display:block;padding:10px 3%;overflow:visible}.card{margin-bottom:12px}.panel{padding:12px}.grid{grid-template-columns:1fr;padding:10px}.dateInputRow{grid-template-columns:minmax(0,1fr) 44px}.formActions{grid-template-columns:1fr 1fr}.previewShell{padding:8px;max-height:72vh;min-height:96px}.pageWrap{max-width:100%;overflow:hidden}.pageWrap canvas{width:100%!important;height:auto!important}.small.mobilePreviewHint{display:block}}
   </style>
 </head>
@@ -140,17 +131,7 @@
     </div>
   </aside>
   <div class="offline-drive-main">
-    <header class="offline-drive-topbar">
-      <button class="offline-drive-menu-btn" id="offlineDriveMenuBtn" type="button" aria-label="Menu"><i class="fa-solid fa-bars"></i></button>
-      <label class="offline-drive-search" aria-label="Search tool options">
-        <input type="search" id="toolSearchInput" placeholder="Search form data, tools..." autocomplete="off">
-        <i class="fa-solid fa-magnifying-glass"></i>
-      </label>
-      <div class="offline-drive-status">
-        <span class="offline-drive-badge"><i class="fa-solid fa-shield-halved"></i> Browser Only</span>
-        <span class="offline-drive-user"><i class="fa-solid fa-user"></i><span>eMitra Tool</span><i class="fa-solid fa-chevron-down"></i></span>
-      </div>
-    </header>
+    <button class="offline-floating-menu-btn" id="offlineDriveMenuBtn" type="button" aria-label="Menu"><i class="fa-solid fa-bars"></i></button>
 
 <section class="toolHero">
   <div class="toolHeroInner">
@@ -259,18 +240,6 @@ if(offlineDriveMenuBtn){
     if(!document.body.classList.contains('menu-open')) return;
     if(event.target.closest('#offlineDriveSidebar') || event.target.closest('#offlineDriveMenuBtn')) return;
     document.body.classList.remove('menu-open');
-  });
-}
-const toolSearchInput = document.getElementById('toolSearchInput');
-if(toolSearchInput){
-  toolSearchInput.addEventListener('keydown', (event) => {
-    if(event.key !== 'Enter') return;
-    const query = toolSearchInput.value.trim().toLowerCase();
-    if(!query) return;
-    const match = Array.from(document.querySelectorAll('#dataForm label,.dataGroupHead span,button,.toolbar select option'))
-      .find((el) => (el.textContent || '').toLowerCase().includes(query));
-    const target = match?.closest('.dataGroup,.toolbar,.field') || match;
-    if(target) target.scrollIntoView({ behavior:'smooth', block:'center' });
   });
 }
 const FORMS = {
