@@ -10,6 +10,7 @@ const { promisify } = require("util");
 const multer = require("multer");
 const PDFDocument = require("pdfkit");
 const { PDFDocument: LibPdfDocument, StandardFonts, rgb } = require("pdf-lib");
+const forge = require("node-forge");
 let admin = null;
 let pdfParse = null;
 let cheerio = null;
@@ -4150,6 +4151,52 @@ function extractPdfSignatureFallback(buffer) {
   return result;
 }
 
+function verifyLegacyAdobePkcs7Sha1(buffer) {
+  const source = buffer.toString("latin1");
+  const byteRangeMatch = source.match(/\/ByteRange\s*\[\s*(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s*\]/);
+  const contentsMatch = source.match(/\/Contents\s*<([0-9a-fA-F\s]+)>/);
+  if (!byteRangeMatch || !contentsMatch) {
+    return { verified: false, modified: "Unknown", reason: "Signature byte range not found" };
+  }
+  try {
+    const [start1, len1, start2, len2] = byteRangeMatch.slice(1).map(Number);
+    const signedBytes = Buffer.concat([
+      buffer.slice(start1, start1 + len1),
+      buffer.slice(start2, start2 + len2)
+    ]);
+    const byteRangeCoversWholeFile = start1 === 0 && (start2 + len2) === buffer.length;
+    const signatureBytes = Buffer.from(contentsMatch[1].replace(/\s+/g, ""), "hex");
+    const asn1 = forge.asn1.fromDer(forge.util.createBuffer(signatureBytes.toString("binary")), {
+      strict: false,
+      parseAllBytes: false,
+      decodeBitStrings: true
+    });
+    const message = forge.pkcs7.messageFromAsn1(asn1);
+    const signedDigest = message.rawCapture?.content?.value?.[0]?.value || "";
+    const expectedDigestHex = crypto.createHash("sha1").update(signedBytes).digest("hex");
+    const actualDigestHex = Buffer.from(signedDigest, "binary").toString("hex");
+    const digestMatches = expectedDigestHex === actualDigestHex;
+    const signerCert = message.certificates?.[0];
+    const signature = message.rawCapture?.signature || "";
+    let signatureMatches = false;
+    if (signerCert && signature) {
+      const md = forge.md.sha256.create();
+      md.update(signedDigest);
+      signatureMatches = signerCert.publicKey.verify(md.digest().bytes(), signature);
+    }
+    return {
+      verified: digestMatches && signatureMatches && byteRangeCoversWholeFile,
+      modified: !byteRangeCoversWholeFile || !digestMatches,
+      digestMatches,
+      signatureMatches,
+      byteRangeCoversWholeFile,
+      reason: digestMatches && signatureMatches ? "" : "PKCS#7 digest/signature mismatch"
+    };
+  } catch (error) {
+    return { verified: false, modified: "Unknown", reason: error.message || "Legacy PKCS#7 validation failed" };
+  }
+}
+
 function storeVerifiedPdfDownload(pdfBuffer, fileName = "verified-certificate.pdf") {
   const id = crypto.randomBytes(16).toString("hex");
   const safeName = path.basename(fileName).replace(/[^a-z0-9._-]+/gi, "-") || "verified-certificate.pdf";
@@ -4196,11 +4243,16 @@ async function createVerifiedPdfBuffer(originalPdfBuffer, signatureData = {}) {
     size: 13,
     color: rgb(0.05, 0.55, 0.21)
   });
-  firstPage.drawText("✓", {
-    x: stampX + 15,
-    y: stampY + stampH - 35,
-    size: 26,
-    font: boldFont,
+  firstPage.drawLine({
+    start: { x: stampX + 15, y: stampY + stampH - 27 },
+    end: { x: stampX + 22, y: stampY + stampH - 36 },
+    thickness: 3,
+    color: rgb(1, 1, 1)
+  });
+  firstPage.drawLine({
+    start: { x: stampX + 22, y: stampY + stampH - 36 },
+    end: { x: stampX + 36, y: stampY + stampH - 14 },
+    thickness: 3,
     color: rgb(1, 1, 1)
   });
 
@@ -4288,6 +4340,15 @@ app.post("/verify-pdf", renderPdfVerifyUpload.single("pdf"), async (req, res) =>
     ["signerName", "signingTime", "reason", "location", "certificateIssuer", "certificateSubject", "certificateValidFrom", "certificateValidTo"].forEach((key) => {
       if (!signatureResult[key] && signatureFallback[key]) signatureResult[key] = signatureFallback[key];
     });
+    const legacyValidation = verifyLegacyAdobePkcs7Sha1(buffer);
+    if (legacyValidation.verified) {
+      signatureResult.signatureStatus = "VALID";
+      signatureResult.documentModifiedAfterSigning = false;
+      signatureResult.trustStatus = signatureResult.trustStatus || "Trusted";
+    } else if (legacyValidation.modified === true) {
+      signatureResult.signatureStatus = "MODIFIED";
+      signatureResult.documentModifiedAfterSigning = true;
+    }
     const qrText = String(signatureResult.qrText || "").trim();
     const qrDetected = Boolean(signatureResult.qrFound && qrText);
     let text = "";
@@ -4315,7 +4376,9 @@ app.post("/verify-pdf", renderPdfVerifyUpload.single("pdf"), async (req, res) =>
         : "Pending Verification";
 
     let message = "Validity Unknown";
-    if (certificateVerified) {
+    if (signatureStatus === "Valid") {
+      message = "Signature Valid";
+    } else if (certificateVerified) {
       message = "Certificate Verified via Rajasthan eMitra";
     } else if (certificateNumber) {
       message = "Check via Official eMitra";
@@ -4331,7 +4394,7 @@ app.post("/verify-pdf", renderPdfVerifyUpload.single("pdf"), async (req, res) =>
     }
 
     const issuerStatus = certificateIssuer ? "Detected" : "Not Detected";
-    const canGenerateVerifiedPdf = qrDetected && Boolean(certificateNumber) && signatureStatus === "Valid";
+    const canGenerateVerifiedPdf = Boolean(certificateNumber) && signatureStatus === "Valid";
     const signatureStampData = {
       signerName: signatureResult.signerName || "",
       signDate: signatureResult.signingTime || "",
@@ -4346,7 +4409,7 @@ app.post("/verify-pdf", renderPdfVerifyUpload.single("pdf"), async (req, res) =>
     const downloadUrl = relativeDownloadUrl ? `${requestBaseUrl}${relativeDownloadUrl}` : "";
 
     return res.json({
-      valid: certificateVerified,
+      valid: signatureStatus === "Valid",
       message,
       certificateNumber,
       verificationStatus: emitraLookup.verificationStatus,
