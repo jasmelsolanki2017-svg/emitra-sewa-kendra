@@ -205,6 +205,7 @@
         <button id="autoDetectBtn" class="secondary" title="PDF preview se blank field boxes auto detect kare">Auto Detect Fields</button>
         <button id="addFieldBtn" class="secondary" title="Current PDF par naya mapped field add kare">Add Field</button>
         <button id="addInputBtn" class="secondary" title="User form me naya input add kare">Add Input</button>
+        <button id="deleteInputBtn" class="danger" title="Selected custom input delete kare">Delete Input</button>
         <button id="deleteFieldBtn" class="danger" title="Selected mapped field delete kare">Delete Field</button>
         <button id="downloadConfigBtn" class="warn">Download Config</button>
         <button id="resetConfigBtn" class="danger">Reset</button>
@@ -1899,6 +1900,36 @@ async function addCustomInput(){
   buildDataForm();
   setStatus(`Custom input add ho gaya: ${id}. PDF field ke Source field id me ye id use karein.`, 'ok');
 }
+async function deleteCustomInput(){
+  if(!config) return;
+  const selectedSource = String($('selSourceSelect')?.value || $('selSource')?.value || '').trim();
+  if(!selectedSource){
+    setStatus('Delete Input ke liye pehle source dropdown se input choose karein.', 'bad');
+    return;
+  }
+  const customFields = Array.isArray(config.customDataFields) ? config.customDataFields : [];
+  const customInput = customFields.find(field => field.id === selectedSource);
+  if(!customInput){
+    setStatus('Sirf Add Input se banaya hua custom input delete ho sakta hai. Built-in source delete nahi hoga.', 'bad');
+    return;
+  }
+  const linkedFields = (config.fields || []).filter(field => field.source === selectedSource);
+  const message = linkedFields.length
+    ? `"${customInput.label || selectedSource}" input delete karna hai? Isse linked ${linkedFields.length} PDF field box bhi delete honge.`
+    : `"${customInput.label || selectedSource}" input delete karna hai?`;
+  if(!confirm(message)) return;
+  config.customDataFields = customFields.filter(field => field.id !== selectedSource);
+  if(linkedFields.length){
+    config.fields = config.fields.filter(field => field.source !== selectedSource);
+    if(linkedFields.some(field => field.id === selectedFieldId)) selectedFieldId = null;
+  }
+  delete sharedFormData[selectedSource];
+  try { localStorage.setItem(DATA_LOCAL_KEY, JSON.stringify(sharedFormData)); } catch(e) {}
+  buildDataForm();
+  await renderPreview();
+  fillSelectedControls();
+  setStatus('Custom input delete ho gaya. Permanent save ke liye Update Config dabayein.', 'ok');
+}
 async function deleteMappedField(){
   if(!selectedFieldId || !config?.fields) {
     setStatus('Delete ke liye pehle field select karein.', 'bad');
@@ -2099,6 +2130,7 @@ $('deleteFormBtn').addEventListener('click',deletePdfForm);
 $('autoDetectBtn').addEventListener('click',autoDetectFields);
 $('addFieldBtn').addEventListener('click',addMappedField);
 $('addInputBtn').addEventListener('click',addCustomInput);
+$('deleteInputBtn').addEventListener('click',deleteCustomInput);
 $('deleteFieldBtn').addEventListener('click',deleteMappedField);
 $('downloadConfigBtn').addEventListener('click',downloadConfig);
 $('resetConfigBtn').addEventListener('click',async()=>{localStorage.removeItem(getFormMeta(currentFormKey).localKey); config=sanitizeConfigFields(structuredClone(defaultConfig)); selectedFieldId=null; await renderPreview(); setStatus('Reset done','ok');});
