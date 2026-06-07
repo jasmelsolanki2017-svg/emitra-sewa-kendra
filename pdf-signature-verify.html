@@ -299,16 +299,16 @@ function renderResult(data){
     reportBtn.href = data.reportDownloadUrl;
     reportBtn.classList.remove('disabled');
   }
-  if(data.downloadUrl || data.verifiedPdfUrl){
-    verifiedPdfBtn.href = data.downloadUrl || data.verifiedPdfUrl;
-    verifiedPdfBtn.download = data.verifiedPdfFileName || 'verified-certificate.pdf';
-    verifiedPdfBtn.classList.remove('disabled');
-  }else if(data.valid === true && data.verifiedPdfBase64){
+  if(data.valid === true && data.verifiedPdfBase64){
     const binary = atob(data.verifiedPdfBase64);
     const bytes = new Uint8Array(binary.length);
     for(let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
     verifiedPdfObjectUrl = URL.createObjectURL(new Blob([bytes], { type:'application/pdf' }));
     verifiedPdfBtn.href = verifiedPdfObjectUrl;
+    verifiedPdfBtn.download = data.verifiedPdfFileName || 'verified-certificate.pdf';
+    verifiedPdfBtn.classList.remove('disabled');
+  }else if(data.downloadUrl || data.verifiedPdfUrl){
+    verifiedPdfBtn.href = data.downloadUrl || data.verifiedPdfUrl;
     verifiedPdfBtn.download = data.verifiedPdfFileName || 'verified-certificate.pdf';
     verifiedPdfBtn.classList.remove('disabled');
   }

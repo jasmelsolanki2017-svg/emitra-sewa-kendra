@@ -4433,7 +4433,7 @@ app.post("/verify-pdf", renderPdfVerifyUpload.single("pdf"), async (req, res) =>
       qrText,
       downloadUrl,
       verifiedPdfUrl: downloadUrl,
-      verifiedPdfBase64: "",
+      verifiedPdfBase64: verifiedPdfBuffer ? verifiedPdfBuffer.toString("base64") : "",
       verifiedPdfFileName: downloadUrl ? `verified-${path.basename(req.file.originalname || "certificate.pdf")}` : ""
     });
   } catch (error) {
