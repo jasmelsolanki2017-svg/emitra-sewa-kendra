@@ -4233,14 +4233,12 @@ app.post("/verify-pdf", renderPdfVerifyUpload.single("pdf"), async (req, res) =>
     let message = "Certificate Verification Unknown";
     if (certificateVerified) {
       message = "Certificate Verified via Rajasthan eMitra";
-    } else if (!qrDetected && certificateNumber) {
+    } else if (certificateNumber) {
       message = "Check via Official eMitra";
     } else if (!qrDetected) {
       message = "QR Not Detected";
     } else if (!certificateNumber) {
       message = "Certificate Number Not Detected";
-    } else if (emitraLookup.verificationStatus === "NOT_VERIFIED") {
-      message = "Certificate Not Verified via Rajasthan eMitra";
     }
 
     let signatureMessage = `Digital Signature Status: ${signatureStatus}`;

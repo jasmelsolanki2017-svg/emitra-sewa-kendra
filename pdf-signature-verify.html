@@ -212,7 +212,8 @@ resetBtn.addEventListener('click', () => {
 
 function resultClass(data){
   if(data.valid === true) return 'valid';
-  if(/QR Not Detected|Certificate Issuer Not Detected|Check via Official eMitra/i.test(data.message || '') || (data.certificateNumber && /UNKNOWN|PENDING|CHECK/i.test(data.certificateVerificationStatus || data.verificationStatus || ''))) return 'warn';
+  if(data.certificateNumber || /Check via Official eMitra|Pending Verification/i.test(data.message || '')) return 'warn';
+  if(/QR Not Detected|Certificate Issuer Not Detected/i.test(data.message || '') && data.certificateNumber) return 'warn';
   if(data.valid === false) return 'bad';
   const text = `${data.signatureStatus || ''} ${data.finalStatus || ''}`.toUpperCase();
   if(text.includes('VALID') && !text.includes('NOT')) return 'valid';
@@ -269,9 +270,14 @@ function renderResult(data){
   ];
   resultGrid.innerHTML = fields.map(([label, value]) => `<div class="result-item"><label>${label}</label><strong>${valueText(value)}</strong></div>`).join('');
   const cardClass = resultClass(data);
+  const statusText = data.valid === true
+    ? valueText(data.finalStatus || data.message)
+    : data.certificateNumber
+      ? 'Pending Verification'
+      : valueText(data.finalStatus || data.message || 'Verification Failed');
   resultCard.className = `card result-card ${cardClass}`;
-  resultMark.textContent = cardClass === 'bad' ? '✕' : cardClass === 'warn' ? '!' : '✓';
-  finalStatus.innerHTML = `<i class="fa-solid ${cardClass === 'bad' ? 'fa-circle-xmark' : cardClass === 'warn' ? 'fa-triangle-exclamation' : 'fa-circle-check'}"></i><span>${valueText(data.finalStatus || data.message)}</span>`;
+  resultMark.textContent = cardClass === 'bad' ? '✕' : cardClass === 'warn' ? '⚠' : '✓';
+  finalStatus.innerHTML = `<i class="fa-solid ${cardClass === 'bad' ? 'fa-circle-xmark' : cardClass === 'warn' ? 'fa-triangle-exclamation' : 'fa-circle-check'}"></i><span>${statusText}</span>`;
   resultCard.style.display = 'block';
   if(data.reportDownloadUrl){
     reportBtn.href = data.reportDownloadUrl;
