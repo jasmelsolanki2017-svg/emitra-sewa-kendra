@@ -32,6 +32,7 @@ let currentFolders = [];
 let activeFolderId = "__all";
 let currentRequestNotifications = [];
 let storageFallbackToken = 0;
+let previewFileId = "";
 const selectedFileIds = new Set();
 
 const pageType = document.body.dataset.page || "";
@@ -265,6 +266,30 @@ const fileTypeIcon = (file = {}) => {
   return `<i class="fa-solid ${icon}"></i>`;
 };
 
+const getPreviewImageRows = () => getVisibleUserFiles().filter((item) => getPreviewKind(item.file) === "image");
+
+const getPreviewImagePosition = (id = previewFileId) => {
+  const rows = getPreviewImageRows();
+  const index = rows.findIndex((item) => item.id === id);
+  return { rows, index };
+};
+
+const updatePreviewArrowState = () => {
+  const prevBtn = document.getElementById("previewPrevBtn");
+  const nextBtn = document.getElementById("previewNextBtn");
+  const count = document.getElementById("filePreviewCount");
+  if(!prevBtn || !nextBtn || !count){ return; }
+  const { rows, index } = getPreviewImagePosition();
+  const isImage = index >= 0 && rows.length > 0;
+  prevBtn.hidden = !isImage;
+  nextBtn.hidden = !isImage;
+  count.hidden = !isImage;
+  if(!isImage){ return; }
+  prevBtn.disabled = rows.length < 2;
+  nextBtn.disabled = rows.length < 2;
+  count.innerText = `${index + 1} / ${rows.length}`;
+};
+
 const ensurePreviewModal = () => {
   let modal = document.getElementById("filePreviewModal");
   if(modal){ return modal; }
@@ -274,10 +299,17 @@ const ensurePreviewModal = () => {
   modal.innerHTML = `
     <div class="preview-dialog" role="dialog" aria-modal="true" aria-labelledby="filePreviewTitle">
       <div class="preview-head">
-        <strong id="filePreviewTitle">Document Preview</strong>
+        <div class="preview-title-wrap">
+          <strong id="filePreviewTitle">Document Preview</strong>
+          <span id="filePreviewCount" class="preview-count" hidden></span>
+        </div>
         <button type="button" onclick="closeFilePreview()">Close</button>
       </div>
-      <div class="preview-body" id="filePreviewBody"></div>
+      <div class="preview-body-wrap">
+        <button type="button" class="preview-arrow preview-arrow-left" id="previewPrevBtn" onclick="showAdjacentPreviewImage(-1)" aria-label="Previous photo" hidden><i class="fa-solid fa-chevron-left"></i></button>
+        <div class="preview-body" id="filePreviewBody"></div>
+        <button type="button" class="preview-arrow preview-arrow-right" id="previewNextBtn" onclick="showAdjacentPreviewImage(1)" aria-label="Next photo" hidden><i class="fa-solid fa-chevron-right"></i></button>
+      </div>
     </div>
   `;
   modal.addEventListener("click", (event) => {
@@ -287,12 +319,13 @@ const ensurePreviewModal = () => {
   return modal;
 };
 
-const openFilePreview = (file = {}) => {
+const openFilePreview = (file = {}, id = "") => {
   const url = getFileUrl(file);
   if(!url){
     alert("Preview link nahi mila.");
     return;
   }
+  previewFileId = id || currentFiles.find((entry) => entry.file === file || String(entry.file.path || "") === String(file.path || ""))?.id || "";
   const modal = ensurePreviewModal();
   const title = document.getElementById("filePreviewTitle");
   const body = document.getElementById("filePreviewBody");
@@ -313,6 +346,7 @@ const openFilePreview = (file = {}) => {
   }else{
     body.innerHTML = `<div class="preview-empty"><p>Is file ka browser preview available nahi hai.</p><a class="preview-download" href="${safeDownloadUrl}" target="_blank" rel="noopener noreferrer">Download</a></div>`;
   }
+  updatePreviewArrowState();
   modal.classList.add("open");
 };
 
@@ -1008,7 +1042,7 @@ window.previewUserFile = (id) => {
     alert("Preview link nahi mila.");
     return;
   }
-  openFilePreview(item.file);
+  openFilePreview(item.file, item.id);
 };
 
 window.previewUserFileByPath = (path) => {
@@ -1017,7 +1051,15 @@ window.previewUserFileByPath = (path) => {
     alert("Preview link nahi mila.");
     return;
   }
-  openFilePreview(item.file);
+  openFilePreview(item.file, item.id);
+};
+
+window.showAdjacentPreviewImage = (direction = 1) => {
+  const { rows, index } = getPreviewImagePosition();
+  if(rows.length < 2 || index < 0){ return; }
+  const nextIndex = (index + Number(direction || 1) + rows.length) % rows.length;
+  const next = rows[nextIndex];
+  if(next){ openFilePreview(next.file, next.id); }
 };
 
 window.toggleUserFileMenu = (id, event) => {
@@ -1209,7 +1251,22 @@ window.closeFilePreview = () => {
   const body = document.getElementById("filePreviewBody");
   if(body){ body.innerHTML = ""; }
   if(modal){ modal.classList.remove("open"); }
+  previewFileId = "";
 };
+
+document.addEventListener("keydown", (event) => {
+  const modal = document.getElementById("filePreviewModal");
+  if(!modal?.classList.contains("open")){ return; }
+  if(event.key === "ArrowLeft"){
+    event.preventDefault();
+    window.showAdjacentPreviewImage(-1);
+  }else if(event.key === "ArrowRight"){
+    event.preventDefault();
+    window.showAdjacentPreviewImage(1);
+  }else if(event.key === "Escape"){
+    window.closeFilePreview();
+  }
+});
 
 const deleteUserFileEntry = async (id) => {
   if(!currentUser){
