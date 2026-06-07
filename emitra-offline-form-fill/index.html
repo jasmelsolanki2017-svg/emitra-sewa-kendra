@@ -67,6 +67,7 @@
     .overlayField.hiddenValue{opacity:.22}
     .editOn .overlayField{background:rgba(20,184,166,.08);border:1px solid rgba(20,184,166,.9);cursor:move}
     .overlayField.selected{outline:2px solid #2563eb;background:rgba(37,99,235,.12)!important}
+    .pageWatermark{position:absolute;right:14px;bottom:10px;color:rgba(0,87,168,.78);font:700 10px/1.2 "Poppins",Arial,sans-serif;letter-spacing:.5px;pointer-events:none;user-select:none}
     .small{font-size:12px;color:var(--muted);line-height:1.45}.ok{color:#047857}.bad{color:#b91c1c}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
     .toggle{display:flex;align-items:center;gap:8px;font-weight:700}.toggle input{width:auto}
     .adminOnly{display:none!important}
@@ -269,6 +270,7 @@ const FONT_URL = 'https://cdn.jsdelivr.net/gh/googlefonts/noto-fonts@main/hinted
 const DEFAULT_ADMIN_SERVER_URL = 'https://emitra-sewa-kendra.onrender.com';
 const ADMIN_SERVER_STORAGE_KEY = 'emitraAdminServerUrl';
 const ADMIN_EMAIL = 'jasmelsolanki@gmail.com';
+const WATERMARK_TEXT = 'EMITRAWALA.ONLINE';
 const FIREBASE_CONFIG = {
   apiKey: 'AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8',
   authDomain: 'my-website-73785.firebaseapp.com',
@@ -1249,6 +1251,7 @@ async function renderPreview(){
       await page.render({canvasContext: canvas.getContext('2d'), viewport}).promise;
       if(renderId !== activePreviewRenderId) return;
       addFieldsForPage(wrap, p);
+      addWatermarkForPage(wrap);
       await nextFrame();
     }
     document.body.classList.toggle('editOn', $('editMode').checked);
@@ -1281,6 +1284,12 @@ function addFieldsForPage(wrap, pageNo){
     div.addEventListener('click', e=>{e.stopPropagation(); selectField(field.id);});
     wrap.appendChild(div);
   }
+}
+function addWatermarkForPage(wrap){
+  const mark = document.createElement('div');
+  mark.className = 'pageWatermark';
+  mark.textContent = WATERMARK_TEXT;
+  wrap.appendChild(mark);
 }
 function positionDiv(div, field, canvas, pageSize){
   div.style.left=(field.xPct*canvas.width)+'px'; div.style.top=(field.yPct*canvas.height)+'px';
@@ -1388,6 +1397,18 @@ async function makePdf(){
     while(size>5 && font.widthOfTextAtSize(text,size)>w-2) size-=0.5;
     const y=Math.max(0, Math.min(height - size, height - top - size - 2));
     page.drawText(text,{x:x+1.5,y, size, font, color:fillColor});
+  }
+  for(const page of pages){
+    const {width} = page.getSize();
+    const size = 9;
+    const textWidth = font.widthOfTextAtSize(WATERMARK_TEXT, size);
+    page.drawText(WATERMARK_TEXT, {
+      x:Math.max(12, width - textWidth - 14),
+      y:10,
+      size,
+      font,
+      color:rgb(0, 0.34, 0.66)
+    });
   }
   return await pdfDoc.save();
 }
