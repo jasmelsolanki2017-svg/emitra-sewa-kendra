@@ -520,6 +520,7 @@ const DATE_FIELD_IDS = new Set(['dob','date','groomDob','brideDob','marriageDate
 let sharedFormData = {};
 try { sharedFormData = JSON.parse(localStorage.getItem(DATA_LOCAL_KEY) || '{}') || {}; } catch(e) { sharedFormData = {}; }
 let derivedAutoValues = {};
+let clearedFieldIds = {};
 const $ = id => document.getElementById(id);
 const navTools = document.querySelector('.nav-tools');
 if(navTools){
@@ -675,7 +676,11 @@ function saveSharedFormData(){
   for (const group of getCurrentFormSchema()) {
     for (const [id] of group.fields) {
       const el = $('data_'+id);
-      if (el) sharedFormData[id] = el.value;
+      if (el) {
+        sharedFormData[id] = el.value;
+        if(String(el.value || '').trim() === '') clearedFieldIds[id] = true;
+        else delete clearedFieldIds[id];
+      }
     }
   }
   try { localStorage.setItem(DATA_LOCAL_KEY, JSON.stringify(sharedFormData)); } catch(e) {}
@@ -683,6 +688,8 @@ function saveSharedFormData(){
 
 function setSharedValue(id, value){
   sharedFormData[id] = value;
+  if(String(value || '').trim() === '') clearedFieldIds[id] = true;
+  else delete clearedFieldIds[id];
   try { localStorage.setItem(DATA_LOCAL_KEY, JSON.stringify(sharedFormData)); } catch(e) {}
 }
 
@@ -970,12 +977,15 @@ function buildDataForm(){
 
 function resetFormData(useSample){
   const nextData = {};
+  if(!useSample) clearedFieldIds = {};
   for (const group of getCurrentFormSchema()) {
     for (const [id,,type,def] of group.fields) {
       nextData[id] = useSample ? (def || '') : '';
+      if(!useSample) clearedFieldIds[id] = true;
       if(type.startsWith('select:') && !useSample){
         const firstOpt = type.substring(7).split(',')[0] || '';
         nextData[id] = firstOpt.split('=')[0] || '';
+        delete clearedFieldIds[id];
       }
     }
   }
@@ -1145,6 +1155,7 @@ function syncMarriageAgeFromDob(data){
 }
 
 function fillDerivedIfBlank(data, id, value){
+  if(clearedFieldIds[id]) return;
   if(String(data[id] || '').trim()) return;
   const text = String(value || '').trim();
   if(!text) return;
@@ -1155,6 +1166,7 @@ function mirrorDerivedInput(data, id, value){
   const text = String(value || '').trim();
   const current = String(data[id] || '').trim();
   const oldAuto = derivedAutoValues[id] || '';
+  if(clearedFieldIds[id] && !current) return;
   if(!text){
     if(current === oldAuto){
       setDerivedDataValue(data, id, '');
@@ -1173,11 +1185,11 @@ function syncMarriageWitnessDefaults(data){
   mirrorDerivedInput(data, 'groomSideWitnessName', data.groomWitnessName);
   mirrorDerivedInput(data, 'groomSideWitnessAddress', data.groomWitnessAddress);
   fillDerivedIfBlank(data, 'groomSideWitnessDistrict', data.groomDistrict);
-  fillDerivedIfBlank(data, 'groomSideWitnessState', data.groomState || 'राजस्थान');
+  fillDerivedIfBlank(data, 'groomSideWitnessState', data.groomState);
   mirrorDerivedInput(data, 'brideSideWitnessName', data.brideWitnessName);
   mirrorDerivedInput(data, 'brideSideWitnessAddress', data.brideWitnessAddress);
   fillDerivedIfBlank(data, 'brideSideWitnessDistrict', data.brideDistrict);
-  fillDerivedIfBlank(data, 'brideSideWitnessState', data.brideState || 'राजस्थान');
+  fillDerivedIfBlank(data, 'brideSideWitnessState', data.brideState);
 }
 
 function getCandidateAge(data){
