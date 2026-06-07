@@ -81,7 +81,7 @@
     .previewShell{padding:12px;overflow:auto;max-height:none;min-height:760px;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
     .pageWrap{position:relative;margin:0 auto 18px;background:white;border:1px solid #cbd5e1;box-shadow:0 2px 10px rgba(0,0,0,.15);width:max-content}
     canvas{display:block}
-    .overlayField{position:absolute;border:1px solid transparent;background:transparent;color:#111827;overflow:visible;white-space:nowrap;padding:0 2px;line-height:1.4;min-width:12px;min-height:12px;user-select:none;font-family:"Noto Sans Devanagari","Mangal",sans-serif}
+    .overlayField{position:absolute;border:1px solid transparent;background:transparent;color:#111827;overflow:hidden;white-space:nowrap;padding:0 2px;line-height:1.15;min-width:12px;min-height:12px;user-select:none;font-family:"Noto Sans Devanagari","Mangal",sans-serif;text-align:center;display:flex;align-items:center;justify-content:center}
     .overlayField.check::after{content:"✓";font-weight:900;color:currentColor;font-size:22px;line-height:1}
     .overlayField.hiddenValue{opacity:.22}
     .editOn .overlayField{background:rgba(20,184,166,.08);border:1px solid rgba(20,184,166,.9);cursor:move}
@@ -303,6 +303,7 @@ function sanitizeConfigFields(cfg){
 
 const COMBINED_CONFIG_URL = 'assets/forms-fields-config.json';
 const FONT_URL = 'https://cdn.jsdelivr.net/gh/googlefonts/noto-fonts@main/hinted/ttf/NotoSansDevanagari/NotoSansDevanagari-Regular.ttf';
+const MIN_FIT_FONT_SIZE = 7;
 const DEFAULT_ADMIN_SERVER_URL = 'https://emitra-sewa-kendra.onrender.com';
 const ADMIN_SERVER_STORAGE_KEY = 'emitraAdminServerUrl';
 const ADMIN_EMAIL = 'jasmelsolanki@gmail.com';
@@ -1314,6 +1315,7 @@ function addFieldsForPage(wrap, pageNo){
     div.style.color = getFillColor();
     const val=valueForField(field,data);
     if(field.type==='text') div.textContent=val;
+    if(field.type==='text') applyOverlayFit(div, field, canvas, pageSize, val);
     if(!val) div.classList.add('hiddenValue');
     div.title=field.label+' ('+field.id+')';
     div.addEventListener('pointerdown', startDrag);
@@ -1327,10 +1329,47 @@ function addWatermarkForPage(wrap){
   mark.textContent = WATERMARK_TEXT;
   wrap.appendChild(mark);
 }
+function getFieldMaxFontSize(field){
+  const size = Number(field?.fontSize);
+  return Number.isFinite(size) && size > 0 ? size : 11;
+}
+function getFittedFontSize(text, maxSize, boxWidth, measureWidth){
+  const value = String(text || '');
+  const max = getFieldMaxFontSize({fontSize:maxSize});
+  if(!value || !Number.isFinite(boxWidth) || boxWidth <= 0) return max;
+  const availableWidth = Math.max(1, boxWidth - 4);
+  let size = max;
+  while(size > MIN_FIT_FONT_SIZE && measureWidth(value, size) > availableWidth){
+    size = Math.max(MIN_FIT_FONT_SIZE, size - 0.25);
+  }
+  return size;
+}
+function trimTextToWidth(text, size, boxWidth, measureWidth){
+  let value = String(text || '');
+  const availableWidth = Math.max(1, boxWidth - 4);
+  if(!value || measureWidth(value, size) <= availableWidth) return value;
+  while(value.length > 0 && measureWidth(value, size) > availableWidth){
+    value = value.slice(0, -1);
+  }
+  return value;
+}
+function applyOverlayFit(div, field, canvas, pageSize, value){
+  if(!div || !field || !canvas || !pageSize) return;
+  const maxPreviewSize = getFieldMaxFontSize(field) * canvas.width / pageSize.w;
+  const minPreviewSize = MIN_FIT_FONT_SIZE * canvas.width / pageSize.w;
+  const boxWidth = field.wPct * canvas.width;
+  const ctx = canvas.getContext('2d');
+  const family = '"Noto Sans Devanagari","Mangal",Arial,sans-serif';
+  const fittedSize = getFittedFontSize(value, maxPreviewSize, boxWidth, (text, size) => {
+    ctx.font = `${size}px ${family}`;
+    return ctx.measureText(String(text || '')).width;
+  });
+  div.style.fontSize = Math.max(minPreviewSize, fittedSize) + 'px';
+}
 function positionDiv(div, field, canvas, pageSize){
   div.style.left=(field.xPct*canvas.width)+'px'; div.style.top=(field.yPct*canvas.height)+'px';
   div.style.width=(field.wPct*canvas.width)+'px'; div.style.height=(field.hPct*canvas.height)+'px';
-  div.style.fontSize=(field.fontSize * canvas.width / pageSize.w)+'px';
+  applyOverlayFit(div, field, canvas, pageSize, div.textContent || '');
 }
 function refreshOverlayTexts(){
   const data=collectData({normalizeDates:false});
@@ -1339,6 +1378,8 @@ function refreshOverlayTexts(){
     div.style.color = getFillColor();
     const val=valueForField(field,data);
     if(field.type==='text') div.textContent=val;
+    const canvas=div.parentElement?.querySelector('canvas');
+    if(field.type==='text' && canvas) applyOverlayFit(div, field, canvas, pdfPageSizes[field.page], val);
     div.classList.toggle('hiddenValue', !val);
   });
 }
@@ -1456,10 +1497,14 @@ async function makePdf(){
       continue;
     }
     let text=valueForField(field,data); if(!text) continue;
-    let size=field.fontSize;
-    while(size>5 && widthOfMixedText(text,size)>w-2) size-=0.5;
-    const y=Math.max(0, Math.min(height - size, height - top - size - 2));
-    drawMixedText(page, text, {x:x+1.5,y, size, color:fillColor});
+    const size=getFittedFontSize(text, getFieldMaxFontSize(field), w, widthOfMixedText);
+    text = trimTextToWidth(text, size, w, widthOfMixedText);
+    const textWidth = widthOfMixedText(text, size);
+    const centerX = x + w / 2 - textWidth / 2;
+    const drawX = Math.max(x + 1, Math.min(x + Math.max(1, w - textWidth - 1), centerX));
+    const centerY = height - top - h / 2 - size * 0.35;
+    const y=Math.max(0, Math.min(height - size, centerY));
+    drawMixedText(page, text, {x:drawX,y, size, color:fillColor});
   }
   for(const page of pages){
     const {width} = page.getSize();
