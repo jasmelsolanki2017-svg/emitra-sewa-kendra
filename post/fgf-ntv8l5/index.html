@@ -1043,7 +1043,7 @@ const parsePostWiseApplyLinks = (value = "") => String(value || "").split(/\r?\n
   const urlMatch = line.match(/https?:\/\/\S+|www\.\S+/i);
   if(!urlMatch){ return null; }
   const url = urlMatch[0];
-  const label = line.slice(0, urlMatch.index).replace(/[:|,-]+$/g, "").trim() || "Apply Link";
+  const label = line.slice(0, urlMatch.index).trim().replace(/[:|,-]+$/g, "").trim() || "Apply Link";
   return { label, url:safeUrl(url) };
 }).filter(Boolean);
 const buildImportantLinks = (job = {}) => {
@@ -1809,8 +1809,10 @@ const renderSidebarLinks = (items = []) => {
   if(!box){ return; }
   const seen = new Set();
   const html = items.map((item) => {
-    const key = comparableLinkUrl(item?.url || "");
-    if(!key || seen.has(key)){ return ""; }
+    const urlKey = comparableLinkUrl(item?.url || "");
+    if(!urlKey){ return ""; }
+    const key = `${String(item?.label || "").trim().toLowerCase()}|${urlKey}`;
+    if(seen.has(key)){ return ""; }
     seen.add(key);
     return buildButton(item, item.className || "");
   }).filter(Boolean).join("");
@@ -2558,7 +2560,7 @@ const renderSarkariBlueLinks = (job = {}) => {
     const url = safeUrl(item.url);
     const comparableUrl = comparableLinkUrl(url);
     const key = `${String(item.label || "").trim().toLowerCase()}|${comparableUrl}`;
-    if(!comparableUrl || seen.has(key) || seenUrls.has(comparableUrl)){ return ""; }
+    if(!comparableUrl || seen.has(key)){ return ""; }
     seen.add(key);
     seenUrls.add(comparableUrl);
     return `<a class="btn ${item.className || ""}" href="${url}" target="_blank" rel="noopener noreferrer"><i class="${item.icon || "fa-solid fa-link"}" aria-hidden="true"></i> ${escapeHTML(item.label || "Important Link")}</a>`;
