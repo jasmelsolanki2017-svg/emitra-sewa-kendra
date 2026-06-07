@@ -4395,13 +4395,9 @@ app.post("/verify-pdf", renderPdfVerifyUpload.single("pdf"), async (req, res) =>
 
     const issuerStatus = certificateIssuer ? "Detected" : "Not Detected";
     const canGenerateVerifiedPdf = Boolean(certificateNumber) && signatureStatus === "Valid";
-    const signatureStampData = {
-      signerName: signatureResult.signerName || "",
-      signDate: signatureResult.signingTime || "",
-      reason: signatureResult.reason || "",
-      location: signatureResult.location || ""
-    };
-    const verifiedPdfBuffer = canGenerateVerifiedPdf ? await createVerifiedPdfBuffer(buffer, signatureStampData) : null;
+    // Do not draw on an already signed PDF. Any post-signing visual stamp changes
+    // the signed byte range and Foxit/Adobe will mark the original signature invalid.
+    const verifiedPdfBuffer = canGenerateVerifiedPdf ? Buffer.from(buffer) : null;
     const relativeDownloadUrl = verifiedPdfBuffer
       ? storeVerifiedPdfDownload(verifiedPdfBuffer, `verified-${path.basename(req.file.originalname || "certificate.pdf")}`)
       : "";
@@ -4434,7 +4430,8 @@ app.post("/verify-pdf", renderPdfVerifyUpload.single("pdf"), async (req, res) =>
       downloadUrl,
       verifiedPdfUrl: downloadUrl,
       verifiedPdfBase64: verifiedPdfBuffer ? verifiedPdfBuffer.toString("base64") : "",
-      verifiedPdfFileName: downloadUrl ? `verified-${path.basename(req.file.originalname || "certificate.pdf")}` : ""
+      verifiedPdfFileName: downloadUrl ? `verified-${path.basename(req.file.originalname || "certificate.pdf")}` : "",
+      verifiedPdfNote: verifiedPdfBuffer ? "Original signed PDF copy. No extra stamp added because editing a signed PDF invalidates its signature." : ""
     });
   } catch (error) {
     const status = error.code === "LIMIT_FILE_SIZE" ? 413 : 500;
