@@ -4001,6 +4001,7 @@ app.post("/api/health", (req, res) => {
 function detectCertificateNumberFromText(text = "") {
   const normalized = String(text || "").replace(/\s+/g, " ").trim();
   const patterns = [
+    /\b(\d{12}|\d{16})\b/,
     /(?:certificate|cert\.?|प्रमाण\s*पत्र)\s*(?:number|no\.?|संख्या|क्रमांक)?\s*[:\-]?\s*([A-Z0-9][A-Z0-9/-]{4,40})/i,
     /(?:verification|reference|receipt|transaction|application|token)\s*(?:number|no\.?|id)?\s*[:\-]?\s*([A-Z0-9][A-Z0-9/-]{4,40})/i,
     /\b([A-Z]{2,6}[/-]?\d{4,}[A-Z0-9/-]*)\b/i,
@@ -4013,7 +4014,79 @@ function detectCertificateNumberFromText(text = "") {
   return "";
 }
 
-async function createVerifiedPdfBase64(originalPdfBuffer) {
+const RAJASTHAN_EMITRA_VERIFICATION_URL = "https://emitra.rajasthan.gov.in/emitra/online-verification";
+
+async function lookupRajasthanEmitraVerification(certificateNumber = "", qrText = "") {
+  const number = String(certificateNumber || "").trim();
+  const qr = String(qrText || "").trim();
+  const verificationUrl = number
+    ? `${RAJASTHAN_EMITRA_VERIFICATION_URL}?transactionId=${encodeURIComponent(number)}`
+    : RAJASTHAN_EMITRA_VERIFICATION_URL;
+
+  if (/\bSUCCESS\b/i.test(qr) && /(emitra|rajasthan)/i.test(qr)) {
+    return {
+      verificationStatus: "VERIFIED",
+      source: "Rajasthan eMitra Portal",
+      verificationUrl
+    };
+  }
+
+  const apiUrl = String(process.env.EMITRA_VERIFICATION_API_URL || "").trim();
+  if (apiUrl && number) {
+    try {
+      const url = new URL(apiUrl);
+      url.searchParams.set("transactionId", number);
+      const response = await fetch(url, { headers: { Accept: "application/json,text/plain,*/*" } });
+      const bodyText = await response.text();
+      let body = null;
+      try { body = JSON.parse(bodyText); } catch (_err) {}
+      const statusText = String(body?.status || body?.verificationStatus || body?.data?.status || bodyText || "");
+      if (/\bSUCCESS\b/i.test(statusText)) {
+        return {
+          verificationStatus: "VERIFIED",
+          source: "Rajasthan eMitra Portal",
+          verificationUrl
+        };
+      }
+      if (/\b(FAILED|INVALID|NOT_FOUND|REJECTED)\b/i.test(statusText)) {
+        return {
+          verificationStatus: "NOT_VERIFIED",
+          source: "Rajasthan eMitra Portal",
+          verificationUrl
+        };
+      }
+    } catch (_err) {}
+  }
+
+  return {
+    verificationStatus: "UNKNOWN",
+    source: "Rajasthan eMitra Portal",
+    verificationUrl
+  };
+}
+
+function normalizeSignatureStatus(status = "") {
+  const value = String(status || "").toUpperCase();
+  if (value === "VALID") return "Valid";
+  if (value === "INVALID" || value === "MODIFIED") return "Invalid";
+  return "Unknown";
+}
+
+const verifiedPdfDownloads = new Map();
+
+function storeVerifiedPdfDownload(pdfBuffer, fileName = "verified-certificate.pdf") {
+  const id = crypto.randomBytes(16).toString("hex");
+  const safeName = path.basename(fileName).replace(/[^a-z0-9._-]+/gi, "-") || "verified-certificate.pdf";
+  verifiedPdfDownloads.set(id, {
+    buffer: Buffer.from(pdfBuffer),
+    fileName: safeName,
+    createdAt: Date.now()
+  });
+  setTimeout(() => verifiedPdfDownloads.delete(id), PDF_SIGNATURE_TTL_MS).unref?.();
+  return `/download/verified-pdf/${id}`;
+}
+
+async function createVerifiedPdfBuffer(originalPdfBuffer) {
   const pdfDoc = await LibPdfDocument.load(originalPdfBuffer, { ignoreEncryption: true });
   const pages = pdfDoc.getPages();
   if (!pages.length) {
@@ -4077,7 +4150,7 @@ async function createVerifiedPdfBase64(originalPdfBuffer) {
   });
 
   const bytes = await pdfDoc.save({ useObjectStreams: false });
-  return Buffer.from(bytes).toString("base64");
+  return Buffer.from(bytes);
 }
 
 const renderPdfVerifyUpload = multer({
@@ -4131,46 +4204,75 @@ app.post("/verify-pdf", renderPdfVerifyUpload.single("pdf"), async (req, res) =>
     tempPath = path.join(PDF_SIGNATURE_TEMP_DIR, `${Date.now()}-${crypto.randomBytes(8).toString("hex")}.pdf`);
     await fs.promises.writeFile(tempPath, buffer);
 
-    const parsed = await pdfParse(buffer);
-    const text = String(parsed?.text || "");
-    const certificateNumber = detectCertificateNumberFromText(text);
     const signatureResult = await runPdfSignatureHelper(tempPath);
-    const certificateIssuer = String(signatureResult.certificateIssuer || "").trim();
-    const signatureVerified = String(signatureResult.signatureStatus || "").toUpperCase() === "VALID";
     const qrText = String(signatureResult.qrText || "").trim();
     const qrDetected = Boolean(signatureResult.qrFound && qrText);
-    const trustStatus = signatureVerified && /trusted/i.test(String(signatureResult.trustStatus || ""))
+    const parsed = await pdfParse(buffer);
+    const text = String(parsed?.text || "");
+    const certificateNumber = detectCertificateNumberFromText(`${qrText} ${text}`);
+    const certificateIssuer = String(signatureResult.certificateIssuer || "").trim();
+    const signatureStatus = normalizeSignatureStatus(signatureResult.signatureStatus);
+    const emitraLookup = await lookupRajasthanEmitraVerification(certificateNumber, qrText);
+    const certificateVerified = emitraLookup.verificationStatus === "VERIFIED";
+    const trustStatus = signatureStatus === "Valid" && /trusted/i.test(String(signatureResult.trustStatus || ""))
       ? "Trusted"
       : signatureResult.embeddedSignatureFound
         ? "Untrusted"
         : "Unknown";
 
-    let message = "Document Verified Successfully";
-    if (!signatureVerified) {
-      message = "Signature Not Verified";
+    let message = "Certificate Verification Unknown";
+    if (certificateVerified) {
+      message = "Certificate Verified via Rajasthan eMitra";
     } else if (!qrDetected) {
       message = "QR Not Detected";
-    } else if (!certificateIssuer) {
-      message = "Certificate Issuer Not Detected";
+    } else if (!certificateNumber) {
+      message = "Certificate Number Not Detected";
+    } else if (emitraLookup.verificationStatus === "NOT_VERIFIED") {
+      message = "Certificate Not Verified via Rajasthan eMitra";
     }
-    const valid = signatureVerified && qrDetected && Boolean(certificateIssuer);
-    const verifiedPdfBase64 = valid ? await createVerifiedPdfBase64(buffer) : "";
+
+    let signatureMessage = `Digital Signature Status: ${signatureStatus}`;
+    if (signatureStatus === "Invalid") {
+      signatureMessage = "Digital Signature Status: Invalid";
+    } else if (signatureStatus === "Unknown") {
+      signatureMessage = "Digital Signature Status: Unknown";
+    }
+
+    if (message === "Certificate Verification Unknown" && signatureStatus === "Invalid") {
+      message = "Signature Not Verified";
+    }
+    const issuerStatus = certificateIssuer ? "Detected" : "Not Detected";
+    const canGenerateVerifiedPdf = qrDetected && Boolean(certificateNumber) && signatureStatus === "Valid";
+    const verifiedPdfBuffer = canGenerateVerifiedPdf ? await createVerifiedPdfBuffer(buffer) : null;
+    const relativeDownloadUrl = verifiedPdfBuffer
+      ? storeVerifiedPdfDownload(verifiedPdfBuffer, `verified-${path.basename(req.file.originalname || "certificate.pdf")}`)
+      : "";
+    const requestBaseUrl = `${req.protocol}://${req.get("host")}`;
+    const downloadUrl = relativeDownloadUrl ? `${requestBaseUrl}${relativeDownloadUrl}` : "";
 
     return res.json({
-      valid,
+      valid: certificateVerified,
       message,
       certificateNumber,
-      signatureStatus: signatureVerified ? "Signature Verified" : "Signature Not Verified",
+      verificationStatus: emitraLookup.verificationStatus,
+      certificateVerificationStatus: emitraLookup.verificationStatus,
+      source: emitraLookup.source,
+      verificationUrl: emitraLookup.verificationUrl,
+      signatureStatus,
+      signatureMessage,
       qrStatus: qrDetected ? "QR Detected" : "QR Not Detected",
       trustStatus,
+      issuerStatus,
       certificateIssuer,
       certificateSubject: signatureResult.certificateSubject || "",
       signerName: signatureResult.signerName || "",
       signingDate: signatureResult.signingTime || "",
       documentModifiedAfterSigning: signatureResult.documentModifiedAfterSigning ?? "Unknown",
       qrText,
-      verifiedPdfBase64,
-      verifiedPdfFileName: valid ? `verified-${path.basename(req.file.originalname || "certificate.pdf")}` : ""
+      downloadUrl,
+      verifiedPdfUrl: downloadUrl,
+      verifiedPdfBase64: "",
+      verifiedPdfFileName: downloadUrl ? `verified-${path.basename(req.file.originalname || "certificate.pdf")}` : ""
     });
   } catch (error) {
     const status = error.code === "LIMIT_FILE_SIZE" ? 413 : 500;
@@ -4252,6 +4354,17 @@ app.get("/api/verification-report/:id", (req, res) => {
     return res.status(404).send("Report expired or not found");
   }
   return res.download(record.path, "emitra-pdf-signature-verification-report.pdf");
+});
+
+app.get("/download/verified-pdf/:id", (req, res) => {
+  const id = String(req.params.id || "").replace(/[^a-f0-9]/gi, "");
+  const record = verifiedPdfDownloads.get(id);
+  if (!record || Date.now() - Number(record.createdAt || 0) > PDF_SIGNATURE_TTL_MS) {
+    return res.status(404).send("Verified PDF expired or not found");
+  }
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader("Content-Disposition", `attachment; filename="${record.fileName}"`);
+  return res.send(record.buffer);
 });
 
 app.get("/sitemap.xml", async (req, res) => {

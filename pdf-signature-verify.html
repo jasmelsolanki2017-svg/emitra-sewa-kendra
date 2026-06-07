@@ -235,16 +235,21 @@ function renderResult(data){
     ['Reason', data.reason],
     ['Location', data.location],
     ['Certificate Issuer', data.certificateIssuer],
+    ['Certificate Issuer Status', data.issuerStatus],
     ['Certificate Subject', data.certificateSubject],
     ['Certificate Valid From', data.certificateValidFrom],
     ['Certificate Valid To', data.certificateValidTo],
     ['Trust Status', data.trustStatus],
+    ['Certificate Verification', data.certificateVerificationStatus || data.verificationStatus],
+    ['Source', data.source],
     ['Visible Signature Text', data.visibleSignatureTextFound ? 'Yes' : 'No'],
     ['Visible Status Text', data.visibleSignatureStatusText],
     ['QR कोड मिला', data.qrFound ? 'Yes' : 'No'],
     ['QR Status', data.qrStatus],
     ['वेरिफिकेशन नंबर', data.verificationNumber],
     ['Certificate Number', data.certificateNumber],
+    ['Digital Signature Status', data.signatureStatus],
+    ['Signature Note', data.signatureMessage],
     ['अंतिम स्थिति', data.finalStatus || data.message]
   ];
   resultGrid.innerHTML = fields.map(([label, value]) => `<div class="result-item"><label>${label}</label><strong>${valueText(value)}</strong></div>`).join('');
@@ -257,7 +262,11 @@ function renderResult(data){
     reportBtn.href = data.reportDownloadUrl;
     reportBtn.classList.remove('disabled');
   }
-  if(data.valid === true && data.verifiedPdfBase64){
+  if(data.downloadUrl || data.verifiedPdfUrl){
+    verifiedPdfBtn.href = data.downloadUrl || data.verifiedPdfUrl;
+    verifiedPdfBtn.download = data.verifiedPdfFileName || 'verified-certificate.pdf';
+    verifiedPdfBtn.classList.remove('disabled');
+  }else if(data.valid === true && data.verifiedPdfBase64){
     const binary = atob(data.verifiedPdfBase64);
     const bytes = new Uint8Array(binary.length);
     for(let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
