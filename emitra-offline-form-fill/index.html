@@ -453,8 +453,10 @@ const TYPING_MODE_LOCAL_KEY = 'rajasthanFormsTypingMode';
 const FILL_COLOR_LOCAL_KEY = 'rajasthanFormsFillColor';
 const DEFAULT_FILL_COLOR = '#38bdf8';
 const DELETE_FORM_CONFIRM_CODE = 'DELETE';
+const DATE_FIELD_IDS = new Set(['dob','date','groomDob','brideDob','marriageDate','applicationDate','previousUnmarriedDate']);
 let sharedFormData = {};
 try { sharedFormData = JSON.parse(localStorage.getItem(DATA_LOCAL_KEY) || '{}') || {}; } catch(e) { sharedFormData = {}; }
+let derivedAutoValues = {};
 const $ = id => document.getElementById(id);
 const navTools = document.querySelector('.nav-tools');
 if(navTools){
@@ -490,6 +492,10 @@ function shouldAutoHindiField(id, type){
   if(NO_AUTO_HINDI_FIELD_IDS.has(id)) return false;
   if(key.includes('aadhaar') || key.includes('mobile') || key.includes('phone') || key.includes('dob') || key.includes('date') || key.includes('age') || key.includes('year') || key.includes('number')) return false;
   return true;
+}
+
+function isDateFieldId(id){
+  return DATE_FIELD_IDS.has(id);
 }
 
 function normalizeHexColor(value){
@@ -769,7 +775,7 @@ function buildDataForm(){
       input.value = Object.prototype.hasOwnProperty.call(sharedFormData, id) ? sharedFormData[id] : '';
       input.autocomplete = 'off';
       input.setAttribute('autocomplete','off');
-      const dateField = id === 'dob' || id === 'date';
+      const dateField = isDateFieldId(id);
       const hindiField = shouldAutoHindiField(id, type);
       if(hindiField) {
         input.dataset.autoHindi = '1';
@@ -853,12 +859,13 @@ function collectData(options = {}){
     else if (data[id] == null) data[id]='';
   }
   if(normalizeDates){
-    normalizeCollectedDate(data, 'dob');
-    normalizeCollectedDate(data, 'date');
+    DATE_FIELD_IDS.forEach(id => normalizeCollectedDate(data, id));
   }
   const dob = (data.dob||'').split(/[\/\-.]/); data.dobDay=dob[0]||''; data.dobMonth=dob[1]||''; data.dobYear=dob[2]||'';
   const date = (data.date||'').split(/[\/\-.]/); data.dateDay=date[0]||''; data.dateMonth=date[1]||''; data.dateYear=date[2]||'';
   syncAgeFromDob(data);
+  syncMarriageAgeFromDob(data);
+  syncMarriageWitnessDefaults(data);
   return data;
 }
 function pad2(value){
@@ -910,7 +917,7 @@ function calendarValueToDateText(str){
 }
 
 function normalizeDateInputIfNeeded(input, id){
-  if(id !== 'dob' && id !== 'date') return;
+  if(!isDateFieldId(id)) return;
   const normalized = normalizeDateValue(input.value);
   if(normalized && normalized !== input.value){
     input.value = normalized;
@@ -955,6 +962,85 @@ function syncAgeFromDob(data){
   sharedFormData.age = data.age;
   const ageEl = $('data_age');
   if(ageEl && ageEl.value !== data.age) ageEl.value = data.age;
+}
+
+function calculateYmdAgeFromDob(dobText, referenceText){
+  const dob = parseSimpleDate(dobText);
+  if(!dob) return null;
+  const ref = parseSimpleDate(referenceText) || new Date();
+  let years = ref.getFullYear() - dob.getFullYear();
+  let months = ref.getMonth() - dob.getMonth();
+  let days = ref.getDate() - dob.getDate();
+  if(days < 0){
+    days += new Date(ref.getFullYear(), ref.getMonth(), 0).getDate();
+    months--;
+  }
+  if(months < 0){
+    months += 12;
+    years--;
+  }
+  if(years < 0) return null;
+  return {years, months, days};
+}
+
+function setDerivedDataValue(data, id, value){
+  const text = value == null ? '' : String(value);
+  data[id] = text;
+  sharedFormData[id] = text;
+  const el = $('data_' + id);
+  if(el && el.value !== text) el.value = text;
+  try { localStorage.setItem(DATA_LOCAL_KEY, JSON.stringify(sharedFormData)); } catch(e) {}
+}
+
+function syncMarriageAgeFromDob(data){
+  if(currentFormKey !== 'marriage') return;
+  const referenceDate = data.marriageDate || data.applicationDate || data.date;
+  [
+    ['groomDob','groomAgeY','groomAgeM','groomAgeD'],
+    ['brideDob','brideAgeY','brideAgeM','brideAgeD']
+  ].forEach(([dobId, yearsId, monthsId, daysId])=>{
+    const age = calculateYmdAgeFromDob(data[dobId], referenceDate);
+    if(!age) return;
+    setDerivedDataValue(data, yearsId, age.years);
+    setDerivedDataValue(data, monthsId, pad2(age.months));
+    setDerivedDataValue(data, daysId, pad2(age.days));
+  });
+}
+
+function fillDerivedIfBlank(data, id, value){
+  if(String(data[id] || '').trim()) return;
+  const text = String(value || '').trim();
+  if(!text) return;
+  setDerivedDataValue(data, id, text);
+}
+
+function mirrorDerivedInput(data, id, value){
+  const text = String(value || '').trim();
+  const current = String(data[id] || '').trim();
+  const oldAuto = derivedAutoValues[id] || '';
+  if(!text){
+    if(current === oldAuto){
+      setDerivedDataValue(data, id, '');
+      derivedAutoValues[id] = '';
+    }
+    return;
+  }
+  if(!current || current === oldAuto){
+    setDerivedDataValue(data, id, text);
+    derivedAutoValues[id] = text;
+  }
+}
+
+function syncMarriageWitnessDefaults(data){
+  if(currentFormKey !== 'marriage') return;
+  mirrorDerivedInput(data, 'groomSideWitnessName', data.groomWitnessName);
+  mirrorDerivedInput(data, 'groomSideWitnessAddress', data.groomWitnessAddress);
+  fillDerivedIfBlank(data, 'groomSideWitnessDistrict', data.groomDistrict);
+  fillDerivedIfBlank(data, 'groomSideWitnessState', data.groomState || 'राजस्थान');
+  mirrorDerivedInput(data, 'brideSideWitnessName', data.brideWitnessName);
+  mirrorDerivedInput(data, 'brideSideWitnessAddress', data.brideWitnessAddress);
+  fillDerivedIfBlank(data, 'brideSideWitnessDistrict', data.brideDistrict);
+  fillDerivedIfBlank(data, 'brideSideWitnessState', data.brideState || 'राजस्थान');
 }
 
 function getCandidateAge(data){
