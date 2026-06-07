@@ -4069,7 +4069,7 @@ function normalizeSignatureStatus(status = "") {
   const value = String(status || "").toUpperCase();
   if (value === "VALID") return "Valid";
   if (value === "INVALID" || value === "MODIFIED") return "Invalid";
-  return "Unknown";
+  return "Validity Unknown";
 }
 
 const verifiedPdfDownloads = new Map();
@@ -4086,7 +4086,7 @@ function storeVerifiedPdfDownload(pdfBuffer, fileName = "verified-certificate.pd
   return `/download/verified-pdf/${id}`;
 }
 
-async function createVerifiedPdfBuffer(originalPdfBuffer) {
+async function createVerifiedPdfBuffer(originalPdfBuffer, signatureData = {}) {
   const pdfDoc = await LibPdfDocument.load(originalPdfBuffer, { ignoreEncryption: true });
   const pages = pdfDoc.getPages();
   if (!pages.length) {
@@ -4099,7 +4099,10 @@ async function createVerifiedPdfBuffer(originalPdfBuffer) {
   const stampY = 26;
   const stampW = 235;
   const stampH = 92;
-  const nowText = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
+  const signerName = String(signatureData.signerName || "").trim();
+  const signDate = String(signatureData.signDate || signatureData.signingDate || "").trim();
+  const reason = String(signatureData.reason || "").trim();
+  const location = String(signatureData.location || "").trim();
 
   firstPage.drawRectangle({
     x: stampX,
@@ -4135,10 +4138,10 @@ async function createVerifiedPdfBuffer(originalPdfBuffer) {
     color: rgb(0.02, 0.42, 0.16)
   });
   [
-    "Digitally verified by E-MITRA WALA",
-    `Date: ${nowText}`,
-    "Reason: Verified",
-    "Location: Rajasthan"
+    `Digitally signed by ${signerName}`,
+    `Date: ${signDate}`,
+    `Reason: ${reason}`,
+    `Location: ${location}`
   ].forEach((line, index) => {
     firstPage.drawText(line, {
       x: textX,
@@ -4177,7 +4180,7 @@ app.post("/verify-pdf", renderPdfVerifyUpload.single("pdf"), async (req, res) =>
         certificateNumber: "",
         signatureStatus: "Signature Not Verified",
         qrStatus: "QR Not Detected",
-        trustStatus: "Unknown"
+        trustStatus: "Pending Verification"
       });
     }
     if (buffer.length < 5 || buffer.slice(0, 5).toString("utf8") !== "%PDF-") {
@@ -4187,7 +4190,7 @@ app.post("/verify-pdf", renderPdfVerifyUpload.single("pdf"), async (req, res) =>
         certificateNumber: "",
         signatureStatus: "Signature Not Verified",
         qrStatus: "QR Not Detected",
-        trustStatus: "Unknown"
+        trustStatus: "Pending Verification"
       });
     }
     if (!pdfParse) {
@@ -4197,7 +4200,7 @@ app.post("/verify-pdf", renderPdfVerifyUpload.single("pdf"), async (req, res) =>
         certificateNumber: "",
         signatureStatus: "Signature Not Verified",
         qrStatus: "QR Not Detected",
-        trustStatus: "Unknown"
+        trustStatus: "Pending Verification"
       });
     }
     fs.mkdirSync(PDF_SIGNATURE_TEMP_DIR, { recursive: true });
@@ -4224,11 +4227,12 @@ app.post("/verify-pdf", renderPdfVerifyUpload.single("pdf"), async (req, res) =>
       : certificateNumber
         ? "PENDING / CHECK VIA EMITRA"
         : emitraLookup.verificationStatus;
-    const trustStatus = signatureStatus === "Valid" && /trusted/i.test(String(signatureResult.trustStatus || ""))
+    const modifiedConfirmed = signatureResult.documentModifiedAfterSigning === true || String(signatureResult.signatureStatus || "").toUpperCase() === "MODIFIED";
+    const trustStatus = certificateVerified && signatureStatus === "Valid" && /trusted/i.test(String(signatureResult.trustStatus || ""))
       ? "Trusted"
-      : signatureResult.embeddedSignatureFound
+      : emitraLookup.verificationStatus === "NOT_VERIFIED" || modifiedConfirmed
         ? "Untrusted"
-        : "Unknown";
+        : "Pending Verification";
 
     let message = "Certificate Verification Unknown";
     if (certificateVerified) {
@@ -4244,8 +4248,8 @@ app.post("/verify-pdf", renderPdfVerifyUpload.single("pdf"), async (req, res) =>
     let signatureMessage = `Digital Signature Status: ${signatureStatus}`;
     if (signatureStatus === "Invalid") {
       signatureMessage = "Digital Signature Status: Invalid";
-    } else if (signatureStatus === "Unknown") {
-      signatureMessage = "Digital Signature Status: Unknown";
+    } else if (signatureStatus === "Validity Unknown") {
+      signatureMessage = "Digital Signature Status: Validity Unknown";
     }
 
     if (message === "Certificate Verification Unknown" && signatureStatus === "Invalid") {
@@ -4253,7 +4257,13 @@ app.post("/verify-pdf", renderPdfVerifyUpload.single("pdf"), async (req, res) =>
     }
     const issuerStatus = certificateIssuer ? "Detected" : "Not Detected";
     const canGenerateVerifiedPdf = qrDetected && Boolean(certificateNumber) && signatureStatus === "Valid";
-    const verifiedPdfBuffer = canGenerateVerifiedPdf ? await createVerifiedPdfBuffer(buffer) : null;
+    const signatureStampData = {
+      signerName: signatureResult.signerName || "",
+      signDate: signatureResult.signingTime || "",
+      reason: signatureResult.reason || "",
+      location: signatureResult.location || ""
+    };
+    const verifiedPdfBuffer = canGenerateVerifiedPdf ? await createVerifiedPdfBuffer(buffer, signatureStampData) : null;
     const relativeDownloadUrl = verifiedPdfBuffer
       ? storeVerifiedPdfDownload(verifiedPdfBuffer, `verified-${path.basename(req.file.originalname || "certificate.pdf")}`)
       : "";
@@ -4278,6 +4288,9 @@ app.post("/verify-pdf", renderPdfVerifyUpload.single("pdf"), async (req, res) =>
       certificateSubject: signatureResult.certificateSubject || "",
       signerName: signatureResult.signerName || "",
       signingDate: signatureResult.signingTime || "",
+      signDate: signatureResult.signingTime || "",
+      reason: signatureResult.reason || "",
+      location: signatureResult.location || "",
       documentModifiedAfterSigning: signatureResult.documentModifiedAfterSigning ?? "Unknown",
       qrText,
       downloadUrl,
@@ -4293,7 +4306,7 @@ app.post("/verify-pdf", renderPdfVerifyUpload.single("pdf"), async (req, res) =>
       certificateNumber: "",
       signatureStatus: "Signature Not Verified",
       qrStatus: "QR Not Detected",
-      trustStatus: "Unknown"
+      trustStatus: "Pending Verification"
     });
   } finally {
     if (tempPath) fs.promises.unlink(tempPath).catch(() => {});

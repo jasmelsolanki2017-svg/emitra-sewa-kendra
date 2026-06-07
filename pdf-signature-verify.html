@@ -211,6 +211,9 @@ resetBtn.addEventListener('click', () => {
 });
 
 function resultClass(data){
+  if(data.signatureStatus === 'Invalid') return 'bad';
+  if(data.signatureStatus === 'Validity Unknown') return 'warn';
+  if(data.signatureStatus === 'Valid' && data.valid === true) return 'valid';
   if(data.valid === true) return 'valid';
   if(data.certificateNumber || /Check via Official eMitra|Pending Verification/i.test(data.message || '')) return 'warn';
   if(/QR Not Detected|Certificate Issuer Not Detected/i.test(data.message || '') && data.certificateNumber) return 'warn';
@@ -226,6 +229,17 @@ function valueText(value){
   if(value === true) return 'Yes';
   if(value === false) return 'No';
   return value === undefined || value === null || value === '' ? '-' : String(value);
+}
+
+function displayFieldValue(label, value, data){
+  if(label === 'Trust Status'){
+    const raw = String(value || '').trim();
+    if(!raw || raw === 'Unknown') return 'Pending Verification';
+    if(raw === 'Untrusted' && (data.certificateNumber || /PENDING|CHECK|UNKNOWN/i.test(data.certificateVerificationStatus || data.verificationStatus || ''))){
+      return 'Pending Verification';
+    }
+  }
+  return valueText(value);
 }
 
 function renderResult(data){
@@ -247,7 +261,7 @@ function renderResult(data){
     ['हस्ताक्षर स्थिति', data.signatureStatus],
     ['दस्तावेज़ में बदलाव', valueText(data.documentModifiedAfterSigning)],
     ['हस्ताक्षरकर्ता का नाम', data.signerName],
-    ['हस्ताक्षर दिनांक', data.signingDate],
+    ['हस्ताक्षर दिनांक', data.signDate || data.signingDate],
     ['Reason', data.reason],
     ['Location', data.location],
     ['Certificate Issuer', data.certificateIssuer],
@@ -268,7 +282,7 @@ function renderResult(data){
     ['Signature Note', data.signatureMessage],
     ['अंतिम स्थिति', data.finalStatus || data.message]
   ];
-  resultGrid.innerHTML = fields.map(([label, value]) => `<div class="result-item"><label>${label}</label><strong>${valueText(value)}</strong></div>`).join('');
+  resultGrid.innerHTML = fields.map(([label, value]) => `<div class="result-item"><label>${label}</label><strong>${displayFieldValue(label, value, data)}</strong></div>`).join('');
   const cardClass = resultClass(data);
   const statusText = data.valid === true
     ? valueText(data.finalStatus || data.message)

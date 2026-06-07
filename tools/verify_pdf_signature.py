@@ -134,8 +134,11 @@ def run_pyhanko_validation(path):
             pass
 
         try:
-            result["reason"] = str(sig_obj.get("/Reason", "") or "")
-            result["location"] = str(sig_obj.get("/Location", "") or "")
+            result["reason"] = str(sig_obj.get("/Reason", "") or "").strip()
+            result["location"] = str(sig_obj.get("/Location", "") or "").strip()
+            sig_name = str(sig_obj.get("/Name", "") or "").strip()
+            if sig_name:
+                result["signerName"] = sig_name
         except Exception:
             pass
 
