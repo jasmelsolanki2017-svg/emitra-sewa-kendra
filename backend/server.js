@@ -77,8 +77,9 @@ app.post("/verify-pdf", upload.single("pdf"), async (req, res) => {
         valid: false,
         message: "PDF file is required",
         certificateNumber: "",
-        signatureStatus: "No file uploaded",
-        qrStatus: "QR check pending"
+        signatureStatus: "Signature Not Verified",
+        qrStatus: "QR Not Detected",
+        trustStatus: "Unknown"
       });
     }
 
@@ -87,8 +88,9 @@ app.post("/verify-pdf", upload.single("pdf"), async (req, res) => {
         valid: false,
         message: "Invalid PDF file",
         certificateNumber: "",
-        signatureStatus: "Invalid file",
-        qrStatus: "QR check pending"
+        signatureStatus: "Signature Not Verified",
+        qrStatus: "QR Not Detected",
+        trustStatus: "Unknown"
       });
     }
 
@@ -100,22 +102,22 @@ app.post("/verify-pdf", upload.single("pdf"), async (req, res) => {
       text = "";
     }
     const certificateNumber = detectCertificateNumber(text);
-    const signatureFound = hasSignatureFields(req.file.buffer);
-
     return res.json({
-      valid: true,
-      message: "Document Verified Successfully",
+      valid: false,
+      message: "Signature Not Verified",
       certificateNumber,
-      signatureStatus: signatureFound ? "Signature found" : "Signature not found",
-      qrStatus: "QR check pending"
+      signatureStatus: "Signature Not Verified",
+      qrStatus: "QR Not Detected",
+      trustStatus: "Unknown"
     });
   } catch (error) {
     return res.status(500).json({
       valid: false,
       message: error.message || "PDF verification failed",
       certificateNumber: "",
-      signatureStatus: "Verification failed",
-      qrStatus: "QR check pending"
+      signatureStatus: "Signature Not Verified",
+      qrStatus: "QR Not Detected",
+      trustStatus: "Unknown"
     });
   }
 });
@@ -126,8 +128,9 @@ app.use((error, _req, res, _next) => {
     valid: false,
     message: isSizeError ? `PDF must be smaller than ${MAX_UPLOAD_MB}MB` : (error.message || "Upload failed"),
     certificateNumber: "",
-    signatureStatus: "Upload failed",
-    qrStatus: "QR check pending"
+    signatureStatus: "Signature Not Verified",
+    qrStatus: "QR Not Detected",
+    trustStatus: "Unknown"
   });
 });
 

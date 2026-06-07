@@ -4026,6 +4026,7 @@ const renderPdfVerifyUpload = multer({
 });
 
 app.post("/verify-pdf", renderPdfVerifyUpload.single("pdf"), async (req, res) => {
+  let tempPath = "";
   try {
     const buffer = req.file?.buffer;
     if (!buffer) {
@@ -4033,8 +4034,9 @@ app.post("/verify-pdf", renderPdfVerifyUpload.single("pdf"), async (req, res) =>
         valid: false,
         message: "PDF file is required",
         certificateNumber: "",
-        signatureStatus: "Signature check pending",
-        qrStatus: "QR check pending"
+        signatureStatus: "Signature Not Verified",
+        qrStatus: "QR Not Detected",
+        trustStatus: "Unknown"
       });
     }
     if (buffer.length < 5 || buffer.slice(0, 5).toString("utf8") !== "%PDF-") {
@@ -4042,8 +4044,9 @@ app.post("/verify-pdf", renderPdfVerifyUpload.single("pdf"), async (req, res) =>
         valid: false,
         message: "Invalid PDF file",
         certificateNumber: "",
-        signatureStatus: "Signature check pending",
-        qrStatus: "QR check pending"
+        signatureStatus: "Signature Not Verified",
+        qrStatus: "QR Not Detected",
+        trustStatus: "Unknown"
       });
     }
     if (!pdfParse) {
@@ -4051,19 +4054,52 @@ app.post("/verify-pdf", renderPdfVerifyUpload.single("pdf"), async (req, res) =>
         valid: false,
         message: "PDF parser not available",
         certificateNumber: "",
-        signatureStatus: "Signature check pending",
-        qrStatus: "QR check pending"
+        signatureStatus: "Signature Not Verified",
+        qrStatus: "QR Not Detected",
+        trustStatus: "Unknown"
       });
     }
+    fs.mkdirSync(PDF_SIGNATURE_TEMP_DIR, { recursive: true });
+    tempPath = path.join(PDF_SIGNATURE_TEMP_DIR, `${Date.now()}-${crypto.randomBytes(8).toString("hex")}.pdf`);
+    await fs.promises.writeFile(tempPath, buffer);
+
     const parsed = await pdfParse(buffer);
     const text = String(parsed?.text || "");
     const certificateNumber = detectCertificateNumberFromText(text);
+    const signatureResult = await runPdfSignatureHelper(tempPath);
+    const certificateIssuer = String(signatureResult.certificateIssuer || "").trim();
+    const signatureVerified = String(signatureResult.signatureStatus || "").toUpperCase() === "VALID";
+    const qrText = String(signatureResult.qrText || "").trim();
+    const qrDetected = Boolean(signatureResult.qrFound && qrText);
+    const trustStatus = signatureVerified && /trusted/i.test(String(signatureResult.trustStatus || ""))
+      ? "Trusted"
+      : signatureResult.embeddedSignatureFound
+        ? "Untrusted"
+        : "Unknown";
+
+    let message = "Document Verified Successfully";
+    if (!signatureVerified) {
+      message = "Signature Not Verified";
+    } else if (!qrDetected) {
+      message = "QR Not Detected";
+    } else if (!certificateIssuer) {
+      message = "Certificate Issuer Not Detected";
+    }
+    const valid = signatureVerified && qrDetected && Boolean(certificateIssuer);
+
     return res.json({
-      valid: true,
-      message: "Document Verified Successfully",
+      valid,
+      message,
       certificateNumber,
-      signatureStatus: "Signature check pending",
-      qrStatus: "QR check pending"
+      signatureStatus: signatureVerified ? "Signature Verified" : "Signature Not Verified",
+      qrStatus: qrDetected ? "QR Detected" : "QR Not Detected",
+      trustStatus,
+      certificateIssuer,
+      certificateSubject: signatureResult.certificateSubject || "",
+      signerName: signatureResult.signerName || "",
+      signingDate: signatureResult.signingTime || "",
+      documentModifiedAfterSigning: signatureResult.documentModifiedAfterSigning ?? "Unknown",
+      qrText
     });
   } catch (error) {
     const status = error.code === "LIMIT_FILE_SIZE" ? 413 : 500;
@@ -4071,9 +4107,12 @@ app.post("/verify-pdf", renderPdfVerifyUpload.single("pdf"), async (req, res) =>
       valid: false,
       message: error.code === "LIMIT_FILE_SIZE" ? "PDF 20MB se chhoti honi chahiye" : (error.message || "PDF verification failed"),
       certificateNumber: "",
-      signatureStatus: "Signature check pending",
-      qrStatus: "QR check pending"
+      signatureStatus: "Signature Not Verified",
+      qrStatus: "QR Not Detected",
+      trustStatus: "Unknown"
     });
+  } finally {
+    if (tempPath) fs.promises.unlink(tempPath).catch(() => {});
   }
 });
 

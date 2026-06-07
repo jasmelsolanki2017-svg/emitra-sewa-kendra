@@ -40,7 +40,7 @@ button:hover,.btn:hover{background:var(--orange);color:var(--deep)}button.second
 .status-note{margin-top:10px;font-weight:900;color:var(--blue)}
 .result-card{display:none;margin-top:16px;border-left:6px solid var(--gray)}.result-card.valid{border-left-color:var(--green)}.result-card.warn{border-left-color:var(--yellow)}.result-card.bad{border-left-color:var(--red)}.result-card.gray{border-left-color:var(--gray)}
 .final-status{display:flex;align-items:center;gap:10px;border-radius:8px;padding:11px 12px;font-weight:900;margin-bottom:12px;background:#f1f5f9;color:#334155}.result-card.valid .final-status{background:#ecfdf3;color:var(--green)}.result-card.warn .final-status{background:#fff7ed;color:#a15c00}.result-card.bad .final-status{background:#fff1f1;color:var(--red)}
-.result-mark{display:grid;place-items:center;width:86px;height:86px;border-radius:50%;font-size:52px;margin:0 auto 12px;background:#f1f5f9;color:var(--gray);line-height:1}.result-card.valid .result-mark{background:#ecfdf3;color:var(--green)}.result-card.bad .result-mark{background:#fff1f1;color:var(--red)}
+.result-mark{display:grid;place-items:center;width:86px;height:86px;border-radius:50%;font-size:52px;margin:0 auto 12px;background:#f1f5f9;color:var(--gray);line-height:1}.result-card.valid .result-mark{background:#ecfdf3;color:var(--green)}.result-card.warn .result-mark{background:#fff7ed;color:var(--yellow)}.result-card.bad .result-mark{background:#fff1f1;color:var(--red)}
 .result-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.result-item{border:1px solid var(--line);border-radius:7px;background:#fbfdff;padding:9px}.result-item label{display:block;color:var(--muted);font-size:11px;font-weight:900;text-transform:uppercase}.result-item strong{display:block;color:var(--deep);font-size:14px;overflow-wrap:anywhere;margin-top:2px}
 .side-note{border-top-color:var(--blue)}.side-note ul{display:grid;gap:9px;margin:10px 0 0 18px;color:#334155;font-size:13px;font-weight:700}.side-note li::marker{color:var(--orange)}
 footer{background:var(--blue);color:white;text-align:center;padding:22px 6%;margin-top:20px}footer a{color:#ffcf75;text-decoration:none;font-weight:800;margin:0 7px;display:inline-block}
@@ -195,6 +195,7 @@ resetBtn.addEventListener('click', () => {
 
 function resultClass(data){
   if(data.valid === true) return 'valid';
+  if(/QR Not Detected|Certificate Issuer Not Detected/i.test(data.message || '')) return 'warn';
   if(data.valid === false) return 'bad';
   const text = `${data.signatureStatus || ''} ${data.finalStatus || ''}`.toUpperCase();
   if(text.includes('VALID') && !text.includes('NOT')) return 'valid';
@@ -238,8 +239,8 @@ function renderResult(data){
   resultGrid.innerHTML = fields.map(([label, value]) => `<div class="result-item"><label>${label}</label><strong>${valueText(value)}</strong></div>`).join('');
   const cardClass = resultClass(data);
   resultCard.className = `card result-card ${cardClass}`;
-  resultMark.textContent = cardClass === 'bad' ? '✕' : '✓';
-  finalStatus.innerHTML = `<i class="fa-solid ${cardClass === 'bad' ? 'fa-circle-xmark' : 'fa-circle-check'}"></i><span>${valueText(data.finalStatus || data.message)}</span>`;
+  resultMark.textContent = cardClass === 'bad' ? '✕' : cardClass === 'warn' ? '!' : '✓';
+  finalStatus.innerHTML = `<i class="fa-solid ${cardClass === 'bad' ? 'fa-circle-xmark' : cardClass === 'warn' ? 'fa-triangle-exclamation' : 'fa-circle-check'}"></i><span>${valueText(data.finalStatus || data.message)}</span>`;
   resultCard.style.display = 'block';
   if(data.reportDownloadUrl){
     reportBtn.href = data.reportDownloadUrl;
@@ -251,8 +252,9 @@ function renderErrorResult(message){
   renderResult({
     valid: false,
     message: message || 'Verification failed',
-    signatureStatus: 'Error',
-    qrStatus: 'QR check pending',
+    signatureStatus: 'Signature Not Verified',
+    qrStatus: 'QR Not Detected',
+    trustStatus: 'Unknown',
     certificateNumber: ''
   });
 }
@@ -272,11 +274,11 @@ verifyBtn.addEventListener('click', async () => {
     }, 500);
     const response = await fetch(VERIFY_API_URL, { method:'POST', body:form });
     const data = await readApiJson(response);
-    if(!response.ok || data.success === false || data.valid === false){
+    if(!response.ok || data.success === false){
       throw new Error(data.message || 'Verification failed');
     }
     setProgress(100);
-    setStatus('Verification complete.');
+    setStatus(data.valid === true ? 'Verification complete.' : valueText(data.message));
     renderResult(data);
   }catch(error){
     setProgress(0, false);
