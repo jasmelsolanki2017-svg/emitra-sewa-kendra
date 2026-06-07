@@ -2314,7 +2314,7 @@ function extractVisiblePdfSignals(text = "") {
   const lineText = String(text || "");
   const visibleSignatureTextFound = /Digitally\s+signed\s+by/i.test(normalized);
   const visibleSignatureStatusText = /Signature\s+Not\s+Verified/i.test(normalized)
-    ? "Signature Not Verified"
+    ? "Validity Unknown"
     : /Signature\s+Verified/i.test(normalized)
       ? "Signature Verified"
       : "Unknown";
@@ -2393,8 +2393,8 @@ function getFinalPdfSignatureStatus(helper = {}, visible = {}) {
   if (modified) return "Document Modified After Signing";
   if (signatureStatus === "VALID") return "Digital Signature Valid";
   if (signatureStatus === "INVALID") return "Invalid Signature";
-  if (embeddedSignatureFound && signatureStatus === "NOT_VERIFIED") return "Signature Not Verified - Certificate trust/chain check required";
-  if (embeddedSignatureFound) return "Signature Not Verified - Certificate trust/chain check required";
+  if (embeddedSignatureFound && signatureStatus === "NOT_VERIFIED") return "Validity Unknown";
+  if (embeddedSignatureFound) return "Validity Unknown";
   if (visible.qrFound || visible.verificationNumber) return "Official eMitra Verification Required";
   return "Original PDF Required for Digital Signature Verification";
 }
@@ -4069,7 +4069,7 @@ function normalizeSignatureStatus(status = "") {
   const value = String(status || "").toUpperCase();
   if (value === "VALID") return "Valid";
   if (value === "INVALID" || value === "MODIFIED") return "Invalid";
-  return "Validity Unknown";
+  return "UNKNOWN";
 }
 
 const verifiedPdfDownloads = new Map();
@@ -4178,8 +4178,8 @@ app.post("/verify-pdf", renderPdfVerifyUpload.single("pdf"), async (req, res) =>
         valid: false,
         message: "PDF file is required",
         certificateNumber: "",
-        signatureStatus: "Signature Not Verified",
-        qrStatus: "QR Not Detected",
+        signatureStatus: "UNKNOWN",
+        qrStatus: "",
         trustStatus: "Pending Verification"
       });
     }
@@ -4188,8 +4188,8 @@ app.post("/verify-pdf", renderPdfVerifyUpload.single("pdf"), async (req, res) =>
         valid: false,
         message: "Invalid PDF file",
         certificateNumber: "",
-        signatureStatus: "Signature Not Verified",
-        qrStatus: "QR Not Detected",
+        signatureStatus: "UNKNOWN",
+        qrStatus: "",
         trustStatus: "Pending Verification"
       });
     }
@@ -4198,8 +4198,8 @@ app.post("/verify-pdf", renderPdfVerifyUpload.single("pdf"), async (req, res) =>
         valid: false,
         message: "PDF parser not available",
         certificateNumber: "",
-        signatureStatus: "Signature Not Verified",
-        qrStatus: "QR Not Detected",
+        signatureStatus: "UNKNOWN",
+        qrStatus: "",
         trustStatus: "Pending Verification"
       });
     }
@@ -4231,30 +4231,25 @@ app.post("/verify-pdf", renderPdfVerifyUpload.single("pdf"), async (req, res) =>
     const trustStatus = certificateVerified && signatureStatus === "Valid" && /trusted/i.test(String(signatureResult.trustStatus || ""))
       ? "Trusted"
       : emitraLookup.verificationStatus === "NOT_VERIFIED" || modifiedConfirmed
-        ? "Untrusted"
+        ? "Unknown"
         : "Pending Verification";
 
-    let message = "Certificate Verification Unknown";
+    let message = "Validity Unknown";
     if (certificateVerified) {
       message = "Certificate Verified via Rajasthan eMitra";
     } else if (certificateNumber) {
       message = "Check via Official eMitra";
-    } else if (!qrDetected) {
-      message = "QR Not Detected";
     } else if (!certificateNumber) {
-      message = "Certificate Number Not Detected";
+      message = "Validity Unknown";
     }
 
     let signatureMessage = `Digital Signature Status: ${signatureStatus}`;
     if (signatureStatus === "Invalid") {
       signatureMessage = "Digital Signature Status: Invalid";
-    } else if (signatureStatus === "Validity Unknown") {
-      signatureMessage = "Digital Signature Status: Validity Unknown";
+    } else if (signatureStatus === "UNKNOWN") {
+      signatureMessage = "Digital Signature Status: UNKNOWN";
     }
 
-    if (message === "Certificate Verification Unknown" && signatureStatus === "Invalid") {
-      message = "Signature Not Verified";
-    }
     const issuerStatus = certificateIssuer ? "Detected" : "Not Detected";
     const canGenerateVerifiedPdf = qrDetected && Boolean(certificateNumber) && signatureStatus === "Valid";
     const signatureStampData = {
@@ -4281,7 +4276,7 @@ app.post("/verify-pdf", renderPdfVerifyUpload.single("pdf"), async (req, res) =>
       officialVerifyUrl: emitraLookup.verificationUrl,
       signatureStatus,
       signatureMessage,
-      qrStatus: qrDetected ? "QR Detected" : "QR Not Detected",
+      qrStatus: qrDetected ? "QR Detected" : "",
       trustStatus,
       issuerStatus,
       certificateIssuer,
@@ -4304,8 +4299,8 @@ app.post("/verify-pdf", renderPdfVerifyUpload.single("pdf"), async (req, res) =>
       valid: false,
       message: error.code === "LIMIT_FILE_SIZE" ? "PDF 20MB se chhoti honi chahiye" : (error.message || "PDF verification failed"),
       certificateNumber: "",
-      signatureStatus: "Signature Not Verified",
-      qrStatus: "QR Not Detected",
+      signatureStatus: "UNKNOWN",
+      qrStatus: "",
       trustStatus: "Pending Verification"
     });
   } finally {

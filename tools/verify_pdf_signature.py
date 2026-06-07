@@ -16,6 +16,21 @@ def iso_date(value):
     return str(value)
 
 
+def ddmmyyyy(value):
+    if not value:
+        return ""
+    try:
+        if isinstance(value, datetime):
+            return value.strftime("%d-%m-%Y")
+    except Exception:
+        pass
+    text = str(value)
+    match = re.search(r"(\d{4})-(\d{2})-(\d{2})", text)
+    if match:
+        return f"{match.group(3)}-{match.group(2)}-{match.group(1)}"
+    return text
+
+
 def empty_result():
     return {
         "embeddedSignatureFound": False,
@@ -88,6 +103,28 @@ def cert_name(name):
         return str(name)
 
 
+def cert_common_name(name):
+    if not name:
+        return ""
+    try:
+        native = getattr(name, "native", None) or {}
+        cn = native.get("common_name") or native.get("organization_name")
+        if cn:
+            return str(cn)
+    except Exception:
+        pass
+    text = cert_name(name)
+    for pattern in (r"Common Name:\s*([^,\n]+)", r"CN\s*=\s*([^,\n]+)"):
+        match = re.search(pattern, text, flags=re.I)
+        if match:
+            return match.group(1).strip()
+    return text
+    try:
+        return name.human_friendly
+    except Exception:
+        return str(name)
+
+
 def run_pyhanko_validation(path):
     from pyhanko.pdf_utils.reader import PdfFileReader
     from pyhanko.sign.fields import enumerate_sig_fields
@@ -121,11 +158,11 @@ def run_pyhanko_validation(path):
             result["signatureStatus"] = "INVALID"
 
         result["trustStatus"] = "Trusted" if trusted else "Certificate trust chain not verified"
-        result["signerName"] = cert_name(getattr(signer_cert, "subject", "")) if signer_cert else ""
-        result["certificateSubject"] = cert_name(getattr(signer_cert, "subject", "")) if signer_cert else ""
-        result["certificateIssuer"] = cert_name(getattr(signer_cert, "issuer", "")) if signer_cert else ""
-        result["certificateValidFrom"] = iso_date(getattr(signer_cert, "not_valid_before", ""))
-        result["certificateValidTo"] = iso_date(getattr(signer_cert, "not_valid_after", ""))
+        result["signerName"] = cert_common_name(getattr(signer_cert, "subject", "")) if signer_cert else ""
+        result["certificateSubject"] = cert_common_name(getattr(signer_cert, "subject", "")) if signer_cert else ""
+        result["certificateIssuer"] = cert_common_name(getattr(signer_cert, "issuer", "")) if signer_cert else ""
+        result["certificateValidFrom"] = ddmmyyyy(getattr(signer_cert, "not_valid_before", ""))
+        result["certificateValidTo"] = ddmmyyyy(getattr(signer_cert, "not_valid_after", ""))
 
         try:
             signer_info = getattr(status, "signer_reported_dt", None)

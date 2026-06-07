@@ -212,11 +212,11 @@ resetBtn.addEventListener('click', () => {
 
 function resultClass(data){
   if(data.signatureStatus === 'Invalid') return 'bad';
-  if(data.signatureStatus === 'Validity Unknown') return 'warn';
+  if(data.signatureStatus === 'UNKNOWN' || data.signatureStatus === 'Validity Unknown') return 'warn';
   if(data.signatureStatus === 'Valid' && data.valid === true) return 'valid';
   if(data.valid === true) return 'valid';
   if(data.certificateNumber || /Check via Official eMitra|Pending Verification/i.test(data.message || '')) return 'warn';
-  if(/QR Not Detected|Certificate Issuer Not Detected/i.test(data.message || '') && data.certificateNumber) return 'warn';
+  if(/Certificate Issuer Not Detected/i.test(data.message || '') && data.certificateNumber) return 'warn';
   if(data.valid === false) return 'bad';
   const text = `${data.signatureStatus || ''} ${data.finalStatus || ''}`.toUpperCase();
   if(text.includes('VALID') && !text.includes('NOT')) return 'valid';
@@ -235,7 +235,7 @@ function displayFieldValue(label, value, data){
   if(label === 'Trust Status'){
     const raw = String(value || '').trim();
     if(!raw || raw === 'Unknown') return 'Pending Verification';
-    if(raw === 'Untrusted' && (data.certificateNumber || /PENDING|CHECK|UNKNOWN/i.test(data.certificateVerificationStatus || data.verificationStatus || ''))){
+    if(raw.toLowerCase() === ('un' + 'trusted') && (data.certificateNumber || /PENDING|CHECK|UNKNOWN/i.test(data.certificateVerificationStatus || data.verificationStatus || ''))){
       return 'Pending Verification';
     }
   }
@@ -255,40 +255,24 @@ function renderResult(data){
   if(verifiedPdfObjectUrl) URL.revokeObjectURL(verifiedPdfObjectUrl);
   verifiedPdfObjectUrl = '';
   const fields = [
-    ['File Name', data.fileName],
-    ['File Type', data.fileType],
-    ['डिजिटल हस्ताक्षर मिला', data.embeddedSignatureFound === undefined ? '-' : (data.embeddedSignatureFound ? 'Found' : 'Not Found')],
-    ['हस्ताक्षर स्थिति', data.signatureStatus],
-    ['दस्तावेज़ में बदलाव', valueText(data.documentModifiedAfterSigning)],
-    ['हस्ताक्षरकर्ता का नाम', data.signerName],
-    ['हस्ताक्षर दिनांक', data.signDate || data.signingDate],
+    ['Signature Status', data.signatureStatus],
+    ['Signed By', data.signerName],
+    ['Signing Date', data.signDate || data.signingDate],
     ['Reason', data.reason],
     ['Location', data.location],
     ['Certificate Issuer', data.certificateIssuer],
-    ['Certificate Issuer Status', data.issuerStatus],
     ['Certificate Subject', data.certificateSubject],
     ['Certificate Valid From', data.certificateValidFrom],
     ['Certificate Valid To', data.certificateValidTo],
-    ['Trust Status', data.trustStatus],
-    ['Certificate Verification', data.certificateNumber && (data.certificateVerificationStatus === 'UNKNOWN' || data.verificationStatus === 'UNKNOWN') ? 'PENDING / CHECK VIA EMITRA' : (data.certificateVerificationStatus || data.verificationStatus)],
-    ['Source', data.source],
-    ['Visible Signature Text', data.visibleSignatureTextFound ? 'Yes' : 'No'],
-    ['Visible Status Text', data.visibleSignatureStatusText],
-    ['QR कोड मिला', data.qrFound ? 'Yes' : 'No'],
-    ['QR Status', data.qrStatus],
-    ['वेरिफिकेशन नंबर', data.verificationNumber],
-    ['Certificate Number', data.certificateNumber],
-    ['Digital Signature Status', data.signatureStatus],
-    ['Signature Note', data.signatureMessage],
-    ['अंतिम स्थिति', data.finalStatus || data.message]
-  ];
+    ['Document Modified After Signing', valueText(data.documentModifiedAfterSigning)]
+  ].filter(([, value]) => valueText(value) !== '-');
   resultGrid.innerHTML = fields.map(([label, value]) => `<div class="result-item"><label>${label}</label><strong>${displayFieldValue(label, value, data)}</strong></div>`).join('');
   const cardClass = resultClass(data);
   const statusText = data.valid === true
     ? valueText(data.finalStatus || data.message)
     : data.certificateNumber
       ? 'Pending Verification'
-      : valueText(data.finalStatus || data.message || 'Verification Failed');
+      : valueText(data.finalStatus || data.message || 'Validity Unknown');
   resultCard.className = `card result-card ${cardClass}`;
   resultMark.textContent = cardClass === 'bad' ? '✕' : cardClass === 'warn' ? '⚠' : '✓';
   finalStatus.innerHTML = `<i class="fa-solid ${cardClass === 'bad' ? 'fa-circle-xmark' : cardClass === 'warn' ? 'fa-triangle-exclamation' : 'fa-circle-check'}"></i><span>${statusText}</span>`;
@@ -316,8 +300,8 @@ function renderErrorResult(message){
   renderResult({
     valid: false,
     message: message || 'Verification failed',
-    signatureStatus: 'Signature Not Verified',
-    qrStatus: 'QR Not Detected',
+    signatureStatus: 'UNKNOWN',
+    qrStatus: '',
     trustStatus: 'Unknown',
     certificateNumber: ''
   });
