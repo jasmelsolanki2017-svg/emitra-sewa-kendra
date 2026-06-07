@@ -2554,15 +2554,17 @@ const renderSarkariBlueLinks = (job = {}) => {
     ...asArray(job.extraImportantLinks).map((item) => typeof item === "object" ? ({ label:item.label || item.title || item.name || "Important Link", url:item.url || item.href || item.link, icon:"fa-solid fa-link" }) : ({ label:"Important Link", url:item, icon:"fa-solid fa-link" }))
   ];
   const seen = new Set();
+  const seenUrls = new Set();
   const html = links.map((item) => {
     const url = safeUrl(item.url);
     const comparableUrl = comparableLinkUrl(url);
     const key = `${String(item.label || "").trim().toLowerCase()}|${comparableUrl}`;
-    if(!comparableUrl || seen.has(key)){ return ""; }
+    if(!comparableUrl || seen.has(key) || seenUrls.has(comparableUrl)){ return ""; }
     seen.add(key);
+    seenUrls.add(comparableUrl);
     return `<a class="btn ${item.className || ""}" href="${url}" target="_blank" rel="noopener noreferrer"><i class="${item.icon || "fa-solid fa-link"}" aria-hidden="true"></i> ${escapeHTML(item.label || "Important Link")}</a>`;
   }).filter(Boolean).join("");
-  const manualHtml = renderSarkariBlueValue(job.importantLinksManual, { title:"Important Links" });
+  const manualHtml = renderManualBlock(job.importantLinksManual, { skipUrls:seenUrls });
   return [html ? `<div class="sarkari-blue-links">${html}</div>` : "", manualHtml].filter(Boolean).join("");
 };
 
