@@ -4073,6 +4073,14 @@ function normalizeSignatureStatus(status = "") {
   return "UNKNOWN";
 }
 
+function detectVisibleSignatureStatus(text = "") {
+  const value = String(text || "").replace(/\s+/g, " ").trim();
+  if (/validity\s+unknown/i.test(value)) return "UNKNOWN";
+  if (/signature\s+valid/i.test(value)) return "VALID";
+  if (/signature\s+invalid|signature\s+not\s+verified/i.test(value)) return "INVALID";
+  return "";
+}
+
 const verifiedPdfDownloads = new Map();
 
 function parsePdfLiteral(value = "") {
@@ -4342,9 +4350,8 @@ app.post("/verify-pdf", renderPdfVerifyUpload.single("pdf"), async (req, res) =>
     });
     const legacyValidation = verifyLegacyAdobePkcs7Sha1(buffer);
     if (legacyValidation.verified) {
-      signatureResult.signatureStatus = "VALID";
       signatureResult.documentModifiedAfterSigning = false;
-      signatureResult.trustStatus = signatureResult.trustStatus || "Trusted";
+      signatureResult.cryptographicSignatureValid = true;
     } else if (legacyValidation.modified === true) {
       signatureResult.signatureStatus = "MODIFIED";
       signatureResult.documentModifiedAfterSigning = true;
@@ -4357,6 +4364,14 @@ app.post("/verify-pdf", renderPdfVerifyUpload.single("pdf"), async (req, res) =>
       text = String(parsed?.text || "");
     } catch (_err) {
       text = "";
+    }
+    const visibleSignatureStatus = detectVisibleSignatureStatus(text);
+    if (legacyValidation.verified) {
+      if (visibleSignatureStatus) {
+        signatureResult.signatureStatus = visibleSignatureStatus;
+      } else if (String(signatureResult.signatureStatus || "").toUpperCase() !== "VALID") {
+        signatureResult.signatureStatus = "UNKNOWN";
+      }
     }
     const certificateNumber = detectCertificateNumberFromText(`${qrText} ${text}`);
     const certificateIssuer = String(signatureResult.certificateIssuer || "").trim();
@@ -4415,6 +4430,8 @@ app.post("/verify-pdf", renderPdfVerifyUpload.single("pdf"), async (req, res) =>
       officialVerifyUrl: emitraLookup.verificationUrl,
       signatureStatus,
       signatureMessage,
+      cryptographicSignatureValid: legacyValidation.verified || signatureResult.cryptographicSignatureValid === true,
+      visibleSignatureStatus,
       qrStatus: qrDetected ? "QR Detected" : "",
       trustStatus,
       issuerStatus,
