@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PDF Signature Verify | E-MITRA WALA</title>
 <meta name="description" content="E-MITRA WALA PDF certificate digital signature verification tool. Embedded PDF signature, visible text and eMitra verification number analysis.">
-<meta name="robots" content="index,follow">
+<meta name="robots" content="noindex,nofollow">
 <link rel="canonical" href="https://emitrawala.online/pdf-signature-verify.html">
 <link rel="icon" type="image/png" sizes="512x512" href="favicon.png">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
@@ -18,6 +18,7 @@
 :root{--blue:#0057a8;--deep:#03224d;--orange:#ff7a00;--page:#f7fbff;--surface:#fff;--soft:#eaf4ff;--line:#d8e6f5;--text:#172033;--muted:#5d6b7f;--green:#138a36;--yellow:#f59e0b;--red:#d90000;--gray:#64748b}
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Poppins','Noto Sans Devanagari',sans-serif}
 body{background:var(--page);color:var(--text);line-height:1.55;overflow-x:hidden}
+body.admin-locked > :not(script){display:none}
 nav{background:var(--blue);padding:12px 6%;display:flex;align-items:center;justify-content:space-between;gap:18px;position:sticky;top:0;z-index:20;box-shadow:0 4px 16px rgba(0,0,0,.16)}
 .logo img{width:190px;max-width:48vw;height:auto;display:block}
 nav ul{display:flex;list-style:none;gap:15px;flex-wrap:wrap;justify-content:flex-end;align-items:center}
@@ -50,6 +51,21 @@ footer{background:var(--blue);color:white;text-align:center;padding:22px 6%;marg
 </style>
 </head>
 <body>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+  import { getAuth,onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+  document.body.classList.add("admin-locked");
+  const firebaseConfig={apiKey:"AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",authDomain:"my-website-73785.firebaseapp.com",databaseURL:"https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app/",projectId:"my-website-73785",storageBucket:"my-website-73785.firebasestorage.app",messagingSenderId:"854088341990",appId:"1:854088341990:web:3211d4ef9fe4b78d025e27"};
+  const app=initializeApp(firebaseConfig),auth=getAuth(app),adminEmail="jasmelsolanki@gmail.com";
+  window.getPdfSignatureAdminToken=async()=>auth.currentUser?auth.currentUser.getIdToken():Promise.reject(new Error("Admin login missing"));
+  onAuthStateChanged(auth,(user)=>{
+    if(user&&user.email===adminEmail){
+      document.body.classList.remove("admin-locked");
+    }else{
+      location.replace("index.html");
+    }
+  });
+</script>
 <nav>
   <a class="logo" href="index.html"><img src="site-logo.svg" alt="E-MITRA WALA"></a>
   <ul>
@@ -61,7 +77,7 @@ footer{background:var(--blue);color:white;text-align:center;padding:22px 6%;marg
         <summary><i class="fa-solid fa-toolbox"></i> Tools</summary>
         <div class="nav-tools-menu">
           <a href="tools.html"><i class="fa-solid fa-screwdriver-wrench"></i> All Free Tools</a>
-          <a class="active" href="pdf-signature-verify.html"><i class="fa-solid fa-shield-halved"></i> PDF Signature Verify</a>
+          <a class="active" href="dashboard.html"><i class="fa-solid fa-user-shield"></i> Admin Dashboard</a>
           <a href="/emitra-offline-form-fill/"><i class="fa-solid fa-file-pen"></i> eMitra Offline Form Fill</a>
           <a href="invoice-generator.html"><i class="fa-solid fa-file-invoice"></i> Invoice Generator</a>
         </div>
@@ -338,7 +354,8 @@ verifyBtn.addEventListener('click', async () => {
       const current = parseFloat(progressBar.style.width) || 18;
       if(current < 88) setProgress(Math.min(88, current + 8));
     }, 500);
-    const response = await fetch(VERIFY_API_URL, { method:'POST', body:form });
+    const token = await window.getPdfSignatureAdminToken();
+    const response = await fetch(VERIFY_API_URL, { method:'POST', body:form, headers:{ Authorization:`Bearer ${token}` } });
     const data = await readApiJson(response);
     if(!response.ok || data.success === false){
       throw new Error(data.message || 'Verification failed');

@@ -3991,6 +3991,18 @@ async function requireAdmin(req) {
   return { decoded, db };
 }
 
+async function requireAdminApi(req, res, next) {
+  try {
+    await requireAdmin(req);
+    return next();
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message || "Admin verification failed"
+    });
+  }
+}
+
 app.get("/api/health", (req, res) => {
   res.json(buildServerStatus({ message: "Admin API is running" }));
 });
@@ -4465,7 +4477,7 @@ app.post("/verify-pdf", renderPdfVerifyUpload.single("pdf"), async (req, res) =>
   }
 });
 
-app.post("/api/verify-pdf-signature", pdfSignatureUpload.single("pdf"), async (req, res) => {
+app.post("/api/verify-pdf-signature", requireAdminApi, pdfSignatureUpload.single("pdf"), async (req, res) => {
   const uploadedPath = req.file?.path || "";
   try {
     if (!req.file || !uploadedPath) {
