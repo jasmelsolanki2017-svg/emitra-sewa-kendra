@@ -67,3 +67,34 @@ If the browser shows:
 run `supabase-storage-policies.sql` in the Supabase SQL Editor. It makes the `user-files` bucket public and adds read/upload/delete policies for the current browser-based flow.
 
 If this site is later converted to Next.js, then add the Supabase SSR `server.ts`, `client.ts`, and middleware files inside the Next app structure.
+
+## PDF Signature Verification Queue
+
+Manual admin verification uses a separate Supabase Storage bucket:
+
+```text
+pdf-verification
+```
+
+Flow:
+
+1. Logged-in user uploads original PDF from `user-dashboard.html`.
+2. Server stores the PDF in Supabase Storage and writes request metadata to Firebase:
+
+```text
+pdfVerificationRequests/<request-id>
+userPdfVerificationRequests/<firebase-uid>/<request-id>
+```
+
+3. Admin opens `admin-requests.html`, downloads the original PDF, verifies it manually in Foxit Reader or another tool, then uploads the verified/green-tick PDF.
+4. User sees status `Verified` and downloads the verified PDF from `user-dashboard.html`.
+
+Server env required for this flow:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key_keep_secret
+SUPABASE_PDF_VERIFICATION_BUCKET=pdf-verification
+```
+
+The service role key must stay on the server only. Do not place it in browser JavaScript.

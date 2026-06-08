@@ -11,6 +11,7 @@ const multer = require("multer");
 const PDFDocument = require("pdfkit");
 const { PDFDocument: LibPdfDocument, StandardFonts, rgb } = require("pdf-lib");
 const forge = require("node-forge");
+const { createClient: createSupabaseClient } = require("@supabase/supabase-js");
 let admin = null;
 let pdfParse = null;
 let cheerio = null;
@@ -91,6 +92,9 @@ const FORMS_FIELDS_CONFIG_PATH = path.join(__dirname, "emitra-offline-form-fill"
 const FORMS_TEMPLATE_UPLOAD_DIR = path.join(__dirname, "emitra-offline-form-fill", "assets", "uploaded-templates");
 const PDF_SIGNATURE_TEMP_DIR = path.join(__dirname, ".tmp", "pdf-signature-verification");
 const PDF_SIGNATURE_REPORT_DIR = path.join(PDF_SIGNATURE_TEMP_DIR, "reports");
+const PDF_VERIFICATION_BUCKET = String(process.env.SUPABASE_PDF_VERIFICATION_BUCKET || "pdf-verification").trim();
+const SUPABASE_URL = String(process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || "").trim();
+const SUPABASE_SERVICE_ROLE_KEY = String(process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || "").trim();
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "jasmelsolanki@gmail.com";
 const SITE_BASE_URL = extractUrl(process.env.SITE_BASE_URL, "https://emitrawala.online");
 const WHATSAPP_CHANNEL_URL = extractHttpUrl(process.env.WHATSAPP_CHANNEL_URL, "https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q");
@@ -122,6 +126,7 @@ const CHECKER_CRON = String(process.env.AUTO_JOB_CHECKER_CRON || "*/30 * * * *")
 const BACKUP_INTERVAL_MS = Number(process.env.AUTO_BACKUP_INTERVAL_MS || 24 * 60 * 60 * 1000);
 const execFileAsync = promisify(execFile);
 let adminDb = null;
+let supabaseAdminClient = null;
 let autoCheckerRunning = false;
 let lastSeoWorkflowDispatchAt = 0;
 const quickPostBatches = new Map();
@@ -3991,6 +3996,42 @@ async function requireAdmin(req) {
   return { decoded, db };
 }
 
+async function requireFirebaseUser(req) {
+  const db = getAdminDb();
+  if (!admin || !db) {
+    const error = new Error("Firebase Admin SDK is not configured");
+    error.statusCode = 503;
+    throw error;
+  }
+  const authHeader = String(req.headers.authorization || "");
+  const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
+  if (!token) {
+    const error = new Error("User token missing");
+    error.statusCode = 401;
+    throw error;
+  }
+  const decoded = await admin.auth().verifyIdToken(token);
+  if (!decoded.uid) {
+    const error = new Error("Valid user login required");
+    error.statusCode = 401;
+    throw error;
+  }
+  return { decoded, db };
+}
+
+async function requireFirebaseUserApi(req, res, next) {
+  try {
+    const context = await requireFirebaseUser(req);
+    req.firebaseUserContext = context;
+    return next();
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({
+      ok: false,
+      error: error.message || "User verification failed"
+    });
+  }
+}
+
 async function requireAdminApi(req, res, next) {
   try {
     await requireAdmin(req);
@@ -4002,6 +4043,33 @@ async function requireAdminApi(req, res, next) {
     });
   }
 }
+
+function getSupabaseAdminClient() {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    const error = new Error("Supabase service role env missing");
+    error.statusCode = 503;
+    throw error;
+  }
+  if (!supabaseAdminClient) {
+    supabaseAdminClient = createSupabaseClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+      auth: { persistSession: false, autoRefreshToken: false }
+    });
+  }
+  return supabaseAdminClient;
+}
+
+const pdfVerificationRequestUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: PDF_SIGNATURE_MAX_BYTES, files: 1 },
+  fileFilter: (_req, file, cb) => {
+    const name = String(file.originalname || "").toLowerCase();
+    const type = String(file.mimetype || "").toLowerCase();
+    if (type !== "application/pdf" && !name.endsWith(".pdf")) {
+      return cb(new Error("Only PDF files are allowed"));
+    }
+    return cb(null, true);
+  }
+});
 
 app.get("/api/health", (req, res) => {
   res.json(buildServerStatus({ message: "Admin API is running" }));
@@ -4553,6 +4621,141 @@ app.get("/download/verified-pdf/:id", (req, res) => {
   res.setHeader("Content-Type", "application/pdf");
   res.setHeader("Content-Disposition", `attachment; filename="${record.fileName}"`);
   return res.send(record.buffer);
+});
+
+function cleanStorageFileName(name = "certificate.pdf") {
+  return path.basename(String(name || "certificate.pdf"))
+    .replace(/[^a-z0-9._-]+/gi, "-")
+    .replace(/-+/g, "-")
+    .slice(0, 90) || "certificate.pdf";
+}
+
+async function signedPdfVerificationUrl(storagePath = "") {
+  const supabase = getSupabaseAdminClient();
+  const { data, error } = await supabase.storage
+    .from(PDF_VERIFICATION_BUCKET)
+    .createSignedUrl(storagePath, 60 * 10);
+  if (error) throw error;
+  return data?.signedUrl || "";
+}
+
+app.post("/api/pdf-verification/request", requireFirebaseUserApi, pdfVerificationRequestUpload.single("pdf"), async (req, res) => {
+  try {
+    const { decoded, db } = req.firebaseUserContext || await requireFirebaseUser(req);
+    if (!req.file?.buffer?.length) {
+      return res.status(400).json({ ok: false, error: "PDF file required" });
+    }
+    if (req.file.buffer.slice(0, 5).toString("utf8") !== "%PDF-") {
+      return res.status(400).json({ ok: false, error: "Valid PDF file required" });
+    }
+
+    const supabase = getSupabaseAdminClient();
+    const now = Date.now();
+    const uid = decoded.uid;
+    const requestRef = db.ref("pdfVerificationRequests").push();
+    const requestId = requestRef.key;
+    const originalName = cleanStorageFileName(req.file.originalname || "certificate.pdf");
+    const originalPath = `${uid}/${requestId}/original-${originalName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from(PDF_VERIFICATION_BUCKET)
+      .upload(originalPath, req.file.buffer, {
+        contentType: "application/pdf",
+        upsert: false
+      });
+    if (uploadError) throw uploadError;
+
+    const record = {
+      requestId,
+      userUid: uid,
+      userEmail: decoded.email || "",
+      fileName: originalName,
+      fileSize: req.file.size || req.file.buffer.length,
+      originalPath,
+      verifiedPath: "",
+      bucket: PDF_VERIFICATION_BUCKET,
+      status: "Pending",
+      adminNote: "Admin PDF download karke manual verification karega.",
+      createdAt: now,
+      updatedAt: now
+    };
+    await Promise.all([
+      requestRef.set(record),
+      db.ref(`userPdfVerificationRequests/${uid}/${requestId}`).set(record)
+    ]);
+
+    return res.json({ ok: true, requestId, message: "PDF verification request submit ho gayi." });
+  } catch (err) {
+    const status = err.code === "LIMIT_FILE_SIZE" ? 413 : (err.statusCode || 500);
+    return res.status(status).json({ ok: false, error: err.code === "LIMIT_FILE_SIZE" ? "PDF 20MB se chhoti honi chahiye" : err.message });
+  }
+});
+
+app.post("/api/pdf-verification/download-url", async (req, res) => {
+  try {
+    const { decoded, db } = await requireFirebaseUser(req);
+    const requestId = String(req.body?.requestId || "").trim();
+    const fileKind = String(req.body?.fileKind || "verified").trim().toLowerCase();
+    if (!requestId) return res.status(400).json({ ok: false, error: "Request ID required" });
+    const snapshot = await db.ref(`pdfVerificationRequests/${requestId}`).get();
+    if (!snapshot.exists()) return res.status(404).json({ ok: false, error: "Request not found" });
+    const record = snapshot.val() || {};
+    const isAdminUser = decoded.email === ADMIN_EMAIL;
+    if (!isAdminUser && record.userUid !== decoded.uid) {
+      return res.status(403).json({ ok: false, error: "Access denied" });
+    }
+    const storagePath = fileKind === "original" ? record.originalPath : record.verifiedPath;
+    if (!storagePath) return res.status(404).json({ ok: false, error: "PDF not available" });
+    const signedUrl = await signedPdfVerificationUrl(storagePath);
+    return res.json({ ok: true, signedUrl, fileName: fileKind === "original" ? record.fileName : `verified-${record.fileName || "certificate.pdf"}` });
+  } catch (err) {
+    return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
+  }
+});
+
+app.post("/admin/pdf-verification/verified-upload", requireAdminApi, pdfVerificationRequestUpload.single("pdf"), async (req, res) => {
+  try {
+    const { db, decoded } = await requireAdmin(req);
+    const requestId = String(req.body?.requestId || "").trim();
+    const adminNote = String(req.body?.adminNote || "Verified PDF uploaded by admin.").trim();
+    if (!requestId) return res.status(400).json({ ok: false, error: "Request ID required" });
+    if (!req.file?.buffer?.length) return res.status(400).json({ ok: false, error: "Verified PDF required" });
+    if (req.file.buffer.slice(0, 5).toString("utf8") !== "%PDF-") {
+      return res.status(400).json({ ok: false, error: "Valid PDF file required" });
+    }
+    const snapshot = await db.ref(`pdfVerificationRequests/${requestId}`).get();
+    if (!snapshot.exists()) return res.status(404).json({ ok: false, error: "Request not found" });
+    const oldRecord = snapshot.val() || {};
+    const uid = oldRecord.userUid || "";
+    const supabase = getSupabaseAdminClient();
+    const verifiedName = cleanStorageFileName(req.file.originalname || `verified-${oldRecord.fileName || "certificate.pdf"}`);
+    const verifiedPath = `${uid}/${requestId}/verified-${Date.now()}-${verifiedName}`;
+    const { error: uploadError } = await supabase.storage
+      .from(PDF_VERIFICATION_BUCKET)
+      .upload(verifiedPath, req.file.buffer, {
+        contentType: "application/pdf",
+        upsert: true
+      });
+    if (uploadError) throw uploadError;
+    const updates = {
+      verifiedPath,
+      verifiedFileName: verifiedName,
+      verifiedSize: req.file.size || req.file.buffer.length,
+      status: "Verified",
+      adminNote,
+      verifiedAt: Date.now(),
+      verifiedBy: decoded.email || ADMIN_EMAIL,
+      updatedAt: Date.now()
+    };
+    await Promise.all([
+      db.ref(`pdfVerificationRequests/${requestId}`).update(updates),
+      db.ref(`userPdfVerificationRequests/${uid}/${requestId}`).update(updates)
+    ]);
+    return res.json({ ok: true, message: "Verified PDF user ke liye ready hai." });
+  } catch (err) {
+    const status = err.code === "LIMIT_FILE_SIZE" ? 413 : (err.statusCode || 500);
+    return res.status(status).json({ ok: false, error: err.code === "LIMIT_FILE_SIZE" ? "PDF 20MB se chhoti honi chahiye" : err.message });
+  }
 });
 
 app.get("/sitemap.xml", async (req, res) => {

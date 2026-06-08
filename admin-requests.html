@@ -57,6 +57,15 @@
     .actions .done{background:#138a36;}
     .actions .danger{background:#d90000;}
     .actions a:hover,.actions button:hover{background:#ff7a00;color:#03224d;}
+    .pdf-queue{display:grid;gap:9px;}
+    .pdf-request{background:#f9fbff;border:1px solid #d8e6f5;border-left:4px solid #0057a8;border-radius:7px;padding:10px;}
+    .pdf-request.verified{border-left-color:#138a36;background:#f2fbf5;}
+    .pdf-request h3{color:#0057a8;font-size:15px;line-height:1.35;overflow-wrap:anywhere;}
+    .pdf-request small{display:block;color:#4d5d72;font-size:12px;line-height:1.45;margin-top:3px;overflow-wrap:anywhere;}
+    .pdf-upload-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:7px;margin-top:9px;}
+    .pdf-upload-row input{width:100%;min-width:0;border:1px solid #bdd0e5;border-radius:6px;padding:7px 8px;background:white;font-size:12px;}
+    .pdf-upload-row button{border:0;border-radius:6px;background:#138a36;color:white;font-weight:900;padding:7px 9px;cursor:pointer;font-size:11px;}
+    .pdf-status{font-weight:900;color:#0057a8;font-size:12px;margin-top:8px;min-height:18px;}
     .empty{background:white;border:1px dashed #bdd0e5;border-radius:7px;padding:18px;text-align:center;color:#55657a;font-weight:700;}
     footer{background:#0057a8;color:white;text-align:center;padding:12px;font-size:12px;}
     @media(max-width:720px){
@@ -65,6 +74,7 @@
       .toolbar input,.toolbar select{width:100%;max-width:none;min-width:0;}
       .edit-grid{grid-template-columns:1fr;}
       .edit-grid textarea{grid-column:auto;}
+      .pdf-upload-row{grid-template-columns:1fr;}
     }
   </style>
 </head>
@@ -94,6 +104,14 @@
       <div class="stat rejected"><small>Rejected</small><strong id="rejectedCount">0</strong></div>
       <div class="stat"><small>Total</small><strong id="totalCount">0</strong></div>
       <div class="stat"><small>Today</small><strong id="todayCount">0</strong></div>
+    </section>
+    <section class="panel">
+      <h2>PDF Signature Verification Queue</h2>
+      <p style="color:#55657a;font-size:12px;font-weight:700;margin-bottom:10px;">User ki original PDF download karein, Foxit Reader ya dusre software me manually green-tick verify karein, phir verified PDF wapas upload karein.</p>
+      <div class="pdf-status" id="pdfAdminStatus"></div>
+      <section class="pdf-queue" id="pdfVerificationQueue">
+        <div class="empty">PDF verification requests loading...</div>
+      </section>
     </section>
     <section class="panel">
       <div class="toolbar">
@@ -143,6 +161,7 @@
     const adminEmail = "jasmelsolanki@gmail.com";
     let adminAllowed = false;
     let allRequests = [];
+    let allPdfVerificationRequests = [];
 
     const escapeHTML = (value = "") => String(value)
       .replace(/&/g, "&amp;")
@@ -159,6 +178,37 @@
     const setText = (id, value) => {
       const el = document.getElementById(id);
       if(el){ el.innerText = String(value); }
+    };
+
+    const adminPostJson = async (path, payload = {}) => {
+      const user = auth.currentUser;
+      if(!user){ throw new Error("Admin login missing"); }
+      const token = await user.getIdToken();
+      const response = await fetch(path, {
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json",
+          "Authorization":"Bearer " + token
+        },
+        body:JSON.stringify(payload)
+      });
+      const data = await response.json().catch(() => ({}));
+      if(!response.ok || data.ok === false){ throw new Error(data.error || data.message || "Request failed"); }
+      return data;
+    };
+
+    const adminPostForm = async (path, formData) => {
+      const user = auth.currentUser;
+      if(!user){ throw new Error("Admin login missing"); }
+      const token = await user.getIdToken();
+      const response = await fetch(path, {
+        method:"POST",
+        headers:{ "Authorization":"Bearer " + token },
+        body:formData
+      });
+      const data = await response.json().catch(() => ({}));
+      if(!response.ok || data.ok === false){ throw new Error(data.error || data.message || "Request failed"); }
+      return data;
     };
 
     const normalizeStatus = (status = "") => {
@@ -304,6 +354,38 @@
       }).join("");
     }
 
+    function renderPdfVerificationQueue(){
+      const list = document.getElementById("pdfVerificationQueue");
+      if(!list){ return; }
+      if(!allPdfVerificationRequests.length){
+        list.innerHTML = '<div class="empty">Abhi koi PDF verification request nahi hai.</div>';
+        return;
+      }
+      list.innerHTML = allPdfVerificationRequests.map((data) => {
+        const status = String(data.status || "Pending");
+        const verified = status.toLowerCase() === "verified" && data.verifiedPath;
+        return `
+          <article class="pdf-request ${verified ? "verified" : ""}">
+            <h3>${escapeHTML(data.fileName || "Certificate PDF")}</h3>
+            <span class="badge ${verified ? "done" : ""}">${escapeHTML(status)}</span>
+            <small><b>Request ID:</b> ${escapeHTML(data.requestId || data.id)}</small>
+            <small><b>User:</b> ${escapeHTML(data.userEmail || data.userUid || "User")}</small>
+            <small><b>Date:</b> ${escapeHTML(formatDate(data.createdAt))}</small>
+            ${data.adminNote ? `<small><b>Note:</b> ${escapeHTML(data.adminNote)}</small>` : ""}
+            <div class="actions">
+              <button onclick="downloadPdfForAdmin('${escapeHTML(data.id)}','original')">Download Original</button>
+              ${verified ? `<button class="done" onclick="downloadPdfForAdmin('${escapeHTML(data.id)}','verified')">Download Verified</button>` : ""}
+            </div>
+            <div class="pdf-upload-row">
+              <input type="file" accept="application/pdf,.pdf" data-pdf-file="${escapeHTML(data.id)}">
+              <input type="text" placeholder="Admin note" data-pdf-note="${escapeHTML(data.id)}" value="${escapeHTML(verified ? data.adminNote || "" : "Manual verification complete.")}">
+              <button onclick="uploadVerifiedPdf('${escapeHTML(data.id)}')">Upload Verified</button>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
     onAuthStateChanged(auth, (user) => {
       if(user && user.email === adminEmail){
         adminAllowed = true;
@@ -322,6 +404,19 @@
       }
       allRequests.sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
       renderRequests();
+    });
+
+    onValue(ref(db, "pdfVerificationRequests"), (snapshot) => {
+      allPdfVerificationRequests = [];
+      if(snapshot.exists()){
+        snapshot.forEach((child) => allPdfVerificationRequests.push({ id:child.key, ...(child.val() || {}) }));
+      }
+      allPdfVerificationRequests.sort((a, b) => {
+        const aDone = String(a.status || "").toLowerCase() === "verified" ? 1 : 0;
+        const bDone = String(b.status || "").toLowerCase() === "verified" ? 1 : 0;
+        return aDone - bDone || Number(b.createdAt || 0) - Number(a.createdAt || 0);
+      });
+      renderPdfVerificationQueue();
     });
 
     document.getElementById("requestSearch").addEventListener("input", renderRequests);
@@ -385,6 +480,42 @@
         remove(ref(db, "serviceRequests/" + id))
           .then(() => removeUserRequest(id, userUid))
           .catch((error) => alert("Delete nahi hua: " + error.message));
+      }
+    };
+
+    window.downloadPdfForAdmin = async (id, fileKind = "original") => {
+      if(!adminAllowed){ alert("Admin verify nahi hua."); return; }
+      try{
+        const result = await adminPostJson("/api/pdf-verification/download-url", { requestId:id, fileKind });
+        if(!result.signedUrl){ throw new Error("Download link nahi mila"); }
+        window.open(result.signedUrl, "_blank", "noopener,noreferrer");
+      }catch(error){
+        alert("Download nahi hua: " + error.message);
+      }
+    };
+
+    window.uploadVerifiedPdf = async (id) => {
+      if(!adminAllowed){ alert("Admin verify nahi hua."); return; }
+      const fileInput = document.querySelector(`[data-pdf-file="${CSS.escape(id)}"]`);
+      const noteInput = document.querySelector(`[data-pdf-note="${CSS.escape(id)}"]`);
+      const status = document.getElementById("pdfAdminStatus");
+      const file = fileInput?.files?.[0];
+      if(!file){ alert("Verified PDF select karein."); return; }
+      if(file.type !== "application/pdf" && !/\.pdf$/i.test(file.name || "")){
+        status.innerText = "Sirf PDF file upload karein.";
+        return;
+      }
+      status.innerText = "Verified PDF Supabase Storage par upload ho rahi hai...";
+      try{
+        const formData = new FormData();
+        formData.append("requestId", id);
+        formData.append("adminNote", noteInput?.value?.trim() || "Manual verification complete.");
+        formData.append("pdf", file);
+        const result = await adminPostForm("/admin/pdf-verification/verified-upload", formData);
+        if(fileInput){ fileInput.value = ""; }
+        status.innerText = result.message || "Verified PDF upload ho gayi.";
+      }catch(error){
+        status.innerText = "Verified upload nahi hua: " + error.message;
       }
     };
 

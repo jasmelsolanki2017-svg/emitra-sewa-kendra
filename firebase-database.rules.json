@@ -176,6 +176,21 @@
       }
     },
 
+    "pdfVerificationRequests": {
+      ".read": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'",
+      "$requestId": {
+        ".write": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'"
+      }
+    },
+
+    "userPdfVerificationRequests": {
+      ".read": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'",
+      "$uid": {
+        ".read": "auth != null && (auth.uid == $uid || auth.token.email == 'jasmelsolanki@gmail.com')",
+        ".write": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'"
+      }
+    },
+
     "users": {
       "$uid": {
         ".read": "auth != null && (auth.uid == $uid || auth.token.email == 'jasmelsolanki@gmail.com')",

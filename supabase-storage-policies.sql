@@ -26,3 +26,9 @@ on storage.objects
 for delete
 to anon, authenticated
 using (bucket_id = 'user-files');
+
+-- Manual PDF verification queue bucket. Server-side service-role endpoints upload
+-- and create short signed download URLs, so public object policies are not needed.
+insert into storage.buckets (id, name, public)
+values ('pdf-verification', 'pdf-verification', false)
+on conflict (id) do update set public = false;

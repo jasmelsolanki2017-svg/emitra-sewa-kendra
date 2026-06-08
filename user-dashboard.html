@@ -214,6 +214,23 @@
     .notify-pill.has-unread{background:#fff0f0;border-color:#ffb4b4;color:#a31515;}
     .notify-pill.has-unread i{color:#d10000;}
 
+    .pdf-verify-panel{background:var(--panel);border:1px solid var(--line);border-left:6px solid var(--yellow);border-radius:8px;padding:14px;margin-bottom:14px;box-shadow:var(--shadow);}
+    .pdf-verify-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-bottom:10px;}
+    .pdf-verify-head h3{color:var(--blue);font-size:18px;}
+    .pdf-verify-head p{color:var(--muted);font-weight:700;font-size:12px;}
+    .pdf-verify-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;margin-bottom:10px;}
+    .pdf-verify-form input{width:100%;border:1px solid var(--line);border-radius:7px;padding:9px;background:#fff;font-size:13px;}
+    .pdf-verify-form button,.pdf-verify-actions button{border:0;border-radius:6px;background:var(--blue);color:#fff;font-weight:900;padding:9px 12px;cursor:pointer;}
+    .pdf-verify-form button:hover,.pdf-verify-actions button:hover{background:var(--yellow);color:var(--blue-dark);}
+    .pdf-verify-list{display:grid;gap:8px;}
+    .pdf-verify-row{background:#f9fbff;border:1px solid var(--line);border-left:4px solid var(--blue);border-radius:7px;padding:10px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;}
+    .pdf-verify-row.verified{border-left-color:#138a36;background:#f2fbf5;}
+    .pdf-verify-row small{display:block;color:var(--muted);font-size:11px;font-weight:700;overflow-wrap:anywhere;}
+    .pdf-verify-status{font-size:12px;font-weight:900;color:var(--blue);min-height:18px;}
+    .pdf-verify-badge{display:inline-block;background:#fff7ed;color:#8a3b00;border:1px solid #ffd2a4;border-radius:999px;padding:3px 8px;font-size:10px;font-weight:900;margin-top:4px;}
+    .pdf-verify-row.verified .pdf-verify-badge{background:#eaf8ef;color:#12723c;border-color:#bde8ca;}
+    .pdf-verify-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;}
+
     .account-layout{
       display:grid;
       grid-template-columns:minmax(230px,.32fr) minmax(0,1fr);
@@ -1153,6 +1170,8 @@
       .action-tile i{width:34px;height:34px;}
       .service-request-form{grid-template-columns:1fr;}
       .service-request-form textarea{grid-column:auto;}
+      .pdf-verify-form,.pdf-verify-row{grid-template-columns:1fr;}
+      .pdf-verify-actions{justify-content:flex-start;}
       .chat-reply{grid-template-columns:1fr;}
       .stat-box small{text-align:left;}
       .section{padding:20px;}
@@ -1530,6 +1549,21 @@ body.dark-mode .nav-logo img {
       <a href="user-data-folder.html">Open Folder</a>
     </div>
 
+    <div class="pdf-verify-panel">
+      <div class="pdf-verify-head">
+        <div>
+          <h3><i class="fa-solid fa-shield-halved"></i> PDF Signature Verification</h3>
+          <p>Original PDF upload karein. Admin Foxit Reader ya dusre software se manually verify karke green-tick PDF wapas upload karega.</p>
+        </div>
+      </div>
+      <div class="pdf-verify-form">
+        <input id="pdfVerifyInput" type="file" accept="application/pdf,.pdf">
+        <button type="button" onclick="submitPdfVerificationRequest()">Submit PDF</button>
+      </div>
+      <div class="pdf-verify-status" id="pdfVerifyStatus"></div>
+      <div class="pdf-verify-list" id="pdfVerifyList"><div class="message">PDF verification requests loading...</div></div>
+    </div>
+
     <div class="service-request-panel">
       <div class="service-request-head">
         <div>
@@ -1750,6 +1784,7 @@ body.dark-mode .nav-logo img {
   let currentMember = {};
   let currentFiles = [];
   let currentCloudLinks = [];
+  let currentPdfVerificationRequests = [];
   let currentRequestNotifications = [];
   let currentAdminMessages = [];
   let requestNotificationsLoaded = false;
@@ -1764,6 +1799,35 @@ body.dark-mode .nav-logo img {
   const safeUrl = (value = "#") => {
     const url = String(value || "#").trim();
     return /^https?:\/\//i.test(url) ? url : "#";
+  };
+
+  const apiPostJson = async (path, payload = {}) => {
+    if(!currentUser){ throw new Error("Login required"); }
+    const token = await currentUser.getIdToken();
+    const response = await fetch(path, {
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "Authorization":"Bearer " + token
+      },
+      body:JSON.stringify(payload)
+    });
+    const data = await response.json().catch(() => ({}));
+    if(!response.ok || data.ok === false){ throw new Error(data.error || data.message || "Request failed"); }
+    return data;
+  };
+
+  const apiPostForm = async (path, formData) => {
+    if(!currentUser){ throw new Error("Login required"); }
+    const token = await currentUser.getIdToken();
+    const response = await fetch(path, {
+      method:"POST",
+      headers:{ "Authorization":"Bearer " + token },
+      body:formData
+    });
+    const data = await response.json().catch(() => ({}));
+    if(!response.ok || data.ok === false){ throw new Error(data.error || data.message || "Request failed"); }
+    return data;
   };
 
   function renderRequestNotificationCount(){
@@ -2235,6 +2299,34 @@ body.dark-mode .nav-logo img {
     `).join("");
   };
 
+  const renderPdfVerificationRequests = () => {
+    const list = document.getElementById("pdfVerifyList");
+    if(!list){ return; }
+    if(!currentPdfVerificationRequests.length){
+      list.innerHTML = '<div class="message">Abhi koi PDF verification request nahi hai.</div>';
+      return;
+    }
+    list.innerHTML = currentPdfVerificationRequests.map((item) => {
+      const data = item.request || {};
+      const status = String(data.status || "Pending");
+      const isVerified = status.toLowerCase() === "verified" && data.verifiedPath;
+      return `
+        <div class="pdf-verify-row ${isVerified ? "verified" : ""}">
+          <div>
+            <strong>${escapeHTML(data.fileName || "Certificate PDF")}</strong>
+            <small>Request ID: ${escapeHTML(data.requestId || item.id)} · ${data.createdAt ? new Date(Number(data.createdAt)).toLocaleString("hi-IN") : "Recently"}</small>
+            <small>${escapeHTML(data.adminNote || "Admin manual verification pending hai.")}</small>
+            <span class="pdf-verify-badge">${escapeHTML(status)}</span>
+          </div>
+          <div class="pdf-verify-actions">
+            ${isVerified ? `<button type="button" onclick="downloadPdfVerification('${escapeHTML(item.id)}','verified')">Download Verified PDF</button>` : ""}
+            <button type="button" onclick="downloadPdfVerification('${escapeHTML(item.id)}','original')">Original PDF</button>
+          </div>
+        </div>
+      `;
+    }).join("");
+  };
+
   const renderUserProfile = () => {
     const normalizeOption = (value = "", options = []) => {
       const text = String(value || "").trim().toLowerCase();
@@ -2386,6 +2478,17 @@ body.dark-mode .nav-logo img {
         }
         currentFiles.sort((a, b) => Number(b.file.uploadedAt || 0) - Number(a.file.uploadedAt || 0));
         renderUserFiles();
+      });
+
+      onValue(ref(db, "userPdfVerificationRequests/" + user.uid), (snapshot) => {
+        currentPdfVerificationRequests = [];
+        if(snapshot.exists()){
+          snapshot.forEach((child) => {
+            currentPdfVerificationRequests.push({ id:child.key, request:child.val() || {} });
+          });
+        }
+        currentPdfVerificationRequests.sort((a, b) => Number(b.request.createdAt || 0) - Number(a.request.createdAt || 0));
+        renderPdfVerificationRequests();
       });
 
       onValue(ref(db, "memberCloudLinks/" + user.uid), (snapshot) => {
@@ -2614,6 +2717,48 @@ body.dark-mode .nav-logo img {
     status.innerText = failed.length
       ? `Uploaded: ${uploadedCount}, Failed: ${failed.length}. ${failed.slice(0, 2).join(" | ")}`
       : `${uploadedCount} file upload ho gayi.`;
+  };
+
+  window.submitPdfVerificationRequest = async () => {
+    if(!currentUser){
+      alert("Login required.");
+      return;
+    }
+    const input = document.getElementById("pdfVerifyInput");
+    const status = document.getElementById("pdfVerifyStatus");
+    const file = input?.files?.[0];
+    if(!file){
+      alert("Original PDF select karein.");
+      return;
+    }
+    if(file.type !== "application/pdf" && !/\.pdf$/i.test(file.name || "")){
+      status.innerText = "Sirf PDF file upload karein.";
+      return;
+    }
+    if(file.size > 20 * 1024 * 1024){
+      status.innerText = "PDF 20MB se chhoti honi chahiye.";
+      return;
+    }
+    status.innerText = "PDF Supabase Storage par upload ho rahi hai...";
+    try{
+      const formData = new FormData();
+      formData.append("pdf", file);
+      const result = await apiPostForm("/api/pdf-verification/request", formData);
+      input.value = "";
+      status.innerText = result.message || "PDF verification request submit ho gayi.";
+    }catch(error){
+      status.innerText = "Upload nahi hua: " + error.message;
+    }
+  };
+
+  window.downloadPdfVerification = async (id, fileKind = "verified") => {
+    try{
+      const result = await apiPostJson("/api/pdf-verification/download-url", { requestId:id, fileKind });
+      if(!result.signedUrl){ throw new Error("Download link nahi mila"); }
+      window.open(result.signedUrl, "_blank", "noopener,noreferrer");
+    }catch(error){
+      alert("Download nahi hua: " + error.message);
+    }
   };
 
   window.downloadUserFile = (id) => {
