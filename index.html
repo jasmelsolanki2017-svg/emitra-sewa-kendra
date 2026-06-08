@@ -4327,7 +4327,7 @@ const items = [];
 
 Object.entries(categoryItems).forEach(([id, item])=>{
 item = item || {};
-if(item.title){
+if(isJobVisible(item) && item.title){
 items.push({ ...item, id });
 }
 });

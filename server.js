@@ -4046,7 +4046,7 @@ async function requireAdminApi(req, res, next) {
 
 function getSupabaseAdminClient() {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-    const error = new Error("Supabase service role env missing");
+    const error = new Error("PDF upload storage config missing. Render env me SUPABASE_URL aur SUPABASE_SERVICE_ROLE_KEY set karein.");
     error.statusCode = 503;
     throw error;
   }
@@ -4056,6 +4056,18 @@ function getSupabaseAdminClient() {
     });
   }
   return supabaseAdminClient;
+}
+
+function getPdfStorageErrorMessage(error) {
+  const message = String(error?.message || error?.error || error || "").trim();
+  if (!message) return "PDF upload storage error";
+  if (/bucket/i.test(message) && /(not found|does not exist|missing)/i.test(message)) {
+    return `PDF upload bucket '${PDF_VERIFICATION_BUCKET}' Supabase me nahi mila. Bucket create karein ya SUPABASE_PDF_VERIFICATION_BUCKET env sahi karein.`;
+  }
+  if (/(jwt|apikey|api key|unauthorized|forbidden|permission|not allowed|row level security|rls)/i.test(message)) {
+    return "Supabase PDF upload permission fail. SUPABASE_SERVICE_ROLE_KEY aur storage bucket policy check karein.";
+  }
+  return `Supabase PDF upload fail: ${message}`;
 }
 
 const pdfVerificationRequestUpload = multer({
@@ -4663,7 +4675,11 @@ app.post("/api/pdf-verification/request", requireFirebaseUserApi, pdfVerificatio
         contentType: "application/pdf",
         upsert: false
       });
-    if (uploadError) throw uploadError;
+    if (uploadError) {
+      const error = new Error(getPdfStorageErrorMessage(uploadError));
+      error.statusCode = 503;
+      throw error;
+    }
 
     const record = {
       requestId,
@@ -4687,7 +4703,7 @@ app.post("/api/pdf-verification/request", requireFirebaseUserApi, pdfVerificatio
     return res.json({ ok: true, requestId, message: "PDF verification request submit ho gayi." });
   } catch (err) {
     const status = err.code === "LIMIT_FILE_SIZE" ? 413 : (err.statusCode || 500);
-    return res.status(status).json({ ok: false, error: err.code === "LIMIT_FILE_SIZE" ? "PDF 20MB se chhoti honi chahiye" : err.message });
+    return res.status(status).json({ ok: false, error: err.code === "LIMIT_FILE_SIZE" ? "PDF 20MB se chhoti honi chahiye" : (err.message || "PDF upload nahi hua") });
   }
 });
 
@@ -4736,7 +4752,11 @@ app.post("/admin/pdf-verification/verified-upload", requireAdminApi, pdfVerifica
         contentType: "application/pdf",
         upsert: true
       });
-    if (uploadError) throw uploadError;
+    if (uploadError) {
+      const error = new Error(getPdfStorageErrorMessage(uploadError));
+      error.statusCode = 503;
+      throw error;
+    }
     const updates = {
       verifiedPath,
       verifiedFileName: verifiedName,
@@ -4754,7 +4774,7 @@ app.post("/admin/pdf-verification/verified-upload", requireAdminApi, pdfVerifica
     return res.json({ ok: true, message: "Verified PDF user ke liye ready hai." });
   } catch (err) {
     const status = err.code === "LIMIT_FILE_SIZE" ? 413 : (err.statusCode || 500);
-    return res.status(status).json({ ok: false, error: err.code === "LIMIT_FILE_SIZE" ? "PDF 20MB se chhoti honi chahiye" : err.message });
+    return res.status(status).json({ ok: false, error: err.code === "LIMIT_FILE_SIZE" ? "PDF 20MB se chhoti honi chahiye" : (err.message || "Verified PDF upload nahi hua") });
   }
 });
 
