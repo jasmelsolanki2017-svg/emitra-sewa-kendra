@@ -1639,6 +1639,9 @@ Cook | 1426 |"></textarea>
     status.innerText = nextStatus === "published" ? "Post publish ho rahi hai..." : "Post hide ho rahi hai...";
     update(ref(db, "LatestJobs/" + id), { postStatus:nextStatus, updatedAt:Date.now() })
     .then(() => {
+      return nextStatus === "draft" ? removeJobPortalItems(id) : Promise.resolve();
+    })
+    .then(() => {
       status.innerText = nextStatus === "published" ? "Post published. Telegram bhejne ke liye Telegram Post button use karein." : "Post hide ho gayi.";
     })
     .catch((error) => {

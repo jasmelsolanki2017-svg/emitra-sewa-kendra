@@ -658,7 +658,8 @@ onValue(portalItemsRef, (snapshot) => {
     if(snapshot.exists() && categorySnapshot.exists()){
       categorySnapshot.forEach((child) => {
         const item = child.val() || {};
-        if(item.title){
+        const isHidden = String(item.postStatus || "published").toLowerCase() === "draft";
+        if(item.title && !isHidden){
           items.push({ ...item, id:child.key });
         }
       });
