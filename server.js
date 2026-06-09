@@ -95,6 +95,8 @@ const PDF_SIGNATURE_REPORT_DIR = path.join(PDF_SIGNATURE_TEMP_DIR, "reports");
 const PDF_VERIFICATION_BUCKET = String(process.env.SUPABASE_PDF_VERIFICATION_BUCKET || "pdf-verification").trim();
 const SUPABASE_URL = String(process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || "").trim();
 const SUPABASE_SERVICE_ROLE_KEY = String(process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || "").trim();
+const SUPABASE_PUBLISHABLE_KEY = String(process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || "").trim();
+const PDF_VERIFICATION_LOCAL_DIR = path.join(__dirname, ".uploads", "pdf-verification");
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "jasmelsolanki@gmail.com";
 const SITE_BASE_URL = extractUrl(process.env.SITE_BASE_URL, "https://emitrawala.online");
 const WHATSAPP_CHANNEL_URL = extractHttpUrl(process.env.WHATSAPP_CHANNEL_URL, "https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q");
@@ -2268,6 +2270,7 @@ function decodePdfBase64(value = "") {
 
 fs.mkdirSync(PDF_SIGNATURE_TEMP_DIR, { recursive: true });
 fs.mkdirSync(PDF_SIGNATURE_REPORT_DIR, { recursive: true });
+fs.mkdirSync(PDF_VERIFICATION_LOCAL_DIR, { recursive: true });
 
 const pdfSignatureReports = new Map();
 const PDF_SIGNATURE_MAX_BYTES = 20 * 1024 * 1024;
@@ -4045,13 +4048,14 @@ async function requireAdminApi(req, res, next) {
 }
 
 function getSupabaseAdminClient() {
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-    const error = new Error("PDF upload storage config missing. Render env me SUPABASE_URL aur SUPABASE_SERVICE_ROLE_KEY set karein.");
+  const storageKey = SUPABASE_SERVICE_ROLE_KEY || SUPABASE_PUBLISHABLE_KEY;
+  if (!SUPABASE_URL || !storageKey) {
+    const error = new Error("PDF upload storage config missing. NEXT_PUBLIC_SUPABASE_URL aur NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY / SUPABASE_SERVICE_ROLE_KEY set karein.");
     error.statusCode = 503;
     throw error;
   }
   if (!supabaseAdminClient) {
-    supabaseAdminClient = createSupabaseClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+    supabaseAdminClient = createSupabaseClient(SUPABASE_URL, storageKey, {
       auth: { persistSession: false, autoRefreshToken: false }
     });
   }
@@ -4065,7 +4069,9 @@ function getPdfStorageErrorMessage(error) {
     return `PDF upload bucket '${PDF_VERIFICATION_BUCKET}' Supabase me nahi mila. Bucket create karein ya SUPABASE_PDF_VERIFICATION_BUCKET env sahi karein.`;
   }
   if (/(jwt|apikey|api key|unauthorized|forbidden|permission|not allowed|row level security|rls)/i.test(message)) {
-    return "Supabase PDF upload permission fail. SUPABASE_SERVICE_ROLE_KEY aur storage bucket policy check karein.";
+    return SUPABASE_SERVICE_ROLE_KEY
+      ? "Supabase PDF upload permission fail. SUPABASE_SERVICE_ROLE_KEY aur storage bucket policy check karein."
+      : "Supabase PDF upload permission fail. Supabase bucket RLS policy aur publishable key permissions check karein.";
   }
   return `Supabase PDF upload fail: ${message}`;
 }
@@ -4642,14 +4648,105 @@ function cleanStorageFileName(name = "certificate.pdf") {
     .slice(0, 90) || "certificate.pdf";
 }
 
-async function signedPdfVerificationUrl(storagePath = "") {
-  const supabase = getSupabaseAdminClient();
-  const { data, error } = await supabase.storage
-    .from(PDF_VERIFICATION_BUCKET)
-    .createSignedUrl(storagePath, 60 * 10);
-  if (error) throw error;
-  return data?.signedUrl || "";
+function buildLocalPdfStoragePath(storagePath = "") {
+  const relative = String(storagePath || "")
+    .replace(/\\/g, "/")
+    .split("/")
+    .filter(Boolean)
+    .map((part) => part.replace(/[^a-z0-9._-]+/gi, "-").replace(/-+/g, "-").slice(0, 80))
+    .join("/");
+  const fallbackName = relative || `pdf-${Date.now()}.pdf`;
+  return path.join(PDF_VERIFICATION_LOCAL_DIR, fallbackName);
 }
+
+async function ensurePdfVerificationBucket(supabase) {
+  if (!SUPABASE_SERVICE_ROLE_KEY) return true;
+  try {
+    const { error } = await supabase.storage.createBucket(PDF_VERIFICATION_BUCKET, { public: true });
+    if (error && !/(already|exists|exist)/i.test(error.message || "")) {
+      console.warn("Supabase bucket ensure failed", error.message);
+    }
+  } catch (error) {
+    console.warn("Supabase bucket ensure warning", error.message);
+  }
+  return true;
+}
+
+async function uploadPdfToStorage(buffer, storagePath = "", originalName = "certificate.pdf") {
+  const safeStoragePath = String(storagePath || "")
+    .trim()
+    .replace(/\\/g, "/")
+    .replace(/^\/+|\/+$/g, "") || `upload-${Date.now()}-${cleanStorageFileName(originalName)}`;
+  try {
+    const supabase = getSupabaseAdminClient();
+    await ensurePdfVerificationBucket(supabase);
+    const { error } = await supabase.storage
+      .from(PDF_VERIFICATION_BUCKET)
+      .upload(safeStoragePath, Buffer.from(buffer), {
+        contentType: "application/pdf",
+        upsert: false
+      });
+    if (!error) {
+      return {
+        storageKind: "supabase",
+        storagePath: safeStoragePath,
+        downloadUrl: ""
+      };
+    }
+    throw error;
+  } catch (uploadError) {
+    const localFilePath = buildLocalPdfStoragePath(safeStoragePath);
+    fs.mkdirSync(path.dirname(localFilePath), { recursive: true });
+    await fs.promises.writeFile(localFilePath, Buffer.from(buffer));
+    return {
+      storageKind: "local",
+      storagePath: path.relative(PDF_VERIFICATION_LOCAL_DIR, localFilePath).split(path.sep).join("/"),
+      localFilePath,
+      downloadUrl: `/api/pdf-verification/file/${encodeURIComponent(path.relative(PDF_VERIFICATION_LOCAL_DIR, localFilePath).split(path.sep).join("/"))}`
+    };
+  }
+}
+
+async function resolvePdfVerificationDownloadUrl(record = {}, fileKind = "verified") {
+  const storagePath = fileKind === "original" ? record.originalPath : record.verifiedPath;
+  const storageKind = fileKind === "original" ? record.originalStorageProvider : record.verifiedStorageProvider;
+  const downloadUrl = fileKind === "original" ? record.originalDownloadUrl : record.verifiedDownloadUrl;
+  if (downloadUrl) return downloadUrl;
+  if (storageKind === "local") {
+    const localPath = fileKind === "original" ? record.originalLocalPath : record.verifiedLocalPath;
+    if (localPath) {
+      return `/api/pdf-verification/file/${encodeURIComponent(localPath)}`;
+    }
+  }
+  if (!storagePath) return "";
+  try {
+    const supabase = getSupabaseAdminClient();
+    const { data: publicData } = supabase.storage.from(PDF_VERIFICATION_BUCKET).getPublicUrl(storagePath);
+    if (publicData?.publicUrl) return publicData.publicUrl;
+    const { data, error } = await supabase.storage.from(PDF_VERIFICATION_BUCKET).createSignedUrl(storagePath, 60 * 10);
+    if (!error && data?.signedUrl) return data.signedUrl;
+  } catch (_error) {}
+  return "";
+}
+
+app.get("/api/pdf-verification/file/:storagePath(*)", (req, res) => {
+  try {
+    const storagePath = decodeURIComponent(String(req.params.storagePath || ""));
+    const normalizedPath = String(storagePath || "")
+      .replace(/\\/g, "/")
+      .split("/")
+      .filter(Boolean)
+      .join("/");
+    const filePath = path.resolve(PDF_VERIFICATION_LOCAL_DIR, normalizedPath);
+    const relativePath = path.relative(PDF_VERIFICATION_LOCAL_DIR, filePath);
+    if (!normalizedPath || relativePath.startsWith("..") || path.isAbsolute(relativePath) || !fs.existsSync(filePath)) {
+      return res.status(404).send("File not found");
+    }
+    return res.download(filePath, path.basename(filePath));
+  } catch (_error) {
+    return res.status(404).send("File not found");
+  }
+});
 
 app.post("/api/pdf-verification/request", requireFirebaseUserApi, pdfVerificationRequestUpload.single("pdf"), async (req, res) => {
   try {
@@ -4661,25 +4758,13 @@ app.post("/api/pdf-verification/request", requireFirebaseUserApi, pdfVerificatio
       return res.status(400).json({ ok: false, error: "Valid PDF file required" });
     }
 
-    const supabase = getSupabaseAdminClient();
     const now = Date.now();
     const uid = decoded.uid;
     const requestRef = db.ref("pdfVerificationRequests").push();
     const requestId = requestRef.key;
     const originalName = cleanStorageFileName(req.file.originalname || "certificate.pdf");
     const originalPath = `${uid}/${requestId}/original-${originalName}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from(PDF_VERIFICATION_BUCKET)
-      .upload(originalPath, req.file.buffer, {
-        contentType: "application/pdf",
-        upsert: false
-      });
-    if (uploadError) {
-      const error = new Error(getPdfStorageErrorMessage(uploadError));
-      error.statusCode = 503;
-      throw error;
-    }
+    const uploadResult = await uploadPdfToStorage(req.file.buffer, originalPath, originalName);
 
     const record = {
       requestId,
@@ -4687,8 +4772,14 @@ app.post("/api/pdf-verification/request", requireFirebaseUserApi, pdfVerificatio
       userEmail: decoded.email || "",
       fileName: originalName,
       fileSize: req.file.size || req.file.buffer.length,
-      originalPath,
+      originalPath: uploadResult.storagePath,
+      originalStorageProvider: uploadResult.storageKind,
+      originalLocalPath: uploadResult.storageKind === "local" ? uploadResult.storagePath : "",
+      originalDownloadUrl: uploadResult.downloadUrl || "",
       verifiedPath: "",
+      verifiedStorageProvider: "",
+      verifiedLocalPath: "",
+      verifiedDownloadUrl: "",
       bucket: PDF_VERIFICATION_BUCKET,
       status: "Pending",
       adminNote: "Admin PDF download karke manual verification karega.",
@@ -4722,7 +4813,8 @@ app.post("/api/pdf-verification/download-url", async (req, res) => {
     }
     const storagePath = fileKind === "original" ? record.originalPath : record.verifiedPath;
     if (!storagePath) return res.status(404).json({ ok: false, error: "PDF not available" });
-    const signedUrl = await signedPdfVerificationUrl(storagePath);
+    const signedUrl = await resolvePdfVerificationDownloadUrl(record, fileKind);
+    if (!signedUrl) return res.status(404).json({ ok: false, error: "PDF download URL not available" });
     return res.json({ ok: true, signedUrl, fileName: fileKind === "original" ? record.fileName : `verified-${record.fileName || "certificate.pdf"}` });
   } catch (err) {
     return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
@@ -4743,22 +4835,14 @@ app.post("/admin/pdf-verification/verified-upload", requireAdminApi, pdfVerifica
     if (!snapshot.exists()) return res.status(404).json({ ok: false, error: "Request not found" });
     const oldRecord = snapshot.val() || {};
     const uid = oldRecord.userUid || "";
-    const supabase = getSupabaseAdminClient();
     const verifiedName = cleanStorageFileName(req.file.originalname || `verified-${oldRecord.fileName || "certificate.pdf"}`);
     const verifiedPath = `${uid}/${requestId}/verified-${Date.now()}-${verifiedName}`;
-    const { error: uploadError } = await supabase.storage
-      .from(PDF_VERIFICATION_BUCKET)
-      .upload(verifiedPath, req.file.buffer, {
-        contentType: "application/pdf",
-        upsert: true
-      });
-    if (uploadError) {
-      const error = new Error(getPdfStorageErrorMessage(uploadError));
-      error.statusCode = 503;
-      throw error;
-    }
+    const uploadResult = await uploadPdfToStorage(req.file.buffer, verifiedPath, verifiedName);
     const updates = {
-      verifiedPath,
+      verifiedPath: uploadResult.storagePath,
+      verifiedStorageProvider: uploadResult.storageKind,
+      verifiedLocalPath: uploadResult.storageKind === "local" ? uploadResult.storagePath : "",
+      verifiedDownloadUrl: uploadResult.downloadUrl || "",
       verifiedFileName: verifiedName,
       verifiedSize: req.file.size || req.file.buffer.length,
       status: "Verified",
