@@ -371,10 +371,110 @@ const renderCurrentAffairsFallbackHtml = (job = {}, title = "Current Affairs", d
             </section>`;
 };
 
+const isAdmissionPost = (job = {}) => {
+  const article = job.advancedArticleData && typeof job.advancedArticleData === "object" ? job.advancedArticleData : {};
+  return [job.postTarget, job.postType, article.postTarget, article.postType, job.category, article.category, job.type, article.type]
+    .some((value) => normalizePostTarget(value) === "admission" || /^admissions?$/i.test(String(value || "").trim()));
+};
+
+const staticAdmissionField = (job = {}, key = "") => {
+  const article = job.advancedArticleData && typeof job.advancedArticleData === "object" ? job.advancedArticleData : {};
+  return job[key] !== undefined && job[key] !== null ? job[key] : article[key];
+};
+
+const staticIsFilled = (value) => {
+  if(value === null || value === undefined) return false;
+  if(Array.isArray(value)) return value.some(staticIsFilled);
+  if(typeof value === "object") return Object.values(value).some(staticIsFilled);
+  return String(value || "").trim() !== "" && !/^(update\s*soon|all\s*india|#)$/i.test(String(value || "").trim());
+};
+
+const staticAdmissionRows = (items = [], fallbackLabel = "Details") => (Array.isArray(items) ? items : [])
+  .map((item, index) => {
+    if(typeof item === "string"){
+      const match = item.match(/^([^:]+):\s*(.+)$/);
+      return match ? { label:match[1], value:match[2] } : { label:`${fallbackLabel} ${index + 1}`, value:item };
+    }
+    if(item && typeof item === "object"){
+      return {
+        label:item.label || item.event || item.title || item.name || item.key || `${fallbackLabel} ${index + 1}`,
+        value:item.value || item.date || item.text || item.description || item.detail || item.content || ""
+      };
+    }
+    return null;
+  })
+  .filter((row) => row && staticIsFilled(row.label) && staticIsFilled(row.value));
+
+const renderStaticRowsTable = (rows = []) => rows.length
+  ? `<table class="detail-table"><tbody>${rows.map((row) => `<tr><th>${htmlEscape(row.label)}</th><td>${htmlEscape(row.value)}</td></tr>`).join("")}</tbody></table>`
+  : "";
+
+const renderStaticList = (items = [], ordered = false) => {
+  const clean = (Array.isArray(items) ? items : (staticIsFilled(items) ? [items] : [])).filter(staticIsFilled);
+  if(!clean.length) return "";
+  const tag = ordered ? "ol" : "ul";
+  return `<${tag}>${clean.map((item) => `<li>${htmlEscape(typeof item === "object" ? JSON.stringify(item) : item)}</li>`).join("")}</${tag}>`;
+};
+
+const staticAdmissionOverviewValue = (job = {}, matcher) => {
+  const row = staticAdmissionRows(staticAdmissionField(job, "overview"), "Overview")
+    .find((item) => matcher.test(String(item.label || "")));
+  return row ? row.value : "";
+};
+
+const renderAdmissionFallbackHtml = (job = {}, title = "Admission Update", description = "", canonicalUrl = "") => {
+  const overviewRows = staticAdmissionRows(staticAdmissionField(job, "overview"), "Overview");
+  const importantRows = staticAdmissionRows(staticAdmissionField(job, "importantDates"), "Date");
+  const feeValue = staticAdmissionField(job, "applicationFee");
+  const feeRows = feeValue && typeof feeValue === "object" && !Array.isArray(feeValue)
+    ? Object.entries(feeValue).map(([label, value]) => ({ label:label.replace(/([a-z])([A-Z])/g, "$1 $2"), value })).filter((row) => staticIsFilled(row.value))
+    : [];
+  const basis = staticAdmissionOverviewValue(job, /प्रवेश आधार|admission basis|basis/i);
+  const course = staticAdmissionOverviewValue(job, /कोर्स|course/i);
+  const eligibility = (Array.isArray(staticAdmissionField(job, "eligibility")) ? staticAdmissionField(job, "eligibility") : [])
+    .concat(course ? [`${course} admission ke liye merit list status check karein.`] : [], basis ? [`Admission basis: ${basis}`] : []);
+  const documents = Array.isArray(staticAdmissionField(job, "documentsRequired")) ? staticAdmissionField(job, "documentsRequired") : [
+    "Merit status / application form print",
+    "10th / 12th marksheet",
+    "Photo ID proof",
+    "Category / reservation certificate if applicable",
+    "College ya DCE portal par mange gaye anya documents"
+  ];
+  const links = (Array.isArray(staticAdmissionField(job, "importantLinks")) ? staticAdmissionField(job, "importantLinks") : [])
+    .filter((item) => item && item.url)
+    .map((item) => `<a class="btn" href="${htmlEscape(item.url)}" target="_blank" rel="noopener noreferrer">${htmlEscape(item.label || item.title || "Important Link")}</a>`)
+    .join("");
+  const how = Array.isArray(staticAdmissionField(job, "howToCheck")) ? staticAdmissionField(job, "howToCheck") : [
+    "Official DCE Rajasthan admission portal open karein.",
+    "Merit List / Waiting List Status Check link par click karein.",
+    "Application Number, Date of Birth aur captcha fill karein.",
+    "Status check karke application form / merit status print kar lein."
+  ];
+  const faq = (Array.isArray(staticAdmissionField(job, "faq")) ? staticAdmissionField(job, "faq") : [])
+    .map((item) => item && (item.question || item.answer) ? `<details class="faq-item"><summary>${htmlEscape(item.question || "Question")}</summary><p>${htmlEscape(item.answer || "")}</p></details>` : "")
+    .join("");
+  return `<h2>${htmlEscape(title)}</h2>
+            <div class="content-box">
+              <p>${htmlEscape(description)}</p>
+              <p><strong class="manual-label">Department:</strong> ${htmlEscape(job.department || "")}</p>
+              <p><strong class="manual-label">Location:</strong> Rajasthan</p>
+            </div>
+            ${overviewRows.length ? `<section class="panel"><h2>Overview</h2>${renderStaticRowsTable(overviewRows)}</section>` : ""}
+            ${importantRows.length ? `<section class="panel"><h2>Important Dates</h2>${renderStaticRowsTable(importantRows)}</section>` : ""}
+            ${feeRows.length ? `<section class="panel"><h2>Application Fee</h2>${renderStaticRowsTable(feeRows)}</section>` : ""}
+            ${eligibility.length ? `<section class="panel"><h2>Eligibility / Qualification</h2><div class="content-box">${renderStaticList(eligibility)}</div></section>` : ""}
+            ${documents.length ? `<section class="panel"><h2>Documents Required</h2><div class="content-box">${renderStaticList(documents)}</div></section>` : ""}
+            ${how.length ? `<section class="panel"><h2>How to Check</h2><div class="content-box">${renderStaticList(how, true)}</div></section>` : ""}
+            ${links ? `<section class="panel"><h2>Important Links</h2><div class="post-wise-links">${links}</div></section>` : ""}
+            ${faq ? `<section class="panel"><h2>FAQ</h2><div class="content-box">${faq}</div></section>` : ""}
+            <p><a class="auto-link" href="${htmlEscape(canonicalUrl)}">Canonical admission detail link</a> | <a class="auto-link" href="../../job-form.html">All Updates</a></p>`;
+};
+
 const renderStaticPostHtml = (id = "", job = {}) => {
   const seo = buildSeoFields(job, id);
   const canonicalUrl = seo.canonicalUrl || jobUrl(id, { ...job, slug: seo.slug });
   const currentAffairs = isCurrentAffairsPost(job);
+  const admissionPost = isAdmissionPost(job);
   const summaryRows = [
     ["Department", job.department],
     ["Post Name", job.postName || seo.title],
@@ -383,7 +483,11 @@ const renderStaticPostHtml = (id = "", job = {}) => {
     ["Qualification", job.qualification],
     ["Location", job.location || job.jobLocation]
   ].filter(([, value]) => String(value || "").trim());
-  const fallbackHtml = currentAffairs ? renderCurrentAffairsFallbackHtml(job, seo.title, seo.metaDescription) : `<h2>${htmlEscape(seo.title)}</h2>
+  const fallbackHtml = currentAffairs
+    ? renderCurrentAffairsFallbackHtml(job, seo.title, seo.metaDescription)
+    : admissionPost
+      ? renderAdmissionFallbackHtml(job, seo.title, seo.metaDescription, canonicalUrl)
+      : `<h2>${htmlEscape(seo.title)}</h2>
             <div class="content-box">
               <p>${htmlEscape(seo.metaDescription)}</p>
               <table class="detail-table"><tbody>${summaryRows.map(([label, value]) => `<tr><th>${htmlEscape(label)}</th><td>${htmlEscape(value)}</td></tr>`).join("")}</tbody></table>
@@ -413,7 +517,8 @@ body.current-affairs-static #jobToolsPanel{display:none;}
     .replace(/<meta property="og:url" content="[^"]*">/i, `<meta property="og:url" content="${htmlEscape(canonicalUrl)}">`)
     .replace(/<link rel="canonical" href="[^"]*">/i, `<link rel="canonical" href="${htmlEscape(canonicalUrl)}">`)
     .replace(/<script type="application\/ld\+json" id="jobSchemaJsonLd">[\s\S]*?<\/script>/i, `<script type="application/ld+json" id="jobSchemaJsonLd">\n${JSON.stringify(buildSchemaGraph({ id, job, canonicalUrl }), null, 2)}\n</script>`)
-    .replace(/<span class="tag" id="jobType">[\s\S]*?<\/span>/i, currentAffairs ? `<span class="tag" id="jobType">Current Affairs</span>` : `<span class="tag" id="jobType">Job Details</span>`)
+    .replace(/<span class="tag" id="jobType">[\s\S]*?<\/span>/i, currentAffairs ? `<span class="tag" id="jobType">Current Affairs</span>` : (admissionPost ? `<span class="tag" id="jobType">Admission Details</span>` : `<span class="tag" id="jobType">Job Details</span>`))
+    .replace(/<h2 id="sheetTitle">[\s\S]*?<\/h2>/i, admissionPost ? `<h2 id="sheetTitle">Admission Update</h2>` : `<h2 id="sheetTitle">${currentAffairs ? "Current Affairs" : "Job Update"}</h2>`)
     .replace(/<h1 id="jobTitle">[\s\S]*?<\/h1>/i, `<h1 id="jobTitle">${htmlEscape(seo.title)}</h1>`)
     .replace(/<p id="jobIntro">[\s\S]*?<\/p>/i, `<p id="jobIntro">${htmlEscape(seo.metaDescription)}</p>`)
     .replace(/<aside class="detail-sidebar"/i, currentAffairs ? `<aside class="detail-sidebar" style="display:none;"` : `<aside class="detail-sidebar"`)
