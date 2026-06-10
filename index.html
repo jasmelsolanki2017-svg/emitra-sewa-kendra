@@ -4299,8 +4299,8 @@ const portalId = category ? `${category}-${item.id || ""}` : (item.id || "");
 return item.title ? canonicalPostHref(portalId, item) : safeUrl(item.url);
 };
 const jobDetailHref = (id, job = {}) => canonicalPostHref(id, job);
-const NEW_BADGE_DAYS = 7;
-const getPostTime = (item = {}) => Number(item.updatedAt || item.createdAt || item.publishedAt || item.postedAt || 0);
+const NEW_BADGE_DAYS = 3;
+const getPostTime = (item = {}) => Number(item.createdAt || item.publishedAt || item.postedAt || item.updatedAt || 0);
 const isNewPost = (item = {}) => {
 const postTime = getPostTime(item);
 return Boolean(postTime && Date.now() - postTime <= NEW_BADGE_DAYS * 24 * 60 * 60 * 1000);

@@ -519,7 +519,7 @@ const buildCanonicalSlug = (id, job = {}) => {
   return suffix ? `${base}-${suffix}` : base;
 };
 const canonicalPostHref = (id, job = {}) => `post/${encodeURIComponent(buildCanonicalSlug(id, job))}/`;
-const NEW_BADGE_DAYS = 7;
+const NEW_BADGE_DAYS = 3;
 const getPostTime = (item = {}) => Number(item.createdAt || item.publishedAt || item.postedAt || item.updatedAt || 0);
 const isNewPost = (item = {}) => {
   const postTime = getPostTime(item);

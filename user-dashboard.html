@@ -1801,10 +1801,35 @@ body.dark-mode .nav-logo img {
     return /^https?:\/\//i.test(url) ? url : "#";
   };
 
+  const userApiServerStorageKey = "emitraAdminServerUrl";
+  const defaultUserApiServerUrl = "https://emitra-sewa-kendra.onrender.com";
+  const getUserApiBaseUrl = () => {
+    const saved = String(localStorage.getItem(userApiServerStorageKey) || "").trim().replace(/\/+$/, "");
+    if(saved){ return saved; }
+    if(location.protocol === "file:" || /^emitrawala\.online$|github\.io$/i.test(location.hostname)){
+      return defaultUserApiServerUrl;
+    }
+    return "";
+  };
+  const userApiUrl = (path) => {
+    const base = getUserApiBaseUrl();
+    return base ? base + path : path;
+  };
+  const readApiResponse = async (response) => {
+    const text = await response.text();
+    if(!text){ return {}; }
+    try{ return JSON.parse(text); }catch(_error){
+      if(/<!doctype html|<html/i.test(text)){
+        throw new Error("Backend API connect nahi hai. Render server URL check karein.");
+      }
+      throw new Error(text.trim().slice(0, 180) || "Request failed");
+    }
+  };
+
   const apiPostJson = async (path, payload = {}) => {
     if(!currentUser){ throw new Error("Login required"); }
     const token = await currentUser.getIdToken();
-    const response = await fetch(path, {
+    const response = await fetch(userApiUrl(path), {
       method:"POST",
       headers:{
         "Content-Type":"application/json",
@@ -1812,21 +1837,21 @@ body.dark-mode .nav-logo img {
       },
       body:JSON.stringify(payload)
     });
-    const data = await response.json().catch(() => ({}));
-    if(!response.ok || data.ok === false){ throw new Error(data.error || data.message || "Request failed"); }
+    const data = await readApiResponse(response);
+    if(!response.ok || data.ok === false){ throw new Error(data.error || data.message || `Request failed (${response.status})`); }
     return data;
   };
 
   const apiPostForm = async (path, formData) => {
     if(!currentUser){ throw new Error("Login required"); }
     const token = await currentUser.getIdToken();
-    const response = await fetch(path, {
+    const response = await fetch(userApiUrl(path), {
       method:"POST",
       headers:{ "Authorization":"Bearer " + token },
       body:formData
     });
-    const data = await response.json().catch(() => ({}));
-    if(!response.ok || data.ok === false){ throw new Error(data.error || data.message || "Request failed"); }
+    const data = await readApiResponse(response);
+    if(!response.ok || data.ok === false){ throw new Error(data.error || data.message || `Request failed (${response.status})`); }
     return data;
   };
 
@@ -2739,7 +2764,7 @@ body.dark-mode .nav-logo img {
       status.innerText = "PDF 20MB se chhoti honi chahiye.";
       return;
     }
-    status.innerText = "PDF Supabase Storage par upload ho rahi hai...";
+    status.innerText = "PDF upload ho rahi hai...";
     try{
       const formData = new FormData();
       formData.append("pdf", file);
