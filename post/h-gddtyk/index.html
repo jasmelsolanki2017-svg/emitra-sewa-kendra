@@ -43,6 +43,7 @@
   }, { once:true });
 })();
 </script>
+<script src="utils/sarkari-blue-layout.js"></script>
 <script type="application/ld+json" id="jobSchemaJsonLd">
 {
   "@context": "https://schema.org",
@@ -2625,6 +2626,26 @@ const renderSarkariBlueLayout = (job = {}, title = "Job Update", displayLastDate
     renderSarkariBlueValue(job.stateWiseVacancy),
     renderSarkariBlueValue(job.vacancyDetailsManual)
   ].filter(Boolean).map(renderSarkariBlueTable).join("");
+  const blueSectionUtils = window.SarkariBlueLayoutUtils;
+  const filteredBlueSections = blueSectionUtils && typeof blueSectionUtils.filterDuplicateSarkariBlueSections === "function"
+    ? blueSectionUtils.filterDuplicateSarkariBlueSections([...(Array.isArray(job.sections) ? job.sections : []), ...buildAutomaticSections(job)], {
+        skipTitles: new Set([
+          "important dates",
+          "application fee",
+          "age limit",
+          "vacancy details",
+          "educational qualification",
+          "how to apply",
+          "mode of selection",
+          "salary / pay scale",
+          "important links",
+          "extra custom content"
+        ])
+      })
+    : [
+        ...(Array.isArray(job.sections) ? job.sections : []),
+        ...buildAutomaticSections(job)
+      ];
   const sectionHtml = [
     renderSarkariBlueSection("Important Dates", renderSarkariBlueValue(importantRows)),
     renderSarkariBlueSection("Application Fee", [feeBody, renderSarkariBlueValue(job.applicationFeeManual)].filter(Boolean).join("")),
@@ -2636,8 +2657,7 @@ const renderSarkariBlueLayout = (job = {}, title = "Job Update", displayLastDate
     renderSarkariBlueSection(`${postTitle} : Salary / Pay Scale`, renderSarkariBlueValue(job.salary)),
     renderSarkariBlueSection("Important Links", renderSarkariBlueLinks(job)),
     renderSarkariBlueManual(job.extraUsefulManual, "Extra Custom Content"),
-    renderSarkariBlueManual(job.pageContent || job.contentText, "Extra Custom Content"),
-    renderUniversalSections([...(Array.isArray(job.sections) ? job.sections : []), ...buildAutomaticSections(job)]).replace(/class="content-section"/g, 'class="sarkari-blue-section"').replace(/class="sarkari-section-title"/g, 'class="sarkari-blue-heading"')
+    renderUniversalSections(filteredBlueSections).replace(/class="content-section"/g, 'class="sarkari-blue-section"').replace(/class="sarkari-section-title"/g, 'class="sarkari-blue-heading"')
   ].filter(Boolean).join("");
   return `<div class="sarkari-blue-layout">
     <div class="sarkari-blue-title-area">
