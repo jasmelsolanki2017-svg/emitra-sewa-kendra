@@ -465,7 +465,7 @@ const isJobVisible = (job) => {
   return true;
 };
 
-const isLatestJobTarget = (job) => !job.postTarget || job.postTarget === "latestJob" || job.postTarget === "admission";
+const isLatestJobTarget = (job) => !job.postTarget || job.postTarget === "latestJob" || (job.postTarget === "admission" && !job.isPremiumPost);
 const getJobDisplayOrder = (job) => {
   const number = Number(job && job.displayOrder || 0);
   return number > 0 ? number : Number.POSITIVE_INFINITY;
@@ -544,6 +544,8 @@ const renderPostDate = (item = {}) => {
 };
 const portalItemHref = (item, category = "") => {
   if(!item){ return "#"; }
+  const premiumHref = premiumPostHref(item);
+  if(premiumHref){ return premiumHref; }
   if(item.sourceJobId){ return canonicalPostHref(item.sourceJobId, item); }
   const portalId = category ? `${category}-${item.id || ""}` : (item.id || "");
   return item.title ? canonicalPostHref(portalId, item) : safeUrl(item.url);

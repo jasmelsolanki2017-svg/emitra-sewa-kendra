@@ -4196,7 +4196,7 @@ if(String(job.postStatus || "published").toLowerCase() === "draft"){ return fals
 return true;
 };
 
-const isLatestJobTarget = (job) => !job.postTarget || job.postTarget === "latestJob" || job.postTarget === "admission";
+const isLatestJobTarget = (job) => !job.postTarget || job.postTarget === "latestJob" || (job.postTarget === "admission" && !job.isPremiumPost);
 const isCurrentAffairsTarget = (job) => job.postTarget === "currentAffairs";
 const getJobDisplayOrder = (job) => {
 const number = Number(job && job.displayOrder || 0);
@@ -4298,6 +4298,8 @@ return slug ? `premium-post.html?slug=${encodeURIComponent(slug)}` : "";
 };
 const portalItemHref = (item, category = "") => {
 if(!item){ return "#"; }
+const premiumHref = premiumPostHref(item);
+if(premiumHref){ return premiumHref; }
 if(item.sourceJobId){ return canonicalPostHref(item.sourceJobId, item); }
 const portalId = category ? `${category}-${item.id || ""}` : (item.id || "");
 return item.title ? canonicalPostHref(portalId, item) : safeUrl(item.url);
