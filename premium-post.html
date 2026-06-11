@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Premium Post | E-MITRA WALA</title>
+  <!-- Updated: overview hides when value is empty, compact overview layout -->
   <meta name="description" content="E-MITRA WALA premium verified update">
   <link rel="canonical" href="https://emitrawala.online/premium-post.html">
   <link rel="icon" type="image/png" sizes="512x512" href="favicon.png">
@@ -34,14 +35,18 @@
     html{scroll-behavior:smooth}
     body{margin:0;background:#f3f7fd;color:var(--text);font-family:Arial,'Noto Sans Devanagari',sans-serif;font-weight:500}
     a{color:inherit;text-decoration:none}
-    .premium-topbar{display:flex;justify-content:space-between;gap:12px;padding:7px 5%;background:#03183f;color:#fff;font-size:13px;font-weight:800}
-    .premium-header{position:sticky;top:0;z-index:50;background:var(--navy);border-bottom:4px solid #08a552;box-shadow:0 2px 14px rgba(0,0,0,.18)}
-    .premium-header-inner{max-width:1280px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:10px 18px}
-    .brand{display:flex;align-items:center;gap:10px;color:#ffcf28;font-weight:900;font-size:24px;letter-spacing:.3px}
-    .brand img{width:46px;height:46px;object-fit:contain;background:#fff;border-radius:6px;padding:4px}
-    .premium-nav{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-    .premium-nav a{color:#fff;font-weight:900;font-size:14px;text-transform:uppercase;padding:16px 17px;border-radius:2px}
+    .premium-topbar{display:none}
+    .premium-header{position:sticky;top:0;z-index:50;background:#061d4b;border-bottom:3px solid #0b9444;box-shadow:0 2px 14px rgba(0,0,0,.16)}
+    .premium-header-inner{max-width:1280px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:8px 18px}
+    .brand{display:flex;align-items:center;gap:10px;color:#ffcf28;font-weight:900;font-size:23px;letter-spacing:.2px;white-space:nowrap}
+    .brand img{width:42px;height:42px;object-fit:contain;background:#fff;border-radius:5px;padding:3px}
+    .brand small{display:block;color:#fff;font-size:9px;line-height:1.1;font-weight:900;letter-spacing:.3px;text-transform:uppercase;margin-top:-2px}
+    .premium-nav{display:flex;align-items:center;justify-content:flex-end;gap:2px;flex-wrap:wrap}
+    .premium-nav a{color:#fff;font-weight:900;font-size:13px;text-transform:uppercase;padding:14px 12px;border-radius:2px;line-height:1}
     .premium-nav a:hover,.premium-nav a.active{background:#0b9444}
+    .language-bar{background:#f8fbff;border-bottom:1px solid #dce7f5;color:#071b3f;font-size:13px;font-weight:900}
+    .language-bar-inner{max-width:1280px;margin:0 auto;padding:7px 18px;text-align:right}
+    .language-bar a{color:#075dcc;text-decoration:none}
     .premium-shell{max-width:1280px;margin:0 auto;padding:22px 18px 90px}
     .message{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:28px;text-align:center;font-weight:900;box-shadow:var(--shadow)}
     .premium-layout{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:22px;align-items:start}
@@ -55,8 +60,6 @@
     .media-box .poster-fallback{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;background:radial-gradient(circle at 75% 25%,rgba(255,255,255,.14),transparent 35%),linear-gradient(145deg,#06266b 0%,#0747b8 58%,#0a8d4a 100%);color:#fff}
     .media-box.has-image .poster-fallback{display:none}
     .media-box.image-failed .poster-fallback{display:flex}
-    .poster-brand{position:absolute;left:16px;top:14px;display:flex;align-items:center;gap:7px;color:#ffcf28;font-size:12px;font-weight:900;z-index:1}
-    .poster-brand img{width:25px;height:25px;object-fit:contain;background:#fff;border-radius:4px;padding:2px}
     .poster-fallback:before{content:"";position:absolute;inset:16px;border:2px solid rgba(255,255,255,.18);border-radius:8px}
     .poster-fallback strong{position:relative;z-index:1;max-width:280px;font-size:29px;line-height:1.08;text-transform:uppercase;text-shadow:0 2px 8px rgba(0,0,0,.22)}
     .poster-fallback span{position:relative;z-index:1;margin-top:10px;color:#ffdf4c;font-size:14px;font-weight:900;text-transform:uppercase}
@@ -103,7 +106,19 @@
     .steps li:before{content:counter(step);position:absolute;top:10px;left:50%;transform:translateX(-50%);display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:#075dcc;color:#fff;font-weight:900}
     .faq-list{display:grid;gap:10px}.faq-item{border:1px solid var(--border);border-radius:8px;background:#fff;overflow:hidden}.faq-item summary{cursor:pointer;padding:13px 15px;font-weight:900;color:#061d4b}.faq-item summary::-webkit-details-marker{display:none}.faq-item summary:after{content:"⌄";float:right;color:#075dcc}.faq-item[open] summary:after{content:"⌃"}.faq-item div{padding:0 15px 15px;color:#20314d;font-weight:700;line-height:1.55}
     .link-grid,.related-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.link-card,.related-card{background:#fff;border:1px solid var(--border);border-radius:8px;padding:14px;min-height:76px;display:flex;flex-direction:column;justify-content:center;gap:5px;box-shadow:0 3px 10px rgba(7,29,70,.05)}.link-card strong,.related-card strong{font-size:14px;color:#071b3f;font-weight:900}.link-card span,.related-card span{font-size:12px;color:#65738a;font-weight:800}.link-card:hover,.related-card:hover{border-color:#075dcc;background:#f6fbff}
-    .overview-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.overview-item{display:grid;grid-template-columns:130px 1fr;border:1px solid var(--border);border-radius:7px;overflow:hidden;background:#fff}.overview-item b{background:#f3f7fd;padding:11px;font-size:13px}.overview-item span{padding:11px;font-weight:700;color:#10264a}
+    #section-overview .card-body{padding:0}
+    .overview-list{display:grid;grid-template-columns:1fr;border:1px solid var(--border);border-radius:7px;overflow:hidden;background:#fff}
+    .overview-row{display:grid;grid-template-columns:118px minmax(0,1fr);border-bottom:1px solid var(--border);background:#fff;min-height:0}
+    .overview-row:last-child{border-bottom:0}
+    .overview-row b{background:#f3f7fd;padding:9px 10px;font-size:12px;line-height:1.35;color:#061d4b;font-weight:900}
+    .overview-row span{padding:9px 10px;font-size:13px;line-height:1.42;font-weight:800;color:#10264a;word-break:break-word}
+    .overview-row span:empty{display:none}
+
+    /* Hard override: overview must never show tall empty boxes */
+    #section-overview .overview-grid{display:grid!important;grid-template-columns:1fr!important;border:1px solid var(--border)!important;border-radius:7px!important;overflow:hidden!important;background:#fff!important}
+    #section-overview .overview-item{display:grid!important;grid-template-columns:118px minmax(0,1fr)!important;min-height:0!important;height:auto!important;border:0!important;border-bottom:1px solid var(--border)!important;background:#fff!important}
+    #section-overview .overview-item b{background:#f3f7fd!important;padding:9px 10px!important;font-size:12px!important;line-height:1.35!important;color:#061d4b!important}
+    #section-overview .overview-item span{padding:9px 10px!important;font-size:13px!important;line-height:1.42!important;font-weight:800!important;color:#10264a!important;word-break:break-word!important}
     .article-section{line-height:1.65;color:#10264a;font-weight:700}.article-section h3{margin:0 0 8px;color:#061d4b;font-size:18px}.article-section + .article-section{margin-top:14px;padding-top:14px;border-top:1px dashed var(--border)}
 
     .premium-aside{position:sticky;top:92px;max-height:calc(100vh - 105px);overflow:auto;padding:4px 0 16px}
@@ -111,29 +126,34 @@
     .aside-screen{background:#fff;border-radius:12px;overflow:hidden;border:1px solid #d9e6f7}.aside-top{display:flex;align-items:center;justify-content:space-between;background:#061d4b;color:#fff;padding:14px 15px;font-size:17px;font-weight:900}.aside-body{padding:14px}.aside-body .breadcrumb{font-size:12px;margin-bottom:10px}.aside-body .media-box{min-height:175px;border-radius:5px}.aside-body .poster-fallback strong{font-size:21px}.aside-body .pill{font-size:11px;padding:8px 12px;margin:12px 0 10px}.aside-body h2{font-size:25px;line-height:1.06;margin:0 0 10px;color:#061d4b;font-weight:900}.aside-body p{font-size:13px;line-height:1.45;margin:0 0 12px;color:#31415e;font-weight:800}.aside-mini-list{display:grid;gap:8px;margin:10px 0}.aside-mini{border:1px solid var(--border);border-radius:7px;background:#fff;padding:10px 11px;font-size:12px;font-weight:900;color:#071b3f}.aside-body .quick-actions{grid-template-columns:1fr;gap:9px}.aside-body .summary-grid{grid-template-columns:1fr;gap:9px;margin-top:12px}.aside-body .summary-card{min-height:60px;padding:11px}.aside-body .summary-icon{width:36px;height:36px;flex-basis:36px}.aside-body .summary-card strong{font-size:12px}.aside-body .summary-card span span{font-size:11px}
     .mobile-sticky{position:fixed;left:0;right:0;bottom:0;z-index:70;display:none;background:#fff;border-top:1px solid var(--border);box-shadow:0 -5px 20px rgba(0,0,0,.12);padding:9px;gap:9px}.mobile-sticky .action-btn{min-height:44px;font-size:14px}
 
-    @media(max-width:1060px){.premium-layout{grid-template-columns:1fr}.premium-aside{position:static;max-height:none}.aside-phone{max-width:390px;margin:0 auto}.hero-copy h1{font-size:38px}.premium-nav a{padding:12px 10px}.quick-actions{grid-template-columns:repeat(2,minmax(0,1fr))}.summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-    @media(max-width:760px){.premium-topbar{font-size:11px;padding:6px 12px}.premium-header-inner{padding:8px 12px}.brand span{font-size:20px}.brand img{width:38px;height:38px}.premium-nav{display:none}.premium-shell{padding:14px 10px 85px}.premium-hero{grid-template-columns:1fr;gap:14px}.media-box{min-height:220px}.hero-copy h1{font-size:31px}.hero-short{font-size:16px}.verified-strip{align-items:flex-start;flex-direction:column;font-size:13px}.summary-grid{grid-template-columns:1fr}.section-grid{grid-template-columns:1fr}.premium-card.wide-span,.premium-card.full-span{grid-column:auto}.steps{grid-template-columns:1fr}.link-grid,.related-grid{grid-template-columns:1fr}.overview-grid{grid-template-columns:1fr}.overview-item{grid-template-columns:110px 1fr}.mobile-sticky{display:flex}.mobile-sticky:empty{display:none}.quick-actions{grid-template-columns:1fr}.premium-table{min-width:520px}.aside-phone{display:none}}
+    @media(max-width:1060px){.premium-layout{grid-template-columns:1fr}.premium-aside{position:static;max-height:none}.aside-phone{max-width:390px;margin:0 auto}.hero-copy h1{font-size:38px}.premium-nav a{padding:12px 8px;font-size:12px}.quick-actions{grid-template-columns:repeat(2,minmax(0,1fr))}.summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:760px){.premium-header-inner{padding:8px 12px}.brand span{font-size:20px}.brand small{font-size:8px}.brand img{width:38px;height:38px}.premium-nav{display:none}.language-bar-inner{text-align:left;padding:7px 12px}.premium-shell{padding:14px 10px 85px}.premium-hero{grid-template-columns:1fr;gap:14px}.media-box{min-height:220px}.hero-copy h1{font-size:31px}.hero-short{font-size:16px}.verified-strip{align-items:flex-start;flex-direction:column;font-size:13px}.summary-grid{grid-template-columns:1fr}.section-grid{grid-template-columns:1fr}.premium-card.wide-span,.premium-card.full-span{grid-column:auto}.steps{grid-template-columns:1fr}.link-grid,.related-grid{grid-template-columns:1fr}.overview-list{grid-template-columns:1fr}.overview-row{grid-template-columns:108px minmax(0,1fr)}.mobile-sticky{display:flex}.mobile-sticky:empty{display:none}.quick-actions{grid-template-columns:1fr}.premium-table{min-width:520px}.aside-phone{display:none}}
   </style>
 </head>
 <body>
-  <div class="premium-topbar"><div>E-MITRA WALA Premium Update</div><div id="liveTime"></div></div>
   <header class="premium-header">
     <div class="premium-header-inner">
-      <a class="brand" href="index.html"><img src="site-logo.png" alt="E-MITRA WALA"><span>E-MITRA WALA</span></a>
-      <nav class="premium-nav"><a href="index.html">Home</a><a href="job-form.html">Latest Jobs</a><a href="admit-card.html">Admit Card</a><a href="result.html">Result</a><a href="tools.html">Free Tools</a><a href="contact.html">Contact</a></nav>
+      <a class="brand" href="index.html">
+        <img src="site-logo.png" alt="E-MITRA WALA">
+        <span>E-MITRA WALA<small>Naukri · Admit Card · Result · Syllabus</small></span>
+      </a>
+      <nav class="premium-nav" aria-label="Main Navigation">
+        <a href="index.html">Home</a>
+        <a href="job-form.html">Latest Jobs</a>
+        <a href="current-affairs.html">Current Affairs</a>
+        <a href="pdf-forms.html">PDF Forms</a>
+        <a href="about.html">About</a>
+        <a href="contact.html">Contact</a>
+        <a href="privacy-policy.html">Privacy Policy</a>
+        <a href="disclaimer.html">Disclaimer</a>
+      </nav>
+    </div>
+    <div class="language-bar">
+      <div class="language-bar-inner"><a href="#" lang="hi">हिन्दी</a> | <a href="#" lang="en">English</a></div>
     </div>
   </header>
   <main class="premium-shell" id="premiumRoot"><div class="message">Premium post load ho raha hai...</div></main>
   <div class="mobile-sticky" id="mobileSticky"></div>
-
-  <script>
-    function updateLiveTime(){
-      const el=document.getElementById("liveTime");
-      if(el) el.innerText=new Date().toLocaleString("hi-IN");
-    }
-    updateLiveTime();
-    setInterval(updateLiveTime,1000);
-  </script>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
@@ -163,7 +183,13 @@
     const heroKeys=new Set(["title","slug","category","postType","shortInfo","description","thumbnail","heroImage","imageUrl","featuredImage","banner","poster","seo","status","createdAt","updatedAt","views","lastUpdated","updatedDate","sourceUrl","officialWebsite","applyOnline","applyLink","notificationUrl","whatsappLink","telegramLink","postName","totalPosts","organization","jobLocation","modeOfApply","advtNo","paymentMode"]);
     const escapeHTML=(v="")=>String(v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
     const toTitle=(key="")=>String(key).replace(/([a-z])([A-Z])/g,"$1 $2").replace(/[-_]+/g," ").replace(/\b\w/g,m=>m.toUpperCase());
-    const isFilled=v=>!(v===null||v===undefined||v===""||(Array.isArray(v)&&!v.some(isFilled))||(typeof v==="object"&&!Array.isArray(v)&&!Object.values(v).some(isFilled)));
+    const isFilled=v=>{
+      if(v===null||v===undefined)return false;
+      if(typeof v==="string")return v.replace(/&nbsp;/gi," ").trim()!=="";
+      if(Array.isArray(v))return v.some(isFilled);
+      if(typeof v==="object")return Object.values(v).some(isFilled);
+      return true;
+    };
     const isPlainObject=v=>v&&typeof v==="object"&&!Array.isArray(v);
     const getSection=(data,key)=>{const keys=aliases[key]||[key];for(const k of keys){if(isFilled(data[k]))return data[k]}return null};
     const arrayify=value=>{if(!isFilled(value))return[];if(Array.isArray(value))return value.filter(isFilled);if(isPlainObject(value))return Object.entries(value).map(([key,val])=>isPlainObject(val)?{label:toTitle(key),...val}:{label:toTitle(key),value:val}).filter(isFilled);return String(value).split(/\n+/).map(s=>s.trim()).filter(Boolean)};
@@ -202,13 +228,55 @@
     function renderMedia(data,small=false){
       const img=imageUrl(data),title=escapeHTML(data.title||"Premium Update"),words=escapeHTML(fallbackWords(data.title));
       const cls=img?"media-box has-image":"media-box";
-      return `<div class="${cls} ${small?'small-media':''}">${img?`<img src="${escapeHTML(img)}" alt="${title}" onerror="this.style.display='none';this.closest('.media-box').classList.add('image-failed')">`:""}<div class="poster-fallback"><div class="poster-brand"><img src="site-logo.png" alt=""> E-MITRA WALA</div><strong>${words}</strong><span>${escapeHTML(data.category||data.postType||"Verified Update")}</span><small>DOWNLOAD</small></div></div>`;
+      return `<div class="${cls} ${small?'small-media':''}">${img?`<img src="${escapeHTML(img)}" alt="${title}" onerror="this.style.display='none';this.closest('.media-box').classList.add('image-failed')">`:""}<div class="poster-fallback"><strong>${words}</strong><span>${escapeHTML(data.category||data.postType||"Verified Update")}</span><small>DOWNLOAD</small></div></div>`;
     }
     function renderActionButtons(links,limit=4){return links.length?`<div class="quick-actions">${links.slice(0,limit).map(l=>`<a class="action-btn ${linkClass(l.label)}" href="${escapeHTML(l.url)}" target="_blank" rel="noopener noreferrer">${linkIcon(l.label)} ${escapeHTML(l.label)}</a>`).join("")}</div>`:"";}
-    function summaryText(key,value){const arr=arrayify(value);if(key==="importantDates")return `${arr.length} important events`;if(key==="applicationFee")return "Exam fee details";if(key==="ageLimit")return "Age criteria";if(key==="vacancyDetails")return "Vacancy / seats";if(key==="faqs")return `${arr.length} questions`;return Array.isArray(value)?`${arr.length} items`:isPlainObject(value)?`${Object.keys(value).length} details`:"View details";}
+    const EMPTY_OVERVIEW_VALUES=new Set(["","na","n/a","not available","null","undefined","-","--"]);
+    function cleanOverviewValue(value){
+      if(!isFilled(value))return null;
+      if(isPlainObject(value)){
+        const direct=value.value??value.details??value.description??value.text??value.info??value.nameValue??null;
+        if(direct!==null&&direct!==undefined)return cleanOverviewValue(direct);
+        const keys=Object.keys(value).filter(k=>!/[_.-]*(label|title|name|key|icon|class)[_.-]*$/i.test(k));
+        if(!keys.length)return null;
+        const reduced={};
+        keys.forEach(k=>{if(isFilled(value[k]))reduced[k]=value[k]});
+        return Object.keys(reduced).length?reduced:null;
+      }
+      if(Array.isArray(value)){
+        const arr=value.map(cleanOverviewValue).filter(v=>v!==null);
+        return arr.length?arr:null;
+      }
+      const txt=String(value).trim();
+      return EMPTY_OVERVIEW_VALUES.has(txt.toLowerCase())?null:value;
+    }
+    function overviewRows(data){
+      const src=(isPlainObject(data.overview)||Array.isArray(data.overview))?data.overview:{};
+      const raw=Array.isArray(src)?src.map((item,i)=>{
+        if(isPlainObject(item))return [item.label||item.title||item.name||`Detail ${i+1}`, item.value??item.details??item.description??item.text??item.info??item.amount??null];
+        return [`Detail ${i+1}`,item];
+      }):Object.entries(src);
+      const rows=[];
+      raw.forEach(([k,v])=>{
+        const label=toTitle(String(k||"").trim());
+        const cleaned=cleanOverviewValue(v);
+        const txt=String(valueText(cleaned)).replace(/&nbsp;/gi," ").trim();
+        if(!label||!txt)return;
+        if(EMPTY_OVERVIEW_VALUES.has(txt.toLowerCase()))return;
+        rows.push({label,value:cleaned});
+      });
+      return rows;
+    }
+    function hasRenderableSection(data,key){
+      if(key==="overview")return overviewRows(data).length>0;
+      if(key==="applicationFee")return isFilled(getSection(data,key))||isFilled(data.paymentMode);
+      if(key==="importantLinks")return normalizeLinks(data).length>0;
+      return isFilled(getSection(data,key));
+    }
+    function summaryText(key,value,data){const arr=arrayify(value);if(key==="overview")return `${overviewRows(data||{}).length} details`;if(key==="importantDates")return `${arr.length} important events`;if(key==="applicationFee")return "Exam fee details";if(key==="ageLimit")return "Age criteria";if(key==="vacancyDetails")return "Vacancy / seats";if(key==="faqs")return `${arr.length} questions`;return Array.isArray(value)?`${arr.length} items`:isPlainObject(value)?`${Object.keys(value).length} details`:"View details";}
     function renderSummaryCards(data){
       const keys=["importantDates","applicationFee","ageLimit","overview","eligibility","vacancyDetails","selectionProcess","examPattern","documentsRequired","importantLinks"];
-      return `<div class="summary-grid">${keys.filter(k=>isFilled(getSection(data,k))).slice(0,8).map(k=>{const def=SECTION_DEFS.find(d=>d[0]===k)||[k,toTitle(k)];return `<a class="summary-card" href="#section-${k}"><span class="summary-icon">${iconFor(k)}</span><span><strong>${escapeHTML(def[1])}</strong><span>${escapeHTML(summaryText(k,getSection(data,k)))}</span></span></a>`}).join("")}</div>`;
+      return `<div class="summary-grid">${keys.filter(k=>hasRenderableSection(data,k)).slice(0,8).map(k=>{const def=SECTION_DEFS.find(d=>d[0]===k)||[k,toTitle(k)];return `<a class="summary-card" href="#section-${k}"><span class="summary-icon">${iconFor(k)}</span><span><strong>${escapeHTML(def[1])}</strong><span>${escapeHTML(summaryText(k,getSection(data,k),data))}</span></span></a>`}).join("")}</div>`;
     }
     function renderTable(rows,preferred=[]){
       rows=arrayify(rows);
@@ -243,10 +311,9 @@
       return html;
     }
     function renderOverview(data){
-      const overview={...(isPlainObject(data.overview)?data.overview:{})};
-      [["Organization",data.organization],["Post Name",data.postName],["Total Posts",data.totalPosts],["Advt No",data.advtNo],["Job Location",data.jobLocation],["Mode Of Apply",data.modeOfApply],["Category",data.category]].forEach(([k,v])=>{if(isFilled(v)&&!Object.values(overview).includes(v))overview[k]=v});
-      const rows=Object.entries(overview).filter(([,v])=>isFilled(v));
-      return rows.length?`<div class="overview-grid">${rows.map(([k,v])=>`<div class="overview-item"><b>${escapeHTML(toTitle(k))}</b><span>${valueHTML(v)}</span></div>`).join("")}</div>`:"";
+      const rows=overviewRows(data);
+      if(!rows.length)return "";
+      return `<div class="overview-list compact-overview">${rows.map(({label,value})=>`<div class="overview-row"><b>${escapeHTML(label)}</b><span>${valueHTML(value)}</span></div>`).join("")}</div>`;
     }
     function renderEligibility(value){
       const rows=arrayify(value).map(item=>{
@@ -317,8 +384,8 @@
       setTimeout(()=>{const el=document.querySelector(location.hash);if(el)el.scrollIntoView({behavior:"smooth",block:"start"});},350);
     }
     function renderSidebar(data,links){
-      const mini=["importantDates","applicationFee","ageLimit","overview","eligibility","vacancyDetails"].filter(k=>isFilled(getSection(data,k)));
-      return `<aside class="premium-aside"><div class="aside-phone"><div class="aside-screen"><div class="aside-top"><span>E-MITRA WALA</span><span>☰</span></div><div class="aside-body"><div class="breadcrumb"><a href="index.html">Home</a> › ${escapeHTML(data.category||"Premium")}</div>${renderMedia(data,true)}<span class="pill">${escapeHTML(data.category||"Premium Update")}</span><h2>${escapeHTML(data.title||"Premium Update")}</h2>${data.shortInfo?`<p>${escapeHTML(data.shortInfo)}</p>`:""}<div class="aside-mini-list"><div class="aside-mini">✓ ${escapeHTML(data.category||"Verified Update")}</div><div class="aside-mini">▣ Updated: ${escapeHTML(displayDate(data.updatedAt||data.lastUpdated||data.updatedDate))}</div><div class="aside-mini">✓ Official Update</div></div>${renderActionButtons(links,4)}<div class="summary-grid">${mini.map(k=>{const def=SECTION_DEFS.find(d=>d[0]===k)||[k,toTitle(k)];return `<a class="summary-card" href="#section-${k}"><span class="summary-icon">${iconFor(k)}</span><span><strong>${escapeHTML(def[1])}</strong><span>${escapeHTML(summaryText(k,getSection(data,k)))}</span></span></a>`}).join("")}</div></div></div></div></aside>`;
+      const mini=["importantDates","applicationFee","ageLimit","overview","eligibility","vacancyDetails"].filter(k=>hasRenderableSection(data,k));
+      return `<aside class="premium-aside"><div class="aside-phone"><div class="aside-screen"><div class="aside-top"><span>E-MITRA WALA</span><span>☰</span></div><div class="aside-body"><div class="breadcrumb"><a href="index.html">Home</a> › ${escapeHTML(data.category||"Premium")}</div>${renderMedia(data,true)}<span class="pill">${escapeHTML(data.category||"Premium Update")}</span><h2>${escapeHTML(data.title||"Premium Update")}</h2>${data.shortInfo?`<p>${escapeHTML(data.shortInfo)}</p>`:""}<div class="aside-mini-list"><div class="aside-mini">✓ ${escapeHTML(data.category||"Verified Update")}</div><div class="aside-mini">▣ Updated: ${escapeHTML(displayDate(data.updatedAt||data.lastUpdated||data.updatedDate))}</div><div class="aside-mini">✓ Official Update</div></div>${renderActionButtons(links,4)}<div class="summary-grid">${mini.map(k=>{const def=SECTION_DEFS.find(d=>d[0]===k)||[k,toTitle(k)];return `<a class="summary-card" href="#section-${k}"><span class="summary-icon">${iconFor(k)}</span><span><strong>${escapeHTML(def[1])}</strong><span>${escapeHTML(summaryText(k,getSection(data,k),data))}</span></span></a>`}).join("")}</div></div></div></div></aside>`;
     }
     function renderPremiumPost(data){
       data={...data};
