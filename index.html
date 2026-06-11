@@ -4292,13 +4292,17 @@ const suffix = String(id || "").replace(/[^a-zA-Z0-9]/g,"").slice(-6).toLowerCas
 return suffix ? `${base}-${suffix}` : base;
 };
 const canonicalPostHref = (id, job = {}) => `post/${encodeURIComponent(buildCanonicalSlug(id, job))}/`;
+const premiumPostHref = (job = {}) => {
+const slug = String(job.premiumPostSlug || (job.isPremiumPost ? job.slug : "") || "").trim();
+return slug ? `premium-post.html?slug=${encodeURIComponent(slug)}` : "";
+};
 const portalItemHref = (item, category = "") => {
 if(!item){ return "#"; }
 if(item.sourceJobId){ return canonicalPostHref(item.sourceJobId, item); }
 const portalId = category ? `${category}-${item.id || ""}` : (item.id || "");
 return item.title ? canonicalPostHref(portalId, item) : safeUrl(item.url);
 };
-const jobDetailHref = (id, job = {}) => canonicalPostHref(id, job);
+const jobDetailHref = (id, job = {}) => premiumPostHref(job) || canonicalPostHref(id, job);
 const NEW_BADGE_DAYS = 3;
 const getPostTime = (item = {}) => Number(item.createdAt || item.publishedAt || item.postedAt || item.updatedAt || 0);
 const isNewPost = (item = {}) => {

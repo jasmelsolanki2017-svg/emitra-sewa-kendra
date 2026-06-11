@@ -519,6 +519,10 @@ const buildCanonicalSlug = (id, job = {}) => {
   return suffix ? `${base}-${suffix}` : base;
 };
 const canonicalPostHref = (id, job = {}) => `post/${encodeURIComponent(buildCanonicalSlug(id, job))}/`;
+const premiumPostHref = (job = {}) => {
+  const slug = String(job.premiumPostSlug || (job.isPremiumPost ? job.slug : "") || "").trim();
+  return slug ? `premium-post.html?slug=${encodeURIComponent(slug)}` : "";
+};
 const NEW_BADGE_DAYS = 3;
 const getPostTime = (item = {}) => Number(item.createdAt || item.publishedAt || item.postedAt || item.updatedAt || 0);
 const isNewPost = (item = {}) => {
@@ -544,7 +548,7 @@ const portalItemHref = (item, category = "") => {
   const portalId = category ? `${category}-${item.id || ""}` : (item.id || "");
   return item.title ? canonicalPostHref(portalId, item) : safeUrl(item.url);
 };
-const jobDetailHref = (id, job = {}) => canonicalPostHref(id, job);
+const jobDetailHref = (id, job = {}) => premiumPostHref(job) || canonicalPostHref(id, job);
 let jobRowsCache = [];
 let jobsExpanded = false;
 
