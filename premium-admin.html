@@ -10,6 +10,19 @@
   <link rel="apple-touch-icon" href="favicon.png">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="premium-post.css">
+  <style>
+    .generated-poster{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:18px;background:linear-gradient(145deg,#06266b 0%,#0747b8 58%,#0a8d4a 100%);color:#fff}
+    .generated-poster:before{content:"";position:absolute;inset:12px;border:2px solid rgba(255,255,255,.18);border-radius:6px}
+    .generated-poster .poster-brand{position:absolute;left:14px;top:12px;display:flex;align-items:center;gap:6px;font-size:11px;font-weight:900;color:#ffcf28}
+    .generated-poster .poster-brand img{width:22px;height:22px;object-fit:contain;background:#fff;border-radius:4px;padding:2px}
+    .generated-poster strong{position:relative;z-index:1;max-width:220px;font-size:24px;line-height:1.06;text-transform:uppercase;text-shadow:0 2px 8px rgba(0,0,0,.22)}
+    .generated-poster span{position:relative;z-index:1;margin-top:10px;color:#ffdf4c;font-size:13px;font-weight:900;text-transform:uppercase}
+    .generated-poster small{position:relative;z-index:1;margin-top:14px;background:#fff;color:#0647a6;border-radius:4px;padding:6px 14px;font-weight:900}
+    .preview-box .premium-card>ul,.preview-box .premium-card>.kv-grid{margin:14px}
+    .preview-box .premium-hero{grid-template-columns:220px 1fr;gap:18px}
+    .preview-box .hero-media{height:170px}
+    .preview-box .premium-hero h1{font-size:28px}
+  </style>
 </head>
 <body>
   <div class="premium-topbar"><div>Create Premium Post</div><div id="liveTime"></div></div>
@@ -56,8 +69,11 @@
     function normalizePremiumPost(data){const now=Date.now();const slug=generateSlug(data.slug||data.title);return {...data,slug,status:data.status||"published",views:Number(data.views||0),createdAt:Number(data.createdAt||now),updatedAt:now}}
     async function savePremiumPost(data){if(!adminAllowed)throw new Error("Admin verify nahi hua.");validatePremiumPost(data);const post=normalizePremiumPost(data);const existing=await get(ref(db,`premiumPosts/${post.slug}`));if(existing.exists()&&existing.val().createdAt)post.createdAt=existing.val().createdAt;await set(ref(db,`premiumPosts/${post.slug}`),post);return post}
     const toTitle=(key="")=>String(key).replace(/([a-z])([A-Z])/g,"$1 $2").replace(/[-_]+/g," ").replace(/\b\w/g,(m)=>m.toUpperCase());
+    const isSafeUrl=(url)=>{try{const u=new URL(String(url||""),location.href);return ["http:","https:"].includes(u.protocol)}catch{return false}};
+    const safeUrl=(url)=>isSafeUrl(url)?String(url).trim():"";
     const previewValue=(value)=>{if(!isFilledValue(value))return"";if(Array.isArray(value))return `<ul>${value.filter(isFilledValue).map((item)=>`<li>${previewValue(item)}</li>`).join("")}</ul>`;if(typeof value==="object")return `<div class="kv-grid">${Object.entries(value).filter(([,v])=>isFilledValue(v)).map(([k,v])=>`<div class="kv-item"><span class="kv-label">${escapeHTML(toTitle(k))}</span><span class="kv-value">${previewValue(v)}</span></div>`).join("")}</div>`;return escapeHTML(value).replace(/\n/g,"<br>")};
-    function renderPremiumPost(data){const post=normalizePremiumPost(data);return `<section class="premium-hero"><div class="hero-copy"><span class="pill">${escapeHTML(post.category||"Premium Update")}</span><span class="pill">${escapeHTML(post.postType||"Verified")}</span><h1>${escapeHTML(post.title)}</h1><p class="hero-short">${escapeHTML(post.shortInfo||"")}</p></div></section><div class="verified-strip"><span>E-MITRA WALA Verified Update</span><span>Slug: ${escapeHTML(post.slug)}</span></div>${Object.entries(post).filter(([k,v])=>!["title","slug","category","postType","shortInfo","thumbnail","heroImage","seo","status","createdAt","updatedAt","views"].includes(k)&&isFilledValue(v)).map(([k,v])=>renderCard(toTitle(k),previewValue(v))).join("")}`}
+    function renderHeroMedia(post){const image=safeUrl(post.heroImage||post.thumbnail);if(image)return `<div class="hero-media"><img src="${escapeHTML(image)}" alt="${escapeHTML(post.title)}"></div>`;const words=String(post.title||"Premium Update").split(/\s+/).filter(Boolean).slice(0,5).join(" ");return `<div class="hero-media generated-poster"><div class="poster-brand"><img src="site-logo.png" alt=""> E-MITRA WALA</div><strong>${escapeHTML(words||"Premium Update")}</strong><span>${escapeHTML(post.category||post.postType||"Verified Update")}</span><small>DOWNLOAD</small></div>`}
+    function renderPremiumPost(data){const post=normalizePremiumPost(data);return `<section class="premium-hero">${renderHeroMedia(post)}<div class="hero-copy"><span class="pill">${escapeHTML(post.category||"Premium Update")}</span><span class="pill">${escapeHTML(post.postType||"Verified")}</span><h1>${escapeHTML(post.title)}</h1><p class="hero-short">${escapeHTML(post.shortInfo||"")}</p></div></section><div class="verified-strip"><span>E-MITRA WALA Verified Update</span><span>Slug: ${escapeHTML(post.slug)}</span></div>${Object.entries(post).filter(([k,v])=>!["title","slug","category","postType","shortInfo","thumbnail","heroImage","seo","status","createdAt","updatedAt","views"].includes(k)&&isFilledValue(v)).map(([k,v])=>renderCard(toTitle(k),previewValue(v))).join("")}`}
     function renderCard(title,content){return content?`<section class="premium-card"><h2>${escapeHTML(title)}</h2>${content}</section>`:""}
     const setStatus=(msg,type="")=>{adminStatus.className=`status ${type}`;adminStatus.innerText=msg};
     window.validatePremiumPostFromInput=()=>{try{const data=parsePremiumJSON();validatePremiumPost(data);setStatus("JSON valid hai. Preview ya Publish kar sakte hain.","success")}catch(error){setStatus(error.message,"error")}};
