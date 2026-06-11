@@ -38,9 +38,11 @@
     .premium-topbar{display:none}
     .premium-header{position:sticky;top:0;z-index:50;background:#061d4b;border-bottom:3px solid #0b9444;box-shadow:0 2px 14px rgba(0,0,0,.16)}
     .premium-header-inner{max-width:1280px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:8px 18px}
-    .brand{display:flex;align-items:center;gap:10px;color:#ffcf28;font-weight:900;font-size:23px;letter-spacing:.2px;white-space:nowrap}
+    .brand{display:flex;align-items:center;gap:10px;color:#ffcf28;font-weight:900;font-size:23px;letter-spacing:.2px;white-space:nowrap;min-width:0}
+    .brand:after{display:none!important}
     .brand img{width:42px;height:42px;object-fit:contain;background:#fff;border-radius:5px;padding:3px}
-    .brand small{display:block;color:#fff;font-size:9px;line-height:1.1;font-weight:900;letter-spacing:.3px;text-transform:uppercase;margin-top:-2px}
+    .brand span{display:flex;flex-direction:column;line-height:.98;min-width:0}
+    .brand small{display:block;color:#fff;font-size:9px;line-height:1.15;font-weight:900;letter-spacing:.3px;text-transform:uppercase;margin-top:3px;white-space:normal}
     .premium-nav{display:flex;align-items:center;justify-content:flex-end;gap:2px;flex-wrap:wrap}
     .premium-nav a{color:#fff;font-weight:900;font-size:13px;text-transform:uppercase;padding:14px 12px;border-radius:2px;line-height:1}
     .premium-nav a:hover,.premium-nav a.active{background:#0b9444}
@@ -127,7 +129,7 @@
     .mobile-sticky{position:fixed;left:0;right:0;bottom:0;z-index:70;display:none;background:#fff;border-top:1px solid var(--border);box-shadow:0 -5px 20px rgba(0,0,0,.12);padding:9px;gap:9px}.mobile-sticky .action-btn{min-height:44px;font-size:14px}
 
     @media(max-width:1060px){.premium-layout{grid-template-columns:1fr}.premium-aside{position:static;max-height:none}.aside-phone{max-width:390px;margin:0 auto}.hero-copy h1{font-size:38px}.premium-nav a{padding:12px 8px;font-size:12px}.quick-actions{grid-template-columns:repeat(2,minmax(0,1fr))}.summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-    @media(max-width:760px){.premium-header-inner{padding:8px 12px}.brand span{font-size:20px}.brand small{font-size:8px}.brand img{width:38px;height:38px}.premium-nav{display:none}.language-bar-inner{text-align:left;padding:7px 12px}.premium-shell{padding:14px 10px 85px}.premium-hero{grid-template-columns:1fr;gap:14px}.media-box{min-height:220px}.hero-copy h1{font-size:31px}.hero-short{font-size:16px}.verified-strip{align-items:flex-start;flex-direction:column;font-size:13px}.summary-grid{grid-template-columns:1fr}.section-grid{grid-template-columns:1fr}.premium-card.wide-span,.premium-card.full-span{grid-column:auto}.steps{grid-template-columns:1fr}.link-grid,.related-grid{grid-template-columns:1fr}.overview-list{grid-template-columns:1fr}.overview-row{grid-template-columns:108px minmax(0,1fr)}.mobile-sticky{display:flex}.mobile-sticky:empty{display:none}.quick-actions{grid-template-columns:1fr}.premium-table{min-width:520px}.aside-phone{display:none}}
+    @media(max-width:760px){.premium-header-inner{padding:8px 12px}.brand{max-width:calc(100% - 8px)}.brand span{font-size:20px}.brand small{font-size:8px;max-width:210px}.brand img{width:38px;height:38px}.premium-nav{display:none}.language-bar-inner{text-align:left;padding:7px 12px}.premium-shell{padding:14px 10px 85px}.premium-hero{grid-template-columns:1fr;gap:14px}.media-box{min-height:220px}.hero-copy h1{font-size:31px}.hero-short{font-size:16px}.verified-strip{align-items:flex-start;flex-direction:column;font-size:13px}.summary-grid{grid-template-columns:1fr}.section-grid{grid-template-columns:1fr}.premium-card.wide-span,.premium-card.full-span{grid-column:auto}.steps{grid-template-columns:1fr}.link-grid,.related-grid{grid-template-columns:1fr}.overview-list{grid-template-columns:1fr}.overview-row{grid-template-columns:108px minmax(0,1fr)}.mobile-sticky{display:flex}.mobile-sticky:empty{display:none}.quick-actions{grid-template-columns:1fr}.premium-table{min-width:520px}.aside-phone{display:none}}
   </style>
 </head>
 <body>
