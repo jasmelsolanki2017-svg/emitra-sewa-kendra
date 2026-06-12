@@ -59,20 +59,22 @@ nav a:hover,nav a.active{color:var(--yellow)}
 .hero-badge{display:inline-flex;align-items:center;gap:8px;background:var(--yellow);color:var(--deep);padding:7px 12px;border-radius:6px;font-weight:900;font-size:13px;margin-bottom:14px}
 .hero h1{font-size:clamp(30px,5vw,48px);line-height:1.12;color:var(--yellow);font-weight:900;margin-bottom:10px}
 .hero p{max-width:850px;color:#fff3df;font-size:clamp(15px,2vw,18px);font-weight:700}
-main{max-width:1180px;margin:auto;padding:26px 3% 50px}
-.tools-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
-.tool-card{display:flex;flex-direction:column;min-height:218px;background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--orange);border-radius:8px;padding:18px;box-shadow:var(--shadow);transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
-.tool-card:hover{transform:translateY(-3px);border-color:#ffb15c;box-shadow:0 16px 32px rgba(0,87,168,.18)}
-.tool-icon{width:52px;height:52px;border-radius:8px;display:grid;place-items:center;background:#e7f4ff;color:var(--blue);font-size:24px;margin-bottom:13px}
-.tool-card h2{font-size:18px;line-height:1.25;color:var(--blue);font-weight:900;margin-bottom:8px}
-.tool-card p{color:var(--muted);font-size:13px;font-weight:700;margin-bottom:16px;flex:1}
-.tool-card .open-tool{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;background:var(--blue);color:#fff;border-radius:6px;padding:9px 12px;font-weight:900;font-size:13px}
-.tool-card .open-tool:hover{background:var(--orange);color:var(--deep)}
+main{max-width:1320px;margin:auto;padding:28px 3% 54px}
+.tools-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:16px}
+.tool-card{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:134px;background:var(--surface);border:1px solid #e2e8f2;border-radius:12px;padding:18px 10px 16px;color:#071b3f;box-shadow:0 2px 9px rgba(9,38,93,.04);transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+.tool-card:hover{transform:translateY(-3px);border-color:#b9d2ee;box-shadow:0 14px 28px rgba(0,87,168,.14)}
+.tool-icon{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;background:#e3f2ff;color:#1468c7;font-size:26px;margin-bottom:12px}
+.tool-card:nth-child(2n) .tool-icon{background:#fde5f0;color:#cc1f6a}
+.tool-card:nth-child(3n) .tool-icon{background:#f1def7;color:#8d35b8}
+.tool-card:nth-child(4n) .tool-icon{background:#e2f5e5;color:#16803a}
+.tool-card:nth-child(5n) .tool-icon{background:#ffefe3;color:#e87914}
+.tool-card:nth-child(6n) .tool-icon{background:#dff5f3;color:#007d7b}
+.tool-card h2{font-size:15px;line-height:1.28;color:#071b3f;font-weight:800;text-align:center;margin:0}
 footer{background:var(--blue);color:#fff;text-align:center;padding:24px 6%;margin-top:24px}
 footer p{font-weight:700;margin-bottom:8px}
 footer a{color:var(--yellow);font-weight:800;margin:0 7px;display:inline-block}
-@media(max-width:1050px){.tools-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(max-width:760px){nav{align-items:flex-start;flex-direction:column;padding:12px 4%}nav ul{justify-content:flex-start;gap:12px}.logo img{width:170px;max-width:74vw}.hero{padding:32px 4%}main{padding:18px 3% 38px}.tools-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.tool-card{min-height:205px;padding:14px}.tool-card h2{font-size:16px}.tool-card p{font-size:12px}.tool-icon{width:46px;height:46px;font-size:21px}}
+@media(max-width:1180px){.tools-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:760px){nav{align-items:flex-start;flex-direction:column;padding:12px 4%}nav ul{justify-content:flex-start;gap:12px}.logo img{width:170px;max-width:74vw}.hero{padding:32px 4%}main{padding:18px 3% 38px}.tools-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.tool-card{min-height:126px;padding:15px 8px}.tool-card h2{font-size:14px}.tool-icon{width:58px;height:58px;font-size:23px}}
 @media(max-width:430px){.tools-grid{grid-template-columns:1fr}.tool-card{min-height:0}}
 </style>
 <link rel="stylesheet" href="/site-theme.css">
@@ -104,18 +106,18 @@ footer a{color:var(--yellow);font-weight:800;margin:0 7px;display:inline-block}
 
 <main>
   <section class="tools-grid" aria-label="All free tools">
-    <article class="tool-card"><div class="tool-icon"><i class="fa-solid fa-screwdriver-wrench"></i></div><h2>All Free Tools</h2><p>Saare important PDF, photo, form aur utility tools ek page par dekhein.</p><a class="open-tool" href="/tools.html">Open Tool <i class="fa-solid fa-arrow-right"></i></a></article>
-    <article class="tool-card"><div class="tool-icon"><i class="fa-solid fa-file-pen"></i></div><h2>eMitra Offline Form Fill</h2><p>E-Mitra related offline forms ko fill aur prepare karne ke liye tool.</p><a class="open-tool" href="/emitra-offline-form.html">Open Tool <i class="fa-solid fa-arrow-right"></i></a></article>
-    <article class="tool-card"><div class="tool-icon"><i class="fa-solid fa-file-pdf"></i></div><h2>PDF Form</h2><p>PDF forms aur document related kaam ke liye quick access page.</p><a class="open-tool" href="/pdf-form.html">Open Tool <i class="fa-solid fa-arrow-right"></i></a></article>
-    <article class="tool-card"><div class="tool-icon"><i class="fa-solid fa-print"></i></div><h2>Stationery</h2><p>Stationery, printing aur E-Mitra shop related resources open karein.</p><a class="open-tool" href="/stationery.html">Open Tool <i class="fa-solid fa-arrow-right"></i></a></article>
-    <article class="tool-card"><div class="tool-icon"><i class="fa-solid fa-file-lines"></i></div><h2>Resume Builder</h2><p>Resume format aur biodata banane ke liye simple builder page.</p><a class="open-tool" href="/resume-builder.html">Open Tool <i class="fa-solid fa-arrow-right"></i></a></article>
-    <article class="tool-card"><div class="tool-icon"><i class="fa-solid fa-file-invoice"></i></div><h2>Invoice Generator</h2><p>Shop invoice, bill aur receipt quickly generate karne ke liye tool.</p><a class="open-tool" href="/invoice-generator.html">Open Tool <i class="fa-solid fa-arrow-right"></i></a></article>
-    <article class="tool-card"><div class="tool-icon"><i class="fa-solid fa-calculator"></i></div><h2>Age Calculator</h2><p>Date of birth se age, years, months aur days calculate karein.</p><a class="open-tool" href="/age-calculator.html">Open Tool <i class="fa-solid fa-arrow-right"></i></a></article>
-    <article class="tool-card"><div class="tool-icon"><i class="fa-solid fa-clipboard-check"></i></div><h2>Daily Mock Test</h2><p>Daily practice test aur exam preparation ke liye mock test section.</p><a class="open-tool" href="/mock-test.html">Open Tool <i class="fa-solid fa-arrow-right"></i></a></article>
-    <article class="tool-card"><div class="tool-icon"><i class="fa-solid fa-file-image"></i></div><h2>Image to PDF</h2><p>Photos aur images ko PDF document me convert karne ke liye tool.</p><a class="open-tool" href="/image-to-pdf.html">Open Tool <i class="fa-solid fa-arrow-right"></i></a></article>
-    <article class="tool-card"><div class="tool-icon"><i class="fa-solid fa-id-card"></i></div><h2>Passport Photo Maker</h2><p>Passport size photo banane aur print-ready output ke liye tool.</p><a class="open-tool" href="/passport-photo.html">Open Tool <i class="fa-solid fa-arrow-right"></i></a></article>
-    <article class="tool-card"><div class="tool-icon"><i class="fa-solid fa-compress"></i></div><h2>Photo Resize</h2><p>Photo ko required size, dimension ya upload format ke hisab se resize karein.</p><a class="open-tool" href="/photo-resize.html">Open Tool <i class="fa-solid fa-arrow-right"></i></a></article>
-    <article class="tool-card"><div class="tool-icon"><i class="fa-solid fa-briefcase"></i></div><h2>Sarkari Kaam Smart Hub</h2><p>Sarkari kaam, forms aur E-Mitra services ke smart shortcuts ek jagah.</p><a class="open-tool" href="/sarkari-kaam.html">Open Tool <i class="fa-solid fa-arrow-right"></i></a></article>
+    <a class="tool-card" href="/tools.html"><span class="tool-icon"><i class="fa-solid fa-screwdriver-wrench"></i></span><h2>All Free Tools</h2></a>
+    <a class="tool-card" href="/emitra-offline-form.html"><span class="tool-icon"><i class="fa-solid fa-file-pen"></i></span><h2>eMitra Offline Form Fill</h2></a>
+    <a class="tool-card" href="/pdf-form.html"><span class="tool-icon"><i class="fa-solid fa-file-pdf"></i></span><h2>PDF Form</h2></a>
+    <a class="tool-card" href="/stationery.html"><span class="tool-icon"><i class="fa-solid fa-print"></i></span><h2>Stationery</h2></a>
+    <a class="tool-card" href="/resume-builder.html"><span class="tool-icon"><i class="fa-solid fa-file-lines"></i></span><h2>Resume Builder</h2></a>
+    <a class="tool-card" href="/invoice-generator.html"><span class="tool-icon"><i class="fa-solid fa-file-invoice"></i></span><h2>Invoice Generator</h2></a>
+    <a class="tool-card" href="/age-calculator.html"><span class="tool-icon"><i class="fa-solid fa-calculator"></i></span><h2>Age Calculator</h2></a>
+    <a class="tool-card" href="/mock-test.html"><span class="tool-icon"><i class="fa-solid fa-clipboard-check"></i></span><h2>Daily Mock Test</h2></a>
+    <a class="tool-card" href="/image-to-pdf.html"><span class="tool-icon"><i class="fa-solid fa-file-image"></i></span><h2>Image to PDF</h2></a>
+    <a class="tool-card" href="/passport-photo.html"><span class="tool-icon"><i class="fa-solid fa-id-card"></i></span><h2>Passport Photo Maker</h2></a>
+    <a class="tool-card" href="/photo-resize.html"><span class="tool-icon"><i class="fa-solid fa-compress"></i></span><h2>Photo Resize</h2></a>
+    <a class="tool-card" href="/sarkari-kaam.html"><span class="tool-icon"><i class="fa-solid fa-briefcase"></i></span><h2>Sarkari Kaam Smart Hub</h2></a>
   </section>
 </main>
 
