@@ -230,6 +230,35 @@ main{max-width:1180px;margin:auto;padding:26px 3% 42px;}
 .mcq-option{border:1px solid #d8e5f3;border-radius:6px;padding:8px 10px;font-weight:700;color:#26364d;background:#fff;}
 .mcq-option.correct{border-color:#138a36;background:#ecfff3;color:#075a27;}
 .mcq-answer,.mcq-explanation{padding:0 14px 12px;color:#1f2937;font-weight:600;}
+.current-affairs-static .hero{background:linear-gradient(135deg,#06285d,#031b41);border-bottom-color:#ffc400;}
+.current-affairs-static .tag{background:#ffc400;color:#061b3a;}
+.ca-article-title{padding:22px 22px 10px;text-align:left;background:linear-gradient(180deg,#ffffff,#f8fbff);}
+.ca-article-title span{display:inline-flex;background:#06285d;color:#fff;border-radius:4px;padding:6px 10px;font-size:12px;font-weight:900;text-transform:uppercase;}
+.ca-article-title h2{margin:10px 0 4px;color:#06285d;font-size:clamp(24px,4vw,36px);line-height:1.2;}
+.ca-article-title p{color:#b51616;font-weight:900;font-size:18px;}
+.ca-quiz-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:16px 18px 18px;background:#fff;border-bottom:1px solid #e5effa;}
+.ca-quiz-summary div{border:1px solid #ffd45c;background:#fff9e7;border-radius:7px;padding:12px;text-align:center;}
+.ca-quiz-summary strong{display:block;color:#06285d;font-size:22px;line-height:1.1;}
+.ca-quiz-summary span{display:block;color:#40506a;font-size:12px;font-weight:800;margin-top:5px;}
+.ca-quiz-summary .btn{grid-column:auto;min-height:46px;background:#ffc400;color:#061b3a;box-shadow:none;}
+.ca-quiz-summary .btn.notification{background:#06285d;color:#fff;}
+.ca-intro-box{background:#fbfdff;border-top:1px solid #edf4fb;border-bottom:1px solid #edf4fb;}
+.current-affairs-static .mcq-list{gap:14px;}
+.ca-mcq-card{border-color:#dfe8f3;border-radius:8px;box-shadow:0 8px 20px rgba(6,40,93,.06);}
+.ca-mcq-card .mcq-question{display:flex;gap:12px;align-items:flex-start;background:#fff;color:#1d2433;font-size:18px;line-height:1.4;padding:16px;}
+.ca-q-badge{width:44px;height:44px;min-width:44px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#06285d;color:#fff;font-weight:900;font-size:15px;box-shadow:0 8px 16px rgba(6,40,93,.18);}
+.ca-mcq-card .mcq-options{grid-template-columns:1fr 1fr;padding:0 16px 14px;}
+.ca-mcq-card .mcq-option{display:flex;align-items:center;gap:10px;border-color:#dce7f3;border-radius:7px;background:#fff;padding:11px 12px;font-weight:800;}
+.ca-mcq-card .mcq-option span{width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#eef5ff;color:#06285d;font-weight:900;flex:0 0 auto;}
+.ca-mcq-card .mcq-option.correct{border-color:#16a34a;background:#ecfff3;color:#075a27;}
+.ca-mcq-card .mcq-option.correct span{background:#16a34a;color:#fff;}
+.ca-mcq-card .mcq-answer{margin:0 16px 10px;padding:10px 12px;border-radius:7px;background:#eafff1;color:#08722f;}
+.ca-mcq-card .mcq-explanation{margin:0 16px 16px;padding:12px;border-radius:7px;background:#fff8d9;color:#3f3200;border:1px solid #ffe58a;}
+.ca-sidebar-actions{display:grid;gap:9px;padding:12px;}
+.ca-sidebar-actions .btn{box-shadow:none;width:100%;min-height:42px;}
+.ca-sidebar-actions .btn.pdf{background:#ffc400;color:#061b3a;}
+.ca-sidebar-actions .btn.whatsapp{background:#128c3c;}
+.ca-sidebar-actions .btn.dark{background:#06285d;color:#fff;}
 .content-table{width:100%;border-collapse:collapse;font-size:14px;margin:10px 0 2px;}
 .content-table th,.content-table td{border:1px solid #d8e5f3;padding:9px 10px;text-align:left;vertical-align:middle;color:#1f2937;}
 .content-table th{font-weight:900;background:#f1f7ff;color:var(--deep);}
@@ -330,12 +359,11 @@ body.dark-mode .mcq-option.correct{background:#0d3322!important;border-color:#21
 body.dark-mode .mcq-answer,body.dark-mode .mcq-explanation{color:#e8f1ff!important;}
 body.dark-mode .job-tool-btn{background:#0b2749!important;border-color:#24405f!important;color:#e8f1ff!important;}
 body.dark-mode .job-tool-btn:hover{background:#ffb15c!important;border-color:#ffb15c!important;color:#06101f!important;}
-@media(max-width:920px){.layout{grid-template-columns:1fr}.detail-sidebar{position:static;top:auto}.hero{padding:24px 5% 26px}main{padding:18px 3% 34px}.detail-table th,.detail-table td{display:block;width:100%;}.detail-table th{border-bottom:0}.panel h2,.sarkari-section-title{font-size:17px}.actions{grid-template-columns:1fr}.content-table{font-size:12px}.content-table th,.content-table td{padding:7px 6px}.manual-pair{grid-template-columns:1fr;gap:3px}.qualification-card,.physical-eligibility-row{grid-template-columns:1fr}.qualification-post{border-right:0;border-bottom:1px solid #d8e5f3}.physical-eligibility-grid{grid-template-columns:1fr}.theme-toggle{right:16px;bottom:16px;width:50px;height:50px;}nav{flex-direction:column;align-items:flex-start}}
-@media(max-width:768px){main{padding:14px 2.5% 30px}.article-head{padding:18px 14px 12px}.author-box{grid-template-columns:58px minmax(0,1fr);padding:14px 12px}.author-avatar{width:58px;height:58px;font-size:19px}.author-name{font-size:16px}.content-box,.table-wrap{padding:12px}.section-manual{padding:0 12px 14px}.detail-table{font-size:13px}.detail-table th,.detail-table td{padding:9px 10px}.structured-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}.structured-table-wrap .content-table,.content-table{min-width:520px}.content-section{overflow-x:auto}.actions{padding:12px}.btn{font-size:13px;padding:10px 12px}.hero h1{font-size:24px}.hero p{font-size:14px}.meta-badge{font-size:11px}.article-meta-line{font-size:12px}.community-actions{padding:14px 12px}.community-actions .btn{width:100%}.job-tools-toolbar{grid-template-columns:1fr 1fr;padding:12px}.job-tool-btn{font-size:12px;min-height:40px;padding:8px 7px}}
+@media(max-width:920px){.layout{grid-template-columns:1fr}.detail-sidebar{position:static;top:auto}.hero{padding:24px 5% 26px}main{padding:18px 3% 34px}.detail-table th,.detail-table td{display:block;width:100%;}.detail-table th{border-bottom:0}.panel h2,.sarkari-section-title{font-size:17px}.actions{grid-template-columns:1fr}.content-table{font-size:12px}.content-table th,.content-table td{padding:7px 6px}.manual-pair{grid-template-columns:1fr;gap:3px}.qualification-card,.physical-eligibility-row{grid-template-columns:1fr}.qualification-post{border-right:0;border-bottom:1px solid #d8e5f3}.physical-eligibility-grid{grid-template-columns:1fr}.theme-toggle{right:16px;bottom:16px;width:50px;height:50px;}nav{flex-direction:column;align-items:flex-start}.ca-quiz-summary{grid-template-columns:1fr 1fr}.ca-mcq-card .mcq-options{grid-template-columns:1fr}}
+@media(max-width:768px){main{padding:14px 2.5% 30px}.article-head{padding:18px 14px 12px}.author-box{grid-template-columns:58px minmax(0,1fr);padding:14px 12px}.author-avatar{width:58px;height:58px;font-size:19px}.author-name{font-size:16px}.content-box,.table-wrap{padding:12px}.section-manual{padding:0 12px 14px}.detail-table{font-size:13px}.detail-table th,.detail-table td{padding:9px 10px}.structured-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}.structured-table-wrap .content-table,.content-table{min-width:520px}.content-section{overflow-x:auto}.actions{padding:12px}.btn{font-size:13px;padding:10px 12px}.hero h1{font-size:24px}.hero p{font-size:14px}.meta-badge{font-size:11px}.article-meta-line{font-size:12px}.community-actions{padding:14px 12px}.community-actions .btn{width:100%}.job-tools-toolbar{grid-template-columns:1fr 1fr;padding:12px}.job-tool-btn{font-size:12px;min-height:40px;padding:8px 7px}.ca-article-title{padding:18px 14px 8px}.ca-quiz-summary{grid-template-columns:1fr;padding:12px}.ca-mcq-card .mcq-question{font-size:16px;padding:14px}.ca-q-badge{width:40px;height:40px;min-width:40px}.ca-sidebar-actions{grid-template-columns:1fr}}
 @media(max-width:768px){.sarkari-blue-layout{font-size:13px;border-width:1px}.sarkari-blue-title-area{padding:18px 10px 14px}.sarkari-blue-content{padding:10px 12px 14px}.sarkari-blue-content .content-table,.sarkari-blue-table{font-size:12px;min-width:480px}.sarkari-blue-content .structured-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}}
 </style>
 <link rel="stylesheet" href="mobile-responsive-fix.css">
-
 </head>
 <body>
 <nav>
@@ -568,7 +596,7 @@ Upper Primary Teacher (Class 6 to 8): Candidates must have Bachelor&#039;s Degre
 })();
 </script>
 
-<script>window.__EMITRA_STATIC_POST__={"id":"-OtMr9f_jLmiXbjQGPqZ","job":{"admitCardDate":"Before Exam","admitCardLink":"","ageCalculateDate":"","ageLimitManual":"Age limit will be applicable as per JHTET rules. Candidates should read the official notification for complete age details and relaxation rules.","ageRelaxation":"As per JHTET rules","answerKeyLink":"","applicationFeeManual":"Fees For Paper I or Paper II Only:\nGeneral, EWS, BC: Rs. 1300/-\nSC, ST: Rs. 700/-\n\nFees For Both Paper:\nGeneral, BC, EWS: Rs. 1500/-\nSC, ST: Rs. 800/-\n\nCandidates have to pay the examination fee through Debit Card, Credit Card, Net Banking, UPI and other online fee payment mode only.","applyLink":"https://jactetonline.com/","basicDetailsManual":"Exam Name: Jharkhand Teacher Eligibility Test (JHTET) 2026\nConducting Body: Jharkhand Academic Council, Ranchi (JAC)\nForm Type: Online Form\nTag: 12th & Graduate Form\nStatus: Date Extended\nOfficial Portal: JAC Exam Portal","bothExamFee":"General / BC / EWS: Rs. 1500/- | SC / ST: Rs. 800/-","canonicalUrl":"https://emitrawala.online/post/jhtet-jharkhand-online-form-2026-jqgpqz/","category":"Teaching Jobs","categoryWiseVacancy":"","createdAt":1779590540966,"department":"Jharkhand Academic Council, Ranchi (JAC)","detailLayout":"table","detailLink":"https://jacexamportal.in/","displayOrder":11,"eligibilityManual":"Primary Level Teachers (Class 1 to 5): 10+2 / Intermediate with required percentage and teacher training qualification as per JHTET rules.\n\nUpper Primary Teacher (Class 6 to 8): Graduation / Post Graduation with required teacher training qualification as per JHTET rules.\n\nCandidates should read the official notification carefully before applying online.","examDate":"Notify Later","experience":"No experience required. Eligibility as per educational qualification.","extraUsefulManual":"Candidates are advised to verify all details from the official notification before applying online. Last date has been extended to 02 June 2026 as per important dates section.","faq":[{"answer":"02-Jun-2026","question":"JHTET Jharkhand Online Form 2026 ki last date kya hai?"},{"answer":"Ye update Jharkhand Academic Council, Ranchi (JAC) se related hai.","question":"JHTET Jharkhand Online Form 2026 kis department se related hai?"},{"answer":"Apply Online link Important Links section me diya gaya hai.","question":"JHTET Jharkhand Online Form 2026 ka apply link kahan milega?"},{"answer":"Official notification/detail link Important Links section me available hai.","question":"JHTET Jharkhand Online Form 2026 ka official notification kahan milega?"},{"answer":"Ye online form category ka update hai.","question":"JHTET Jharkhand Online Form 2026 kis category ka update hai?"}],"femaleFee":"","generalObcFee":"Rs. 1300/- for Paper I or Paper II Only","howToApply":"Candidates can apply online through JHTET apply link or official JAC exam portal before the last date. Candidates should fill the online form carefully, upload required documents, pay the application fee and submit the final form. Before applying, candidates must read the official notification carefully.","importantDatesManual":"Application Start Date: 21 April 2026\nLast Date Apply Online: 02 June 2026\nFee Payment Last Date: 02 June 2026\nExam Date: Notify Later\nAdmit Card: Before Exam","importantLinksManual":"Apply Online: https://jactetonline.com/\nDownload Date Extend Notice: https://jac-projects.s3.ap-south-1.amazonaws.com\nPress Advertisement: https://jacexamportal.in/\nDownload Notification: https://jacexamportal.in/\nDownload Syllabus: https://jacexamportal.in/\nOfficial Website: https://jacexamportal.in/","jsonLd":{"@context":"https://schema.org","@graph":[{"@id":"https://emitrawala.online/post/jhtet-jharkhand-online-form-2026-jqgpqz/#breadcrumb","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","item":"https://emitrawala.online/","name":"Home","position":1},{"@type":"ListItem","item":"https://emitrawala.online/job-form.html","name":"Latest Jobs","position":2},{"@type":"ListItem","item":"https://emitrawala.online/post/jhtet-jharkhand-online-form-2026-jqgpqz/","name":"JHTET Jharkhand Online Form 2026","position":3}]},{"@id":"https://emitrawala.online/post/jhtet-jharkhand-online-form-2026-jqgpqz/#article","@type":["Article","JobPosting"],"dateModified":"2026-06-11T12:19:22.698Z","datePosted":"2026-05-21","datePublished":"2026-05-24T02:42:20.966Z","description":"Jharkhand JHTET Online Form 2026 started from 21 April 2026. Last date is 02 June 2026. Check eligibility, fee, important dates, apply link and official notific","employmentType":"Online Form","headline":"JHTET Jharkhand Online Form 2026 Apply Online","hiringOrganization":{"@type":"Organization","name":"Jharkhand Academic Council, Ranchi (JAC)"},"mainEntityOfPage":"https://emitrawala.online/post/jhtet-jharkhand-online-form-2026-jqgpqz/","publisher":{"@type":"Organization","name":"E-MITRA WALA","url":"https://emitrawala.online/"},"title":"JHTET Jharkhand Online Form 2026","url":"https://emitrawala.online/post/jhtet-jharkhand-online-form-2026-jqgpqz/","validThrough":"2026-06-02"},{"@id":"https://emitrawala.online/post/jhtet-jharkhand-online-form-2026-jqgpqz/#faq","@type":"FAQPage","mainEntity":[{"@type":"Question","acceptedAnswer":{"@type":"Answer","text":"02-Jun-2026"},"name":"JHTET Jharkhand Online Form 2026 ki last date kya hai?"},{"@type":"Question","acceptedAnswer":{"@type":"Answer","text":"Ye update Jharkhand Academic Council, Ranchi (JAC) se related hai."},"name":"JHTET Jharkhand Online Form 2026 kis department se related hai?"},{"@type":"Question","acceptedAnswer":{"@type":"Answer","text":"Apply Online link Important Links section me diya gaya hai."},"name":"JHTET Jharkhand Online Form 2026 ka apply link kahan milega?"},{"@type":"Question","acceptedAnswer":{"@type":"Answer","text":"Official notification/detail link Important Links section me available hai."},"name":"JHTET Jharkhand Online Form 2026 ka official notification kahan milega?"},{"@type":"Question","acceptedAnswer":{"@type":"Answer","text":"Ye online form category ka update hai."},"name":"JHTET Jharkhand Online Form 2026 kis category ka update hai?"}]}]},"lastApplyDate":"02-Jun-2026","lastDate":"02-Jun-2026","lastFeeDate":"02-Jun-2026","location":"Jharkhand","maxAge":"As per JHTET rules","metaDescription":"Jharkhand JHTET Online Form 2026 started from 21 April 2026. Last date is 02 June 2026. Check eligibility, fee, important dates, apply link and official notific","minAge":"As per JHTET rules","obcFemaleFee":"","officialWebsite":"https://jacexamportal.in/","pageContent":"Jharkhand Academic Council, Ranchi (JAC) has released the online application form for Jharkhand Teacher Eligibility Test JHTET 2026. Eligible candidates can apply online for Primary Level Teacher and Upper Primary Teacher eligibility test.\n\nImportant Dates:\nApplication Start Date: 21 April 2026\nLast Date Apply Online: 02 June 2026\nFee Payment Last Date: 02 June 2026\nExam Date: Notify Later\nAdmit Card: Before Exam\n\nApplication Fee:\nPaper I or Paper II Only:\nGeneral / EWS / BC: Rs. 1300/-\nSC / ST: Rs. 700/-\n\nBoth Paper:\nGeneral / BC / EWS: Rs. 1500/-\nSC / ST: Rs. 800/-\n\nAge Limit:\nAge limit as per JHTET rules.\n\nEducational Qualification:\nPrimary Level Teachers Class 1 to 5 and Upper Primary Teacher Class 6 to 8 eligibility details are given in the official notification. Candidates should read complete notification before applying online.\n\nHow to Apply:\nCandidates can apply online through the official apply link before 02 June 2026. Fill the form carefully, upload documents, pay fee and take printout of final submitted form.","paymentMode":"Debit Card / Credit Card / Net Banking / UPI and Other Online Fee Payment Mode","phCandidateFee":"","physicalEligibility":"Not Applicable","postDate":"21-May-2026","postName":"Jharkhand Teacher Eligibility Test (JHTET) 2026","postStatus":"published","postTarget":"latestJob","postWiseApplyLinks":"JHTET Apply Online: https://jactetonline.com/","qualification":"Primary Level Teachers (Class 1 to 5): Candidates must have passed 10+2 / Intermediate with at least 50% marks or 45% as per NCTE rules along with passed or appearing in 2-year Diploma in Elementary Education (BTC / D.El.Ed), OR 4-year B.El.Ed, OR 2-year Diploma in Special Education. Candidates with Bachelor's Degree and passed or appearing in 2-year Diploma in Elementary Education are also eligible.\n\nUpper Primary Teacher (Class 6 to 8): Candidates must have Bachelor's Degree with passed or appearing in 2-year Diploma in Elementary Education (BTC / D.El.Ed), OR Bachelor's Degree with at least 50% marks or 45% as per NCTE rules and B.Ed / L.T. / Shiksha Shastri, OR 10+2 with at least 50% marks and 4-year B.El.Ed / B.A.Ed / B.Sc.Ed, OR Bachelor's Degree with at least 50% marks and B.Ed Special Education, OR Master's Degree with 55% marks and 3-year integrated B.Ed-M.Ed course.","requiredDocuments":"Recent Photograph\nSignature\nEducational Qualification Certificates\nCategory Certificate if applicable\nDomicile / Residence Certificate if required\nValid ID Proof\nOther documents as per official notification","resultDate":"","resultLink":"","salary":"Not Applicable","scFemaleFee":"","scStFee":"Rs. 700/- for Paper I or Paper II Only","selectionProcess":"Written Examination / Teacher Eligibility Test as per JHTET rules","seoTitle":"JHTET Jharkhand Online Form 2026 Apply Online","seoUpdatedAt":1781184127946,"shortInfo":"Jharkhand Academic Council (JAC) has released the notification for Jharkhand Teacher Eligibility Test (JHTET) 2026. Online application started from 21 April 2026 and last date to apply online is 02 June 2026.","singleExamFee":"General / EWS / BC: Rs. 1300/- | SC / ST: Rs. 700/-","slug":"jhtet-jharkhand-online-form-2026-jqgpqz","startDate":"21-Apr-2026","stateWiseVacancy":"","syllabusLink":"https://jacexamportal.in/","title":"JHTET Jharkhand Online Form 2026","totalPosts":"Not Applicable","totalVacancy":"Not Applicable","type":"Online Form","updatedAt":1781180362698,"vacancyDetailsManual":"This is a Teacher Eligibility Test form, not a direct vacancy recruitment. Candidates can apply for Primary Level Teacher and Upper Primary Teacher eligibility test as per qualification."}};</script>
+<script>window.__EMITRA_STATIC_POST__={"id":"-OtMr9f_jLmiXbjQGPqZ","job":{"admitCardDate":"Before Exam","admitCardLink":"","ageCalculateDate":"","ageLimitManual":"Age limit will be applicable as per JHTET rules. Candidates should read the official notification for complete age details and relaxation rules.","ageRelaxation":"As per JHTET rules","answerKeyLink":"","applicationFeeManual":"Fees For Paper I or Paper II Only:\nGeneral, EWS, BC: Rs. 1300/-\nSC, ST: Rs. 700/-\n\nFees For Both Paper:\nGeneral, BC, EWS: Rs. 1500/-\nSC, ST: Rs. 800/-\n\nCandidates have to pay the examination fee through Debit Card, Credit Card, Net Banking, UPI and other online fee payment mode only.","applyLink":"https://jactetonline.com/","basicDetailsManual":"Exam Name: Jharkhand Teacher Eligibility Test (JHTET) 2026\nConducting Body: Jharkhand Academic Council, Ranchi (JAC)\nForm Type: Online Form\nTag: 12th & Graduate Form\nStatus: Date Extended\nOfficial Portal: JAC Exam Portal","bothExamFee":"General / BC / EWS: Rs. 1500/- | SC / ST: Rs. 800/-","canonicalUrl":"https://emitrawala.online/post/jhtet-jharkhand-online-form-2026-jqgpqz/","category":"Teaching Jobs","categoryWiseVacancy":"","createdAt":1779590540966,"department":"Jharkhand Academic Council, Ranchi (JAC)","detailLayout":"table","detailLink":"https://jacexamportal.in/","displayOrder":11,"eligibilityManual":"Primary Level Teachers (Class 1 to 5): 10+2 / Intermediate with required percentage and teacher training qualification as per JHTET rules.\n\nUpper Primary Teacher (Class 6 to 8): Graduation / Post Graduation with required teacher training qualification as per JHTET rules.\n\nCandidates should read the official notification carefully before applying online.","examDate":"Notify Later","experience":"No experience required. Eligibility as per educational qualification.","extraUsefulManual":"Candidates are advised to verify all details from the official notification before applying online. Last date has been extended to 02 June 2026 as per important dates section.","faq":[{"answer":"02-Jun-2026","question":"JHTET Jharkhand Online Form 2026 ki last date kya hai?"},{"answer":"Ye update Jharkhand Academic Council, Ranchi (JAC) se related hai.","question":"JHTET Jharkhand Online Form 2026 kis department se related hai?"},{"answer":"Apply Online link Important Links section me diya gaya hai.","question":"JHTET Jharkhand Online Form 2026 ka apply link kahan milega?"},{"answer":"Official notification/detail link Important Links section me available hai.","question":"JHTET Jharkhand Online Form 2026 ka official notification kahan milega?"},{"answer":"Ye online form category ka update hai.","question":"JHTET Jharkhand Online Form 2026 kis category ka update hai?"}],"femaleFee":"","generalObcFee":"Rs. 1300/- for Paper I or Paper II Only","howToApply":"Candidates can apply online through JHTET apply link or official JAC exam portal before the last date. Candidates should fill the online form carefully, upload required documents, pay the application fee and submit the final form. Before applying, candidates must read the official notification carefully.","importantDatesManual":"Application Start Date: 21 April 2026\nLast Date Apply Online: 02 June 2026\nFee Payment Last Date: 02 June 2026\nExam Date: Notify Later\nAdmit Card: Before Exam","importantLinksManual":"Apply Online: https://jactetonline.com/\nDownload Date Extend Notice: https://jac-projects.s3.ap-south-1.amazonaws.com\nPress Advertisement: https://jacexamportal.in/\nDownload Notification: https://jacexamportal.in/\nDownload Syllabus: https://jacexamportal.in/\nOfficial Website: https://jacexamportal.in/","jsonLd":{"@context":"https://schema.org","@graph":[{"@id":"https://emitrawala.online/post/jhtet-jharkhand-online-form-2026-jqgpqz/#breadcrumb","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","item":"https://emitrawala.online/","name":"Home","position":1},{"@type":"ListItem","item":"https://emitrawala.online/job-form.html","name":"Latest Jobs","position":2},{"@type":"ListItem","item":"https://emitrawala.online/post/jhtet-jharkhand-online-form-2026-jqgpqz/","name":"JHTET Jharkhand Online Form 2026","position":3}]},{"@id":"https://emitrawala.online/post/jhtet-jharkhand-online-form-2026-jqgpqz/#article","@type":["Article","JobPosting"],"dateModified":"2026-06-11T12:19:22.698Z","datePosted":"2026-05-21","datePublished":"2026-05-24T02:42:20.966Z","description":"Jharkhand JHTET Online Form 2026 started from 21 April 2026. Last date is 02 June 2026. Check eligibility, fee, important dates, apply link and official notific","employmentType":"Online Form","headline":"JHTET Jharkhand Online Form 2026 Apply Online","hiringOrganization":{"@type":"Organization","name":"Jharkhand Academic Council, Ranchi (JAC)"},"mainEntityOfPage":"https://emitrawala.online/post/jhtet-jharkhand-online-form-2026-jqgpqz/","publisher":{"@type":"Organization","name":"E-MITRA WALA","url":"https://emitrawala.online/"},"title":"JHTET Jharkhand Online Form 2026","url":"https://emitrawala.online/post/jhtet-jharkhand-online-form-2026-jqgpqz/","validThrough":"2026-06-02"},{"@id":"https://emitrawala.online/post/jhtet-jharkhand-online-form-2026-jqgpqz/#faq","@type":"FAQPage","mainEntity":[{"@type":"Question","acceptedAnswer":{"@type":"Answer","text":"02-Jun-2026"},"name":"JHTET Jharkhand Online Form 2026 ki last date kya hai?"},{"@type":"Question","acceptedAnswer":{"@type":"Answer","text":"Ye update Jharkhand Academic Council, Ranchi (JAC) se related hai."},"name":"JHTET Jharkhand Online Form 2026 kis department se related hai?"},{"@type":"Question","acceptedAnswer":{"@type":"Answer","text":"Apply Online link Important Links section me diya gaya hai."},"name":"JHTET Jharkhand Online Form 2026 ka apply link kahan milega?"},{"@type":"Question","acceptedAnswer":{"@type":"Answer","text":"Official notification/detail link Important Links section me available hai."},"name":"JHTET Jharkhand Online Form 2026 ka official notification kahan milega?"},{"@type":"Question","acceptedAnswer":{"@type":"Answer","text":"Ye online form category ka update hai."},"name":"JHTET Jharkhand Online Form 2026 kis category ka update hai?"}]}]},"lastApplyDate":"02-Jun-2026","lastDate":"02-Jun-2026","lastFeeDate":"02-Jun-2026","location":"Jharkhand","maxAge":"As per JHTET rules","metaDescription":"Jharkhand JHTET Online Form 2026 started from 21 April 2026. Last date is 02 June 2026. Check eligibility, fee, important dates, apply link and official notific","minAge":"As per JHTET rules","obcFemaleFee":"","officialWebsite":"https://jacexamportal.in/","pageContent":"Jharkhand Academic Council, Ranchi (JAC) has released the online application form for Jharkhand Teacher Eligibility Test JHTET 2026. Eligible candidates can apply online for Primary Level Teacher and Upper Primary Teacher eligibility test.\n\nImportant Dates:\nApplication Start Date: 21 April 2026\nLast Date Apply Online: 02 June 2026\nFee Payment Last Date: 02 June 2026\nExam Date: Notify Later\nAdmit Card: Before Exam\n\nApplication Fee:\nPaper I or Paper II Only:\nGeneral / EWS / BC: Rs. 1300/-\nSC / ST: Rs. 700/-\n\nBoth Paper:\nGeneral / BC / EWS: Rs. 1500/-\nSC / ST: Rs. 800/-\n\nAge Limit:\nAge limit as per JHTET rules.\n\nEducational Qualification:\nPrimary Level Teachers Class 1 to 5 and Upper Primary Teacher Class 6 to 8 eligibility details are given in the official notification. Candidates should read complete notification before applying online.\n\nHow to Apply:\nCandidates can apply online through the official apply link before 02 June 2026. Fill the form carefully, upload documents, pay fee and take printout of final submitted form.","paymentMode":"Debit Card / Credit Card / Net Banking / UPI and Other Online Fee Payment Mode","phCandidateFee":"","physicalEligibility":"Not Applicable","postDate":"21-May-2026","postName":"Jharkhand Teacher Eligibility Test (JHTET) 2026","postStatus":"published","postTarget":"latestJob","postWiseApplyLinks":"JHTET Apply Online: https://jactetonline.com/","qualification":"Primary Level Teachers (Class 1 to 5): Candidates must have passed 10+2 / Intermediate with at least 50% marks or 45% as per NCTE rules along with passed or appearing in 2-year Diploma in Elementary Education (BTC / D.El.Ed), OR 4-year B.El.Ed, OR 2-year Diploma in Special Education. Candidates with Bachelor's Degree and passed or appearing in 2-year Diploma in Elementary Education are also eligible.\n\nUpper Primary Teacher (Class 6 to 8): Candidates must have Bachelor's Degree with passed or appearing in 2-year Diploma in Elementary Education (BTC / D.El.Ed), OR Bachelor's Degree with at least 50% marks or 45% as per NCTE rules and B.Ed / L.T. / Shiksha Shastri, OR 10+2 with at least 50% marks and 4-year B.El.Ed / B.A.Ed / B.Sc.Ed, OR Bachelor's Degree with at least 50% marks and B.Ed Special Education, OR Master's Degree with 55% marks and 3-year integrated B.Ed-M.Ed course.","requiredDocuments":"Recent Photograph\nSignature\nEducational Qualification Certificates\nCategory Certificate if applicable\nDomicile / Residence Certificate if required\nValid ID Proof\nOther documents as per official notification","resultDate":"","resultLink":"","salary":"Not Applicable","scFemaleFee":"","scStFee":"Rs. 700/- for Paper I or Paper II Only","selectionProcess":"Written Examination / Teacher Eligibility Test as per JHTET rules","seoTitle":"JHTET Jharkhand Online Form 2026 Apply Online","seoUpdatedAt":1781232620834,"shortInfo":"Jharkhand Academic Council (JAC) has released the notification for Jharkhand Teacher Eligibility Test (JHTET) 2026. Online application started from 21 April 2026 and last date to apply online is 02 June 2026.","singleExamFee":"General / EWS / BC: Rs. 1300/- | SC / ST: Rs. 700/-","slug":"jhtet-jharkhand-online-form-2026-jqgpqz","startDate":"21-Apr-2026","stateWiseVacancy":"","syllabusLink":"https://jacexamportal.in/","title":"JHTET Jharkhand Online Form 2026","totalPosts":"Not Applicable","totalVacancy":"Not Applicable","type":"Online Form","updatedAt":1781180362698,"vacancyDetailsManual":"This is a Teacher Eligibility Test form, not a direct vacancy recruitment. Candidates can apply for Primary Level Teacher and Upper Primary Teacher eligibility test as per qualification."}};</script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
@@ -960,12 +988,12 @@ const schemaDateOrUndefined = (value = "") => {
   return date ? date.toISOString().slice(0, 10) : undefined;
 };
 
-const buildBreadcrumbSchema = (title = "Job Details", canonicalUrl = location.href) => ({
+const buildBreadcrumbSchema = (title = "Job Details", canonicalUrl = location.href, currentAffairs = false) => ({
   "@type":"BreadcrumbList",
   "@id":`${canonicalUrl}#breadcrumb`,
   "itemListElement":[
     { "@type":"ListItem", "position":1, "name":"Home", "item":`${location.origin}/index.html` },
-    { "@type":"ListItem", "position":2, "name":"Latest Jobs", "item":`${location.origin}/job-form.html` },
+    { "@type":"ListItem", "position":2, "name":currentAffairs ? "Current Affairs" : "Latest Jobs", "item":`${location.origin}/${currentAffairs ? "current-affairs.html" : "job-form.html"}` },
     { "@type":"ListItem", "position":3, "name":title, "item":canonicalUrl }
   ]
 });
@@ -1008,7 +1036,7 @@ const buildJobSchemaGraph = ({ job = {}, title = "Job Update", description = "",
   return {
     "@context":"https://schema.org",
     "@graph":[
-      buildBreadcrumbSchema(title, canonicalUrl),
+      buildBreadcrumbSchema(title, canonicalUrl, currentAffairs),
       article,
       ...(faqItems.length ? [faqPage] : [])
     ]
@@ -1047,15 +1075,94 @@ const hasCurrentAffairsQuestions = (job = {}) => getCurrentAffairsQuestionSource
   const options = Array.isArray(item.options) ? item.options : [item.optionA || item.a, item.optionB || item.b, item.optionC || item.c, item.optionD || item.d];
   return String(item.question || item.q || item.title || "").trim() && options.some((option) => String(option || "").trim());
 });
+const resolveCurrentAffairsPdfUrl = (job = {}) => {
+  const article = job.advancedArticleData && typeof job.advancedArticleData === "object" ? job.advancedArticleData : {};
+  const content = getObjectContent(job);
+  const articleContent = getObjectContent(article);
+  const direct = [
+    job.pdfLink, job.pdfUrl, job.currentAffairsPdf, job.currentAffairsPdfUrl, job.dailyPdf, job.dailyPdfUrl,
+    job.downloadPdf, job.downloadPdfUrl, job.pdfDownloadUrl, job.fileUrl, job.attachmentUrl,
+    content.pdfLink, content.pdfUrl, content.currentAffairsPdf, content.dailyPdf, content.downloadPdfUrl,
+    article.pdfLink, article.pdfUrl, article.currentAffairsPdf, article.dailyPdf, article.downloadPdfUrl,
+    articleContent.pdfLink, articleContent.pdfUrl, articleContent.currentAffairsPdf, articleContent.dailyPdf
+  ];
+  const fromDirect = direct.map(safeUrl).find((url) => url !== "#");
+  if(fromDirect){ return fromDirect; }
+  const linkSources = [job.importantLinks, job.links, job.attachments, content.importantLinks, content.links, article.importantLinks, article.links, articleContent.importantLinks, articleContent.links];
+  const linkItems = linkSources.flatMap((items) => Array.isArray(items) ? items : []);
+  const match = linkItems.find((item) => {
+    if(!item || typeof item !== "object"){ return false; }
+    const label = String(item.label || item.title || item.name || item.text || "").toLowerCase();
+    const url = String(item.url || item.href || item.link || item.file || "").trim();
+    return url && (/pdf|download|डाउनलोड/.test(label) || /\.pdf(?:$|[?#])/i.test(url));
+  });
+  return match ? safeUrl(match.url || match.href || match.link || match.file) : "#";
+};
+const loadScriptOnce = (src = "") => new Promise((resolve, reject) => {
+  const existing = document.querySelector(`script[src="${src}"]`);
+  if(existing){
+    if(existing.dataset.loaded === "true"){ resolve(); return; }
+    existing.addEventListener("load", resolve, { once:true });
+    existing.addEventListener("error", reject, { once:true });
+    return;
+  }
+  const script = document.createElement("script");
+  script.src = src;
+  script.async = true;
+  script.dataset.loaded = "false";
+  script.onload = () => { script.dataset.loaded = "true"; resolve(); };
+  script.onerror = reject;
+  document.head.appendChild(script);
+});
+window.downloadCurrentAffairsPdf = async (fileName = "daily-current-affairs.pdf") => {
+  const button = window.event?.currentTarget;
+  const oldText = button ? button.innerHTML : "";
+  try{
+    if(button){
+      button.disabled = true;
+      button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> PDF Ready ho rahi hai';
+    }
+    await loadScriptOnce("https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js");
+    const source = document.querySelector(".detail-sheet");
+    if(!source || !window.html2pdf){ throw new Error("PDF generator load nahi hua"); }
+    const clone = source.cloneNode(true);
+    clone.querySelectorAll("button,a.btn").forEach((node) => {
+      if(/Current Affairs List|Start Quiz|Daily PDF Download/i.test(node.textContent || "")){ node.remove(); }
+    });
+    clone.style.width = "760px";
+    clone.style.maxWidth = "760px";
+    clone.style.boxShadow = "none";
+    clone.style.border = "1px solid #d9e7f7";
+    await window.html2pdf().set({
+      margin: [8, 8, 8, 8],
+      filename: fileName || "daily-current-affairs.pdf",
+      image: { type:"jpeg", quality:0.98 },
+      html2canvas: { scale:2, useCORS:true, backgroundColor:"#ffffff" },
+      jsPDF: { unit:"mm", format:"a4", orientation:"portrait" },
+      pagebreak: { mode:["css", "legacy"] }
+    }).from(clone).save();
+  }catch(error){
+    console.warn(error);
+    window.print();
+  }finally{
+    if(button){
+      button.disabled = false;
+      button.innerHTML = oldText;
+    }
+  }
+};
 const isCurrentAffairsPost = (job = {}) => {
   const article = job.advancedArticleData && typeof job.advancedArticleData === "object" ? job.advancedArticleData : {};
+  const currentText = [job.title, job.slug, article.title, article.slug, job.category, article.category]
+    .map((value) => String(value || "").toLowerCase())
+    .join(" ");
   return [job.postTarget, job.postType, article.postTarget, article.postType, job.type, article.type]
     .some((value) => normalizePostTarget(value) === "currentAffairs")
+    || /current[-\s]*affairs|करेंट\s*अफेयर्स|करंट\s*अफेयर्स/.test(currentText)
     || Array.isArray(job.currentAffairs)
     || Array.isArray(article.currentAffairs)
     || Array.isArray(job.currentAffairsData)
-    || Array.isArray(job.currentAffairsData?.currentAffairs)
-    || hasCurrentAffairsQuestions(job);
+    || Array.isArray(job.currentAffairsData?.currentAffairs);
 };
 const isAdmissionPost = (job = {}) => {
   const article = job.advancedArticleData && typeof job.advancedArticleData === "object" ? job.advancedArticleData : {};
@@ -2172,20 +2279,27 @@ const renderMcqSection = (job = {}) => {
   const mcqBox = document.getElementById("mcqContent");
   const mcqPanel = document.getElementById("mcqPanel");
   const mcqs = normalizeMcqItems(isCurrentAffairsPost(job) ? getCurrentAffairsQuestionSource(job) : job.mcqs);
+  if(!mcqBox || !mcqPanel){ return; }
   if(!mcqs.length){
     mcqBox.innerHTML = "";
     mcqPanel.style.display = "none";
     return;
   }
+  const premiumClass = isCurrentAffairsPost(job) ? " ca-mcq-card" : "";
   mcqBox.innerHTML = `<div class="mcq-list">${mcqs.map((item, index) => {
     const correct = item.answer.toLowerCase();
     const optionsHtml = item.options.map((option, optionIndex) => {
       const optionLabel = String.fromCharCode(65 + optionIndex);
       const optionText = `${optionLabel}. ${option}`;
       const isCorrect = correct && (option.toLowerCase() === correct || optionText.toLowerCase() === correct || optionLabel.toLowerCase() === correct);
-      return `<div class="mcq-option ${isCorrect ? "correct" : ""}">${renderFormattedText(optionText)}</div>`;
+      return isCurrentAffairsPost(job)
+        ? `<div class="mcq-option ${isCorrect ? "correct" : ""}"><span>${optionLabel}</span>${renderFormattedText(option)}</div>`
+        : `<div class="mcq-option ${isCorrect ? "correct" : ""}">${renderFormattedText(optionText)}</div>`;
     }).join("");
-    return `<article class="mcq-card"><div class="mcq-question">Q${index + 1}. ${renderFormattedText(item.question)}</div><div class="mcq-options">${optionsHtml}</div>${item.answer ? `<div class="mcq-answer"><span class="manual-label">Correct Answer:</span> ${renderFormattedText(item.answer)}</div>` : ""}${item.explanation ? `<div class="mcq-explanation"><span class="manual-label">Explanation:</span> ${renderFormattedText(item.explanation)}</div>` : ""}</article>`;
+    const questionHtml = isCurrentAffairsPost(job)
+      ? `<div class="mcq-question"><span class="ca-q-badge">Q${index + 1}</span><strong>${renderFormattedText(item.question)}</strong></div>`
+      : `<div class="mcq-question">Q${index + 1}. ${renderFormattedText(item.question)}</div>`;
+    return `<article class="mcq-card${premiumClass}">${questionHtml}<div class="mcq-options">${optionsHtml}</div>${item.answer ? `<div class="mcq-answer"><span class="manual-label">Correct Answer:</span> ${renderFormattedText(item.answer)}</div>` : ""}${item.explanation ? `<div class="mcq-explanation"><span class="manual-label">Explanation:</span> ${renderFormattedText(item.explanation)}</div>` : ""}</article>`;
   }).join("")}</div>`;
   mcqPanel.style.display = "block";
 };
@@ -2225,11 +2339,34 @@ const hidePanels = (ids = []) => ids.forEach((id) => {
   if(panel){ panel.style.display = "none"; }
 });
 
+const removeCurrentAffairsJobPanels = () => [
+  "featurePanel", "shortInfoPanel", "importantPanel", "jobInfoPanel", "feePanel", "agePanel",
+  "vacancyPanel", "eligibilityPanel", "selectionPanel", "applyProcessPanel", "extraPanel",
+  "linksPanel", "faqPanel", "mcqPanel", "authorPanel", "jobToolsPanel"
+].forEach((id) => {
+  const panel = document.getElementById(id);
+  if(panel){ panel.remove(); }
+});
+
+const setPageContextLabel = (label = "Job Details") => {
+  const message = document.getElementById("jobMessage");
+  if(message && /load ho rahi/i.test(message.textContent || "")){
+    message.textContent = label === "Current Affairs" ? "Current Affairs load ho rahi hain..." : "Job details load ho rahi hain...";
+  }
+  const footerText = document.querySelector("footer p");
+  if(footerText && /E-MITRA WALA/i.test(footerText.textContent || "")){
+    footerText.textContent = `© 2026 E-MITRA WALA | ${label}`;
+  }
+};
+
 const renderCurrentAffairsDetail = ({ jobId = "", job = {}, title = "", description = "", canonicalUrl = "", allJobs = [] }) => {
+  const isStaticCurrentAffairs = document.body.classList.contains("current-affairs-static");
+  setPageContextLabel("Current Affairs");
   const introText = Array.isArray(job.intro) ? job.intro.map((item) => String(item || "").trim()).filter(Boolean).join("\n\n") : "";
   const dateText = job.postDate || job.date || job.content?.date || job["तारीख"] || job.currentAffairsData?.["तारीख"] || "";
   const categoryText = job.category || job.content?.category || job["श्रेणी"] || job.currentAffairsData?.["श्रेणी"] || "";
   const newsItems = normalizeCurrentAffairsNewsItems(job);
+  const questions = normalizeMcqItems(getCurrentAffairsQuestionSource(job));
   const sourceNames = Array.from(new Set(newsItems.map((item) => item.source).filter(Boolean))).slice(0, 4);
   const sourceDateNote = [
     sourceNames.length ? `Source: ${sourceNames.join(", ")}` : "Source: Official news updates and exam-oriented current affairs references",
@@ -2238,26 +2375,52 @@ const renderCurrentAffairsDetail = ({ jobId = "", job = {}, title = "", descript
   document.getElementById("jobType").textContent = "Current Affairs";
   document.getElementById("jobTitle").textContent = title;
   document.getElementById("jobIntro").innerHTML = renderFormattedText(introText || description || title);
-  document.getElementById("sheetTitle").textContent = title;
-  document.getElementById("sheetSubTitle").innerHTML = renderFormattedText(introText || description || "Important current affairs questions, answers and explanations.");
+  document.getElementById("sheetTitle").textContent = "Daily Current Affairs Quiz";
+  document.getElementById("sheetSubTitle").innerHTML = renderFormattedText(title);
   renderArticleMeta(job);
-  renderAuthorBox(job);
+  if(!isStaticCurrentAffairs){ renderAuthorBox(job); }
+  if(isStaticCurrentAffairs){
+    removeCurrentAffairsJobPanels();
+    renderCurrentAffairsLinks({ currentId:jobId, currentJob:job, allJobs });
+    const fallbackPanel = document.getElementById("seoFallbackPanel");
+    if(fallbackPanel){ fallbackPanel.style.display = "block"; }
+    message.style.display = "none";
+    wrap.style.display = "block";
+    updateArticleWordCount();
+    return;
+  }
   const shortInfoHeading = document.querySelector("#shortInfoPanel h2");
   if(shortInfoHeading){ shortInfoHeading.textContent = "Current Affairs"; }
   renderMetaBadges([
-    { label:"Date", value:dateText, icon:"fa-solid fa-calendar-days" }
+    { label:"Date", value:dateText, icon:"fa-solid fa-calendar-days" },
+    { label:"Total Questions", value:questions.length ? String(questions.length) : "", icon:"fa-solid fa-circle-question" },
+    { label:"Time", value:"15 Min", icon:"fa-solid fa-clock" }
   ]);
   hidePanels([
     "featurePanel", "importantPanel", "jobInfoPanel", "feePanel", "agePanel", "vacancyPanel",
     "eligibilityPanel", "selectionPanel", "applyProcessPanel", "extraPanel",
     "linksPanel", "jobToolsPanel"
   ]);
-  renderTextBlock("shortInfoContent", "shortInfoPanel", [
-    dateText ? `Date: ${dateText}` : "",
-    categoryText ? `Category: ${categoryText}` : "",
-    introText || description || "",
-    sourceDateNote
-  ].filter(Boolean).join("\n\n"));
+  const shortInfoPanel = document.getElementById("shortInfoPanel");
+  const shortInfoContent = document.getElementById("shortInfoContent");
+  if(shortInfoPanel && shortInfoContent){
+    shortInfoContent.innerHTML = `
+      <div class="ca-quiz-summary">
+        <div><strong>${questions.length || 0}</strong><span>Total Questions</span></div>
+        <div><strong>${questions.length || 0}</strong><span>Total Marks</span></div>
+        <div><strong>15 Min</strong><span>Time</span></div>
+        <div><strong>Hindi/English</strong><span>Language</span></div>
+        <a class="btn apply" href="#mcqPanel">Start Quiz</a>
+        <a class="btn notification" href="current-affairs.html">Current Affairs List</a>
+      </div>
+      <div class="content-box ca-intro-box">
+        ${introText || description ? `<p>${renderFormattedText(introText || description)}</p>` : ""}
+        ${dateText ? `<p><strong class="manual-label">Date:</strong> ${renderFormattedText(dateText)}</p>` : ""}
+        ${categoryText ? `<p><strong class="manual-label">Category:</strong> ${renderFormattedText(categoryText)}</p>` : ""}
+        <p><strong class="manual-label">Source/Date Note:</strong> ${renderFormattedText(sourceDateNote)}</p>
+      </div>`;
+    shortInfoPanel.style.display = "block";
+  }
   const importantManual = document.getElementById("importantManual");
   if(importantManual){ importantManual.innerHTML = ""; }
   const contentPanel = document.getElementById("pageContentPanel");
@@ -2279,7 +2442,7 @@ const renderCurrentAffairsDetail = ({ jobId = "", job = {}, title = "", descript
   const faqItems = [];
   renderCurrentAffairsLinks({ currentId:jobId, currentJob:job, allJobs });
   const sidebar = document.querySelector(".detail-sidebar");
-  if(sidebar){ sidebar.style.display = "none"; }
+  if(sidebar){ sidebar.style.display = ""; }
   setJsonLd(buildJobSchemaGraph({ job, title, description, canonicalUrl, faqItems }));
   const fallbackPanel = document.getElementById("seoFallbackPanel");
   if(fallbackPanel){ fallbackPanel.style.display = "none"; }
@@ -2302,22 +2465,43 @@ const isMeaningfulCell = (value) => {
 
 const renderCurrentAffairsLinks = ({ currentId = "", currentJob = {}, allJobs = [] }) => {
   const communityPanel = document.getElementById("communityPanel");
-  if(!communityPanel){ return; }
   const relatedRows = (Array.isArray(allJobs) ? allJobs : [])
     .filter((item) => item && item.id !== currentId && isJobVisible(item.job || {}) && isCurrentAffairsPost(item.job || {}))
     .slice(0, 5);
-  communityPanel.innerHTML = `
-    <h2>More Current Affairs</h2>
-    <div class="community-actions">
-      <a class="btn whatsapp" href="https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q" target="_blank" rel="noopener noreferrer">Join WhatsApp Channel</a>
-      <a class="btn whatsapp" href="https://wa.me/919509453441" target="_blank" rel="noopener noreferrer">WhatsApp +91 9509453441</a>
-      <a class="btn whatsapp" href="https://wa.me/918505090384" target="_blank" rel="noopener noreferrer">WhatsApp +91 8505090384</a>
-      <a class="btn" href="/current-affairs.html"><i class="fa-solid fa-newspaper"></i> Related Current Affairs</a>
-      <a class="btn" href="/mock-test.html"><i class="fa-solid fa-clipboard-check"></i> Mock Test</a>
+  if(communityPanel){
+    communityPanel.innerHTML = "";
+    communityPanel.style.display = "none";
+  }
+  const sidebar = document.querySelector(".detail-sidebar");
+  if(!sidebar){ return; }
+  const pdfUrl = resolveCurrentAffairsPdfUrl(currentJob);
+  const pdfFileName = `${buildCanonicalSlug(currentJob, currentId) || "daily-current-affairs"}.pdf`;
+  sidebar.innerHTML = `
+    <div class="sidebar-card">
+      <h3>Daily Current Affairs PDF</h3>
+      <div class="ca-sidebar-actions">
+        ${pdfUrl !== "#" ? `<a class="btn pdf" href="${pdfUrl}" download="${escapeHTML(pdfFileName)}" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-file-pdf"></i> Daily PDF Download</a>` : `<button class="btn pdf" type="button" onclick="downloadCurrentAffairsPdf('${escapeHTML(pdfFileName)}')"><i class="fa-solid fa-file-pdf"></i> Daily PDF Download</button>`}
+      </div>
     </div>
-    ${relatedRows.length ? `<div class="related-list">${relatedRows.map((item) => `<a href="${canonicalJobHref(item.id, item.job)}">${escapeHTML((item.job || {}).title || "Current Affairs")}</a>`).join("")}</div>` : ""}
-  `;
-  communityPanel.style.display = "block";
+    <div class="sidebar-card">
+      <h3>Join WhatsApp Channel</h3>
+      <div class="ca-sidebar-actions">
+        <a class="btn whatsapp" href="https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp"></i> Join WhatsApp Channel</a>
+      </div>
+    </div>
+    <div class="sidebar-card">
+      <h3>More Current Affairs</h3>
+      <div class="related-list">
+        ${relatedRows.length ? relatedRows.map((item) => `<a href="${canonicalJobHref(item.id, item.job)}">${escapeHTML((item.job || {}).title || "Current Affairs")}</a>`).join("") : `<a href="current-affairs.html">View All Current Affairs</a>`}
+      </div>
+    </div>
+    <div class="sidebar-card">
+      <h3>Mock Test</h3>
+      <div class="ca-sidebar-actions">
+        <a class="btn dark" href="mock-test.html"><i class="fa-solid fa-clipboard-check"></i> Mock Test</a>
+      </div>
+    </div>`;
+  sidebar.style.display = "";
 };
 
 const renderTableBlock = (lines) => {
