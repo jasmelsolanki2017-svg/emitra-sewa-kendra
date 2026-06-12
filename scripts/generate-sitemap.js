@@ -83,13 +83,16 @@ const normalizePostTarget = (value = "") => {
 
 const isCurrentAffairsPost = (job = {}) => {
   const article = job.advancedArticleData && typeof job.advancedArticleData === "object" ? job.advancedArticleData : {};
+  const currentText = [job.title, job.slug, article.title, article.slug, job.category, article.category]
+    .map((value) => String(value || "").toLowerCase())
+    .join(" ");
   return [job.postTarget, job.postType, article.postTarget, article.postType, job.type, article.type]
     .some((value) => normalizePostTarget(value) === "currentAffairs")
+    || /current[-\s]*affairs|करेंट\s*अफेयर्स|करंट\s*अफेयर्स/.test(currentText)
     || Array.isArray(job.currentAffairs)
     || Array.isArray(article.currentAffairs)
     || Array.isArray(job.currentAffairsData)
-    || Array.isArray(job.currentAffairsData?.currentAffairs)
-    || getCurrentAffairsQuestions(job).length > 0;
+    || Array.isArray(job.currentAffairsData?.currentAffairs);
 };
 
 const sitemapDate = (value = "") => {
@@ -242,6 +245,9 @@ const buildSchemaGraph = ({ id = "", job = {}, canonicalUrl = "" }) => {
     article.validThrough = schemaDateOrUndefined(job.lastApplyDate || job.lastDate);
     article.hiringOrganization = job.department ? { "@type": "Organization", "name": job.department } : publisher;
   }
+  const breadcrumbSecond = currentAffairs
+    ? { name: "Current Affairs", item: `${SITE_BASE_URL}/current-affairs.html` }
+    : { name: "Latest Jobs", item: `${SITE_BASE_URL}/job-form.html` };
   return {
     "@context": "https://schema.org",
     "@graph": [
@@ -250,7 +256,7 @@ const buildSchemaGraph = ({ id = "", job = {}, canonicalUrl = "" }) => {
         "@id": `${canonicalUrl}#breadcrumb`,
         "itemListElement": [
           { "@type": "ListItem", "position": 1, "name": "Home", "item": `${SITE_BASE_URL}/` },
-          { "@type": "ListItem", "position": 2, "name": "Latest Jobs", "item": `${SITE_BASE_URL}/job-form.html` },
+          { "@type": "ListItem", "position": 2, "name": breadcrumbSecond.name, "item": breadcrumbSecond.item },
           { "@type": "ListItem", "position": 3, "name": seo.title, "item": canonicalUrl }
         ]
       },
@@ -333,24 +339,41 @@ const renderCurrentAffairsFallbackHtml = (job = {}, title = "Current Affairs", d
   const categoryText = String(job.category || job.content?.category || job["श्रेणी"] || job.currentAffairsData?.["श्रेणी"] || "").trim();
   const newsItems = getCurrentAffairsNewsItems(job);
   const questions = getCurrentAffairsQuestions(job);
+  const pdfUrl = String(job.pdfLink || job.pdfUrl || job.currentAffairsPdf || job.content?.pdfLink || job.advancedArticleData?.pdfLink || "").trim();
   const sourceNames = Array.from(new Set(newsItems.map((item) => item.source).filter(Boolean))).slice(0, 4);
   const sourceDateNote = [
     sourceNames.length ? `Source: ${sourceNames.join(", ")}` : "Source: Official news updates and exam-oriented current affairs references",
     dateText ? `Updated: ${dateText}` : ""
   ].filter(Boolean).join(" | ");
-  const questionHtml = questions.map((item, index) => `<article class="mcq-card">
-                <div class="mcq-question">Q${index + 1}. ${htmlEscape(item.question)}</div>
-                <div class="mcq-options">${item.options.map((option, optionIndex) => `<div class="mcq-option">${String.fromCharCode(65 + optionIndex)}. ${htmlEscape(option)}</div>`).join("")}</div>
+  const questionHtml = questions.map((item, index) => `<article class="mcq-card ca-mcq-card">
+                <div class="mcq-question"><span class="ca-q-badge">Q${index + 1}</span><strong>${htmlEscape(item.question)}</strong></div>
+                <div class="mcq-options">${item.options.map((option, optionIndex) => {
+                  const optionLabel = String.fromCharCode(65 + optionIndex);
+                  const correct = item.answer.toLowerCase();
+                  const isCorrect = correct && (option.toLowerCase() === correct || optionLabel.toLowerCase() === correct || `${optionLabel}. ${option}`.toLowerCase() === correct);
+                  return `<div class="mcq-option ${isCorrect ? "correct" : ""}"><span>${optionLabel}</span>${htmlEscape(option)}</div>`;
+                }).join("")}</div>
                 ${item.answer ? `<div class="mcq-answer"><span class="manual-label">Correct Answer:</span> ${htmlEscape(item.answer)}</div>` : ""}
                 ${item.explanation ? `<div class="mcq-explanation"><span class="manual-label">Explanation:</span> ${htmlEscape(item.explanation)}</div>` : ""}
               </article>`).join("");
-  return `<h2>${htmlEscape(title)}</h2>
-            <div class="content-box">
+  return `<div class="ca-article-title">
+              <span>Daily Current Affairs Quiz</span>
+              <h2>${htmlEscape(title)}</h2>
+              <p>${htmlEscape([dateText, `${questions.length || 0} Questions`].filter(Boolean).join(" | "))}</p>
+            </div>
+            <div class="ca-quiz-summary">
+              <div><strong>${questions.length || 0}</strong><span>Total Questions</span></div>
+              <div><strong>${questions.length || 0}</strong><span>Total Marks</span></div>
+              <div><strong>15 Min</strong><span>Time</span></div>
+              <div><strong>Hindi/English</strong><span>Language</span></div>
+              <a class="btn apply" href="#mcqPanel">Start Quiz</a>
+              <a class="btn notification" href="../../current-affairs.html">Current Affairs List</a>
+            </div>
+            ${intro || categoryText || sourceDateNote ? `<div class="content-box ca-intro-box">
               ${intro ? `<p>${htmlEscape(intro)}</p>` : ""}
-              ${dateText ? `<p><strong class="manual-label">Date:</strong> ${htmlEscape(dateText)}</p>` : ""}
               ${categoryText ? `<p><strong class="manual-label">Category:</strong> ${htmlEscape(categoryText)}</p>` : ""}
               <p><strong class="manual-label">Source/Date Note:</strong> ${htmlEscape(sourceDateNote)}</p>
-            </div>
+            </div>` : ""}
             ${newsItems.length ? `<section class="panel">
               <h2>समाचार</h2>
               <div class="content-box">${renderCurrentAffairsNewsHtml(newsItems)}</div>
@@ -359,16 +382,7 @@ const renderCurrentAffairsFallbackHtml = (job = {}, title = "Current Affairs", d
               <h2>Questions</h2>
               <div class="content-box"><div class="mcq-list">${questionHtml}</div></div>
             </section>` : ""}
-            <section class="panel">
-              <h2>More Current Affairs</h2>
-              <div class="community-actions">
-                <a class="btn whatsapp" href="https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q" target="_blank" rel="noopener noreferrer">Join WhatsApp Channel</a>
-                <a class="btn whatsapp" href="https://wa.me/919509453441" target="_blank" rel="noopener noreferrer">WhatsApp +91 9509453441</a>
-                <a class="btn whatsapp" href="https://wa.me/918505090384" target="_blank" rel="noopener noreferrer">WhatsApp +91 8505090384</a>
-                <a class="btn" href="../../current-affairs.html">Related Current Affairs</a>
-                <a class="btn" href="../../mock-test.html">Mock Test</a>
-              </div>
-            </section>`;
+            <div class="ca-static-sidebar-seed" data-pdf="${htmlEscape(pdfUrl)}"></div>`;
 };
 
 const isAdmissionPost = (job = {}) => {
@@ -496,6 +510,7 @@ const renderStaticPostHtml = (id = "", job = {}) => {
   const staticPayload = `<script>window.__EMITRA_STATIC_POST__=${JSON.stringify({ id, job: { ...job, slug: seo.slug, canonicalUrl } }).replace(/</g, "\\u003c")};</script>`;
   const currentAffairsStaticStyle = currentAffairs ? `<style>
 body.current-affairs-static #importantPanel,
+body.current-affairs-static #featurePanel,
 body.current-affairs-static #jobInfoPanel,
 body.current-affairs-static #feePanel,
 body.current-affairs-static #agePanel,
@@ -504,7 +519,8 @@ body.current-affairs-static #eligibilityPanel,
 body.current-affairs-static #selectionPanel,
 body.current-affairs-static #applyProcessPanel,
 body.current-affairs-static #linksPanel,
-body.current-affairs-static #jobToolsPanel{display:none;}
+body.current-affairs-static #jobToolsPanel,
+body.current-affairs-static #communityPanel{display:none;}
 </style>` : "";
   const html = fs.readFileSync(JOB_DETAIL_PATH, "utf8")
     .replace(/<head>/i, "<head>\n<base href=\"../../\">")
@@ -521,7 +537,7 @@ body.current-affairs-static #jobToolsPanel{display:none;}
     .replace(/<h2 id="sheetTitle">[\s\S]*?<\/h2>/i, admissionPost ? `<h2 id="sheetTitle">Admission Update</h2>` : `<h2 id="sheetTitle">${currentAffairs ? "Current Affairs" : "Job Update"}</h2>`)
     .replace(/<h1 id="jobTitle">[\s\S]*?<\/h1>/i, `<h1 id="jobTitle">${htmlEscape(seo.title)}</h1>`)
     .replace(/<p id="jobIntro">[\s\S]*?<\/p>/i, `<p id="jobIntro">${htmlEscape(seo.metaDescription)}</p>`)
-    .replace(/<aside class="detail-sidebar"/i, currentAffairs ? `<aside class="detail-sidebar" style="display:none;"` : `<aside class="detail-sidebar"`)
+    .replace(/<aside class="detail-sidebar"/i, `<aside class="detail-sidebar"`)
     .replace(/<script type="module">/i, `${staticPayload}\n<script type="module">`)
     .replace(/<section class="panel" id="seoFallbackPanel">[\s\S]*?<\/section>/i, `<section class="panel" id="seoFallbackPanel">\n          ${fallbackHtml}\n        </section>`);
   return resolveMergeConflictMarkers(html);
