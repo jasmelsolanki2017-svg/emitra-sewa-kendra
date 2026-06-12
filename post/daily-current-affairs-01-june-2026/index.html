@@ -203,6 +203,7 @@ main{max-width:1180px;margin:auto;padding:26px 3% 42px;}
 .ca-sidebar-actions .btn.pdf{background:#ffc400;color:#061b3a;}
 .ca-sidebar-actions .btn.whatsapp{background:#128c3c;}
 .ca-sidebar-actions .btn.dark{background:#06285d;color:#fff;}
+.ca-pdf-rendering .ca-quiz-summary .btn{display:none!important;}
 .content-table{width:100%;border-collapse:collapse;font-size:14px;margin:10px 0 2px;}
 .content-table th,.content-table td{border:1px solid #d8e5f3;padding:9px 10px;text-align:left;vertical-align:middle;color:#1f2937;}
 .content-table th{font-weight:900;background:#f1f7ff;color:var(--deep);}
@@ -1034,6 +1035,7 @@ const loadScriptOnce = (src = "") => new Promise((resolve, reject) => {
 window.downloadCurrentAffairsPdf = async (fileName = "daily-current-affairs.pdf") => {
   const button = window.event?.currentTarget;
   const oldText = button ? button.innerHTML : "";
+  let pdfSource = null;
   try{
     if(button){
       button.disabled = true;
@@ -1042,14 +1044,10 @@ window.downloadCurrentAffairsPdf = async (fileName = "daily-current-affairs.pdf"
     await loadScriptOnce("https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js");
     const source = document.querySelector(".detail-sheet");
     if(!source || !window.html2pdf){ throw new Error("PDF generator load nahi hua"); }
-    const clone = source.cloneNode(true);
-    clone.querySelectorAll("button,a.btn").forEach((node) => {
-      if(/Current Affairs List|Start Quiz|Daily PDF Download/i.test(node.textContent || "")){ node.remove(); }
-    });
-    clone.style.width = "760px";
-    clone.style.maxWidth = "760px";
-    clone.style.boxShadow = "none";
-    clone.style.border = "1px solid #d9e7f7";
+    pdfSource = source;
+    if(document.fonts?.ready){ await document.fonts.ready; }
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    source.classList.add("ca-pdf-rendering");
     await window.html2pdf().set({
       margin: [8, 8, 8, 8],
       filename: fileName || "daily-current-affairs.pdf",
@@ -1057,11 +1055,12 @@ window.downloadCurrentAffairsPdf = async (fileName = "daily-current-affairs.pdf"
       html2canvas: { scale:2, useCORS:true, backgroundColor:"#ffffff" },
       jsPDF: { unit:"mm", format:"a4", orientation:"portrait" },
       pagebreak: { mode:["css", "legacy"] }
-    }).from(clone).save();
+    }).from(source).save();
   }catch(error){
     console.warn(error);
     window.print();
   }finally{
+    if(pdfSource){ pdfSource.classList.remove("ca-pdf-rendering"); }
     if(button){
       button.disabled = false;
       button.innerHTML = oldText;
