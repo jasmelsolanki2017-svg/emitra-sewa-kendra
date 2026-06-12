@@ -2917,10 +2917,10 @@ Important Links
   <div class="home-job-list" id="homeJobList">
     <!-- SEO_LATEST_JOBS_START -->
     <article class="home-job-card">
-      <span>Latest Jobs</span>
+      <span>Online Form</span>
       <h3><a href="post/rpsc-apo-recruitment-2026-371-posts/" target="_blank" rel="noopener noreferrer">RPSC Assistant Prosecution Officer APO Recruitment 2026 Online Form for 371 Posts</a></h3>
       <p>Last Date: <span class="last-date">Update Soon</span></p>
-      <p>Location: All India</p>
+      <p>Location: Rajasthan</p>
       <a href="post/rpsc-apo-recruitment-2026-371-posts/" target="_blank" rel="noopener noreferrer">View Details</a>
     </article>
     <article class="home-job-card">
@@ -4295,7 +4295,7 @@ return suffix ? `${base}-${suffix}` : base;
 const canonicalPostHref = (id, job = {}) => `post/${encodeURIComponent(buildCanonicalSlug(id, job))}/`;
 const premiumPostHref = (job = {}) => {
 const slug = String(job.premiumPostSlug || (job.isPremiumPost ? job.slug : "") || "").trim();
-return slug ? `premium-post.html?slug=${encodeURIComponent(slug)}` : "";
+return slug ? `post/${encodeURIComponent(slug)}/` : "";
 };
 const portalItemHref = (item, category = "") => {
 if(!item){ return "#"; }

@@ -8,6 +8,7 @@ const SITEMAP_PATH = path.join(__dirname, "..", "sitemap.xml");
 const JOB_SITEMAP_PATH = path.join(__dirname, "..", "sitemap-jobs.xml");
 const INDEX_PATH = path.join(__dirname, "..", "index.html");
 const JOB_DETAIL_PATH = path.join(__dirname, "..", "job-detail.html");
+const PREMIUM_POST_PATH = path.join(__dirname, "..", "premium-post.html");
 const NOT_FOUND_PATH = path.join(__dirname, "..", "404.html");
 const POST_ROOT = path.join(__dirname, "..", "post");
 
@@ -120,6 +121,8 @@ const jobUrl = (id, job = {}) => {
   const slug = String(job.slug || buildSlug(job.title, id)).trim();
   return `${SITE_BASE_URL}/post/${encodeURIComponent(slug)}/`;
 };
+
+const isPremiumPost = (job = {}) => Boolean(job.isPremiumPost || job.premiumPostSlug || job.premiumPostData);
 
 const sitemapEntry = ({ loc, lastmod, changefreq = "daily", priority = "0.8" }) => `  <url>
     <loc>${xmlEscape(loc)}</loc>
@@ -272,6 +275,48 @@ const buildSchemaGraph = ({ id = "", job = {}, canonicalUrl = "" }) => {
       } : null
     ].filter(Boolean)
   };
+};
+
+const normalizePremiumFaqItems = (job = {}) => normalizeFaqItems(job.faqs || job.faq);
+
+const buildPremiumSchemaGraph = ({ id = "", job = {}, canonicalUrl = "" }) => {
+  const seo = buildSeoFields(job, id);
+  const publisher = { "@type": "Organization", "name": "E-MITRA WALA", "url": `${SITE_BASE_URL}/` };
+  const faqItems = normalizePremiumFaqItems(job);
+  const graph = [
+    {
+      "@type": "BreadcrumbList",
+      "@id": `${canonicalUrl}#breadcrumb`,
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": `${SITE_BASE_URL}/` },
+        { "@type": "ListItem", "position": 2, "name": "Latest Jobs", "item": `${SITE_BASE_URL}/job-form.html` },
+        { "@type": "ListItem", "position": 3, "name": seo.title, "item": canonicalUrl }
+      ]
+    },
+    {
+      "@type": "Article",
+      "@id": `${canonicalUrl}#article`,
+      "headline": seo.title,
+      "description": seo.metaDescription,
+      "url": canonicalUrl,
+      "mainEntityOfPage": canonicalUrl,
+      "datePublished": isoDateOrUndefined(job.createdAt),
+      "dateModified": isoDateOrUndefined(job.updatedAt) || isoDateOrUndefined(job.createdAt),
+      "publisher": publisher
+    }
+  ];
+  if (faqItems.length) {
+    graph.push({
+      "@type": "FAQPage",
+      "@id": `${canonicalUrl}#faq`,
+      "mainEntity": faqItems.map((item) => ({
+        "@type": "Question",
+        "name": item.question,
+        "acceptedAnswer": { "@type": "Answer", "text": item.answer }
+      }))
+    });
+  }
+  return { "@context": "https://schema.org", "@graph": graph };
 };
 
 const getCurrentAffairsQuestions = (job = {}) => {
@@ -595,6 +640,9 @@ a{text-decoration:none;color:inherit}
 const renderStaticPostHtml = (id = "", job = {}) => {
   const seo = buildSeoFields(job, id);
   const canonicalUrl = seo.canonicalUrl || jobUrl(id, { ...job, slug: seo.slug });
+  if (isPremiumPost(job)) {
+    return renderPremiumStaticPostHtml(id, { ...job, slug: seo.slug, canonicalUrl });
+  }
   const currentAffairs = isCurrentAffairsPost(job);
   if (currentAffairs) {
     return resolveMergeConflictMarkers(renderCurrentAffairsPremiumHtml({ id, job: { ...job, slug: seo.slug, canonicalUrl }, seo, canonicalUrl }));
@@ -672,6 +720,29 @@ const renderStaticPostHtml = (id = "", job = {}) => {
   return resolveMergeConflictMarkers(html);
 };
 
+const renderPremiumStaticPostHtml = (id = "", job = {}) => {
+  const seo = buildSeoFields(job, id);
+  const canonicalUrl = seo.canonicalUrl || jobUrl(id, { ...job, slug: seo.slug });
+  const payload = {
+    ...job,
+    slug: seo.slug,
+    canonicalUrl,
+    seo: {
+      ...(job.seo && typeof job.seo === "object" ? job.seo : {}),
+      metaTitle: seo.seoTitle,
+      metaDescription: seo.metaDescription
+    }
+  };
+  const staticPayload = `<script>window.__EMITRA_STATIC_PREMIUM_POST__=${JSON.stringify(payload).replace(/</g, "\\u003c")};</script>`;
+  const schema = `<script type="application/ld+json" data-schema="premium-static">\n${JSON.stringify(buildPremiumSchemaGraph({ id, job: payload, canonicalUrl }), null, 2)}\n</script>`;
+  return resolveMergeConflictMarkers(fs.readFileSync(PREMIUM_POST_PATH, "utf8")
+    .replace(/<head>/i, "<head>\n<base href=\"../../\">")
+    .replace(/<title>[\s\S]*?<\/title>/i, `<title>${htmlEscape(seo.seoTitle)}</title>`)
+    .replace(/<meta name="description" content="[^"]*">/i, `<meta name="description" content="${htmlEscape(seo.metaDescription)}">`)
+    .replace(/<link rel="canonical" href="[^"]*">/i, `<link rel="canonical" href="${htmlEscape(canonicalUrl)}">`)
+    .replace(/<script type="module">/i, `${schema}\n${staticPayload}\n<script type="module">`));
+};
+
 const removeDynamicJobEntries = (xml = "") => String(xml || "")
   .replace(/\s*<url>\s*<loc>https?:\/\/[^<]+\/job-detail\.html<\/loc>[\s\S]*?<\/url>/g, "")
   .replace(/\s*<url>\s*<loc>https?:\/\/[^<]+\/job-detail\.html\?id=[\s\S]*?<\/url>/g, "")
@@ -712,7 +783,18 @@ const postQualityText = (job = {}) => [
   job.applicationFeeManual,
   job.ageLimitManual,
   job.vacancyDetailsManual,
+  job.vacancyDetails,
+  job.vacancy,
   job.eligibilityManual,
+  job.eligibility,
+  job.overview,
+  job.applicationFee,
+  job.ageLimit,
+  job.selectionProcess,
+  job.examPattern,
+  job.documentsRequired,
+  job.howToApply,
+  job.importantLinks,
   job.pageContent,
   job.contentText,
   Array.isArray(job.intro) ? job.intro.join(" ") : "",
@@ -732,8 +814,9 @@ const getPostQuality = (id = "", job = {}) => {
   const hasUsefulJobStructure = [
     job.shortInfo || job.metaDescription,
     job.lastApplyDate || job.lastDate || job.importantDatesManual || job.importantDates,
-    job.qualification || job.eligibilityManual,
+    job.qualification || job.eligibilityManual || job.eligibility,
     job.applyLink || job.detailLink || job.officialWebsite || job.importantLinks,
+    job.overview || job.vacancyDetails || job.vacancy,
     job.faq || job.faqs
   ].filter((value) => {
     if (Array.isArray(value)) return value.length > 0;
@@ -812,6 +895,46 @@ const portalItemToJobRow = (category = "", id = "", item = {}) => {
       updatedAt: now
     }
   };
+};
+
+const normalizePremiumPostMap = (premiumPosts = {}) => {
+  const map = new Map();
+  Object.entries(premiumPosts || {}).forEach(([key, value]) => {
+    if (!value || typeof value !== "object") return;
+    const slug = String(value.slug || key || "").trim();
+    if (!slug) return;
+    map.set(slug.toLowerCase(), { ...value, slug });
+  });
+  return map;
+};
+
+const enrichPremiumRows = (rows = [], premiumPosts = {}) => {
+  const premiumBySlug = normalizePremiumPostMap(premiumPosts);
+  return rows.map((row) => {
+    const job = row.job || {};
+    if (!isPremiumPost(job)) return row;
+    const slug = String(job.premiumPostSlug || job.slug || "").trim();
+    const premium = premiumBySlug.get(slug.toLowerCase());
+    if (!premium) return row;
+    return {
+      id: row.id,
+      job: {
+        ...premium,
+        slug: premium.slug || slug,
+        title: premium.title || job.title,
+        postTarget: job.postTarget || premium.postTarget,
+        postStatus: job.postStatus || premium.status || "published",
+        status: premium.status || job.postStatus || "published",
+        displayOrder: job.displayOrder || premium.displayOrder,
+        createdAt: premium.createdAt || job.createdAt,
+        updatedAt: premium.updatedAt || job.updatedAt,
+        isPremiumPost: true,
+        premiumPostSlug: premium.slug || slug,
+        canonicalUrl: jobUrl(row.id, { ...job, slug: premium.slug || slug }),
+        detailLink: jobUrl(row.id, { ...job, slug: premium.slug || slug })
+      }
+    };
+  });
 };
 
 const buildAllStaticRows = (latestRows = [], portalData = {}) => {
@@ -981,9 +1104,11 @@ const patch404SlugMatching = () => {
 async function main() {
   const sitemapXml = removeDynamicJobEntries(fs.readFileSync(SITEMAP_PATH, "utf8")).trim();
   const jobs = await fetchJson(`${FIREBASE_URL}/LatestJobs.json`);
+  const premiumPosts = await fetchJson(`${FIREBASE_URL}/premiumPosts.json`).catch(() => ({}));
   const portalData = await fetchJson(`${FIREBASE_URL}/portalItems.json`).catch(() => ({}));
   const latestRows = Object.entries(jobs || {})
     .map(([id, value]) => ({ id, job: normalizeJob(value) }))
+    .map((row) => enrichPremiumRows([row], premiumPosts)[0])
     .filter((row) => isPublishedJob(row.job) && isUsefulPublishedPost(row));
   const rows = buildAllStaticRows(latestRows, portalData);
   const sitemapRows = [...rows, ...readExistingStaticPostRows(rows)].filter(isUsefulPublishedPost);

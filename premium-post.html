@@ -446,7 +446,7 @@
     }
     function renderRelated(value){
       const arr=arrayify(value);
-      return `<div class="related-grid">${arr.map(item=>{const title=item.title||item.name||"Related Post";const url=safeUrl(item.url||item.link||`premium-post.html?slug=${encodeURIComponent(item.slug||"")}`)||"#";return `<a class="related-card" href="${escapeHTML(url)}"><strong>${escapeHTML(title)}</strong><span>${escapeHTML(item.shortInfo||item.category||"Premium update")}</span></a>`}).join("")}</div>`;
+      return `<div class="related-grid">${arr.map(item=>{const title=item.title||item.name||"Related Post";const fallback=item.slug?`post/${encodeURIComponent(item.slug)}/`:"";const url=safeUrl(item.url||item.link||fallback)||"#";return `<a class="related-card" href="${escapeHTML(url)}"><strong>${escapeHTML(title)}</strong><span>${escapeHTML(item.shortInfo||item.category||"Premium update")}</span></a>`}).join("")}</div>`;
     }
     function renderSection(data,key){
       const value=getSection(data,key);
@@ -468,7 +468,7 @@
       const seo=data.seo||{},title=seo.metaTitle||data.title||"Premium Post";
       document.title=`${title} | E-MITRA WALA`;
       document.querySelector("meta[name='description']")?.setAttribute("content",String(seo.metaDescription||data.shortInfo||data.description||title).slice(0,160));
-      const canonical=`${location.origin}${location.pathname}${data.slug?`?slug=${encodeURIComponent(data.slug)}`:""}`;
+      const canonical=data.canonicalUrl||`${location.origin}${location.pathname}${data.slug?`?slug=${encodeURIComponent(data.slug)}`:""}`;
       document.querySelector("link[rel='canonical']")?.setAttribute("href",canonical);
       document.querySelectorAll("script[data-schema='premium']").forEach(s=>s.remove());
       addSchema({"@context":"https://schema.org","@type":"Article",headline:data.title||title,description:seo.metaDescription||data.shortInfo||data.description||title,url:canonical,datePublished:data.createdAt?new Date(data.createdAt).toISOString():undefined,dateModified:data.updatedAt?new Date(data.updatedAt).toISOString():undefined,publisher:{"@type":"Organization",name:"E-MITRA WALA",url:location.origin+"/"}});
@@ -534,6 +534,11 @@
       root.innerHTML='<div class="message">पोस्ट लोड होने में समय लग रहा है, कृपया refresh करें.</div>';
     }
     async function loadWithCache(){
+      const staticPost=window.__EMITRA_STATIC_PREMIUM_POST__;
+      if(staticPost&&isFilled(staticPost)){
+        renderPremiumPost(staticPost);
+        return;
+      }
       if(!requestedSlug||requestedSlug===samplePremiumPost.slug){
         renderPremiumPost(samplePremiumPost);
         return;
