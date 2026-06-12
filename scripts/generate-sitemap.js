@@ -294,7 +294,9 @@ const getCurrentAffairsQuestions = (job = {}) => {
       .filter(Boolean);
     const answer = String(item.correctAnswer || item.answer || item.correct || item.correct_option || "").trim();
     const explanation = String(item.explanation || item.reason || item.solution || "").trim();
-    return question && options.length ? { question, options, answer, explanation } : null;
+    const category = String(item.category || item.topic || item.subject || item.tag || "").trim();
+    const image = String(item.image || item.imageUrl || item.thumbnail || item.photo || "").trim();
+    return question && options.length ? { question, options, answer, explanation, category, image } : null;
   }).filter(Boolean);
 };
 
@@ -484,10 +486,119 @@ const renderAdmissionFallbackHtml = (job = {}, title = "Admission Update", descr
             <p><a class="auto-link" href="${htmlEscape(canonicalUrl)}">Canonical admission detail link</a> | <a class="auto-link" href="../../job-form.html">All Updates</a></p>`;
 };
 
+const currentAffairsPdfUrl = (job = {}) => {
+  const article = job.advancedArticleData && typeof job.advancedArticleData === "object" ? job.advancedArticleData : {};
+  const content = job.content && typeof job.content === "object" && !Array.isArray(job.content) ? job.content : {};
+  const direct = [
+    job.pdfLink, job.pdfUrl, job.currentAffairsPdf, job.currentAffairsPdfUrl, job.dailyPdf, job.dailyPdfUrl,
+    job.downloadPdf, job.downloadPdfUrl, job.pdfDownloadUrl, content.pdfLink, content.pdfUrl,
+    article.pdfLink, article.pdfUrl, article.currentAffairsPdf, article.dailyPdf, article.downloadPdfUrl
+  ].map((value) => String(value || "").trim()).find((value) => /^https?:\/\//i.test(value) || /\.pdf(?:$|[?#])/i.test(value));
+  if (direct) return direct;
+  const links = [job.importantLinks, job.links, content.importantLinks, content.links, article.importantLinks, article.links]
+    .flatMap((items) => Array.isArray(items) ? items : []);
+  const match = links.find((item) => {
+    if (!item || typeof item !== "object") return false;
+    const label = String(item.label || item.title || item.name || item.text || "").toLowerCase();
+    const url = String(item.url || item.href || item.link || "").trim();
+    return url && (/pdf|download|डाउनलोड/.test(label) || /\.pdf(?:$|[?#])/i.test(url));
+  });
+  return match ? String(match.url || match.href || match.link || "").trim() : "";
+};
+
+const renderCurrentAffairsPremiumHtml = ({ id = "", job = {}, seo = {}, canonicalUrl = "" }) => {
+  const title = seo.title || textValue(job.title, "hi") || "Today Current Affairs";
+  const description = seo.metaDescription || "Daily current affairs questions, answers and explanations.";
+  const dateText = String(job.postDate || job.date || job.content?.date || job.currentAffairsData?.date || job.currentAffairsData?.["तारीख"] || "").trim();
+  const displayDate = (dateText || title.replace(/.*?(\d{1,2}\s+[A-Za-z]+\s+\d{4}).*/i, "$1") || "").toUpperCase();
+  const questions = getCurrentAffairsQuestions(job);
+  const pdfUrl = currentAffairsPdfUrl(job);
+  const pdfButton = pdfUrl
+    ? `<a class="ca-yellow-btn" href="${htmlEscape(pdfUrl)}" download target="_blank" rel="noopener noreferrer">DOWNLOAD PDF <i class="fa-solid fa-download"></i></a>`
+    : `<button class="ca-yellow-btn" type="button" onclick="window.print()">DOWNLOAD PDF <i class="fa-solid fa-download"></i></button>`;
+  const categories = ["All", "National", "International", "Rajasthan", "Sports", "Awards", "Science & Tech", "Economy"];
+  const categoryColor = (category = "") => {
+    const key = category.toLowerCase();
+    if (/sport/.test(key)) return "sports";
+    if (/science|tech/.test(key)) return "science";
+    if (/international/.test(key)) return "international";
+    return "national";
+  };
+  const questionCards = questions.map((item, index) => {
+    const category = item.category || (index % 4 === 1 ? "Sports" : index % 4 === 2 ? "International" : index % 4 === 3 ? "Science & Tech" : "National");
+    return `<article class="ca-question-card">
+      <div class="ca-qnum">Q${index + 1}</div>
+      <div class="ca-question-body">
+        <div class="ca-card-head"><h2>${htmlEscape(item.question)}</h2><span class="ca-badge ${categoryColor(category)}">${htmlEscape(category)}</span></div>
+        ${[item.answer ? `<p class="ca-answer">उत्तर: ${htmlEscape(item.answer)}</p>` : "", item.explanation ? `<p class="ca-explain">${htmlEscape(item.explanation)}</p>` : ""].filter(Boolean).join("")}
+      </div>
+      <div class="ca-thumb">${item.image ? `<img src="${htmlEscape(item.image)}" alt="" loading="lazy">` : `<div class="ca-thumb-placeholder"><i class="fa-solid fa-newspaper"></i></div>`}</div>
+    </article>`;
+  }).join("");
+  const monthRows = [dateText || "Today", "11 June 2026", "10 June 2026", "09 June 2026", "08 June 2026"];
+  const schema = JSON.stringify(buildSchemaGraph({ id, job, canonicalUrl }), null, 2);
+  return `<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${htmlEscape(seo.seoTitle || `${title} | EMITRAWALA.ONLINE`)}</title>
+<meta name="description" content="${htmlEscape(description)}">
+<meta name="robots" content="index,follow">
+<meta property="og:type" content="article">
+<meta property="og:title" content="${htmlEscape(seo.seoTitle || title)}">
+<meta property="og:description" content="${htmlEscape(description)}">
+<meta property="og:url" content="${htmlEscape(canonicalUrl)}">
+<meta name="twitter:card" content="summary">
+<link rel="canonical" href="${htmlEscape(canonicalUrl)}">
+<link rel="icon" type="image/png" sizes="512x512" href="../../favicon.png">
+<link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script type="application/ld+json" id="jobSchemaJsonLd">
+${schema}
+</script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body.current-affairs-static{font-family:'Poppins','Noto Sans Devanagari',sans-serif;background:#fffdf7;color:#111827;line-height:1.55}
+a{text-decoration:none;color:inherit}
+.ca-top{background:#05295d;color:#fff}
+.ca-top-inner{max-width:1220px;margin:auto;display:grid;grid-template-columns:330px 1fr 210px;gap:24px;align-items:center;padding:20px 24px}
+.ca-logo{font-size:32px;font-weight:900;line-height:1}.ca-logo span{color:#ffc400}.ca-tagline{font-size:13px;font-weight:600;margin-top:4px}
+.ca-search{display:flex}.ca-search input{width:100%;height:46px;border:0;border-radius:7px 0 0 7px;padding:0 18px;font-size:14px}.ca-search button{width:96px;border:0;background:#ffc400;color:#061b3a;border-radius:0 7px 7px 0;font-weight:900}
+.ca-telegram{display:flex;align-items:center;gap:12px;font-weight:800}.ca-telegram i{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:#1da1f2;font-size:23px}.ca-telegram small{display:block;font-weight:600}
+.ca-menu{background:#05245a;border-top:1px solid rgba(255,255,255,.12);border-bottom:3px solid #ffc400}.ca-menu ul{max-width:1220px;margin:auto;display:flex;list-style:none}.ca-menu a{display:block;color:#fff;padding:16px 22px;font-weight:800;font-size:14px}.ca-menu .active a{background:#ffc400;color:#061b3a}
+.ca-wrap{max-width:1220px;margin:auto;padding:22px 24px 0}.ca-grid{display:grid;grid-template-columns:minmax(0,70%) minmax(280px,30%);gap:22px;align-items:start}
+.ca-hero{text-align:center;margin-bottom:20px}.ca-hero h1{font-size:40px;line-height:1.15;color:#072b61;font-weight:900}.ca-hero .date{display:block;color:#c5161d;font-size:36px}.ca-hero p{font-size:16px;margin-top:8px}
+.ca-content-search{display:flex;margin:18px auto 20px;max-width:680px}.ca-content-search input{height:48px;border:1px solid #cbd5e1;border-radius:8px 0 0 8px;padding:0 18px;font-size:16px;flex:1}.ca-content-search button{width:110px;border:0;border-radius:0 8px 8px 0;background:#072b61;color:#fff;font-weight:900}
+.ca-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}.ca-tabs span{border:1px solid #f3c747;background:#fff9df;border-radius:8px;padding:9px 13px;font-size:13px;font-weight:800;color:#061b3a}.ca-tabs span:first-child{background:#072b61;color:#fff;border-color:#072b61}
+.ca-question-list{display:grid;gap:12px}.ca-question-card{display:grid;grid-template-columns:58px minmax(0,1fr) 170px;gap:12px;align-items:start;background:#fff;border:1px solid #d7dee8;border-radius:9px;padding:16px;box-shadow:0 4px 16px rgba(7,43,97,.05)}
+.ca-qnum{width:50px;height:50px;border-radius:50%;background:#072b61;color:#fff;display:grid;place-items:center;font-size:18px;font-weight:900}.ca-card-head{display:flex;gap:10px;justify-content:space-between;align-items:flex-start}.ca-card-head h2{font-size:20px;line-height:1.35;color:#172033;font-weight:900}
+.ca-answer{color:#137433;font-weight:900;margin:15px 0 8px}.ca-explain{font-size:15px;color:#111827;white-space:pre-line}.ca-badge{border-radius:6px;padding:5px 9px;font-size:12px;font-weight:900;white-space:nowrap}.ca-badge.national{background:#e6f6df;color:#1f6a28}.ca-badge.sports{background:#ffe9d8;color:#e23519}.ca-badge.international{background:#e4f0ff;color:#0642a3}.ca-badge.science{background:#f0dcff;color:#5d1580}
+.ca-thumb{width:170px;height:100px;border-radius:7px;overflow:hidden;align-self:center;background:#eef4fb}.ca-thumb img{width:100%;height:100%;object-fit:cover}.ca-thumb-placeholder{height:100%;display:grid;place-items:center;color:#7a8aa0;font-size:36px;background:linear-gradient(135deg,#eef4fb,#fff)}
+.ca-more{display:flex;justify-content:center;margin:16px 0 24px}.ca-blue-btn,.ca-yellow-btn{border:0;border-radius:7px;font-weight:900;display:inline-flex;align-items:center;justify-content:center;gap:10px;cursor:pointer}.ca-blue-btn{background:#072b61;color:#fff;padding:12px 34px}.ca-yellow-btn{background:#ffc400;color:#061b3a;padding:12px 26px}
+.ca-side{display:grid;gap:16px}.ca-side-box{border:1px solid #cbd5e1;border-radius:9px;background:#fff;overflow:hidden}.ca-side-box h3{background:#072b61;color:#fff;text-align:center;padding:11px 12px;font-size:18px}.quiz-body{display:grid;grid-template-columns:72px 1fr;gap:18px;align-items:center;padding:22px 28px}.quiz-icon{font-size:58px;color:#072b61}.quiz-meta p{display:flex;justify-content:space-between;font-weight:700;margin:4px 0}.quiz-action{padding:0 28px 20px}.quiz-action .ca-yellow-btn{width:100%;font-size:20px}
+.pdf-body{display:grid;grid-template-columns:76px 1fr;gap:18px;align-items:center;padding:20px 28px}.pdf-icon{font-size:58px;color:#e52525}.pdf-body strong{color:#072b61;text-transform:uppercase}.pdf-body .ca-yellow-btn{grid-column:1/3;width:100%;margin-top:6px}
+.month-list a,.important-list a{display:flex;align-items:center;gap:12px;border-bottom:1px solid #edf0f4;padding:11px 22px;font-size:14px;font-weight:700}.month-list a i,.important-list a i{color:#072b61;width:20px;text-align:center}.month-title{text-align:center;background:#f7f7f7;color:#072b61;font-weight:900;padding:11px}
+.view-all{display:flex;justify-content:center;padding:12px}.features{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:24px 0 18px}.feature{display:grid;grid-template-columns:58px 1fr;gap:12px;align-items:center;background:#fff8dd;border:1px solid #f3c747;border-radius:7px;padding:14px}.feature i{font-size:34px;color:#072b61;text-align:center}.feature h4{color:#072b61;font-size:16px}.feature p{font-size:12px}
+.ca-footer{background:#05295d;color:#fff;margin-top:0}.footer-grid{max-width:1220px;margin:auto;display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:30px;padding:28px 24px}.ca-footer h2,.ca-footer h3{margin-bottom:12px}.ca-footer h2 span{color:#ffc400}.ca-footer a{display:block;color:#fff;margin:6px 0;font-size:14px}.telegram-btn{display:inline-flex!important;align-items:center;gap:10px;background:#1da1f2;border-radius:24px;padding:10px 22px!important;font-weight:900}.copyright{text-align:center;border-top:1px solid rgba(255,255,255,.15);padding:14px}
+@media(max-width:900px){.ca-top-inner{grid-template-columns:1fr;gap:14px}.ca-menu ul{overflow-x:auto}.ca-menu a{white-space:nowrap;padding:13px 15px}.ca-grid{grid-template-columns:1fr}.ca-hero h1{font-size:30px}.ca-hero .date{font-size:28px}.ca-question-card{grid-template-columns:48px 1fr}.ca-thumb{grid-column:2;width:100%;height:150px}.features,.footer-grid{grid-template-columns:1fr}.quiz-body,.pdf-body{grid-template-columns:64px 1fr}}
+@media print{.ca-top,.ca-menu,.ca-side,.features,.ca-footer,.ca-content-search,.ca-tabs,.ca-more{display:none!important}.ca-wrap{padding:0}.ca-grid{display:block}.ca-question-card{break-inside:avoid}}
+</style>
+</head>
+<body class="current-affairs-static">
+<header class="ca-top"><div class="ca-top-inner"><div><div class="ca-logo">EMITRAWALA.<span>ONLINE</span></div><div class="ca-tagline">SARKARI RESULT, ADMIT CARD, JOBS & MORE</div></div><form class="ca-search" action="../../job-form.html"><input type="search" placeholder="Search for Jobs, Results, Admit Card...."><button>Search</button></form><a class="ca-telegram" href="https://t.me/" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-telegram"></i><span>Join Telegram<small>Stay Updated</small></span></a></div><nav class="ca-menu"><ul><li><a href="../../index.html">HOME</a></li><li><a href="../../job-form.html">LATEST JOBS</a></li><li><a href="../../job-form.html">ADMIT CARD</a></li><li><a href="../../job-form.html">RESULT</a></li><li><a href="../../job-form.html">ANSWER KEY</a></li><li class="active"><a href="../../current-affairs.html">CURRENT AFFAIRS</a></li><li><a href="../../job-form.html">SYLLABUS</a></li><li><a href="../../contact.html">CONTACT US</a></li></ul></nav></header>
+<main class="ca-wrap"><div class="ca-grid"><section><div class="ca-hero"><h1>TODAY'S CURRENT AFFAIRS <span class="date">${htmlEscape(displayDate || "DAILY UPDATE")}</span></h1><p>Stay Updated with Daily Current Affairs for All Competitive Exams</p></div><form class="ca-content-search"><input type="search" placeholder="Search in Current Affairs..."><button>Search</button></form><div class="ca-tabs">${categories.map((cat) => `<span>${htmlEscape(cat)}</span>`).join("")}</div><div class="ca-question-list">${questionCards || `<div class="ca-question-card"><div class="ca-qnum">Q1</div><div class="ca-question-body"><div class="ca-card-head"><h2>${htmlEscape(title)}</h2></div><p class="ca-explain">${htmlEscape(description)}</p></div></div>`}</div><div class="ca-more"><a class="ca-blue-btn" href="../../current-affairs.html">View More Current Affairs <i class="fa-solid fa-chevron-down"></i></a></div></section><aside class="ca-side"><div class="ca-side-box"><h3>DAILY CURRENT AFFAIRS QUIZ</h3><div class="quiz-body"><div class="quiz-icon"><i class="fa-regular fa-clipboard"></i></div><div class="quiz-meta"><p><span>Questions</span><b>: ${questions.length || 0}</b></p><p><span>Marks</span><b>: ${questions.length || 0}</b></p><p><span>Time</span><b>: 15 Min</b></p></div></div><div class="quiz-action"><a class="ca-yellow-btn" href="#quiz">START QUIZ <i class="fa-solid fa-chevron-right"></i></a></div></div><div class="ca-side-box"><h3>DAILY CURRENT AFFAIRS PDF</h3><div class="pdf-body"><div class="pdf-icon"><i class="fa-solid fa-file-pdf"></i></div><strong>${htmlEscape(displayDate || "Daily")}<br>Current Affairs PDF</strong>${pdfButton}</div></div><div class="ca-side-box"><h3>CURRENT AFFAIRS BY MONTH</h3><div class="month-title">JUNE 2026</div><div class="month-list">${monthRows.map((row) => `<a href="../../current-affairs.html"><i class="fa-regular fa-calendar-days"></i>${htmlEscape(row)} <span style="margin-left:auto">›</span></a>`).join("")}</div><div class="view-all"><a class="ca-yellow-btn" href="../../current-affairs.html">VIEW ALL</a></div></div><div class="ca-side-box"><h3>IMPORTANT LINKS</h3><div class="important-list"><a href="../../job-form.html"><i class="fa-solid fa-briefcase"></i>Latest Jobs</a><a href="../../job-form.html"><i class="fa-regular fa-id-card"></i>Admit Card</a><a href="../../job-form.html"><i class="fa-solid fa-chart-simple"></i>Results</a><a href="../../job-form.html"><i class="fa-solid fa-key"></i>Answer Key</a><a href="../../job-form.html"><i class="fa-solid fa-book-open"></i>Syllabus</a><a href="../../contact.html"><i class="fa-solid fa-phone"></i>Contact Us</a></div></div></aside></div><section class="features"><div class="feature"><i class="fa-solid fa-circle-question"></i><div><h4>DAILY QUIZ</h4><p>Participate in Daily Quiz and Test Your Knowledge</p></div></div><div class="feature"><i class="fa-regular fa-file-pdf"></i><div><h4>MONTHLY PDF</h4><p>Download Monthly Current Affairs PDF</p></div></div><div class="feature"><i class="fa-solid fa-rotate"></i><div><h4>UPDATED DAILY</h4><p>We Update Current Affairs Every Single Day</p></div></div><div class="feature"><i class="fa-solid fa-gift"></i><div><h4>100% FREE</h4><p>All Current Affairs Content is Completely Free</p></div></div></section></main><footer class="ca-footer"><div class="footer-grid"><div><h2>EMITRAWALA.<span>ONLINE</span></h2><p>Your Trusted Source for Sarkari Result, Admit Card, Jobs & More.</p></div><div><h3>QUICK LINKS</h3><a href="../../index.html">Home</a><a href="../../about.html">About Us</a><a href="../../privacy-policy.html">Privacy Policy</a><a href="../../terms-and-conditions.html">Terms & Conditions</a></div><div><h3>USEFUL LINKS</h3><a href="../../job-form.html">Latest Jobs</a><a href="../../job-form.html">Admit Card</a><a href="../../job-form.html">Results</a><a href="../../current-affairs.html">Current Affairs</a></div><div><h3>FOLLOW US</h3><p>Join our Telegram Channel for Latest Updates</p><a class="telegram-btn" href="https://t.me/" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-telegram"></i> Join Telegram</a></div></div><div class="copyright">© 2026 Emitrawala.online | All Rights Reserved.</div></footer></body></html>`;
+};
+
 const renderStaticPostHtml = (id = "", job = {}) => {
   const seo = buildSeoFields(job, id);
   const canonicalUrl = seo.canonicalUrl || jobUrl(id, { ...job, slug: seo.slug });
   const currentAffairs = isCurrentAffairsPost(job);
+  if (currentAffairs) {
+    return resolveMergeConflictMarkers(renderCurrentAffairsPremiumHtml({ id, job: { ...job, slug: seo.slug, canonicalUrl }, seo, canonicalUrl }));
+  }
   const admissionPost = isAdmissionPost(job);
   const summaryRows = [
     ["Department", job.department],
