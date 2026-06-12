@@ -366,7 +366,7 @@ const renderCurrentAffairsFallbackHtml = (job = {}, title = "Current Affairs", d
               <div><strong>${questions.length || 0}</strong><span>Total Marks</span></div>
               <div><strong>15 Min</strong><span>Time</span></div>
               <div><strong>Hindi/English</strong><span>Language</span></div>
-              <a class="btn apply" href="#mcqPanel">Start Quiz</a>
+              <a class="btn apply" href="#questionsPanel">Start Quiz</a>
               <a class="btn notification" href="../../current-affairs.html">Current Affairs List</a>
             </div>
             ${intro || categoryText || sourceDateNote ? `<div class="content-box ca-intro-box">
@@ -378,7 +378,7 @@ const renderCurrentAffairsFallbackHtml = (job = {}, title = "Current Affairs", d
               <h2>समाचार</h2>
               <div class="content-box">${renderCurrentAffairsNewsHtml(newsItems)}</div>
             </section>` : ""}
-            ${questions.length ? `<section class="panel">
+            ${questions.length ? `<section class="panel" id="questionsPanel">
               <h2>Questions</h2>
               <div class="content-box"><div class="mcq-list">${questionHtml}</div></div>
             </section>` : ""}
@@ -508,25 +508,10 @@ const renderStaticPostHtml = (id = "", job = {}) => {
               <p><a class="auto-link" href="${htmlEscape(canonicalUrl)}">Canonical job detail link</a> | <a class="auto-link" href="../../job-form.html">All Latest Jobs</a></p>
             </div>`;
   const staticPayload = `<script>window.__EMITRA_STATIC_POST__=${JSON.stringify({ id, job: { ...job, slug: seo.slug, canonicalUrl } }).replace(/</g, "\\u003c")};</script>`;
-  const currentAffairsStaticStyle = currentAffairs ? `<style>
-body.current-affairs-static #importantPanel,
-body.current-affairs-static #featurePanel,
-body.current-affairs-static #jobInfoPanel,
-body.current-affairs-static #feePanel,
-body.current-affairs-static #agePanel,
-body.current-affairs-static #vacancyPanel,
-body.current-affairs-static #eligibilityPanel,
-body.current-affairs-static #selectionPanel,
-body.current-affairs-static #applyProcessPanel,
-body.current-affairs-static #linksPanel,
-body.current-affairs-static #jobToolsPanel,
-body.current-affairs-static #communityPanel{display:none;}
-</style>` : "";
-  const html = fs.readFileSync(JOB_DETAIL_PATH, "utf8")
+  let html = fs.readFileSync(JOB_DETAIL_PATH, "utf8")
     .replace(/<head>/i, "<head>\n<base href=\"../../\">")
     .replace(/<body>/i, currentAffairs ? `<body class="current-affairs-static">` : "<body>")
     .replace(/<title>[\s\S]*?<\/title>/i, `<title>${htmlEscape(seo.seoTitle)}</title>`)
-    .replace(/<\/head>/i, `${currentAffairsStaticStyle}\n</head>`)
     .replace(/<meta name="description" content="[^"]*">/i, `<meta name="description" content="${htmlEscape(seo.metaDescription)}">`)
     .replace(/<meta property="og:title" content="[^"]*">/i, `<meta property="og:title" content="${htmlEscape(seo.seoTitle)}">`)
     .replace(/<meta property="og:description" content="[^"]*">/i, `<meta property="og:description" content="${htmlEscape(seo.metaDescription)}">`)
@@ -537,9 +522,42 @@ body.current-affairs-static #communityPanel{display:none;}
     .replace(/<h2 id="sheetTitle">[\s\S]*?<\/h2>/i, admissionPost ? `<h2 id="sheetTitle">Admission Update</h2>` : `<h2 id="sheetTitle">${currentAffairs ? "Current Affairs" : "Job Update"}</h2>`)
     .replace(/<h1 id="jobTitle">[\s\S]*?<\/h1>/i, `<h1 id="jobTitle">${htmlEscape(seo.title)}</h1>`)
     .replace(/<p id="jobIntro">[\s\S]*?<\/p>/i, `<p id="jobIntro">${htmlEscape(seo.metaDescription)}</p>`)
+    .replace(/<div id="jobMessage" class="message">[\s\S]*?<\/div>/i, currentAffairs ? `<div id="jobMessage" class="message">Current Affairs load ho rahi hain...</div>` : `<div id="jobMessage" class="message">Job details load ho rahi hain...</div>`)
+    .replace(/<p>© 2026 E-MITRA WALA \| Job Details<\/p>/i, currentAffairs ? `<p>© 2026 E-MITRA WALA | Current Affairs</p>` : `<p>© 2026 E-MITRA WALA | Job Details</p>`)
     .replace(/<aside class="detail-sidebar"/i, `<aside class="detail-sidebar"`)
     .replace(/<script type="module">/i, `${staticPayload}\n<script type="module">`)
     .replace(/<section class="panel" id="seoFallbackPanel">[\s\S]*?<\/section>/i, `<section class="panel" id="seoFallbackPanel">\n          ${fallbackHtml}\n        </section>`);
+  if (currentAffairs) {
+    [
+      "featurePanel", "shortInfoPanel", "importantPanel", "jobInfoPanel", "feePanel", "agePanel",
+      "vacancyPanel", "eligibilityPanel", "selectionPanel", "applyProcessPanel", "extraPanel",
+      "linksPanel", "faqPanel", "mcqPanel", "authorPanel", "jobToolsPanel"
+    ].forEach((panelId) => {
+      html = html.replace(new RegExp(`\\n\\s*<section class="panel" id="${panelId}"[\\s\\S]*?<\\/section>`, "i"), "");
+    });
+    html = html.replace(/<aside class="detail-sidebar" aria-label="Job quick links">[\s\S]*?<\/aside>/i, `<aside class="detail-sidebar" aria-label="Current Affairs quick links">
+      <div class="sidebar-card">
+        <h3>Daily Current Affairs PDF</h3>
+        <div class="ca-sidebar-actions">
+          <button class="btn pdf" type="button" onclick="downloadCurrentAffairsPdf('${htmlEscape(seo.slug)}.pdf')"><i class="fa-solid fa-file-pdf"></i> Daily PDF Download</button>
+        </div>
+      </div>
+      <div class="sidebar-card">
+        <h3>Join WhatsApp Channel</h3>
+        <div class="ca-sidebar-actions">
+          <a class="btn whatsapp" href="https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp"></i> Join WhatsApp Channel</a>
+        </div>
+      </div>
+      <div class="sidebar-card">
+        <h3>More Current Affairs</h3>
+        <div class="related-list"><a href="../../current-affairs.html">View All Current Affairs</a></div>
+      </div>
+      <div class="sidebar-card">
+        <h3>Mock Test</h3>
+        <div class="ca-sidebar-actions"><a class="btn dark" href="../../mock-test.html"><i class="fa-solid fa-clipboard-check"></i> Mock Test</a></div>
+      </div>
+    </aside>`);
+  }
   return resolveMergeConflictMarkers(html);
 };
 

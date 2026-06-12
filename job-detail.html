@@ -2210,6 +2210,7 @@ const renderMcqSection = (job = {}) => {
   const mcqBox = document.getElementById("mcqContent");
   const mcqPanel = document.getElementById("mcqPanel");
   const mcqs = normalizeMcqItems(isCurrentAffairsPost(job) ? getCurrentAffairsQuestionSource(job) : job.mcqs);
+  if(!mcqBox || !mcqPanel){ return; }
   if(!mcqs.length){
     mcqBox.innerHTML = "";
     mcqPanel.style.display = "none";
@@ -2269,7 +2270,29 @@ const hidePanels = (ids = []) => ids.forEach((id) => {
   if(panel){ panel.style.display = "none"; }
 });
 
+const removeCurrentAffairsJobPanels = () => [
+  "featurePanel", "shortInfoPanel", "importantPanel", "jobInfoPanel", "feePanel", "agePanel",
+  "vacancyPanel", "eligibilityPanel", "selectionPanel", "applyProcessPanel", "extraPanel",
+  "linksPanel", "faqPanel", "mcqPanel", "authorPanel", "jobToolsPanel"
+].forEach((id) => {
+  const panel = document.getElementById(id);
+  if(panel){ panel.remove(); }
+});
+
+const setPageContextLabel = (label = "Job Details") => {
+  const message = document.getElementById("jobMessage");
+  if(message && /load ho rahi/i.test(message.textContent || "")){
+    message.textContent = label === "Current Affairs" ? "Current Affairs load ho rahi hain..." : "Job details load ho rahi hain...";
+  }
+  const footerText = document.querySelector("footer p");
+  if(footerText && /E-MITRA WALA/i.test(footerText.textContent || "")){
+    footerText.textContent = `© 2026 E-MITRA WALA | ${label}`;
+  }
+};
+
 const renderCurrentAffairsDetail = ({ jobId = "", job = {}, title = "", description = "", canonicalUrl = "", allJobs = [] }) => {
+  const isStaticCurrentAffairs = document.body.classList.contains("current-affairs-static");
+  setPageContextLabel("Current Affairs");
   const introText = Array.isArray(job.intro) ? job.intro.map((item) => String(item || "").trim()).filter(Boolean).join("\n\n") : "";
   const dateText = job.postDate || job.date || job.content?.date || job["तारीख"] || job.currentAffairsData?.["तारीख"] || "";
   const categoryText = job.category || job.content?.category || job["श्रेणी"] || job.currentAffairsData?.["श्रेणी"] || "";
@@ -2286,7 +2309,17 @@ const renderCurrentAffairsDetail = ({ jobId = "", job = {}, title = "", descript
   document.getElementById("sheetTitle").textContent = "Daily Current Affairs Quiz";
   document.getElementById("sheetSubTitle").innerHTML = renderFormattedText(title);
   renderArticleMeta(job);
-  renderAuthorBox(job);
+  if(!isStaticCurrentAffairs){ renderAuthorBox(job); }
+  if(isStaticCurrentAffairs){
+    removeCurrentAffairsJobPanels();
+    renderCurrentAffairsLinks({ currentId:jobId, currentJob:job, allJobs });
+    const fallbackPanel = document.getElementById("seoFallbackPanel");
+    if(fallbackPanel){ fallbackPanel.style.display = "block"; }
+    message.style.display = "none";
+    wrap.style.display = "block";
+    updateArticleWordCount();
+    return;
+  }
   const shortInfoHeading = document.querySelector("#shortInfoPanel h2");
   if(shortInfoHeading){ shortInfoHeading.textContent = "Current Affairs"; }
   renderMetaBadges([
