@@ -7,6 +7,10 @@
   <!-- Updated: overview hides when value is empty, compact overview layout -->
   <meta name="description" content="E-MITRA WALA premium verified update">
   <link rel="canonical" href="https://emitrawala.online/premium-post.html">
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="icon" type="image/png" sizes="512x512" href="favicon.png">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="shortcut icon" href="favicon.ico">
@@ -51,7 +55,26 @@
     .language-bar a{color:#075dcc;text-decoration:none}
     .premium-shell{max-width:1280px;margin:0 auto;padding:22px 18px 90px}
     .message{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:28px;text-align:center;font-weight:900;box-shadow:var(--shadow)}
-    .premium-layout{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:22px;align-items:start}
+    .skeleton-layout{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:22px;align-items:start}
+    .skeleton-main{min-width:0}
+    .skeleton-hero{display:grid;grid-template-columns:36% 1fr;gap:24px;align-items:center;margin-bottom:14px}
+    .skeleton-box,.skeleton-line,.skeleton-card{position:relative;overflow:hidden;background:#e8f0fb;border-radius:9px}
+    .skeleton-box:after,.skeleton-line:after,.skeleton-card:after{content:"";position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.58),transparent);animation:skeletonShimmer 1.2s infinite}
+    .skeleton-media{min-height:260px;border-radius:10px}
+    .skeleton-copy{display:grid;gap:13px}
+    .skeleton-pill{width:142px;height:36px}
+    .skeleton-title{height:48px;max-width:78%}
+    .skeleton-text{height:18px}
+    .skeleton-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:16px 0 14px}
+    .skeleton-action{height:48px}
+    .skeleton-strip{height:54px;margin:14px 0 16px;border-radius:6px}
+    .skeleton-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:16px}
+    .skeleton-summary .skeleton-card{height:76px}
+    .skeleton-sections{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+    .skeleton-section{height:220px}
+    .skeleton-aside{height:620px;border-radius:18px}
+    @keyframes skeletonShimmer{100%{transform:translateX(100%)}}
+    .premium-layout{display:grid;grid-template-columns:minmax(0,7fr) minmax(280px,3fr);gap:22px;align-items:start}
     .premium-main{min-width:0}
     .breadcrumb{font-size:13px;color:#5b6d88;font-weight:800;margin:0 0 14px}
     .breadcrumb a{color:#075dcc}
@@ -110,6 +133,11 @@
     .steps li:before{content:counter(step);position:absolute;top:10px;left:50%;transform:translateX(-50%);display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:#075dcc;color:#fff;font-weight:900}
     .faq-list{display:grid;gap:10px}.faq-item{border:1px solid var(--border);border-radius:8px;background:#fff;overflow:hidden}.faq-item summary{cursor:pointer;padding:13px 15px;font-weight:900;color:#061d4b}.faq-item summary::-webkit-details-marker{display:none}.faq-item summary:after{content:"⌄";float:right;color:#075dcc}.faq-item[open] summary:after{content:"⌃"}.faq-item div{padding:0 15px 15px;color:#20314d;font-weight:700;line-height:1.55}
     .link-grid,.related-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.link-card,.related-card{background:#fff;border:1px solid var(--border);border-radius:8px;padding:14px;min-height:76px;display:flex;flex-direction:column;justify-content:center;gap:5px;box-shadow:0 3px 10px rgba(7,29,70,.05)}.link-card strong,.related-card strong{font-size:14px;color:#071b3f;font-weight:900}.link-card span,.related-card span{font-size:12px;color:#65738a;font-weight:800}.link-card:hover,.related-card:hover{border-color:#075dcc;background:#f6fbff}
+    .region-links-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+    .region-card{background:#fff;border:1px solid #dbeafe;border-radius:8px;padding:12px;box-shadow:0 3px 10px rgba(7,29,70,.05)}
+    .region-card h4{margin:0 0 7px;color:#061d4b;font-size:15px;font-weight:900}
+    .region-card a{display:inline-block;margin:5px 5px 0 0;padding:7px 10px;background:#0057b8;color:#fff;border-radius:6px;text-decoration:none;font-weight:700;font-size:13px}
+    .region-card a:hover{background:#0b9444}
     #section-overview .card-body{padding:0}
     .overview-list{display:grid;grid-template-columns:1fr;border:1px solid var(--border);border-radius:7px;overflow:hidden;background:#fff}
     .overview-row{display:grid;grid-template-columns:118px minmax(0,1fr);border-bottom:1px solid var(--border);background:#fff;min-height:0}
@@ -130,8 +158,8 @@
     .aside-screen{background:#fff;border-radius:12px;overflow:hidden;border:1px solid #d9e6f7}.aside-top{display:flex;align-items:center;justify-content:space-between;background:#061d4b;color:#fff;padding:14px 15px;font-size:17px;font-weight:900}.aside-body{padding:14px}.aside-body .breadcrumb{font-size:12px;margin-bottom:10px}.aside-body .media-box{min-height:175px;border-radius:5px}.aside-body .poster-fallback strong{font-size:21px}.aside-body .pill{font-size:11px;padding:8px 12px;margin:12px 0 10px}.aside-body h2{font-size:25px;line-height:1.06;margin:0 0 10px;color:#061d4b;font-weight:900}.aside-body p{font-size:13px;line-height:1.45;margin:0 0 12px;color:#31415e;font-weight:800}.aside-mini-list{display:grid;gap:8px;margin:10px 0}.aside-mini{border:1px solid var(--border);border-radius:7px;background:#fff;padding:10px 11px;font-size:12px;font-weight:900;color:#071b3f}.aside-body .quick-actions{grid-template-columns:1fr;gap:9px}.aside-body .summary-grid{grid-template-columns:1fr;gap:9px;margin-top:12px}.aside-body .summary-card{min-height:60px;padding:11px}.aside-body .summary-icon{width:36px;height:36px;flex-basis:36px}.aside-body .summary-card strong{font-size:12px}.aside-body .summary-card span span{font-size:11px}
     .mobile-sticky{position:fixed;left:0;right:0;bottom:0;z-index:70;display:none;background:#fff;border-top:1px solid var(--border);box-shadow:0 -5px 20px rgba(0,0,0,.12);padding:9px;gap:9px}.mobile-sticky .action-btn{min-height:44px;font-size:14px}
 
-    @media(max-width:1060px){.premium-layout{grid-template-columns:1fr}.premium-aside{position:static;max-height:none}.aside-phone{max-width:390px;margin:0 auto}.hero-copy h1{font-size:38px}.premium-nav a{padding:12px 8px;font-size:12px}.quick-actions{grid-template-columns:repeat(2,minmax(0,1fr))}.summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-    @media(max-width:760px){.premium-header-inner{padding:8px 12px}.brand{max-width:calc(100% - 8px)}.brand span{font-size:20px}.brand small{font-size:8px;max-width:210px}.brand img{width:38px;height:38px}.premium-nav{display:none}.language-bar-inner{text-align:left;padding:7px 12px}.premium-shell{padding:14px 10px 85px}.premium-hero{grid-template-columns:1fr;gap:14px}.media-box{min-height:220px}.hero-copy h1{font-size:31px}.hero-short{font-size:16px}.verified-strip{align-items:flex-start;flex-direction:column;font-size:13px}.summary-grid{grid-template-columns:1fr}.section-grid{grid-template-columns:1fr}.premium-card.wide-span,.premium-card.full-span{grid-column:auto}.steps{grid-template-columns:1fr}.link-grid,.related-grid{grid-template-columns:1fr}.overview-list{grid-template-columns:1fr}.overview-row{grid-template-columns:108px minmax(0,1fr)}.mobile-sticky{display:flex}.mobile-sticky:empty{display:none}.quick-actions{grid-template-columns:1fr}.premium-table{min-width:520px}.aside-phone{display:none}}
+    @media(max-width:1060px){.premium-layout,.skeleton-layout{grid-template-columns:1fr}.premium-aside{position:static;max-height:none}.aside-phone{max-width:390px;margin:0 auto}.hero-copy h1{font-size:38px}.premium-nav a{padding:12px 8px;font-size:12px}.quick-actions,.skeleton-actions{grid-template-columns:repeat(2,minmax(0,1fr))}.summary-grid,.skeleton-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.skeleton-aside{display:none}}
+    @media(max-width:760px){.premium-header-inner{padding:8px 12px}.brand{max-width:calc(100% - 8px)}.brand span{font-size:20px}.brand small{font-size:8px;max-width:210px}.brand img{width:38px;height:38px}.premium-nav{display:none}.language-bar-inner{text-align:left;padding:7px 12px}.premium-shell{padding:14px 10px 85px}.premium-hero,.skeleton-hero{grid-template-columns:1fr;gap:14px}.media-box,.skeleton-media{min-height:220px}.hero-copy h1{font-size:31px}.hero-short{font-size:16px}.verified-strip{align-items:flex-start;flex-direction:column;font-size:13px}.summary-grid,.skeleton-summary{grid-template-columns:1fr}.section-grid,.skeleton-sections{grid-template-columns:1fr}.premium-card.wide-span,.premium-card.full-span{grid-column:auto}.steps{grid-template-columns:1fr}.link-grid,.related-grid,.region-links-grid{grid-template-columns:1fr}.overview-list{grid-template-columns:1fr}.overview-row{grid-template-columns:108px minmax(0,1fr)}.mobile-sticky{display:flex}.mobile-sticky:empty{display:none}.quick-actions,.skeleton-actions{grid-template-columns:1fr}.premium-table{min-width:520px}.aside-phone{display:none}.skeleton-title{max-width:100%;height:40px}}
   </style>
 <link rel="stylesheet" href="/site-theme.css">
 </head>
@@ -157,35 +185,69 @@
       <div class="language-bar-inner"><a href="#" lang="hi">हिन्दी</a> | <a href="#" lang="en">English</a></div>
     </div>
   </header>
-  <main class="premium-shell" id="premiumRoot"><div class="message">Premium post load ho raha hai...</div></main>
+  <main class="premium-shell" id="premiumRoot">
+    <div class="skeleton-layout" aria-label="Premium post loading">
+      <div class="skeleton-main">
+        <div class="skeleton-hero">
+          <div class="skeleton-box skeleton-media"></div>
+          <div class="skeleton-copy">
+            <div class="skeleton-line skeleton-pill"></div>
+            <div class="skeleton-line skeleton-title"></div>
+            <div class="skeleton-line skeleton-text"></div>
+            <div class="skeleton-line skeleton-text" style="max-width:82%"></div>
+          </div>
+        </div>
+        <div class="skeleton-actions"><div class="skeleton-card skeleton-action"></div><div class="skeleton-card skeleton-action"></div><div class="skeleton-card skeleton-action"></div><div class="skeleton-card skeleton-action"></div></div>
+        <div class="skeleton-card skeleton-strip"></div>
+        <div class="skeleton-summary"><div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div></div>
+        <div class="skeleton-sections"><div class="skeleton-card skeleton-section"></div><div class="skeleton-card skeleton-section"></div><div class="skeleton-card skeleton-section"></div></div>
+      </div>
+      <div class="skeleton-card skeleton-aside"></div>
+    </div>
+  </main>
   <div class="mobile-sticky" id="mobileSticky"></div>
 
+  <script>
+    window.__premiumSlowTimer=setTimeout(function(){
+      var root=document.getElementById("premiumRoot");
+      if(root&&root.querySelector(".skeleton-layout")){
+        root.innerHTML='<div class="message">पोस्ट लोड होने में समय लग रहा है, कृपया refresh करें.</div>';
+      }
+    },8000);
+  </script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
     import { getDatabase,ref,get,query,orderByChild,equalTo } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
     const firebaseConfig={apiKey:"AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",authDomain:"my-website-73785.firebaseapp.com",databaseURL:"https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app/",projectId:"my-website-73785",storageBucket:"my-website-73785.firebasestorage.app",messagingSenderId:"854088341990",appId:"1:854088341990:web:3211d4ef9fe4b78d025e27"};
     const app=initializeApp(firebaseConfig),db=getDatabase(app),root=document.getElementById("premiumRoot"),mobileSticky=document.getElementById("mobileSticky");
+    const requestedSlug=new URLSearchParams(location.search).get("slug")||"";
+    const cacheKey=slug=>`premium_post_${slug}`;
+    const readCachedPost=slug=>{
+      if(!slug)return null;
+      try{return JSON.parse(localStorage.getItem(cacheKey(slug))||"null")}catch{return null}
+    };
+    const writeCachedPost=(slug,data)=>{
+      if(!slug||!isFilled(data))return;
+      try{localStorage.setItem(cacheKey(slug),JSON.stringify(data))}catch{}
+    };
+    const stableStringify=value=>JSON.stringify(value||{});
+    let hasRenderedPost=false;
+    let timeoutId=window.__premiumSlowTimer||null;
 
     const SECTION_DEFS=[
       ["importantDates","Important Dates","accent-green"],
       ["applicationFee","Application Fee","accent-red"],
       ["ageLimit","Age Limit","accent-blue"],
-      ["overview","Overview","accent-purple"],
-      ["eligibility","Eligibility","accent-green"],
-      ["vacancyDetails","Vacancy / Seats","accent-orange","wide-span"],
+      ["vacancyDetails","Vacancy / Seats","accent-orange","full-span"],
       ["selectionProcess","Selection Process","accent-teal"],
-      ["examPattern","Exam Pattern","accent-blue","wide-span"],
-      ["syllabus","Syllabus","accent-purple"],
-      ["documentsRequired","Required Documents","accent-brown"],
+      ["howToCheckResult","How To Check Result","accent-blue","full-span"],
       ["howToApply","How To Apply / Download","accent-red","full-span"],
       ["importantLinks","Important Links","accent-purple","full-span"],
-      ["faqs","Frequently Asked Questions (FAQ)","accent-blue","full-span"],
-      ["relatedPosts","Related Posts","accent-green","wide-span"],
-      ["contentSections","Article Details","accent-teal","full-span"]
+      ["regionWiseResultLinks","Region Wise Result Links","accent-green","full-span"],
+      ["faqs","Frequently Asked Questions (FAQ)","accent-blue","full-span"]
     ];
-    const aliases={faqs:["faqs","faq"],vacancyDetails:["vacancyDetails","vacancy","vacancies","seats"],importantLinks:["importantLinks","links"],contentSections:["contentSections","articleSections","sections"]};
-    const heroKeys=new Set(["title","slug","category","postType","shortInfo","description","thumbnail","heroImage","imageUrl","featuredImage","banner","poster","seo","status","createdAt","updatedAt","views","lastUpdated","updatedDate","sourceUrl","officialWebsite","applyOnline","applyLink","notificationUrl","whatsappLink","telegramLink","postName","totalPosts","organization","jobLocation","modeOfApply","advtNo","paymentMode"]);
+    const aliases={faqs:["faqs","faq"],vacancyDetails:["vacancyDetails","vacancy","vacancies","seats"],importantLinks:["importantLinks","links"],howToCheckResult:["howToCheckResult","howToCheck","checkResult"],regionWiseResultLinks:["regionWiseResultLinks","regionWiseLinks","regionLinks","resultLinksByRegion"]};
     const escapeHTML=(v="")=>String(v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
     const toTitle=(key="")=>String(key).replace(/([a-z])([A-Z])/g,"$1 $2").replace(/[-_]+/g," ").replace(/\b\w/g,m=>m.toUpperCase());
     const isFilled=v=>{
@@ -204,7 +266,7 @@
     const displayDate=value=>{if(!value)return new Date().toLocaleDateString("hi-IN");if(typeof value==="number")return new Date(value).toLocaleDateString("hi-IN");const d=new Date(value);return isNaN(d.getTime())?String(value):d.toLocaleDateString("hi-IN")};
     const valueText=value=>{if(!isFilled(value))return"";if(Array.isArray(value))return value.map(valueText).filter(Boolean).join(", ");if(isPlainObject(value))return Object.entries(value).map(([k,v])=>`${toTitle(k)}: ${valueText(v)}`).join(" | ");return String(value)};
     const valueHTML=value=>escapeHTML(valueText(value)).replace(/\n/g,"<br>");
-    const iconFor=key=>({importantDates:"📅",applicationFee:"💰",ageLimit:"👤",overview:"🎓",eligibility:"✅",vacancyDetails:"👥",selectionProcess:"🔢",examPattern:"📊",syllabus:"📚",documentsRequired:"📌",howToApply:"⬇",importantLinks:"🔗",faqs:"❓"}[key]||"✓");
+    const iconFor=key=>({importantDates:"📅",applicationFee:"💰",ageLimit:"👤",vacancyDetails:"👥",selectionProcess:"🔢",howToCheckResult:"✅",howToApply:"⬇",importantLinks:"🔗",regionWiseResultLinks:"📄",faqs:"❓"}[key]||"✓");
     const linkClass=label=>/whatsapp/i.test(label)?"whatsapp":/telegram/i.test(label)?"telegram":/apply/i.test(label)?"apply":/download|notification/i.test(label)?"download":/official|website/i.test(label)?"website":/source/i.test(label)?"source":"default";
     const linkIcon=label=>/whatsapp/i.test(label)?"🟢":/telegram/i.test(label)?"✈":/apply/i.test(label)?"↗":/download|notification/i.test(label)?"⬇":/official|website/i.test(label)?"🌐":"🔗";
 
@@ -233,7 +295,7 @@
     function renderMedia(data,small=false){
       const img=imageUrl(data),title=escapeHTML(data.title||"Premium Update"),words=escapeHTML(fallbackWords(data.title));
       const cls=img?"media-box has-image":"media-box";
-      return `<div class="${cls} ${small?'small-media':''}">${img?`<img src="${escapeHTML(img)}" alt="${title}" onerror="this.style.display='none';this.closest('.media-box').classList.add('image-failed')">`:""}<div class="poster-fallback"><strong>${words}</strong><span>${escapeHTML(data.category||data.postType||"Verified Update")}</span><small>DOWNLOAD</small></div></div>`;
+      return `<div class="${cls} ${small?'small-media':''}">${img?`<img src="${escapeHTML(img)}" alt="${title}" loading="lazy" decoding="async" onerror="this.style.display='none';this.closest('.media-box').classList.add('image-failed')">`:""}<div class="poster-fallback"><strong>${words}</strong><span>Verified Update</span><small>DOWNLOAD</small></div></div>`;
     }
     function renderActionButtons(links,limit=4){return links.length?`<div class="quick-actions">${links.slice(0,limit).map(l=>`<a class="action-btn ${linkClass(l.label)}" href="${escapeHTML(l.url)}" target="_blank" rel="noopener noreferrer">${linkIcon(l.label)} ${escapeHTML(l.label)}</a>`).join("")}</div>`:"";}
     const EMPTY_OVERVIEW_VALUES=new Set(["","na","n/a","not available","null","undefined","-","--"]);
@@ -280,7 +342,7 @@
     }
     function summaryText(key,value,data){const arr=arrayify(value);if(key==="overview")return `${overviewRows(data||{}).length} details`;if(key==="importantDates")return `${arr.length} important events`;if(key==="applicationFee")return "Exam fee details";if(key==="ageLimit")return "Age criteria";if(key==="vacancyDetails")return "Vacancy / seats";if(key==="faqs")return `${arr.length} questions`;return Array.isArray(value)?`${arr.length} items`:isPlainObject(value)?`${Object.keys(value).length} details`:"View details";}
     function renderSummaryCards(data){
-      const keys=["importantDates","applicationFee","ageLimit","overview","eligibility","vacancyDetails","selectionProcess","examPattern","documentsRequired","importantLinks"];
+      const keys=["importantDates","applicationFee","ageLimit","vacancyDetails","selectionProcess","howToCheckResult","howToApply","importantLinks","regionWiseResultLinks","faqs"];
       return `<div class="summary-grid">${keys.filter(k=>hasRenderableSection(data,k)).slice(0,8).map(k=>{const def=SECTION_DEFS.find(d=>d[0]===k)||[k,toTitle(k)];return `<a class="summary-card" href="#section-${k}"><span class="summary-icon">${iconFor(k)}</span><span><strong>${escapeHTML(def[1])}</strong><span>${escapeHTML(summaryText(k,getSection(data,k),data))}</span></span></a>`}).join("")}</div>`;
     }
     function renderTable(rows,preferred=[]){
@@ -335,6 +397,18 @@
       const links=normalizeLinks({...data,importantLinks:value});
       return `<div class="link-grid">${links.map(l=>`<a class="link-card" href="${escapeHTML(l.url)}" target="_blank" rel="noopener noreferrer"><strong>${linkIcon(l.label)} ${escapeHTML(l.label)}</strong><span>यहाँ से direct link open करें</span></a>`).join("")}</div>`;
     }
+    function renderRegionWiseLinks(value){
+      const rows=arrayify(value).map((item,index)=>{
+        if(!isPlainObject(item))return {region:`Region ${index+1}`,resultUrl:item};
+        return {
+          region:item.region||item.regionName||item.rrb||item.board||item.name||item.title||item.label||`Region ${index+1}`,
+          resultUrl:item.resultUrl||item.resultURL||item.resultPdf||item.resultPDF||item.resultLink||item.url||item.link||item.pdf||"",
+          cutoffUrl:item.cutoffUrl||item.cutoffURL||item.cutoffPdf||item.cutoffPDF||item.cutoffLink||item.cutOffUrl||item.cutOffPDF||""
+        };
+      }).filter(item=>isFilled(item.region)&&(safeUrl(item.resultUrl)||safeUrl(item.cutoffUrl)));
+      if(!rows.length)return "";
+      return `<div class="region-links-grid">${rows.map(item=>{const result=safeUrl(item.resultUrl),cutoff=safeUrl(item.cutoffUrl);return `<div class="region-card"><h4>${escapeHTML(item.region)}</h4>${result?`<a href="${escapeHTML(result)}" target="_blank" rel="noopener noreferrer">Result PDF</a>`:""}${cutoff?`<a href="${escapeHTML(cutoff)}" target="_blank" rel="noopener noreferrer">Cutoff PDF</a>`:""}</div>`}).join("")}</div>`;
+    }
     function renderFaq(value){
       const rows=arrayify(value).map(item=>isPlainObject(item)?item:{question:"Question",answer:item});
       return `<div class="faq-list">${rows.map(item=>`<details class="faq-item"><summary>${escapeHTML(item.question||item.q||item.title||"Question")}</summary><div>${valueHTML(item.answer||item.a||item.value||item.description||"")}</div></details>`).join("")}</div>`;
@@ -353,25 +427,16 @@
       if(key==="importantDates")return renderImportantDates(value);
       if(key==="applicationFee")return renderFee(data);
       if(key==="ageLimit")return renderAgeLimit(value);
-      if(key==="overview")return renderOverview(data);
-      if(key==="eligibility")return renderEligibility(value);
       if(key==="vacancyDetails")return renderTable(value,["postName","area","totalPost","totalPosts","course","eligibility","note"]);
       if(key==="selectionProcess")return renderSelection(value);
-      if(key==="examPattern")return renderTable(value,["paper","subject","subjects","duration","questions","marks","description","totalMarks"]);
-      if(key==="syllabus")return renderDocuments(value);
-      if(key==="documentsRequired")return renderDocuments(value);
+      if(key==="howToCheckResult")return renderSteps(value);
       if(key==="howToApply")return renderSteps(value);
       if(key==="importantLinks")return renderLinks(value,data);
+      if(key==="regionWiseResultLinks")return renderRegionWiseLinks(value);
       if(key==="faqs")return renderFaq(value);
-      if(key==="relatedPosts")return renderRelated(value);
-      if(key==="contentSections")return renderContentSections(value);
       return renderTable(value);
     }
     function renderCard(id,title,html,accent,span=""){return html?`<section id="section-${id}" class="premium-card ${accent||"accent-teal"} ${span||""}"><h2>${escapeHTML(title)}</h2><div class="card-body">${html}</div></section>`:"";}
-    function renderUnknown(data){
-      const known=new Set([...heroKeys,...SECTION_DEFS.map(d=>d[0]),"faq","vacancy","vacancies","seats","links","articleSections","sections"]);
-      return Object.entries(data).filter(([k,v])=>!known.has(k)&&isFilled(v)).map(([k,v])=>renderCard(k,toTitle(k),renderTable(v),"accent-teal")).join("");
-    }
     function setSeo(data){
       const seo=data.seo||{},title=seo.metaTitle||data.title||"Premium Post";
       document.title=`${title} | E-MITRA WALA`;
@@ -389,15 +454,17 @@
       setTimeout(()=>{const el=document.querySelector(location.hash);if(el)el.scrollIntoView({behavior:"smooth",block:"start"});},350);
     }
     function renderSidebar(data,links){
-      const mini=["importantDates","applicationFee","ageLimit","overview","eligibility","vacancyDetails"].filter(k=>hasRenderableSection(data,k));
-      return `<aside class="premium-aside"><div class="aside-phone"><div class="aside-screen"><div class="aside-top"><span>E-MITRA WALA</span><span>☰</span></div><div class="aside-body"><div class="breadcrumb"><a href="index.html">Home</a> › ${escapeHTML(data.category||"Premium")}</div>${renderMedia(data,true)}<span class="pill">${escapeHTML(data.category||"Premium Update")}</span><h2>${escapeHTML(data.title||"Premium Update")}</h2>${data.shortInfo?`<p>${escapeHTML(data.shortInfo)}</p>`:""}<div class="aside-mini-list"><div class="aside-mini">✓ ${escapeHTML(data.category||"Verified Update")}</div><div class="aside-mini">▣ Updated: ${escapeHTML(displayDate(data.updatedAt||data.lastUpdated||data.updatedDate))}</div><div class="aside-mini">✓ Official Update</div></div>${renderActionButtons(links,4)}<div class="summary-grid">${mini.map(k=>{const def=SECTION_DEFS.find(d=>d[0]===k)||[k,toTitle(k)];return `<a class="summary-card" href="#section-${k}"><span class="summary-icon">${iconFor(k)}</span><span><strong>${escapeHTML(def[1])}</strong><span>${escapeHTML(summaryText(k,getSection(data,k),data))}</span></span></a>`}).join("")}</div></div></div></div></aside>`;
+      const mini=["importantDates","applicationFee","ageLimit","vacancyDetails","importantLinks","regionWiseResultLinks"].filter(k=>hasRenderableSection(data,k));
+      return `<aside class="premium-aside"><div class="aside-phone"><div class="aside-screen"><div class="aside-top"><span>E-MITRA WALA</span><span>☰</span></div><div class="aside-body"><div class="breadcrumb"><a href="index.html">Home</a> › Premium Post</div>${renderMedia(data,true)}<span class="pill">Verified Update</span><h2>${escapeHTML(data.title||"Premium Update")}</h2>${data.shortInfo?`<p>${escapeHTML(data.shortInfo)}</p>`:""}<div class="aside-mini-list"><div class="aside-mini">✓ Verified Update</div><div class="aside-mini">✓ Official Update</div></div>${renderActionButtons(links,4)}<div class="summary-grid">${mini.map(k=>{const def=SECTION_DEFS.find(d=>d[0]===k)||[k,toTitle(k)];return `<a class="summary-card" href="#section-${k}"><span class="summary-icon">${iconFor(k)}</span><span><strong>${escapeHTML(def[1])}</strong><span>${escapeHTML(summaryText(k,getSection(data,k),data))}</span></span></a>`}).join("")}</div></div></div></div></aside>`;
     }
     function renderPremiumPost(data){
       data={...data};
+      hasRenderedPost=true;
+      if(timeoutId)clearTimeout(timeoutId);
       setSeo(data);
-      const links=quickLinks(data),updated=displayDate(data.updatedAt||data.lastUpdated||data.updatedDate),views=data.views||"12,345";
-      const hero=`<div class="breadcrumb"><a href="index.html">Home</a> › <span>${escapeHTML(data.category||"Premium Post")}</span> › <strong>${escapeHTML(data.title||"Update")}</strong></div><section class="premium-hero">${renderMedia(data)}<div class="hero-copy"><span class="pill">${escapeHTML(data.category||data.postType||"Premium Update")}</span><h1>${escapeHTML(data.title||"Premium Update")}</h1>${data.shortInfo?`<p class="hero-short">${escapeHTML(data.shortInfo)}</p>`:""}<div class="status-row"><span class="status-chip">✅ ${escapeHTML(data.category||"Verified Update")}</span><span class="status-chip">▣ Updated: ${escapeHTML(updated)}</span><span class="status-chip">✅ Official Update</span></div></div></section>${renderActionButtons(links,4)}<div class="verified-strip"><span>✅ E-MITRA WALA VERIFIED UPDATE ✅</span><span>Last Updated: ${escapeHTML(updated)} &nbsp; 👁 Views: ${escapeHTML(views)}</span></div>${renderSummaryCards(data)}`;
-      const sections=`<div class="section-grid">${SECTION_DEFS.map(([key,title,accent,span])=>renderCard(key,title,renderSection(data,key),accent,span)).join("")}${renderUnknown(data)}</div>`;
+      const links=quickLinks(data),views=data.views||"12,345";
+      const hero=`<div class="breadcrumb"><a href="index.html">Home</a> › <span>Premium Post</span> › <strong>${escapeHTML(data.title||"Update")}</strong></div><section class="premium-hero">${renderMedia(data)}<div class="hero-copy"><span class="pill">Verified Update</span><h1>${escapeHTML(data.title||"Premium Update")}</h1>${data.shortInfo?`<p class="hero-short">${escapeHTML(data.shortInfo)}</p>`:""}<div class="status-row"><span class="status-chip">✅ Verified Update</span><span class="status-chip">✅ Official Update</span></div></div></section>${renderActionButtons(links,4)}<div class="verified-strip"><span>✅ E-MITRA WALA VERIFIED UPDATE ✅</span><span>👁 Views: ${escapeHTML(views)}</span></div>${renderSummaryCards(data)}`;
+      const sections=`<div class="section-grid">${SECTION_DEFS.map(([key,title,accent,span])=>renderCard(key,title,renderSection(data,key),accent,span)).join("")}</div>`;
       root.innerHTML=`<div class="premium-layout"><div class="premium-main">${hero}${sections}</div>${renderSidebar(data,links)}</div>`;
       const sticky=links.filter(l=>/(apply|download|notification)/i.test(l.label)).slice(0,2);
       mobileSticky.innerHTML=sticky.map(l=>`<a class="action-btn ${linkClass(l.label)}" href="${escapeHTML(l.url)}" target="_blank" rel="noopener noreferrer">${linkIcon(l.label)} ${escapeHTML(l.label)}</a>`).join("");
@@ -405,20 +472,70 @@
     }
     async function loadPremiumPostBySlug(slug){
       if(!slug)throw new Error("URL me slug missing hai.");
+      const indexed=await get(ref(db,`premiumPostSlugIndex/${slug}`)).catch(()=>null);
+      if(indexed?.exists()){
+        const indexedValue=indexed.val();
+        const indexedId=typeof indexedValue==="string"?indexedValue:(indexedValue?.id||indexedValue?.key||indexedValue?.postId||"");
+        if(indexedId){
+          const indexedPost=await get(ref(db,`premiumPosts/${indexedId}`));
+          if(indexedPost.exists())return indexedPost.val();
+        }
+      }
       const exact=await get(ref(db,`premiumPosts/${slug}`));
-      if(exact.exists())return exact.val();
+      if(exact.exists()){
+        const data=exact.val();
+        if(data?.slug&&data.slug!==slug){
+          localStorage.setItem(`premium_post_id_${data.slug}`,slug);
+        }
+        return data;
+      }
       const snap=await get(query(ref(db,"premiumPosts"),orderByChild("slug"),equalTo(slug)));
-      let data=null;snap.forEach(child=>{if(!data)data=child.val()});
+      let data=null;snap.forEach(child=>{if(!data){data=child.val();localStorage.setItem(`premium_post_id_${slug}`,child.key)}});
       if(!data)throw new Error("Premium post nahi mili.");
       return data;
     }
+    async function fetchFreshPost(slug){
+      const cachedId=localStorage.getItem(`premium_post_id_${slug}`)||"";
+      if(cachedId){
+        const snap=await get(ref(db,`premiumPosts/${cachedId}`)).catch(()=>null);
+        if(snap?.exists())return snap.val();
+      }
+      return loadPremiumPostBySlug(slug);
+    }
+    function showSlowFallback(){
+      if(hasRenderedPost)return;
+      root.innerHTML='<div class="message">पोस्ट लोड होने में समय लग रहा है, कृपया refresh करें.</div>';
+    }
+    async function loadWithCache(){
+      if(!requestedSlug||requestedSlug===samplePremiumPost.slug){
+        renderPremiumPost(samplePremiumPost);
+        return;
+      }
+      const cached=readCachedPost(requestedSlug);
+      if(cached){
+        renderPremiumPost(cached);
+      }else{
+        if(timeoutId)clearTimeout(timeoutId);
+        timeoutId=setTimeout(showSlowFallback,8000);
+      }
+      try{
+        const fresh=await fetchFreshPost(requestedSlug);
+        writeCachedPost(requestedSlug,fresh);
+        const cachedText=cached?stableStringify(cached):"";
+        const freshText=stableStringify(fresh);
+        if(!cached||cachedText!==freshText){
+          renderPremiumPost(fresh);
+        }
+      }catch(error){
+        if(!cached&&!hasRenderedPost){
+          if(timeoutId)clearTimeout(timeoutId);
+          root.innerHTML=`<div class="message">${escapeHTML(error.message)}</div>`;
+        }
+      }
+    }
     window.renderPremiumPost=renderPremiumPost;
     window.loadPremiumPostBySlug=loadPremiumPostBySlug;
-    const requestedSlug=new URLSearchParams(location.search).get("slug");
-    loadPremiumPostBySlug(requestedSlug).then(renderPremiumPost).catch(error=>{
-      if(!requestedSlug||requestedSlug===samplePremiumPost.slug){renderPremiumPost(samplePremiumPost);return;}
-      root.innerHTML=`<div class="message">${escapeHTML(error.message)}</div>`;
-    });
+    loadWithCache();
   </script>
 <script src="/site-theme.js" defer></script>
 </body>
