@@ -1089,15 +1089,94 @@ const hasCurrentAffairsQuestions = (job = {}) => getCurrentAffairsQuestionSource
   const options = Array.isArray(item.options) ? item.options : [item.optionA || item.a, item.optionB || item.b, item.optionC || item.c, item.optionD || item.d];
   return String(item.question || item.q || item.title || "").trim() && options.some((option) => String(option || "").trim());
 });
+const resolveCurrentAffairsPdfUrl = (job = {}) => {
+  const article = job.advancedArticleData && typeof job.advancedArticleData === "object" ? job.advancedArticleData : {};
+  const content = getObjectContent(job);
+  const articleContent = getObjectContent(article);
+  const direct = [
+    job.pdfLink, job.pdfUrl, job.currentAffairsPdf, job.currentAffairsPdfUrl, job.dailyPdf, job.dailyPdfUrl,
+    job.downloadPdf, job.downloadPdfUrl, job.pdfDownloadUrl, job.fileUrl, job.attachmentUrl,
+    content.pdfLink, content.pdfUrl, content.currentAffairsPdf, content.dailyPdf, content.downloadPdfUrl,
+    article.pdfLink, article.pdfUrl, article.currentAffairsPdf, article.dailyPdf, article.downloadPdfUrl,
+    articleContent.pdfLink, articleContent.pdfUrl, articleContent.currentAffairsPdf, articleContent.dailyPdf
+  ];
+  const fromDirect = direct.map(safeUrl).find((url) => url !== "#");
+  if(fromDirect){ return fromDirect; }
+  const linkSources = [job.importantLinks, job.links, job.attachments, content.importantLinks, content.links, article.importantLinks, article.links, articleContent.importantLinks, articleContent.links];
+  const linkItems = linkSources.flatMap((items) => Array.isArray(items) ? items : []);
+  const match = linkItems.find((item) => {
+    if(!item || typeof item !== "object"){ return false; }
+    const label = String(item.label || item.title || item.name || item.text || "").toLowerCase();
+    const url = String(item.url || item.href || item.link || item.file || "").trim();
+    return url && (/pdf|download|डाउनलोड/.test(label) || /\.pdf(?:$|[?#])/i.test(url));
+  });
+  return match ? safeUrl(match.url || match.href || match.link || match.file) : "#";
+};
+const loadScriptOnce = (src = "") => new Promise((resolve, reject) => {
+  const existing = document.querySelector(`script[src="${src}"]`);
+  if(existing){
+    if(existing.dataset.loaded === "true"){ resolve(); return; }
+    existing.addEventListener("load", resolve, { once:true });
+    existing.addEventListener("error", reject, { once:true });
+    return;
+  }
+  const script = document.createElement("script");
+  script.src = src;
+  script.async = true;
+  script.dataset.loaded = "false";
+  script.onload = () => { script.dataset.loaded = "true"; resolve(); };
+  script.onerror = reject;
+  document.head.appendChild(script);
+});
+window.downloadCurrentAffairsPdf = async (fileName = "daily-current-affairs.pdf") => {
+  const button = window.event?.currentTarget;
+  const oldText = button ? button.innerHTML : "";
+  try{
+    if(button){
+      button.disabled = true;
+      button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> PDF Ready ho rahi hai';
+    }
+    await loadScriptOnce("https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js");
+    const source = document.querySelector(".detail-sheet");
+    if(!source || !window.html2pdf){ throw new Error("PDF generator load nahi hua"); }
+    const clone = source.cloneNode(true);
+    clone.querySelectorAll("button,a.btn").forEach((node) => {
+      if(/Current Affairs List|Start Quiz|Daily PDF Download/i.test(node.textContent || "")){ node.remove(); }
+    });
+    clone.style.width = "760px";
+    clone.style.maxWidth = "760px";
+    clone.style.boxShadow = "none";
+    clone.style.border = "1px solid #d9e7f7";
+    await window.html2pdf().set({
+      margin: [8, 8, 8, 8],
+      filename: fileName || "daily-current-affairs.pdf",
+      image: { type:"jpeg", quality:0.98 },
+      html2canvas: { scale:2, useCORS:true, backgroundColor:"#ffffff" },
+      jsPDF: { unit:"mm", format:"a4", orientation:"portrait" },
+      pagebreak: { mode:["css", "legacy"] }
+    }).from(clone).save();
+  }catch(error){
+    console.warn(error);
+    window.print();
+  }finally{
+    if(button){
+      button.disabled = false;
+      button.innerHTML = oldText;
+    }
+  }
+};
 const isCurrentAffairsPost = (job = {}) => {
   const article = job.advancedArticleData && typeof job.advancedArticleData === "object" ? job.advancedArticleData : {};
+  const currentText = [job.title, job.slug, article.title, article.slug, job.category, article.category]
+    .map((value) => String(value || "").toLowerCase())
+    .join(" ");
   return [job.postTarget, job.postType, article.postTarget, article.postType, job.type, article.type]
     .some((value) => normalizePostTarget(value) === "currentAffairs")
+    || /current[-\s]*affairs|करेंट\s*अफेयर्स|करंट\s*अफेयर्स/.test(currentText)
     || Array.isArray(job.currentAffairs)
     || Array.isArray(article.currentAffairs)
     || Array.isArray(job.currentAffairsData)
-    || Array.isArray(job.currentAffairsData?.currentAffairs)
-    || hasCurrentAffairsQuestions(job);
+    || Array.isArray(job.currentAffairsData?.currentAffairs);
 };
 const isAdmissionPost = (job = {}) => {
   const article = job.advancedArticleData && typeof job.advancedArticleData === "object" ? job.advancedArticleData : {};
@@ -2376,12 +2455,13 @@ const renderCurrentAffairsLinks = ({ currentId = "", currentJob = {}, allJobs = 
   }
   const sidebar = document.querySelector(".detail-sidebar");
   if(!sidebar){ return; }
-  const pdfUrl = safeUrl(currentJob.pdfLink || currentJob.pdfUrl || currentJob.currentAffairsPdf || currentJob.content?.pdfLink || currentJob.advancedArticleData?.pdfLink);
+  const pdfUrl = resolveCurrentAffairsPdfUrl(currentJob);
+  const pdfFileName = `${buildCanonicalSlug(currentJob, currentId) || "daily-current-affairs"}.pdf`;
   sidebar.innerHTML = `
     <div class="sidebar-card">
       <h3>Daily Current Affairs PDF</h3>
       <div class="ca-sidebar-actions">
-        ${pdfUrl !== "#" ? `<a class="btn pdf" href="${pdfUrl}" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-file-pdf"></i> Daily PDF Download</a>` : `<a class="btn pdf" href="current-affairs.html"><i class="fa-solid fa-file-pdf"></i> Daily PDF Download</a>`}
+        ${pdfUrl !== "#" ? `<a class="btn pdf" href="${pdfUrl}" download="${escapeHTML(pdfFileName)}" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-file-pdf"></i> Daily PDF Download</a>` : `<button class="btn pdf" type="button" onclick="downloadCurrentAffairsPdf('${escapeHTML(pdfFileName)}')"><i class="fa-solid fa-file-pdf"></i> Daily PDF Download</button>`}
       </div>
     </div>
     <div class="sidebar-card">
