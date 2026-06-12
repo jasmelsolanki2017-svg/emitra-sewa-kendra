@@ -229,6 +229,36 @@ main{max-width:1180px;margin:auto;padding:26px 3% 42px;}
 .mcq-option{border:1px solid #d8e5f3;border-radius:6px;padding:8px 10px;font-weight:700;color:#26364d;background:#fff;}
 .mcq-option.correct{border-color:#138a36;background:#ecfff3;color:#075a27;}
 .mcq-answer,.mcq-explanation{padding:0 14px 12px;color:#1f2937;font-weight:600;}
+.current-affairs-static .hero{background:linear-gradient(135deg,#06285d,#031b41);border-bottom-color:#ffc400;}
+.current-affairs-static .tag{background:#ffc400;color:#061b3a;}
+.ca-article-title{padding:22px 22px 10px;text-align:left;background:linear-gradient(180deg,#ffffff,#f8fbff);}
+.ca-article-title span{display:inline-flex;background:#06285d;color:#fff;border-radius:4px;padding:6px 10px;font-size:12px;font-weight:900;text-transform:uppercase;}
+.ca-article-title h2{margin:10px 0 4px;color:#06285d;font-size:clamp(24px,4vw,36px);line-height:1.2;}
+.ca-article-title p{color:#b51616;font-weight:900;font-size:18px;}
+.ca-quiz-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:16px 18px 18px;background:#fff;border-bottom:1px solid #e5effa;}
+.ca-quiz-summary div{border:1px solid #ffd45c;background:#fff9e7;border-radius:7px;padding:12px;text-align:center;}
+.ca-quiz-summary strong{display:block;color:#06285d;font-size:22px;line-height:1.1;}
+.ca-quiz-summary span{display:block;color:#40506a;font-size:12px;font-weight:800;margin-top:5px;}
+.ca-quiz-summary .btn{grid-column:auto;min-height:46px;background:#ffc400;color:#061b3a;box-shadow:none;}
+.ca-quiz-summary .btn.notification{background:#06285d;color:#fff;}
+.ca-intro-box{background:#fbfdff;border-top:1px solid #edf4fb;border-bottom:1px solid #edf4fb;}
+.current-affairs-static .mcq-list{gap:14px;}
+.ca-mcq-card{border-color:#dfe8f3;border-radius:8px;box-shadow:0 8px 20px rgba(6,40,93,.06);}
+.ca-mcq-card .mcq-question{display:flex;gap:12px;align-items:flex-start;background:#fff;color:#1d2433;font-size:18px;line-height:1.4;padding:16px;}
+.ca-q-badge{width:44px;height:44px;min-width:44px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#06285d;color:#fff;font-weight:900;font-size:15px;box-shadow:0 8px 16px rgba(6,40,93,.18);}
+.ca-mcq-card .mcq-options{grid-template-columns:1fr 1fr;padding:0 16px 14px;}
+.ca-mcq-card .mcq-option{display:flex;align-items:center;gap:10px;border-color:#dce7f3;border-radius:7px;background:#fff;padding:11px 12px;font-weight:800;}
+.ca-mcq-card .mcq-option span{width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#eef5ff;color:#06285d;font-weight:900;flex:0 0 auto;}
+.ca-mcq-card .mcq-option.correct{border-color:#16a34a;background:#ecfff3;color:#075a27;}
+.ca-mcq-card .mcq-option.correct span{background:#16a34a;color:#fff;}
+.ca-mcq-card .mcq-answer{margin:0 16px 10px;padding:10px 12px;border-radius:7px;background:#eafff1;color:#08722f;}
+.ca-mcq-card .mcq-explanation{margin:0 16px 16px;padding:12px;border-radius:7px;background:#fff8d9;color:#3f3200;border:1px solid #ffe58a;}
+.ca-sidebar-actions{display:grid;gap:9px;padding:12px;}
+.ca-sidebar-actions .btn{box-shadow:none;width:100%;min-height:42px;}
+.ca-sidebar-actions .btn.pdf{background:#ffc400;color:#061b3a;}
+.ca-sidebar-actions .btn.whatsapp{background:#128c3c;}
+.ca-sidebar-actions .btn.dark{background:#06285d;color:#fff;}
+.ca-pdf-rendering .ca-quiz-summary .btn{display:none!important;}
 .content-table{width:100%;border-collapse:collapse;font-size:14px;margin:10px 0 2px;}
 .content-table th,.content-table td{border:1px solid #d8e5f3;padding:9px 10px;text-align:left;vertical-align:middle;color:#1f2937;}
 .content-table th{font-weight:900;background:#f1f7ff;color:var(--deep);}
@@ -329,12 +359,11 @@ body.dark-mode .mcq-option.correct{background:#0d3322!important;border-color:#21
 body.dark-mode .mcq-answer,body.dark-mode .mcq-explanation{color:#e8f1ff!important;}
 body.dark-mode .job-tool-btn{background:#0b2749!important;border-color:#24405f!important;color:#e8f1ff!important;}
 body.dark-mode .job-tool-btn:hover{background:#ffb15c!important;border-color:#ffb15c!important;color:#06101f!important;}
-@media(max-width:920px){.layout{grid-template-columns:1fr}.detail-sidebar{position:static;top:auto}.hero{padding:24px 5% 26px}main{padding:18px 3% 34px}.detail-table th,.detail-table td{display:block;width:100%;}.detail-table th{border-bottom:0}.panel h2,.sarkari-section-title{font-size:17px}.actions{grid-template-columns:1fr}.content-table{font-size:12px}.content-table th,.content-table td{padding:7px 6px}.manual-pair{grid-template-columns:1fr;gap:3px}.qualification-card,.physical-eligibility-row{grid-template-columns:1fr}.qualification-post{border-right:0;border-bottom:1px solid #d8e5f3}.physical-eligibility-grid{grid-template-columns:1fr}.theme-toggle{right:16px;bottom:16px;width:50px;height:50px;}nav{flex-direction:column;align-items:flex-start}}
-@media(max-width:768px){main{padding:14px 2.5% 30px}.article-head{padding:18px 14px 12px}.author-box{grid-template-columns:58px minmax(0,1fr);padding:14px 12px}.author-avatar{width:58px;height:58px;font-size:19px}.author-name{font-size:16px}.content-box,.table-wrap{padding:12px}.section-manual{padding:0 12px 14px}.detail-table{font-size:13px}.detail-table th,.detail-table td{padding:9px 10px}.structured-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}.structured-table-wrap .content-table,.content-table{min-width:520px}.content-section{overflow-x:auto}.actions{padding:12px}.btn{font-size:13px;padding:10px 12px}.hero h1{font-size:24px}.hero p{font-size:14px}.meta-badge{font-size:11px}.article-meta-line{font-size:12px}.community-actions{padding:14px 12px}.community-actions .btn{width:100%}.job-tools-toolbar{grid-template-columns:1fr 1fr;padding:12px}.job-tool-btn{font-size:12px;min-height:40px;padding:8px 7px}}
+@media(max-width:920px){.layout{grid-template-columns:1fr}.detail-sidebar{position:static;top:auto}.hero{padding:24px 5% 26px}main{padding:18px 3% 34px}.detail-table th,.detail-table td{display:block;width:100%;}.detail-table th{border-bottom:0}.panel h2,.sarkari-section-title{font-size:17px}.actions{grid-template-columns:1fr}.content-table{font-size:12px}.content-table th,.content-table td{padding:7px 6px}.manual-pair{grid-template-columns:1fr;gap:3px}.qualification-card,.physical-eligibility-row{grid-template-columns:1fr}.qualification-post{border-right:0;border-bottom:1px solid #d8e5f3}.physical-eligibility-grid{grid-template-columns:1fr}.theme-toggle{right:16px;bottom:16px;width:50px;height:50px;}nav{flex-direction:column;align-items:flex-start}.ca-quiz-summary{grid-template-columns:1fr 1fr}.ca-mcq-card .mcq-options{grid-template-columns:1fr}}
+@media(max-width:768px){main{padding:14px 2.5% 30px}.article-head{padding:18px 14px 12px}.author-box{grid-template-columns:58px minmax(0,1fr);padding:14px 12px}.author-avatar{width:58px;height:58px;font-size:19px}.author-name{font-size:16px}.content-box,.table-wrap{padding:12px}.section-manual{padding:0 12px 14px}.detail-table{font-size:13px}.detail-table th,.detail-table td{padding:9px 10px}.structured-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}.structured-table-wrap .content-table,.content-table{min-width:520px}.content-section{overflow-x:auto}.actions{padding:12px}.btn{font-size:13px;padding:10px 12px}.hero h1{font-size:24px}.hero p{font-size:14px}.meta-badge{font-size:11px}.article-meta-line{font-size:12px}.community-actions{padding:14px 12px}.community-actions .btn{width:100%}.job-tools-toolbar{grid-template-columns:1fr 1fr;padding:12px}.job-tool-btn{font-size:12px;min-height:40px;padding:8px 7px}.ca-article-title{padding:18px 14px 8px}.ca-quiz-summary{grid-template-columns:1fr;padding:12px}.ca-mcq-card .mcq-question{font-size:16px;padding:14px}.ca-q-badge{width:40px;height:40px;min-width:40px}.ca-sidebar-actions{grid-template-columns:1fr}}
 @media(max-width:768px){.sarkari-blue-layout{font-size:13px;border-width:1px}.sarkari-blue-title-area{padding:18px 10px 14px}.sarkari-blue-content{padding:10px 12px 14px}.sarkari-blue-content .content-table,.sarkari-blue-table{font-size:12px;min-width:480px}.sarkari-blue-content .structured-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}}
 </style>
 <link rel="stylesheet" href="mobile-responsive-fix.css">
-
 </head>
 <body>
 <nav>
@@ -565,7 +594,7 @@ body.dark-mode .job-tool-btn:hover{background:#ffb15c!important;border-color:#ff
 })();
 </script>
 
-<script>window.__EMITRA_STATIC_POST__={"id":"-Ou6ScaFqKqWhSxlOY81","job":{"admitCardDate":"Exam se 3-7 din pehle","admitCardLink":"","advancedArticleData":{"ageLimit":{"age_relaxation":"Age relaxation extra as per UPPRPB Constable Recruitment Rules.","as_on":"01 July 2025","maximum_age_female":"28 Years","maximum_age_male":"25 Years","minimum_age":"18 Years"},"applicationFee":[{"category":"General / OBC / EWS","fee":"₹500"},{"category":"SC / ST","fee":"₹400"}],"applicationFees":[{"category":"General / OBC / EWS","fee":"₹500"},{"category":"SC / ST","fee":"₹400"}],"faq":[{"answer":"UP Police Constable 2026 Exam City Details 01 June 2026 को जारी की गई है।","question":"UP Police Constable 2026 Exam City कब जारी हुई?"},{"answer":"UP Police Constable 2026 परीक्षा 08 June 2026 से 10 June 2026 तक होगी।","question":"UP Police Constable 2026 Exam Date क्या है?"},{"answer":"इस भर्ती में कुल 32679 पद हैं।","question":"UP Police Constable 2026 में कुल कितने पद हैं?"},{"answer":"Candidate official exam city link पर Registration Number और Date of Birth डालकर exam city check कर सकते हैं।","question":"UP Police Constable Exam City कैसे check करें?"},{"answer":"Admit Card परीक्षा से पहले official website पर जारी किया जाएगा।","question":"UP Police Constable Admit Card कब आएगा?"}],"faqs":[{"answer":"UP Police Constable 2026 Exam City Details 01 June 2026 को जारी की गई है।","question":"UP Police Constable 2026 Exam City कब जारी हुई?"},{"answer":"UP Police Constable 2026 परीक्षा 08 June 2026 से 10 June 2026 तक होगी।","question":"UP Police Constable 2026 Exam Date क्या है?"},{"answer":"इस भर्ती में कुल 32679 पद हैं।","question":"UP Police Constable 2026 में कुल कितने पद हैं?"},{"answer":"Candidate official exam city link पर Registration Number और Date of Birth डालकर exam city check कर सकते हैं।","question":"UP Police Constable Exam City कैसे check करें?"},{"answer":"Admit Card परीक्षा से पहले official website पर जारी किया जाएगा।","question":"UP Police Constable Admit Card कब आएगा?"}],"importantDates":[{"label":"Application Begin","value":"31 December 2025"},{"label":"Last Date for Apply Online","value":"30 January 2026"},{"label":"Last Date for Fee Payment","value":"30 January 2026"},{"label":"Correction Date","value":"31 January 2026 to 03 February 2026 up to 06:00 AM"},{"label":"Exam Date","value":"08 June 2026 to 10 June 2026"},{"label":"Exam City Available","value":"01 June 2026"},{"label":"Admit Card Available","value":"Before Exam"}],"importantLinks":[{"title":"Check Exam City","url":"https://upcons2025.com/upcondiad2025/loginpage.aspx"},{"title":"Official Website","url":"https://uppbpb.gov.in/"},{"title":"Download Exam City Notice","url":"https://uppbpb.gov.in/FilesUploaded/Notice/Constable_2025_Dist.Info83f516f4-d1c9-4d9f-8d9f-d153c08ab87e.pdf"},{"title":"Download Official Notification","url":"https://uppbpb.gov.in/FilesUploaded/Notice/CONSTABLE-VIGYAPTIc7be0cc8-3365-471e-9237-447c528d341a.pdf"},{"title":"Apply / Correction Portal","url":"https://www.upprpb.in/"}],"intro":["Uttar Pradesh Police Recruitment & Promotion Board (UPPRPB) ने UP Police Constable Recruitment 2025-26 के लिए Exam City Details जारी कर दी है। जिन उम्मीदवारों ने 32679 पदों के लिए आवेदन किया था, वे अपना Registration Number और Date of Birth डालकर Exam City check कर सकते हैं। परीक्षा 08 June 2026 से 10 June 2026 तक आयोजित की जाएगी।"],"overview":["Uttar Pradesh Police Recruitment & Promotion Board (UPPRPB) ने UP Police Constable Recruitment 2025-26 के लिए Exam City Details जारी कर दी है। जिन उम्मीदवारों ने 32679 पदों के लिए आवेदन किया था, वे अपना Registration Number और Date of Birth डालकर Exam City check कर सकते हैं। परीक्षा 08 June 2026 से 10 June 2026 तक आयोजित की जाएगी।"],"postTarget":"admitCard","selectionProcess":"Written Examination\nDocument Verification\nPhysical Standard Test\nPhysical Efficiency Test\nMedical Examination\nFinal Merit List","slug":"up-police-constable-2026-exam-city-admit-card","title":"UP Police Constable 2026 Exam City Details / Admit Card","vacancyDetails":[{"ews":1046,"general":4191,"obc":2826,"post_name":"Constable Civil Police Male/Female","sc":2198,"st":208,"total":10469},{"ews":1512,"general":6060,"obc":4083,"post_name":"Constable PAC / Armed Police Male Only","sc":3176,"st":300,"total":15131},{"ews":134,"general":538,"obc":362,"post_name":"Constable Special Force Battalion Male Only","sc":281,"st":26,"total":1341},{"ews":228,"general":916,"obc":615,"post_name":"Constable Female Battalion Lucknow, Badaun and Gorakhpur","sc":478,"st":45,"total":2282},{"ews":7,"general":30,"obc":19,"post_name":"Constable Horseman Male Only","sc":14,"st":1,"total":71},{"ews":327,"general":1314,"obc":885,"post_name":"Jail Warden Male","sc":688,"st":65,"total":3279},{"ews":10,"general":44,"obc":28,"post_name":"Jail Warden Female","sc":22,"st":2,"total":106}]},"ageCalculateDate":"","ageLimit":{"age_relaxation":"Age relaxation extra as per UPPRPB Constable Recruitment Rules.","as_on":"01 July 2025","maximum_age_female":"28 Years","maximum_age_male":"25 Years","minimum_age":"18 Years"},"ageLimitManual":"as_on: 01 July 2025\nminimum_age: 18 Years\nmaximum_age_male: 25 Years\nmaximum_age_female: 28 Years\nage_relaxation: Age relaxation extra as per UPPRPB Constable Recruitment Rules.","ageRelaxation":"Age relaxation extra as per UPPRPB Constable Recruitment Rules.","allCandidateFee":"","answerKeyDate":"","answerKeyLink":"","applicationFee":[{"category":"General / OBC / EWS","fee":"₹500"},{"category":"SC / ST","fee":"₹400"}],"applicationFeeManual":"","applicationFees":[{"category":"General / OBC / EWS","fee":"₹500"},{"category":"SC / ST","fee":"₹400"}],"applyLink":"https://upcons2025.com/upcondiad2025/loginpage.aspx","basicDetailsManual":"","bothExamFee":"","canonicalUrl":"https://emitrawala.online/post/up-police-constable-2026-exam-city-admit-card/","category":"Admit Card","categoryWiseVacancy":"","createdAt":1780389153140,"department":"Uttar Pradesh Police Recruitment & Promotion Board (UPPRPB)","detailLayout":"table","detailLink":"#","displayOrder":5,"eligibilityManual":"","examCityDate":"","examDate":"","experience":"","extraUsefulManual":"Q1: UP Police Constable 2026 Exam City कब जारी हुई?\nA1: UP Police Constable 2026 Exam City Details 01 June 2026 को जारी की गई है।\n\nQ2: UP Police Constable 2026 Exam Date क्या है?\nA2: UP Police Constable 2026 परीक्षा 08 June 2026 से 10 June 2026 तक होगी।\n\nQ3: UP Police Constable 2026 में कुल कितने पद हैं?\nA3: इस भर्ती में कुल 32679 पद हैं।\n\nQ4: UP Police Constable Exam City कैसे check करें?\nA4: Candidate official exam city link पर Registration Number और Date of Birth डालकर exam city check कर सकते हैं।\n\nQ5: UP Police Constable Admit Card कब आएगा?\nA5: Admit Card परीक्षा से पहले official website पर जारी किया जाएगा।","faq":[{"answer":"UP Police Constable 2026 Exam City Details 01 June 2026 को जारी की गई है।","question":"UP Police Constable 2026 Exam City कब जारी हुई?"},{"answer":"UP Police Constable 2026 परीक्षा 08 June 2026 से 10 June 2026 तक होगी।","question":"UP Police Constable 2026 Exam Date क्या है?"},{"answer":"इस भर्ती में कुल 32679 पद हैं।","question":"UP Police Constable 2026 में कुल कितने पद हैं?"},{"answer":"Candidate official exam city link पर Registration Number और Date of Birth डालकर exam city check कर सकते हैं।","question":"UP Police Constable Exam City कैसे check करें?"},{"answer":"Admit Card परीक्षा से पहले official website पर जारी किया जाएगा।","question":"UP Police Constable Admit Card कब आएगा?"}],"faqs":[{"answer":"UP Police Constable 2026 Exam City Details 01 June 2026 को जारी की गई है।","question":"UP Police Constable 2026 Exam City कब जारी हुई?"},{"answer":"UP Police Constable 2026 परीक्षा 08 June 2026 से 10 June 2026 तक होगी।","question":"UP Police Constable 2026 Exam Date क्या है?"},{"answer":"इस भर्ती में कुल 32679 पद हैं।","question":"UP Police Constable 2026 में कुल कितने पद हैं?"},{"answer":"Candidate official exam city link पर Registration Number और Date of Birth डालकर exam city check कर सकते हैं।","question":"UP Police Constable Exam City कैसे check करें?"},{"answer":"Admit Card परीक्षा से पहले official website पर जारी किया जाएगा।","question":"UP Police Constable Admit Card कब आएगा?"}],"femaleFee":"","generalObcFee":"500","importantDates":[{"label":"Application Begin","value":"31 December 2025"},{"label":"Last Date for Apply Online","value":"30 January 2026"},{"label":"Last Date for Fee Payment","value":"30 January 2026"},{"label":"Correction Date","value":"31 January 2026 to 03 February 2026 up to 06:00 AM"},{"label":"Exam Date","value":"08 June 2026 to 10 June 2026"},{"label":"Exam City Available","value":"01 June 2026"},{"label":"Admit Card Available","value":"Before Exam"}],"importantDatesManual":"Application Begin: 31 December 2025\nLast Date for Apply Online: 30 January 2026\nLast Date for Fee Payment: 30 January 2026\nCorrection Date: 31 January 2026 to 03 February 2026 up to 06:00 AM\nExam Date: 08 June 2026 to 10 June 2026\nExam City Available: 01 June 2026\nAdmit Card Available: Before Exam","importantLinks":[{"title":"Check Exam City","url":"https://upcons2025.com/upcondiad2025/loginpage.aspx"},{"title":"Official Website","url":"https://uppbpb.gov.in/"},{"title":"Download Exam City Notice","url":"https://uppbpb.gov.in/FilesUploaded/Notice/Constable_2025_Dist.Info83f516f4-d1c9-4d9f-8d9f-d153c08ab87e.pdf"},{"title":"Download Official Notification","url":"https://uppbpb.gov.in/FilesUploaded/Notice/CONSTABLE-VIGYAPTIc7be0cc8-3365-471e-9237-447c528d341a.pdf"},{"title":"Apply / Correction Portal","url":"https://www.upprpb.in/"}],"importantLinksManual":"","intro":["Uttar Pradesh Police Recruitment & Promotion Board (UPPRPB) ने UP Police Constable Recruitment 2025-26 के लिए Exam City Details जारी कर दी है। जिन उम्मीदवारों ने 32679 पदों के लिए आवेदन किया था, वे अपना Registration Number और Date of Birth डालकर Exam City check कर सकते हैं। परीक्षा 08 June 2026 से 10 June 2026 तक आयोजित की जाएगी।"],"jsonLd":{"@context":"https://schema.org","@graph":[{"@id":"https://emitrawala.online/post/up-police-constable-2026-exam-city-admit-card/#breadcrumb","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","item":"https://emitrawala.online/","name":"Home","position":1},{"@type":"ListItem","item":"https://emitrawala.online/job-form.html","name":"Latest Jobs","position":2},{"@type":"ListItem","item":"https://emitrawala.online/post/up-police-constable-2026-exam-city-admit-card/","name":"UP Police Constable 2026 Exam City Details / Admit Card","position":3}]},{"@id":"https://emitrawala.online/post/up-police-constable-2026-exam-city-admit-card/#article","@type":["Article","JobPosting"],"dateModified":"2026-06-08T06:24:19.649Z","datePosted":"2026-06-01","datePublished":"2026-06-02T08:32:33.140Z","description":"UPPRPB UP Police Constable 2026 Exam City Details released for 32679 posts. Check exam date, admit card, vacancy, fee, age limit, physical eligibility and offic","employmentType":"Online Form","headline":"UP Police Constable 2026 Exam City Details / E-MITRA WALA","hiringOrganization":{"@type":"Organization","name":"Uttar Pradesh Police Recruitment & Promotion Board (UPPRPB)"},"mainEntityOfPage":"https://emitrawala.online/post/up-police-constable-2026-exam-city-admit-card/","publisher":{"@type":"Organization","name":"E-MITRA WALA","url":"https://emitrawala.online/"},"title":"UP Police Constable 2026 Exam City Details / Admit Card","url":"https://emitrawala.online/post/up-police-constable-2026-exam-city-admit-card/"},{"@id":"https://emitrawala.online/post/up-police-constable-2026-exam-city-admit-card/#faq","@type":"FAQPage","mainEntity":[{"@type":"Question","acceptedAnswer":{"@type":"Answer","text":"UP Police Constable 2026 Exam City Details 01 June 2026 को जारी की गई है।"},"name":"UP Police Constable 2026 Exam City कब जारी हुई?"},{"@type":"Question","acceptedAnswer":{"@type":"Answer","text":"UP Police Constable 2026 परीक्षा 08 June 2026 से 10 June 2026 तक होगी।"},"name":"UP Police Constable 2026 Exam Date क्या है?"},{"@type":"Question","acceptedAnswer":{"@type":"Answer","text":"इस भर्ती में कुल 32679 पद हैं।"},"name":"UP Police Constable 2026 में कुल कितने पद हैं?"},{"@type":"Question","acceptedAnswer":{"@type":"Answer","text":"Candidate official exam city link पर Registration Number और Date of Birth डालकर exam city check कर सकते हैं।"},"name":"UP Police Constable Exam City कैसे check करें?"},{"@type":"Question","acceptedAnswer":{"@type":"Answer","text":"Admit Card परीक्षा से पहले official website पर जारी किया जाएगा।"},"name":"UP Police Constable Admit Card कब आएगा?"}]}]},"lastApplyDate":"Update Soon","lastDate":"Update Soon","lastFeeDate":"","location":"All India","maxAge":"","metaDescription":"UPPRPB UP Police Constable 2026 Exam City Details released for 32679 posts. Check exam date, admit card, vacancy, fee, age limit, physical eligibility and offic","minAge":"18 Years","obcFemaleFee":"","officialWebsite":"https://uppbpb.gov.in/","overview":["Uttar Pradesh Police Recruitment & Promotion Board (UPPRPB) ने UP Police Constable Recruitment 2025-26 के लिए Exam City Details जारी कर दी है। जिन उम्मीदवारों ने 32679 पदों के लिए आवेदन किया था, वे अपना Registration Number और Date of Birth डालकर Exam City check कर सकते हैं। परीक्षा 08 June 2026 से 10 June 2026 तक आयोजित की जाएगी।"],"pageContent":"Important Dates:\nlabel: Application Begin\nvalue: 31 December 2025\nlabel: Last Date for Apply Online\nvalue: 30 January 2026\nlabel: Last Date for Fee Payment\nvalue: 30 January 2026\nlabel: Correction Date\nvalue: 31 January 2026 to 03 February 2026 up to 06:00 AM\nlabel: Exam Date\nvalue: 08 June 2026 to 10 June 2026\nlabel: Exam City Available\nvalue: 01 June 2026\nlabel: Admit Card Available\nvalue: Before Exam\n\nApplication Fee:\ncategory: General / OBC / EWS\nfee: ₹500\ncategory: SC / ST\nfee: ₹400\n\nVacancy Details:\npost_name: Constable Civil Police Male/Female\ngeneral: 4191\news: 1046\nobc: 2826\nsc: 2198\nst: 208\ntotal: 10469\npost_name: Constable PAC / Armed Police Male Only\ngeneral: 6060\news: 1512\nobc: 4083\nsc: 3176\nst: 300\ntotal: 15131\npost_name: Constable Special Force Battalion Male Only\ngeneral: 538\news: 134\nobc: 362\nsc: 281\nst: 26\ntotal: 1341\npost_name: Constable Female Battalion Lucknow, Badaun and Gorakhpur\ngeneral: 916\news: 228\nobc: 615\nsc: 478\nst: 45\ntotal: 2282\npost_name: Constable Horseman Male Only\ngeneral: 30\news: 7\nobc: 19\nsc: 14\nst: 1\ntotal: 71\npost_name: Jail Warden Male\ngeneral: 1314\news: 327\nobc: 885\nsc: 688\nst: 65\ntotal: 3279\npost_name: Jail Warden Female\ngeneral: 44\news: 10\nobc: 28\nsc: 22\nst: 2\ntotal: 106\n\nEligibility:\npost_name: UP Police Constable\nqualification: Candidate must have passed 10+2 Intermediate examination from any recognized board in India. Read official notification for detailed eligibility.\n\nSelection Process:\nWritten Examination\nDocument Verification\nPhysical Standard Test\nPhysical Efficiency Test\nMedical Examination\nFinal Merit List.","paymentMode":"Candidates could pay the exam fee through e-challan, debit card, credit card or net banking.","phCandidateFee":"","physicalEligibility":"gender: Male\nheight: 168 cm\nheight_st: 160 cm\nchest: 79-84 cm\nchest_st: 77-82 cm\nrunning: 4.8 km in 25 minutes\ngender: Female\nheight: 152 cm\nheight_st: 147 cm\nchest: Not Applicable\nrunning: 2.4 km in 14 minutes","postDate":"01-Jun-2026","postName":"","postStatus":"published","postTarget":"admitCard","postWiseApplyLinks":"Check Exam City: https://upcons2025.com/upcondiad2025/loginpage.aspx\nDownload Exam City Notice: https://uppbpb.gov.in/FilesUploaded/Notice/Constable_2025_Dist.Info83f516f4-d1c9-4d9f-8d9f-d153c08ab87e.pdf\nDownload Official Notification: https://uppbpb.gov.in/FilesUploaded/Notice/CONSTABLE-VIGYAPTIc7be0cc8-3365-471e-9237-447c528d341a.pdf\nApply / Correction Portal: https://www.upprpb.in/","qualification":"Update Soon","requiredDocuments":"","resultDate":"","resultLink":"","salary":"","scFemaleFee":"","scStFee":"400","selectionProcess":"Written Examination\nDocument Verification\nPhysical Standard Test\nPhysical Efficiency Test\nMedical Examination\nFinal Merit List","seoTitle":"UP Police Constable 2026 Exam City Details / E-MITRA WALA","seoUpdatedAt":1781184127946,"shortInfo":"Uttar Pradesh Police Recruitment & Promotion Board (UPPRPB) ने UP Police Constable Recruitment 2025-26 के लिए Exam City Details जारी कर दी है। जिन उम्मीदवारों ने 32679 पदों के लिए आवेदन किया था, वे अपना Registration Number और Date of Birth डालकर Exam City check कर सकते हैं। परीक्षा 08 June 2026 से 10 June 2026 तक आयोजित की जाएगी।","singleExamFee":"","slug":"up-police-constable-2026-exam-city-admit-card","staBGeneralFee":"","staBRefundFee":"","staBScStFemaleFee":"","startDate":"Update Soon","stateWiseVacancy":"","syllabusLink":"","techAGeneralFee":"","techARefundFee":"","techAScStFemaleFee":"","tierTwoExamDate":"","title":"UP Police Constable 2026 Exam City Details / Admit Card","totalPosts":"32679","totalVacancy":"","type":"Online Form","updatedAt":1780899859649,"vacancyDetails":[{"ews":1046,"general":4191,"obc":2826,"post_name":"Constable Civil Police Male/Female","sc":2198,"st":208,"total":10469},{"ews":1512,"general":6060,"obc":4083,"post_name":"Constable PAC / Armed Police Male Only","sc":3176,"st":300,"total":15131},{"ews":134,"general":538,"obc":362,"post_name":"Constable Special Force Battalion Male Only","sc":281,"st":26,"total":1341},{"ews":228,"general":916,"obc":615,"post_name":"Constable Female Battalion Lucknow, Badaun and Gorakhpur","sc":478,"st":45,"total":2282},{"ews":7,"general":30,"obc":19,"post_name":"Constable Horseman Male Only","sc":14,"st":1,"total":71},{"ews":327,"general":1314,"obc":885,"post_name":"Jail Warden Male","sc":688,"st":65,"total":3279},{"ews":10,"general":44,"obc":28,"post_name":"Jail Warden Female","sc":22,"st":2,"total":106}],"vacancyDetailsManual":"Total Posts: 10469\n\nTotal Posts: 15131\n\nTotal Posts: 1341\n\nTotal Posts: 2282\n\nTotal Posts: 71\n\nTotal Posts: 3279\n\nTotal Posts: 106"}};</script>
+<script>window.__EMITRA_STATIC_POST__={"id":"-Ou6ScaFqKqWhSxlOY81","job":{"admitCardDate":"Exam se 3-7 din pehle","admitCardLink":"","advancedArticleData":{"ageLimit":{"age_relaxation":"Age relaxation extra as per UPPRPB Constable Recruitment Rules.","as_on":"01 July 2025","maximum_age_female":"28 Years","maximum_age_male":"25 Years","minimum_age":"18 Years"},"applicationFee":[{"category":"General / OBC / EWS","fee":"₹500"},{"category":"SC / ST","fee":"₹400"}],"applicationFees":[{"category":"General / OBC / EWS","fee":"₹500"},{"category":"SC / ST","fee":"₹400"}],"faq":[{"answer":"UP Police Constable 2026 Exam City Details 01 June 2026 को जारी की गई है।","question":"UP Police Constable 2026 Exam City कब जारी हुई?"},{"answer":"UP Police Constable 2026 परीक्षा 08 June 2026 से 10 June 2026 तक होगी।","question":"UP Police Constable 2026 Exam Date क्या है?"},{"answer":"इस भर्ती में कुल 32679 पद हैं।","question":"UP Police Constable 2026 में कुल कितने पद हैं?"},{"answer":"Candidate official exam city link पर Registration Number और Date of Birth डालकर exam city check कर सकते हैं।","question":"UP Police Constable Exam City कैसे check करें?"},{"answer":"Admit Card परीक्षा से पहले official website पर जारी किया जाएगा।","question":"UP Police Constable Admit Card कब आएगा?"}],"faqs":[{"answer":"UP Police Constable 2026 Exam City Details 01 June 2026 को जारी की गई है।","question":"UP Police Constable 2026 Exam City कब जारी हुई?"},{"answer":"UP Police Constable 2026 परीक्षा 08 June 2026 से 10 June 2026 तक होगी।","question":"UP Police Constable 2026 Exam Date क्या है?"},{"answer":"इस भर्ती में कुल 32679 पद हैं।","question":"UP Police Constable 2026 में कुल कितने पद हैं?"},{"answer":"Candidate official exam city link पर Registration Number और Date of Birth डालकर exam city check कर सकते हैं।","question":"UP Police Constable Exam City कैसे check करें?"},{"answer":"Admit Card परीक्षा से पहले official website पर जारी किया जाएगा।","question":"UP Police Constable Admit Card कब आएगा?"}],"importantDates":[{"label":"Application Begin","value":"31 December 2025"},{"label":"Last Date for Apply Online","value":"30 January 2026"},{"label":"Last Date for Fee Payment","value":"30 January 2026"},{"label":"Correction Date","value":"31 January 2026 to 03 February 2026 up to 06:00 AM"},{"label":"Exam Date","value":"08 June 2026 to 10 June 2026"},{"label":"Exam City Available","value":"01 June 2026"},{"label":"Admit Card Available","value":"Before Exam"}],"importantLinks":[{"title":"Check Exam City","url":"https://upcons2025.com/upcondiad2025/loginpage.aspx"},{"title":"Official Website","url":"https://uppbpb.gov.in/"},{"title":"Download Exam City Notice","url":"https://uppbpb.gov.in/FilesUploaded/Notice/Constable_2025_Dist.Info83f516f4-d1c9-4d9f-8d9f-d153c08ab87e.pdf"},{"title":"Download Official Notification","url":"https://uppbpb.gov.in/FilesUploaded/Notice/CONSTABLE-VIGYAPTIc7be0cc8-3365-471e-9237-447c528d341a.pdf"},{"title":"Apply / Correction Portal","url":"https://www.upprpb.in/"}],"intro":["Uttar Pradesh Police Recruitment & Promotion Board (UPPRPB) ने UP Police Constable Recruitment 2025-26 के लिए Exam City Details जारी कर दी है। जिन उम्मीदवारों ने 32679 पदों के लिए आवेदन किया था, वे अपना Registration Number और Date of Birth डालकर Exam City check कर सकते हैं। परीक्षा 08 June 2026 से 10 June 2026 तक आयोजित की जाएगी।"],"overview":["Uttar Pradesh Police Recruitment & Promotion Board (UPPRPB) ने UP Police Constable Recruitment 2025-26 के लिए Exam City Details जारी कर दी है। जिन उम्मीदवारों ने 32679 पदों के लिए आवेदन किया था, वे अपना Registration Number और Date of Birth डालकर Exam City check कर सकते हैं। परीक्षा 08 June 2026 से 10 June 2026 तक आयोजित की जाएगी।"],"postTarget":"admitCard","selectionProcess":"Written Examination\nDocument Verification\nPhysical Standard Test\nPhysical Efficiency Test\nMedical Examination\nFinal Merit List","slug":"up-police-constable-2026-exam-city-admit-card","title":"UP Police Constable 2026 Exam City Details / Admit Card","vacancyDetails":[{"ews":1046,"general":4191,"obc":2826,"post_name":"Constable Civil Police Male/Female","sc":2198,"st":208,"total":10469},{"ews":1512,"general":6060,"obc":4083,"post_name":"Constable PAC / Armed Police Male Only","sc":3176,"st":300,"total":15131},{"ews":134,"general":538,"obc":362,"post_name":"Constable Special Force Battalion Male Only","sc":281,"st":26,"total":1341},{"ews":228,"general":916,"obc":615,"post_name":"Constable Female Battalion Lucknow, Badaun and Gorakhpur","sc":478,"st":45,"total":2282},{"ews":7,"general":30,"obc":19,"post_name":"Constable Horseman Male Only","sc":14,"st":1,"total":71},{"ews":327,"general":1314,"obc":885,"post_name":"Jail Warden Male","sc":688,"st":65,"total":3279},{"ews":10,"general":44,"obc":28,"post_name":"Jail Warden Female","sc":22,"st":2,"total":106}]},"ageCalculateDate":"","ageLimit":{"age_relaxation":"Age relaxation extra as per UPPRPB Constable Recruitment Rules.","as_on":"01 July 2025","maximum_age_female":"28 Years","maximum_age_male":"25 Years","minimum_age":"18 Years"},"ageLimitManual":"as_on: 01 July 2025\nminimum_age: 18 Years\nmaximum_age_male: 25 Years\nmaximum_age_female: 28 Years\nage_relaxation: Age relaxation extra as per UPPRPB Constable Recruitment Rules.","ageRelaxation":"Age relaxation extra as per UPPRPB Constable Recruitment Rules.","allCandidateFee":"","answerKeyDate":"","answerKeyLink":"","applicationFee":[{"category":"General / OBC / EWS","fee":"₹500"},{"category":"SC / ST","fee":"₹400"}],"applicationFeeManual":"","applicationFees":[{"category":"General / OBC / EWS","fee":"₹500"},{"category":"SC / ST","fee":"₹400"}],"applyLink":"https://upcons2025.com/upcondiad2025/loginpage.aspx","basicDetailsManual":"","bothExamFee":"","canonicalUrl":"https://emitrawala.online/post/up-police-constable-2026-exam-city-admit-card/","category":"Admit Card","categoryWiseVacancy":"","createdAt":1780389153140,"department":"Uttar Pradesh Police Recruitment & Promotion Board (UPPRPB)","detailLayout":"table","detailLink":"#","displayOrder":5,"eligibilityManual":"","examCityDate":"","examDate":"","experience":"","extraUsefulManual":"Q1: UP Police Constable 2026 Exam City कब जारी हुई?\nA1: UP Police Constable 2026 Exam City Details 01 June 2026 को जारी की गई है।\n\nQ2: UP Police Constable 2026 Exam Date क्या है?\nA2: UP Police Constable 2026 परीक्षा 08 June 2026 से 10 June 2026 तक होगी।\n\nQ3: UP Police Constable 2026 में कुल कितने पद हैं?\nA3: इस भर्ती में कुल 32679 पद हैं।\n\nQ4: UP Police Constable Exam City कैसे check करें?\nA4: Candidate official exam city link पर Registration Number और Date of Birth डालकर exam city check कर सकते हैं।\n\nQ5: UP Police Constable Admit Card कब आएगा?\nA5: Admit Card परीक्षा से पहले official website पर जारी किया जाएगा।","faq":[{"answer":"UP Police Constable 2026 Exam City Details 01 June 2026 को जारी की गई है।","question":"UP Police Constable 2026 Exam City कब जारी हुई?"},{"answer":"UP Police Constable 2026 परीक्षा 08 June 2026 से 10 June 2026 तक होगी।","question":"UP Police Constable 2026 Exam Date क्या है?"},{"answer":"इस भर्ती में कुल 32679 पद हैं।","question":"UP Police Constable 2026 में कुल कितने पद हैं?"},{"answer":"Candidate official exam city link पर Registration Number और Date of Birth डालकर exam city check कर सकते हैं।","question":"UP Police Constable Exam City कैसे check करें?"},{"answer":"Admit Card परीक्षा से पहले official website पर जारी किया जाएगा।","question":"UP Police Constable Admit Card कब आएगा?"}],"faqs":[{"answer":"UP Police Constable 2026 Exam City Details 01 June 2026 को जारी की गई है।","question":"UP Police Constable 2026 Exam City कब जारी हुई?"},{"answer":"UP Police Constable 2026 परीक्षा 08 June 2026 से 10 June 2026 तक होगी।","question":"UP Police Constable 2026 Exam Date क्या है?"},{"answer":"इस भर्ती में कुल 32679 पद हैं।","question":"UP Police Constable 2026 में कुल कितने पद हैं?"},{"answer":"Candidate official exam city link पर Registration Number और Date of Birth डालकर exam city check कर सकते हैं।","question":"UP Police Constable Exam City कैसे check करें?"},{"answer":"Admit Card परीक्षा से पहले official website पर जारी किया जाएगा।","question":"UP Police Constable Admit Card कब आएगा?"}],"femaleFee":"","generalObcFee":"500","importantDates":[{"label":"Application Begin","value":"31 December 2025"},{"label":"Last Date for Apply Online","value":"30 January 2026"},{"label":"Last Date for Fee Payment","value":"30 January 2026"},{"label":"Correction Date","value":"31 January 2026 to 03 February 2026 up to 06:00 AM"},{"label":"Exam Date","value":"08 June 2026 to 10 June 2026"},{"label":"Exam City Available","value":"01 June 2026"},{"label":"Admit Card Available","value":"Before Exam"}],"importantDatesManual":"Application Begin: 31 December 2025\nLast Date for Apply Online: 30 January 2026\nLast Date for Fee Payment: 30 January 2026\nCorrection Date: 31 January 2026 to 03 February 2026 up to 06:00 AM\nExam Date: 08 June 2026 to 10 June 2026\nExam City Available: 01 June 2026\nAdmit Card Available: Before Exam","importantLinks":[{"title":"Check Exam City","url":"https://upcons2025.com/upcondiad2025/loginpage.aspx"},{"title":"Official Website","url":"https://uppbpb.gov.in/"},{"title":"Download Exam City Notice","url":"https://uppbpb.gov.in/FilesUploaded/Notice/Constable_2025_Dist.Info83f516f4-d1c9-4d9f-8d9f-d153c08ab87e.pdf"},{"title":"Download Official Notification","url":"https://uppbpb.gov.in/FilesUploaded/Notice/CONSTABLE-VIGYAPTIc7be0cc8-3365-471e-9237-447c528d341a.pdf"},{"title":"Apply / Correction Portal","url":"https://www.upprpb.in/"}],"importantLinksManual":"","intro":["Uttar Pradesh Police Recruitment & Promotion Board (UPPRPB) ने UP Police Constable Recruitment 2025-26 के लिए Exam City Details जारी कर दी है। जिन उम्मीदवारों ने 32679 पदों के लिए आवेदन किया था, वे अपना Registration Number और Date of Birth डालकर Exam City check कर सकते हैं। परीक्षा 08 June 2026 से 10 June 2026 तक आयोजित की जाएगी।"],"jsonLd":{"@context":"https://schema.org","@graph":[{"@id":"https://emitrawala.online/post/up-police-constable-2026-exam-city-admit-card/#breadcrumb","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","item":"https://emitrawala.online/","name":"Home","position":1},{"@type":"ListItem","item":"https://emitrawala.online/job-form.html","name":"Latest Jobs","position":2},{"@type":"ListItem","item":"https://emitrawala.online/post/up-police-constable-2026-exam-city-admit-card/","name":"UP Police Constable 2026 Exam City Details / Admit Card","position":3}]},{"@id":"https://emitrawala.online/post/up-police-constable-2026-exam-city-admit-card/#article","@type":["Article","JobPosting"],"dateModified":"2026-06-08T06:24:19.649Z","datePosted":"2026-06-01","datePublished":"2026-06-02T08:32:33.140Z","description":"UPPRPB UP Police Constable 2026 Exam City Details released for 32679 posts. Check exam date, admit card, vacancy, fee, age limit, physical eligibility and offic","employmentType":"Online Form","headline":"UP Police Constable 2026 Exam City Details / E-MITRA WALA","hiringOrganization":{"@type":"Organization","name":"Uttar Pradesh Police Recruitment & Promotion Board (UPPRPB)"},"mainEntityOfPage":"https://emitrawala.online/post/up-police-constable-2026-exam-city-admit-card/","publisher":{"@type":"Organization","name":"E-MITRA WALA","url":"https://emitrawala.online/"},"title":"UP Police Constable 2026 Exam City Details / Admit Card","url":"https://emitrawala.online/post/up-police-constable-2026-exam-city-admit-card/"},{"@id":"https://emitrawala.online/post/up-police-constable-2026-exam-city-admit-card/#faq","@type":"FAQPage","mainEntity":[{"@type":"Question","acceptedAnswer":{"@type":"Answer","text":"UP Police Constable 2026 Exam City Details 01 June 2026 को जारी की गई है।"},"name":"UP Police Constable 2026 Exam City कब जारी हुई?"},{"@type":"Question","acceptedAnswer":{"@type":"Answer","text":"UP Police Constable 2026 परीक्षा 08 June 2026 से 10 June 2026 तक होगी।"},"name":"UP Police Constable 2026 Exam Date क्या है?"},{"@type":"Question","acceptedAnswer":{"@type":"Answer","text":"इस भर्ती में कुल 32679 पद हैं।"},"name":"UP Police Constable 2026 में कुल कितने पद हैं?"},{"@type":"Question","acceptedAnswer":{"@type":"Answer","text":"Candidate official exam city link पर Registration Number और Date of Birth डालकर exam city check कर सकते हैं।"},"name":"UP Police Constable Exam City कैसे check करें?"},{"@type":"Question","acceptedAnswer":{"@type":"Answer","text":"Admit Card परीक्षा से पहले official website पर जारी किया जाएगा।"},"name":"UP Police Constable Admit Card कब आएगा?"}]}]},"lastApplyDate":"Update Soon","lastDate":"Update Soon","lastFeeDate":"","location":"All India","maxAge":"","metaDescription":"UPPRPB UP Police Constable 2026 Exam City Details released for 32679 posts. Check exam date, admit card, vacancy, fee, age limit, physical eligibility and offic","minAge":"18 Years","obcFemaleFee":"","officialWebsite":"https://uppbpb.gov.in/","overview":["Uttar Pradesh Police Recruitment & Promotion Board (UPPRPB) ने UP Police Constable Recruitment 2025-26 के लिए Exam City Details जारी कर दी है। जिन उम्मीदवारों ने 32679 पदों के लिए आवेदन किया था, वे अपना Registration Number और Date of Birth डालकर Exam City check कर सकते हैं। परीक्षा 08 June 2026 से 10 June 2026 तक आयोजित की जाएगी।"],"pageContent":"Important Dates:\nlabel: Application Begin\nvalue: 31 December 2025\nlabel: Last Date for Apply Online\nvalue: 30 January 2026\nlabel: Last Date for Fee Payment\nvalue: 30 January 2026\nlabel: Correction Date\nvalue: 31 January 2026 to 03 February 2026 up to 06:00 AM\nlabel: Exam Date\nvalue: 08 June 2026 to 10 June 2026\nlabel: Exam City Available\nvalue: 01 June 2026\nlabel: Admit Card Available\nvalue: Before Exam\n\nApplication Fee:\ncategory: General / OBC / EWS\nfee: ₹500\ncategory: SC / ST\nfee: ₹400\n\nVacancy Details:\npost_name: Constable Civil Police Male/Female\ngeneral: 4191\news: 1046\nobc: 2826\nsc: 2198\nst: 208\ntotal: 10469\npost_name: Constable PAC / Armed Police Male Only\ngeneral: 6060\news: 1512\nobc: 4083\nsc: 3176\nst: 300\ntotal: 15131\npost_name: Constable Special Force Battalion Male Only\ngeneral: 538\news: 134\nobc: 362\nsc: 281\nst: 26\ntotal: 1341\npost_name: Constable Female Battalion Lucknow, Badaun and Gorakhpur\ngeneral: 916\news: 228\nobc: 615\nsc: 478\nst: 45\ntotal: 2282\npost_name: Constable Horseman Male Only\ngeneral: 30\news: 7\nobc: 19\nsc: 14\nst: 1\ntotal: 71\npost_name: Jail Warden Male\ngeneral: 1314\news: 327\nobc: 885\nsc: 688\nst: 65\ntotal: 3279\npost_name: Jail Warden Female\ngeneral: 44\news: 10\nobc: 28\nsc: 22\nst: 2\ntotal: 106\n\nEligibility:\npost_name: UP Police Constable\nqualification: Candidate must have passed 10+2 Intermediate examination from any recognized board in India. Read official notification for detailed eligibility.\n\nSelection Process:\nWritten Examination\nDocument Verification\nPhysical Standard Test\nPhysical Efficiency Test\nMedical Examination\nFinal Merit List.","paymentMode":"Candidates could pay the exam fee through e-challan, debit card, credit card or net banking.","phCandidateFee":"","physicalEligibility":"gender: Male\nheight: 168 cm\nheight_st: 160 cm\nchest: 79-84 cm\nchest_st: 77-82 cm\nrunning: 4.8 km in 25 minutes\ngender: Female\nheight: 152 cm\nheight_st: 147 cm\nchest: Not Applicable\nrunning: 2.4 km in 14 minutes","postDate":"01-Jun-2026","postName":"","postStatus":"published","postTarget":"admitCard","postWiseApplyLinks":"Check Exam City: https://upcons2025.com/upcondiad2025/loginpage.aspx\nDownload Exam City Notice: https://uppbpb.gov.in/FilesUploaded/Notice/Constable_2025_Dist.Info83f516f4-d1c9-4d9f-8d9f-d153c08ab87e.pdf\nDownload Official Notification: https://uppbpb.gov.in/FilesUploaded/Notice/CONSTABLE-VIGYAPTIc7be0cc8-3365-471e-9237-447c528d341a.pdf\nApply / Correction Portal: https://www.upprpb.in/","qualification":"Update Soon","requiredDocuments":"","resultDate":"","resultLink":"","salary":"","scFemaleFee":"","scStFee":"400","selectionProcess":"Written Examination\nDocument Verification\nPhysical Standard Test\nPhysical Efficiency Test\nMedical Examination\nFinal Merit List","seoTitle":"UP Police Constable 2026 Exam City Details / E-MITRA WALA","seoUpdatedAt":1781232620834,"shortInfo":"Uttar Pradesh Police Recruitment & Promotion Board (UPPRPB) ने UP Police Constable Recruitment 2025-26 के लिए Exam City Details जारी कर दी है। जिन उम्मीदवारों ने 32679 पदों के लिए आवेदन किया था, वे अपना Registration Number और Date of Birth डालकर Exam City check कर सकते हैं। परीक्षा 08 June 2026 से 10 June 2026 तक आयोजित की जाएगी।","singleExamFee":"","slug":"up-police-constable-2026-exam-city-admit-card","staBGeneralFee":"","staBRefundFee":"","staBScStFemaleFee":"","startDate":"Update Soon","stateWiseVacancy":"","syllabusLink":"","techAGeneralFee":"","techARefundFee":"","techAScStFemaleFee":"","tierTwoExamDate":"","title":"UP Police Constable 2026 Exam City Details / Admit Card","totalPosts":"32679","totalVacancy":"","type":"Online Form","updatedAt":1780899859649,"vacancyDetails":[{"ews":1046,"general":4191,"obc":2826,"post_name":"Constable Civil Police Male/Female","sc":2198,"st":208,"total":10469},{"ews":1512,"general":6060,"obc":4083,"post_name":"Constable PAC / Armed Police Male Only","sc":3176,"st":300,"total":15131},{"ews":134,"general":538,"obc":362,"post_name":"Constable Special Force Battalion Male Only","sc":281,"st":26,"total":1341},{"ews":228,"general":916,"obc":615,"post_name":"Constable Female Battalion Lucknow, Badaun and Gorakhpur","sc":478,"st":45,"total":2282},{"ews":7,"general":30,"obc":19,"post_name":"Constable Horseman Male Only","sc":14,"st":1,"total":71},{"ews":327,"general":1314,"obc":885,"post_name":"Jail Warden Male","sc":688,"st":65,"total":3279},{"ews":10,"general":44,"obc":28,"post_name":"Jail Warden Female","sc":22,"st":2,"total":106}],"vacancyDetailsManual":"Total Posts: 10469\n\nTotal Posts: 15131\n\nTotal Posts: 1341\n\nTotal Posts: 2282\n\nTotal Posts: 71\n\nTotal Posts: 3279\n\nTotal Posts: 106"}};</script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
@@ -957,12 +986,12 @@ const schemaDateOrUndefined = (value = "") => {
   return date ? date.toISOString().slice(0, 10) : undefined;
 };
 
-const buildBreadcrumbSchema = (title = "Job Details", canonicalUrl = location.href) => ({
+const buildBreadcrumbSchema = (title = "Job Details", canonicalUrl = location.href, currentAffairs = false) => ({
   "@type":"BreadcrumbList",
   "@id":`${canonicalUrl}#breadcrumb`,
   "itemListElement":[
     { "@type":"ListItem", "position":1, "name":"Home", "item":`${location.origin}/index.html` },
-    { "@type":"ListItem", "position":2, "name":"Latest Jobs", "item":`${location.origin}/job-form.html` },
+    { "@type":"ListItem", "position":2, "name":currentAffairs ? "Current Affairs" : "Latest Jobs", "item":`${location.origin}/${currentAffairs ? "current-affairs.html" : "job-form.html"}` },
     { "@type":"ListItem", "position":3, "name":title, "item":canonicalUrl }
   ]
 });
@@ -1005,7 +1034,7 @@ const buildJobSchemaGraph = ({ job = {}, title = "Job Update", description = "",
   return {
     "@context":"https://schema.org",
     "@graph":[
-      buildBreadcrumbSchema(title, canonicalUrl),
+      buildBreadcrumbSchema(title, canonicalUrl, currentAffairs),
       article,
       ...(faqItems.length ? [faqPage] : [])
     ]
@@ -1044,15 +1073,92 @@ const hasCurrentAffairsQuestions = (job = {}) => getCurrentAffairsQuestionSource
   const options = Array.isArray(item.options) ? item.options : [item.optionA || item.a, item.optionB || item.b, item.optionC || item.c, item.optionD || item.d];
   return String(item.question || item.q || item.title || "").trim() && options.some((option) => String(option || "").trim());
 });
+const resolveCurrentAffairsPdfUrl = (job = {}) => {
+  const article = job.advancedArticleData && typeof job.advancedArticleData === "object" ? job.advancedArticleData : {};
+  const content = getObjectContent(job);
+  const articleContent = getObjectContent(article);
+  const direct = [
+    job.pdfLink, job.pdfUrl, job.currentAffairsPdf, job.currentAffairsPdfUrl, job.dailyPdf, job.dailyPdfUrl,
+    job.downloadPdf, job.downloadPdfUrl, job.pdfDownloadUrl, job.fileUrl, job.attachmentUrl,
+    content.pdfLink, content.pdfUrl, content.currentAffairsPdf, content.dailyPdf, content.downloadPdfUrl,
+    article.pdfLink, article.pdfUrl, article.currentAffairsPdf, article.dailyPdf, article.downloadPdfUrl,
+    articleContent.pdfLink, articleContent.pdfUrl, articleContent.currentAffairsPdf, articleContent.dailyPdf
+  ];
+  const fromDirect = direct.map(safeUrl).find((url) => url !== "#");
+  if(fromDirect){ return fromDirect; }
+  const linkSources = [job.importantLinks, job.links, job.attachments, content.importantLinks, content.links, article.importantLinks, article.links, articleContent.importantLinks, articleContent.links];
+  const linkItems = linkSources.flatMap((items) => Array.isArray(items) ? items : []);
+  const match = linkItems.find((item) => {
+    if(!item || typeof item !== "object"){ return false; }
+    const label = String(item.label || item.title || item.name || item.text || "").toLowerCase();
+    const url = String(item.url || item.href || item.link || item.file || "").trim();
+    return url && (/pdf|download|डाउनलोड/.test(label) || /\.pdf(?:$|[?#])/i.test(url));
+  });
+  return match ? safeUrl(match.url || match.href || match.link || match.file) : "#";
+};
+const loadScriptOnce = (src = "") => new Promise((resolve, reject) => {
+  const existing = document.querySelector(`script[src="${src}"]`);
+  if(existing){
+    if(existing.dataset.loaded === "true"){ resolve(); return; }
+    existing.addEventListener("load", resolve, { once:true });
+    existing.addEventListener("error", reject, { once:true });
+    return;
+  }
+  const script = document.createElement("script");
+  script.src = src;
+  script.async = true;
+  script.dataset.loaded = "false";
+  script.onload = () => { script.dataset.loaded = "true"; resolve(); };
+  script.onerror = reject;
+  document.head.appendChild(script);
+});
+window.downloadCurrentAffairsPdf = async (fileName = "daily-current-affairs.pdf") => {
+  const button = window.event?.currentTarget;
+  const oldText = button ? button.innerHTML : "";
+  let pdfSource = null;
+  try{
+    if(button){
+      button.disabled = true;
+      button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> PDF Ready ho rahi hai';
+    }
+    await loadScriptOnce("https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js");
+    const source = document.querySelector(".detail-sheet");
+    if(!source || !window.html2pdf){ throw new Error("PDF generator load nahi hua"); }
+    pdfSource = source;
+    if(document.fonts?.ready){ await document.fonts.ready; }
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    source.classList.add("ca-pdf-rendering");
+    await window.html2pdf().set({
+      margin: [8, 8, 8, 8],
+      filename: fileName || "daily-current-affairs.pdf",
+      image: { type:"jpeg", quality:0.98 },
+      html2canvas: { scale:2, useCORS:true, backgroundColor:"#ffffff" },
+      jsPDF: { unit:"mm", format:"a4", orientation:"portrait" },
+      pagebreak: { mode:["css", "legacy"] }
+    }).from(source).save();
+  }catch(error){
+    console.warn(error);
+    window.print();
+  }finally{
+    if(pdfSource){ pdfSource.classList.remove("ca-pdf-rendering"); }
+    if(button){
+      button.disabled = false;
+      button.innerHTML = oldText;
+    }
+  }
+};
 const isCurrentAffairsPost = (job = {}) => {
   const article = job.advancedArticleData && typeof job.advancedArticleData === "object" ? job.advancedArticleData : {};
+  const currentText = [job.title, job.slug, article.title, article.slug, job.category, article.category]
+    .map((value) => String(value || "").toLowerCase())
+    .join(" ");
   return [job.postTarget, job.postType, article.postTarget, article.postType, job.type, article.type]
     .some((value) => normalizePostTarget(value) === "currentAffairs")
+    || /current[-\s]*affairs|करेंट\s*अफेयर्स|करंट\s*अफेयर्स/.test(currentText)
     || Array.isArray(job.currentAffairs)
     || Array.isArray(article.currentAffairs)
     || Array.isArray(job.currentAffairsData)
-    || Array.isArray(job.currentAffairsData?.currentAffairs)
-    || hasCurrentAffairsQuestions(job);
+    || Array.isArray(job.currentAffairsData?.currentAffairs);
 };
 const isAdmissionPost = (job = {}) => {
   const article = job.advancedArticleData && typeof job.advancedArticleData === "object" ? job.advancedArticleData : {};
@@ -2169,20 +2275,27 @@ const renderMcqSection = (job = {}) => {
   const mcqBox = document.getElementById("mcqContent");
   const mcqPanel = document.getElementById("mcqPanel");
   const mcqs = normalizeMcqItems(isCurrentAffairsPost(job) ? getCurrentAffairsQuestionSource(job) : job.mcqs);
+  if(!mcqBox || !mcqPanel){ return; }
   if(!mcqs.length){
     mcqBox.innerHTML = "";
     mcqPanel.style.display = "none";
     return;
   }
+  const premiumClass = isCurrentAffairsPost(job) ? " ca-mcq-card" : "";
   mcqBox.innerHTML = `<div class="mcq-list">${mcqs.map((item, index) => {
     const correct = item.answer.toLowerCase();
     const optionsHtml = item.options.map((option, optionIndex) => {
       const optionLabel = String.fromCharCode(65 + optionIndex);
       const optionText = `${optionLabel}. ${option}`;
       const isCorrect = correct && (option.toLowerCase() === correct || optionText.toLowerCase() === correct || optionLabel.toLowerCase() === correct);
-      return `<div class="mcq-option ${isCorrect ? "correct" : ""}">${renderFormattedText(optionText)}</div>`;
+      return isCurrentAffairsPost(job)
+        ? `<div class="mcq-option ${isCorrect ? "correct" : ""}"><span>${optionLabel}</span>${renderFormattedText(option)}</div>`
+        : `<div class="mcq-option ${isCorrect ? "correct" : ""}">${renderFormattedText(optionText)}</div>`;
     }).join("");
-    return `<article class="mcq-card"><div class="mcq-question">Q${index + 1}. ${renderFormattedText(item.question)}</div><div class="mcq-options">${optionsHtml}</div>${item.answer ? `<div class="mcq-answer"><span class="manual-label">Correct Answer:</span> ${renderFormattedText(item.answer)}</div>` : ""}${item.explanation ? `<div class="mcq-explanation"><span class="manual-label">Explanation:</span> ${renderFormattedText(item.explanation)}</div>` : ""}</article>`;
+    const questionHtml = isCurrentAffairsPost(job)
+      ? `<div class="mcq-question"><span class="ca-q-badge">Q${index + 1}</span><strong>${renderFormattedText(item.question)}</strong></div>`
+      : `<div class="mcq-question">Q${index + 1}. ${renderFormattedText(item.question)}</div>`;
+    return `<article class="mcq-card${premiumClass}">${questionHtml}<div class="mcq-options">${optionsHtml}</div>${item.answer ? `<div class="mcq-answer"><span class="manual-label">Correct Answer:</span> ${renderFormattedText(item.answer)}</div>` : ""}${item.explanation ? `<div class="mcq-explanation"><span class="manual-label">Explanation:</span> ${renderFormattedText(item.explanation)}</div>` : ""}</article>`;
   }).join("")}</div>`;
   mcqPanel.style.display = "block";
 };
@@ -2222,11 +2335,34 @@ const hidePanels = (ids = []) => ids.forEach((id) => {
   if(panel){ panel.style.display = "none"; }
 });
 
+const removeCurrentAffairsJobPanels = () => [
+  "featurePanel", "shortInfoPanel", "importantPanel", "jobInfoPanel", "feePanel", "agePanel",
+  "vacancyPanel", "eligibilityPanel", "selectionPanel", "applyProcessPanel", "extraPanel",
+  "linksPanel", "faqPanel", "mcqPanel", "authorPanel", "jobToolsPanel"
+].forEach((id) => {
+  const panel = document.getElementById(id);
+  if(panel){ panel.remove(); }
+});
+
+const setPageContextLabel = (label = "Job Details") => {
+  const message = document.getElementById("jobMessage");
+  if(message && /load ho rahi/i.test(message.textContent || "")){
+    message.textContent = label === "Current Affairs" ? "Current Affairs load ho rahi hain..." : "Job details load ho rahi hain...";
+  }
+  const footerText = document.querySelector("footer p");
+  if(footerText && /E-MITRA WALA/i.test(footerText.textContent || "")){
+    footerText.textContent = `© 2026 E-MITRA WALA | ${label}`;
+  }
+};
+
 const renderCurrentAffairsDetail = ({ jobId = "", job = {}, title = "", description = "", canonicalUrl = "", allJobs = [] }) => {
+  const isStaticCurrentAffairs = document.body.classList.contains("current-affairs-static");
+  setPageContextLabel("Current Affairs");
   const introText = Array.isArray(job.intro) ? job.intro.map((item) => String(item || "").trim()).filter(Boolean).join("\n\n") : "";
   const dateText = job.postDate || job.date || job.content?.date || job["तारीख"] || job.currentAffairsData?.["तारीख"] || "";
   const categoryText = job.category || job.content?.category || job["श्रेणी"] || job.currentAffairsData?.["श्रेणी"] || "";
   const newsItems = normalizeCurrentAffairsNewsItems(job);
+  const questions = normalizeMcqItems(getCurrentAffairsQuestionSource(job));
   const sourceNames = Array.from(new Set(newsItems.map((item) => item.source).filter(Boolean))).slice(0, 4);
   const sourceDateNote = [
     sourceNames.length ? `Source: ${sourceNames.join(", ")}` : "Source: Official news updates and exam-oriented current affairs references",
@@ -2235,26 +2371,52 @@ const renderCurrentAffairsDetail = ({ jobId = "", job = {}, title = "", descript
   document.getElementById("jobType").textContent = "Current Affairs";
   document.getElementById("jobTitle").textContent = title;
   document.getElementById("jobIntro").innerHTML = renderFormattedText(introText || description || title);
-  document.getElementById("sheetTitle").textContent = title;
-  document.getElementById("sheetSubTitle").innerHTML = renderFormattedText(introText || description || "Important current affairs questions, answers and explanations.");
+  document.getElementById("sheetTitle").textContent = "Daily Current Affairs Quiz";
+  document.getElementById("sheetSubTitle").innerHTML = renderFormattedText(title);
   renderArticleMeta(job);
-  renderAuthorBox(job);
+  if(!isStaticCurrentAffairs){ renderAuthorBox(job); }
+  if(isStaticCurrentAffairs){
+    removeCurrentAffairsJobPanels();
+    renderCurrentAffairsLinks({ currentId:jobId, currentJob:job, allJobs });
+    const fallbackPanel = document.getElementById("seoFallbackPanel");
+    if(fallbackPanel){ fallbackPanel.style.display = "block"; }
+    message.style.display = "none";
+    wrap.style.display = "block";
+    updateArticleWordCount();
+    return;
+  }
   const shortInfoHeading = document.querySelector("#shortInfoPanel h2");
   if(shortInfoHeading){ shortInfoHeading.textContent = "Current Affairs"; }
   renderMetaBadges([
-    { label:"Date", value:dateText, icon:"fa-solid fa-calendar-days" }
+    { label:"Date", value:dateText, icon:"fa-solid fa-calendar-days" },
+    { label:"Total Questions", value:questions.length ? String(questions.length) : "", icon:"fa-solid fa-circle-question" },
+    { label:"Time", value:"15 Min", icon:"fa-solid fa-clock" }
   ]);
   hidePanels([
     "featurePanel", "importantPanel", "jobInfoPanel", "feePanel", "agePanel", "vacancyPanel",
     "eligibilityPanel", "selectionPanel", "applyProcessPanel", "extraPanel",
     "linksPanel", "jobToolsPanel"
   ]);
-  renderTextBlock("shortInfoContent", "shortInfoPanel", [
-    dateText ? `Date: ${dateText}` : "",
-    categoryText ? `Category: ${categoryText}` : "",
-    introText || description || "",
-    sourceDateNote
-  ].filter(Boolean).join("\n\n"));
+  const shortInfoPanel = document.getElementById("shortInfoPanel");
+  const shortInfoContent = document.getElementById("shortInfoContent");
+  if(shortInfoPanel && shortInfoContent){
+    shortInfoContent.innerHTML = `
+      <div class="ca-quiz-summary">
+        <div><strong>${questions.length || 0}</strong><span>Total Questions</span></div>
+        <div><strong>${questions.length || 0}</strong><span>Total Marks</span></div>
+        <div><strong>15 Min</strong><span>Time</span></div>
+        <div><strong>Hindi/English</strong><span>Language</span></div>
+        <a class="btn apply" href="#mcqPanel">Start Quiz</a>
+        <a class="btn notification" href="current-affairs.html">Current Affairs List</a>
+      </div>
+      <div class="content-box ca-intro-box">
+        ${introText || description ? `<p>${renderFormattedText(introText || description)}</p>` : ""}
+        ${dateText ? `<p><strong class="manual-label">Date:</strong> ${renderFormattedText(dateText)}</p>` : ""}
+        ${categoryText ? `<p><strong class="manual-label">Category:</strong> ${renderFormattedText(categoryText)}</p>` : ""}
+        <p><strong class="manual-label">Source/Date Note:</strong> ${renderFormattedText(sourceDateNote)}</p>
+      </div>`;
+    shortInfoPanel.style.display = "block";
+  }
   const importantManual = document.getElementById("importantManual");
   if(importantManual){ importantManual.innerHTML = ""; }
   const contentPanel = document.getElementById("pageContentPanel");
@@ -2276,7 +2438,7 @@ const renderCurrentAffairsDetail = ({ jobId = "", job = {}, title = "", descript
   const faqItems = [];
   renderCurrentAffairsLinks({ currentId:jobId, currentJob:job, allJobs });
   const sidebar = document.querySelector(".detail-sidebar");
-  if(sidebar){ sidebar.style.display = "none"; }
+  if(sidebar){ sidebar.style.display = ""; }
   setJsonLd(buildJobSchemaGraph({ job, title, description, canonicalUrl, faqItems }));
   const fallbackPanel = document.getElementById("seoFallbackPanel");
   if(fallbackPanel){ fallbackPanel.style.display = "none"; }
@@ -2299,22 +2461,43 @@ const isMeaningfulCell = (value) => {
 
 const renderCurrentAffairsLinks = ({ currentId = "", currentJob = {}, allJobs = [] }) => {
   const communityPanel = document.getElementById("communityPanel");
-  if(!communityPanel){ return; }
   const relatedRows = (Array.isArray(allJobs) ? allJobs : [])
     .filter((item) => item && item.id !== currentId && isJobVisible(item.job || {}) && isCurrentAffairsPost(item.job || {}))
     .slice(0, 5);
-  communityPanel.innerHTML = `
-    <h2>More Current Affairs</h2>
-    <div class="community-actions">
-      <a class="btn whatsapp" href="https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q" target="_blank" rel="noopener noreferrer">Join WhatsApp Channel</a>
-      <a class="btn whatsapp" href="https://wa.me/919509453441" target="_blank" rel="noopener noreferrer">WhatsApp +91 9509453441</a>
-      <a class="btn whatsapp" href="https://wa.me/918505090384" target="_blank" rel="noopener noreferrer">WhatsApp +91 8505090384</a>
-      <a class="btn" href="/current-affairs.html"><i class="fa-solid fa-newspaper"></i> Related Current Affairs</a>
-      <a class="btn" href="/mock-test.html"><i class="fa-solid fa-clipboard-check"></i> Mock Test</a>
+  if(communityPanel){
+    communityPanel.innerHTML = "";
+    communityPanel.style.display = "none";
+  }
+  const sidebar = document.querySelector(".detail-sidebar");
+  if(!sidebar){ return; }
+  const pdfUrl = resolveCurrentAffairsPdfUrl(currentJob);
+  const pdfFileName = `${buildCanonicalSlug(currentJob, currentId) || "daily-current-affairs"}.pdf`;
+  sidebar.innerHTML = `
+    <div class="sidebar-card">
+      <h3>Daily Current Affairs PDF</h3>
+      <div class="ca-sidebar-actions">
+        ${pdfUrl !== "#" ? `<a class="btn pdf" href="${pdfUrl}" download="${escapeHTML(pdfFileName)}" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-file-pdf"></i> Daily PDF Download</a>` : `<button class="btn pdf" type="button" onclick="downloadCurrentAffairsPdf('${escapeHTML(pdfFileName)}')"><i class="fa-solid fa-file-pdf"></i> Daily PDF Download</button>`}
+      </div>
     </div>
-    ${relatedRows.length ? `<div class="related-list">${relatedRows.map((item) => `<a href="${canonicalJobHref(item.id, item.job)}">${escapeHTML((item.job || {}).title || "Current Affairs")}</a>`).join("")}</div>` : ""}
-  `;
-  communityPanel.style.display = "block";
+    <div class="sidebar-card">
+      <h3>Join WhatsApp Channel</h3>
+      <div class="ca-sidebar-actions">
+        <a class="btn whatsapp" href="https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp"></i> Join WhatsApp Channel</a>
+      </div>
+    </div>
+    <div class="sidebar-card">
+      <h3>More Current Affairs</h3>
+      <div class="related-list">
+        ${relatedRows.length ? relatedRows.map((item) => `<a href="${canonicalJobHref(item.id, item.job)}">${escapeHTML((item.job || {}).title || "Current Affairs")}</a>`).join("") : `<a href="current-affairs.html">View All Current Affairs</a>`}
+      </div>
+    </div>
+    <div class="sidebar-card">
+      <h3>Mock Test</h3>
+      <div class="ca-sidebar-actions">
+        <a class="btn dark" href="mock-test.html"><i class="fa-solid fa-clipboard-check"></i> Mock Test</a>
+      </div>
+    </div>`;
+  sidebar.style.display = "";
 };
 
 const renderTableBlock = (lines) => {

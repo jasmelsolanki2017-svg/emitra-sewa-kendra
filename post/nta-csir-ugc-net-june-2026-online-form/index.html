@@ -73,7 +73,10 @@
       ]
     },
     {
-      "@type": "Article",
+      "@type": [
+        "Article",
+        "JobPosting"
+      ],
       "@id": "https://emitrawala.online/post/nta-csir-ugc-net-june-2026-online-form/#article",
       "headline": "NTA CSIR UGC NET June 2026 Online Form| E-MITRA WALA",
       "title": "NTA CSIR UGC NET June 2026 Online Form",
@@ -86,6 +89,12 @@
         "@type": "Organization",
         "name": "E-MITRA WALA",
         "url": "https://emitrawala.online/"
+      },
+      "employmentType": "Online Form",
+      "datePosted": "2026-05-27",
+      "hiringOrganization": {
+        "@type": "Organization",
+        "name": "National Testing Agency (NTA)"
       }
     },
     {
@@ -98,6 +107,14 @@
           "acceptedAnswer": {
             "@type": "Answer",
             "text": "Online application 27 May 2026 से शुरू हो चुके हैं।"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "CSIR NET June 2026 की last date क्या है?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Online apply करने की last date 19 June 2026 upto 11:50 PM है।"
           }
         },
         {
@@ -212,6 +229,36 @@ main{max-width:1180px;margin:auto;padding:26px 3% 42px;}
 .mcq-option{border:1px solid #d8e5f3;border-radius:6px;padding:8px 10px;font-weight:700;color:#26364d;background:#fff;}
 .mcq-option.correct{border-color:#138a36;background:#ecfff3;color:#075a27;}
 .mcq-answer,.mcq-explanation{padding:0 14px 12px;color:#1f2937;font-weight:600;}
+.current-affairs-static .hero{background:linear-gradient(135deg,#06285d,#031b41);border-bottom-color:#ffc400;}
+.current-affairs-static .tag{background:#ffc400;color:#061b3a;}
+.ca-article-title{padding:22px 22px 10px;text-align:left;background:linear-gradient(180deg,#ffffff,#f8fbff);}
+.ca-article-title span{display:inline-flex;background:#06285d;color:#fff;border-radius:4px;padding:6px 10px;font-size:12px;font-weight:900;text-transform:uppercase;}
+.ca-article-title h2{margin:10px 0 4px;color:#06285d;font-size:clamp(24px,4vw,36px);line-height:1.2;}
+.ca-article-title p{color:#b51616;font-weight:900;font-size:18px;}
+.ca-quiz-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:16px 18px 18px;background:#fff;border-bottom:1px solid #e5effa;}
+.ca-quiz-summary div{border:1px solid #ffd45c;background:#fff9e7;border-radius:7px;padding:12px;text-align:center;}
+.ca-quiz-summary strong{display:block;color:#06285d;font-size:22px;line-height:1.1;}
+.ca-quiz-summary span{display:block;color:#40506a;font-size:12px;font-weight:800;margin-top:5px;}
+.ca-quiz-summary .btn{grid-column:auto;min-height:46px;background:#ffc400;color:#061b3a;box-shadow:none;}
+.ca-quiz-summary .btn.notification{background:#06285d;color:#fff;}
+.ca-intro-box{background:#fbfdff;border-top:1px solid #edf4fb;border-bottom:1px solid #edf4fb;}
+.current-affairs-static .mcq-list{gap:14px;}
+.ca-mcq-card{border-color:#dfe8f3;border-radius:8px;box-shadow:0 8px 20px rgba(6,40,93,.06);}
+.ca-mcq-card .mcq-question{display:flex;gap:12px;align-items:flex-start;background:#fff;color:#1d2433;font-size:18px;line-height:1.4;padding:16px;}
+.ca-q-badge{width:44px;height:44px;min-width:44px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#06285d;color:#fff;font-weight:900;font-size:15px;box-shadow:0 8px 16px rgba(6,40,93,.18);}
+.ca-mcq-card .mcq-options{grid-template-columns:1fr 1fr;padding:0 16px 14px;}
+.ca-mcq-card .mcq-option{display:flex;align-items:center;gap:10px;border-color:#dce7f3;border-radius:7px;background:#fff;padding:11px 12px;font-weight:800;}
+.ca-mcq-card .mcq-option span{width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#eef5ff;color:#06285d;font-weight:900;flex:0 0 auto;}
+.ca-mcq-card .mcq-option.correct{border-color:#16a34a;background:#ecfff3;color:#075a27;}
+.ca-mcq-card .mcq-option.correct span{background:#16a34a;color:#fff;}
+.ca-mcq-card .mcq-answer{margin:0 16px 10px;padding:10px 12px;border-radius:7px;background:#eafff1;color:#08722f;}
+.ca-mcq-card .mcq-explanation{margin:0 16px 16px;padding:12px;border-radius:7px;background:#fff8d9;color:#3f3200;border:1px solid #ffe58a;}
+.ca-sidebar-actions{display:grid;gap:9px;padding:12px;}
+.ca-sidebar-actions .btn{box-shadow:none;width:100%;min-height:42px;}
+.ca-sidebar-actions .btn.pdf{background:#ffc400;color:#061b3a;}
+.ca-sidebar-actions .btn.whatsapp{background:#128c3c;}
+.ca-sidebar-actions .btn.dark{background:#06285d;color:#fff;}
+.ca-pdf-rendering .ca-quiz-summary .btn{display:none!important;}
 .content-table{width:100%;border-collapse:collapse;font-size:14px;margin:10px 0 2px;}
 .content-table th,.content-table td{border:1px solid #d8e5f3;padding:9px 10px;text-align:left;vertical-align:middle;color:#1f2937;}
 .content-table th{font-weight:900;background:#f1f7ff;color:var(--deep);}
@@ -312,25 +359,13 @@ body.dark-mode .mcq-option.correct{background:#0d3322!important;border-color:#21
 body.dark-mode .mcq-answer,body.dark-mode .mcq-explanation{color:#e8f1ff!important;}
 body.dark-mode .job-tool-btn{background:#0b2749!important;border-color:#24405f!important;color:#e8f1ff!important;}
 body.dark-mode .job-tool-btn:hover{background:#ffb15c!important;border-color:#ffb15c!important;color:#06101f!important;}
-@media(max-width:920px){.layout{grid-template-columns:1fr}.detail-sidebar{position:static;top:auto}.hero{padding:24px 5% 26px}main{padding:18px 3% 34px}.detail-table th,.detail-table td{display:block;width:100%;}.detail-table th{border-bottom:0}.panel h2,.sarkari-section-title{font-size:17px}.actions{grid-template-columns:1fr}.content-table{font-size:12px}.content-table th,.content-table td{padding:7px 6px}.manual-pair{grid-template-columns:1fr;gap:3px}.qualification-card,.physical-eligibility-row{grid-template-columns:1fr}.qualification-post{border-right:0;border-bottom:1px solid #d8e5f3}.physical-eligibility-grid{grid-template-columns:1fr}.theme-toggle{right:16px;bottom:16px;width:50px;height:50px;}nav{flex-direction:column;align-items:flex-start}}
-@media(max-width:768px){main{padding:14px 2.5% 30px}.article-head{padding:18px 14px 12px}.author-box{grid-template-columns:58px minmax(0,1fr);padding:14px 12px}.author-avatar{width:58px;height:58px;font-size:19px}.author-name{font-size:16px}.content-box,.table-wrap{padding:12px}.section-manual{padding:0 12px 14px}.detail-table{font-size:13px}.detail-table th,.detail-table td{padding:9px 10px}.structured-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}.structured-table-wrap .content-table,.content-table{min-width:520px}.content-section{overflow-x:auto}.actions{padding:12px}.btn{font-size:13px;padding:10px 12px}.hero h1{font-size:24px}.hero p{font-size:14px}.meta-badge{font-size:11px}.article-meta-line{font-size:12px}.community-actions{padding:14px 12px}.community-actions .btn{width:100%}.job-tools-toolbar{grid-template-columns:1fr 1fr;padding:12px}.job-tool-btn{font-size:12px;min-height:40px;padding:8px 7px}}
+@media(max-width:920px){.layout{grid-template-columns:1fr}.detail-sidebar{position:static;top:auto}.hero{padding:24px 5% 26px}main{padding:18px 3% 34px}.detail-table th,.detail-table td{display:block;width:100%;}.detail-table th{border-bottom:0}.panel h2,.sarkari-section-title{font-size:17px}.actions{grid-template-columns:1fr}.content-table{font-size:12px}.content-table th,.content-table td{padding:7px 6px}.manual-pair{grid-template-columns:1fr;gap:3px}.qualification-card,.physical-eligibility-row{grid-template-columns:1fr}.qualification-post{border-right:0;border-bottom:1px solid #d8e5f3}.physical-eligibility-grid{grid-template-columns:1fr}.theme-toggle{right:16px;bottom:16px;width:50px;height:50px;}nav{flex-direction:column;align-items:flex-start}.ca-quiz-summary{grid-template-columns:1fr 1fr}.ca-mcq-card .mcq-options{grid-template-columns:1fr}}
+@media(max-width:768px){main{padding:14px 2.5% 30px}.article-head{padding:18px 14px 12px}.author-box{grid-template-columns:58px minmax(0,1fr);padding:14px 12px}.author-avatar{width:58px;height:58px;font-size:19px}.author-name{font-size:16px}.content-box,.table-wrap{padding:12px}.section-manual{padding:0 12px 14px}.detail-table{font-size:13px}.detail-table th,.detail-table td{padding:9px 10px}.structured-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}.structured-table-wrap .content-table,.content-table{min-width:520px}.content-section{overflow-x:auto}.actions{padding:12px}.btn{font-size:13px;padding:10px 12px}.hero h1{font-size:24px}.hero p{font-size:14px}.meta-badge{font-size:11px}.article-meta-line{font-size:12px}.community-actions{padding:14px 12px}.community-actions .btn{width:100%}.job-tools-toolbar{grid-template-columns:1fr 1fr;padding:12px}.job-tool-btn{font-size:12px;min-height:40px;padding:8px 7px}.ca-article-title{padding:18px 14px 8px}.ca-quiz-summary{grid-template-columns:1fr;padding:12px}.ca-mcq-card .mcq-question{font-size:16px;padding:14px}.ca-q-badge{width:40px;height:40px;min-width:40px}.ca-sidebar-actions{grid-template-columns:1fr}}
 @media(max-width:768px){.sarkari-blue-layout{font-size:13px;border-width:1px}.sarkari-blue-title-area{padding:18px 10px 14px}.sarkari-blue-content{padding:10px 12px 14px}.sarkari-blue-content .content-table,.sarkari-blue-table{font-size:12px;min-width:480px}.sarkari-blue-content .structured-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}}
 </style>
 <link rel="stylesheet" href="mobile-responsive-fix.css">
-<style>
-body.current-affairs-static #importantPanel,
-body.current-affairs-static #jobInfoPanel,
-body.current-affairs-static #feePanel,
-body.current-affairs-static #agePanel,
-body.current-affairs-static #vacancyPanel,
-body.current-affairs-static #eligibilityPanel,
-body.current-affairs-static #selectionPanel,
-body.current-affairs-static #applyProcessPanel,
-body.current-affairs-static #linksPanel,
-body.current-affairs-static #jobToolsPanel{display:none;}
-</style>
 </head>
-<body class="current-affairs-static">
+<body>
 <nav>
   <a class="logo" href="index.html">E-MITRA <span>WALA</span></a>
   <ul>
@@ -352,7 +387,7 @@ body.current-affairs-static #jobToolsPanel{display:none;}
 
 <header class="hero">
   <div class="hero-inner">
-    <span class="tag" id="jobType">Current Affairs</span>
+    <span class="tag" id="jobType">Job Details</span>
     <h1 id="jobTitle">NTA CSIR UGC NET June 2026 Online Form</h1>
     <div class="meta-badges" id="metaBadges"></div>
     <p id="jobIntro">NTA CSIR UGC NET June 2026 online form released. Apply from 27 May to 19 June 2026. Check exam date, fee, age limit, eligibility, subjects, exam pattern and imp</p>
@@ -365,58 +400,17 @@ body.current-affairs-static #jobToolsPanel{display:none;}
     <article>
       <div class="detail-sheet">
         <div class="article-head">
-          <h2 id="sheetTitle">Current Affairs</h2>
+          <h2 id="sheetTitle">Job Update</h2>
           <p class="article-intro" id="sheetSubTitle">Important notification details, eligibility, dates aur apply links yahan dekhein.</p>
           <p class="article-meta-line" id="articleMetaLine"></p>
         </div>
         <section class="panel" id="seoFallbackPanel">
           <h2>NTA CSIR UGC NET June 2026 Online Form</h2>
             <div class="content-box">
-              <p>National Testing Agency (NTA) ने Joint CSIR-UGC NET June 2026 के लिए online application form जारी कर दिया है। यह परीक्षा Junior Research Fellowship (JRF), Assistant Professor और Ph.D. Admission eligibility के लिए आयोजित की जाती है। योग्य उम्मीदवार 27 May 2026 से 19 June 2026 तक online apply कर सकते हैं। परीक्षा 17 और 18 July 2026 को Computer Based Test (CBT) mode में आयोजित की जाएगी।</p>
-              <p><strong class="manual-label">Date:</strong> 27-May-2026</p>
-              <p><strong class="manual-label">Category:</strong> Latest Job</p>
-              <p><strong class="manual-label">Source/Date Note:</strong> Source: Official news updates and exam-oriented current affairs references | Updated: 27-May-2026</p>
+              <p>NTA CSIR UGC NET June 2026 online form released. Apply from 27 May to 19 June 2026. Check exam date, fee, age limit, eligibility, subjects, exam pattern and imp</p>
+              <table class="detail-table"><tbody><tr><th>Department</th><td>National Testing Agency (NTA)</td></tr><tr><th>Post Name</th><td>JRF, Assistant Professor and Ph.D. Admission Eligibility Test</td></tr><tr><th>Total Posts</th><td>Not Applicable</td></tr><tr><th>Last Date</th><td>Update Soon</td></tr><tr><th>Qualification</th><td>Update Soon</td></tr><tr><th>Location</th><td>All India</td></tr></tbody></table>
+              <p><a class="auto-link" href="https://emitrawala.online/post/nta-csir-ugc-net-june-2026-online-form/">Canonical job detail link</a> | <a class="auto-link" href="../../job-form.html">All Latest Jobs</a></p>
             </div>
-            
-            <section class="panel">
-              <h2>Questions</h2>
-              <div class="content-box"><div class="mcq-list"><article class="mcq-card">
-                <div class="mcq-question">Q1. Joint CSIR-UGC NET June 2026 किस agency द्वारा आयोजित किया जाएगा?</div>
-                <div class="mcq-options"><div class="mcq-option">A. UPSC</div><div class="mcq-option">B. SSC</div><div class="mcq-option">C. NTA</div><div class="mcq-option">D. DSSSB</div></div>
-                <div class="mcq-answer"><span class="manual-label">Correct Answer:</span> NTA</div>
-                
-              </article><article class="mcq-card">
-                <div class="mcq-question">Q2. CSIR NET June 2026 की last date क्या है?</div>
-                <div class="mcq-options"><div class="mcq-option">A. 19 June 2026</div><div class="mcq-option">B. 20 June 2026</div><div class="mcq-option">C. 23 June 2026</div><div class="mcq-option">D. 18 July 2026</div></div>
-                <div class="mcq-answer"><span class="manual-label">Correct Answer:</span> 19 June 2026</div>
-                
-              </article><article class="mcq-card">
-                <div class="mcq-question">Q3. CSIR NET June 2026 exam किस mode में होगा?</div>
-                <div class="mcq-options"><div class="mcq-option">A. Offline</div><div class="mcq-option">B. Computer Based Test</div><div class="mcq-option">C. Interview Only</div><div class="mcq-option">D. OMR Based</div></div>
-                <div class="mcq-answer"><span class="manual-label">Correct Answer:</span> Computer Based Test</div>
-                
-              </article><article class="mcq-card">
-                <div class="mcq-question">Q4. CSIR NET June 2026 में General category की fee कितनी है?</div>
-                <div class="mcq-options"><div class="mcq-option">A. ₹325</div><div class="mcq-option">B. ₹600</div><div class="mcq-option">C. ₹1150</div><div class="mcq-option">D. ₹1500</div></div>
-                <div class="mcq-answer"><span class="manual-label">Correct Answer:</span> ₹1150</div>
-                
-              </article><article class="mcq-card">
-                <div class="mcq-question">Q5. CSIR NET June 2026 में JRF के लिए maximum age कितनी है?</div>
-                <div class="mcq-options"><div class="mcq-option">A. 28 Years</div><div class="mcq-option">B. 30 Years</div><div class="mcq-option">C. 35 Years</div><div class="mcq-option">D. No Limit</div></div>
-                <div class="mcq-answer"><span class="manual-label">Correct Answer:</span> 30 Years</div>
-                
-              </article></div></div>
-            </section>
-            <section class="panel">
-              <h2>More Current Affairs</h2>
-              <div class="community-actions">
-                <a class="btn whatsapp" href="https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q" target="_blank" rel="noopener noreferrer">Join WhatsApp Channel</a>
-                <a class="btn whatsapp" href="https://wa.me/919509453441" target="_blank" rel="noopener noreferrer">WhatsApp +91 9509453441</a>
-                <a class="btn whatsapp" href="https://wa.me/918505090384" target="_blank" rel="noopener noreferrer">WhatsApp +91 8505090384</a>
-                <a class="btn" href="../../current-affairs.html">Related Current Affairs</a>
-                <a class="btn" href="../../mock-test.html">Mock Test</a>
-              </div>
-            </section>
         </section>
         <section class="panel" id="featurePanel" style="display:none;">
           <h2>Overview Table</h2>
@@ -562,7 +556,7 @@ body.current-affairs-static #jobToolsPanel{display:none;}
         </section>
       </div>
     </article>
-    <aside class="detail-sidebar" style="display:none;" aria-label="Job quick links">
+    <aside class="detail-sidebar" aria-label="Job quick links">
       <div class="sidebar-card">
         <h3>Important Links</h3>
         <div class="sidebar-links" id="sideQuickLinks"></div>
@@ -600,7 +594,7 @@ body.current-affairs-static #jobToolsPanel{display:none;}
 })();
 </script>
 
-<script>window.__EMITRA_STATIC_POST__={"id":"-Ou2bmA6gIYU1QquXCm7","job":{"admitCardDate":"Exam se 3-7 din pehle","admitCardLink":"","advancedArticleData":{"ageLimit":{"ageRelaxation":"OBC-NCL, SC, ST, PwD/PwBD, Third Gender, Women candidates, research experience और armed forces service के लिए rules के अनुसार relaxation लागू होगा।","asOn":"July 2026","assistantProfessorMaximumAge":"No Upper Age Limit","jrfMaximumAge":"30 Years","phdAdmissionMaximumAge":"No Upper Age Limit"},"applicationFee":[{"category":"General","fee":"₹1150"},{"category":"General-EWS / OBC-NCL","fee":"₹600"},{"category":"SC / ST / PwD / PwBD / Third Gender","fee":"₹325"}],"applicationFees":[{"category":"General","fee":"₹1150"},{"category":"General-EWS / OBC-NCL","fee":"₹600"},{"category":"SC / ST / PwD / PwBD / Third Gender","fee":"₹325"}],"faq":[{"answer":"Online application 27 May 2026 से शुरू हो चुके हैं।","question":"NTA CSIR UGC NET June 2026 के लिए आवेदन कब शुरू हुए?"},{"answer":"Online apply करने की last date 19 June 2026 upto 11:50 PM है।","question":"CSIR NET June 2026 की last date क्या है?"},{"answer":"CSIR NET June 2026 परीक्षा 17 और 18 July 2026 को आयोजित की जाएगी।","question":"CSIR NET June 2026 exam date क्या है?"},{"answer":"General के लिए ₹1150, General-EWS/OBC-NCL के लिए ₹600 और SC/ST/PwD/PwBD/Third Gender के लिए ₹325 fee है।","question":"CSIR NET June 2026 application fee कितनी है?"},{"answer":"JRF के लिए maximum age 30 years है। Assistant Professor और Ph.D. Admission के लिए कोई upper age limit नहीं है।","question":"CSIR NET June 2026 में age limit क्या है?"}],"faqs":[{"answer":"Online application 27 May 2026 से शुरू हो चुके हैं।","question":"NTA CSIR UGC NET June 2026 के लिए आवेदन कब शुरू हुए?"},{"answer":"Online apply करने की last date 19 June 2026 upto 11:50 PM है।","question":"CSIR NET June 2026 की last date क्या है?"},{"answer":"CSIR NET June 2026 परीक्षा 17 और 18 July 2026 को आयोजित की जाएगी।","question":"CSIR NET June 2026 exam date क्या है?"},{"answer":"General के लिए ₹1150, General-EWS/OBC-NCL के लिए ₹600 और SC/ST/PwD/PwBD/Third Gender के लिए ₹325 fee है।","question":"CSIR NET June 2026 application fee कितनी है?"},{"answer":"JRF के लिए maximum age 30 years है। Assistant Professor और Ph.D. Admission के लिए कोई upper age limit नहीं है।","question":"CSIR NET June 2026 में age limit क्या है?"}],"howToApply":"सबसे पहले CSIR NET की official website csirnet.nta.nic.in पर जाएं।\nJoint CSIR-UGC NET June 2026 application link पर click करें।\nNew registration पूरा करें और login details प्राप्त करें।\nApplication form में personal details, academic details और subject details भरें।\nPhoto, signature और required documents upload करें।\nCategory के अनुसार application fee online mode से जमा करें।\nFinal submit करने से पहले form preview carefully check करें।\nConfirmation page download करके printout सुरक्षित रखें।","importantDates":[{"label":"Application Start Date","value":"27 May 2026"},{"label":"Last Date to Apply Online","value":"19 June 2026 upto 11:50 PM"},{"label":"Fee Payment Last Date","value":"20 June 2026 upto 11:50 PM"},{"label":"Correction Window","value":"22 June 2026 to 23 June 2026 upto 11:50 PM"},{"label":"Exam Date","value":"17 July 2026 and 18 July 2026"},{"label":"City Intimation Slip","value":"To be announced later"},{"label":"Admit Card","value":"To be announced later"},{"label":"Answer Key","value":"As per schedule"},{"label":"Result","value":"To be announced later"}],"importantLinks":[{"label":"Apply Online","status":"Active","url":"https://examinationservices.nic.in/ExamSys26Part2/Root/Home.aspx?enc=Ei4cajBkK1gZSfgr53ImFTqGsyg38PlGNCGSuvSzsiVbovgbG6pVEHea7DNFe38E"},{"label":"Download Official Notification","url":"https://cdnbbsr.s3waas.gov.in/s3efdf562ce2fb0ad460fd8e9d33e57f57/uploads/2026/05/202605271224945892.pdf"},{"label":"Official Website","url":"https://csirnet.nta.nic.in"},{"label":"NTA Official Website","url":"https://www.nta.ac.in"},{"label":"Join WhatsApp Channel","url":"https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q"}],"intro":["National Testing Agency (NTA) ने Joint CSIR-UGC NET June 2026 के लिए online application form जारी कर दिया है। यह परीक्षा Junior Research Fellowship (JRF), Assistant Professor और Ph.D. Admission eligibility के लिए आयोजित की जाती है। योग्य उम्मीदवार 27 May 2026 से 19 June 2026 तक online apply कर सकते हैं। परीक्षा 17 और 18 July 2026 को Computer Based Test (CBT) mode में आयोजित की जाएगी।"],"mcqs":[{"answer":"NTA","options":["UPSC","SSC","NTA","DSSSB"],"question":"Joint CSIR-UGC NET June 2026 किस agency द्वारा आयोजित किया जाएगा?"},{"answer":"19 June 2026","options":["19 June 2026","20 June 2026","23 June 2026","18 July 2026"],"question":"CSIR NET June 2026 की last date क्या है?"},{"answer":"Computer Based Test","options":["Offline","Computer Based Test","Interview Only","OMR Based"],"question":"CSIR NET June 2026 exam किस mode में होगा?"},{"answer":"₹1150","options":["₹325","₹600","₹1150","₹1500"],"question":"CSIR NET June 2026 में General category की fee कितनी है?"},{"answer":"30 Years","options":["28 Years","30 Years","35 Years","No Limit"],"question":"CSIR NET June 2026 में JRF के लिए maximum age कितनी है?"}],"overview":[{"label":"Exam Name","value":"Joint CSIR-UGC NET June 2026"},{"label":"Conducting Body","value":"National Testing Agency (NTA)"},{"label":"Purpose","value":"JRF, Assistant Professor and Ph.D. Admission"},{"label":"Application Mode","value":"Online"},{"label":"Exam Mode","value":"Computer Based Test (CBT)"},{"label":"Exam Type","value":"Objective Type MCQ"},{"label":"Exam Duration","value":"180 Minutes / 03 Hours"}],"postTarget":"latestJob","selectionProcess":"Online Application\nComputer Based Test (CBT)\nAnswer Key / Recorded Response\nResult Declaration\nEligibility for JRF / Assistant Professor / Ph.D. Admission as per qualifying category","slug":"nta-csir-ugc-net-june-2026-online-form","title":"NTA CSIR UGC NET June 2026 Online Form"},"ageCalculateDate":"","ageLimit":{"ageRelaxation":"OBC-NCL, SC, ST, PwD/PwBD, Third Gender, Women candidates, research experience और armed forces service के लिए rules के अनुसार relaxation लागू होगा।","asOn":"July 2026","assistantProfessorMaximumAge":"No Upper Age Limit","jrfMaximumAge":"30 Years","phdAdmissionMaximumAge":"No Upper Age Limit"},"ageLimitManual":"asOn: July 2026\njrfMaximumAge: 30 Years\nassistantProfessorMaximumAge: No Upper Age Limit\nphdAdmissionMaximumAge: No Upper Age Limit\nageRelaxation: OBC-NCL, SC, ST, PwD/PwBD, Third Gender, Women candidates, research experience और armed forces service के लिए rules के अनुसार relaxation लागू होगा।","ageRelaxation":"OBC-NCL, SC, ST, PwD/PwBD, Third Gender, Women candidates, research experience और armed forces service के लिए rules के अनुसार relaxation लागू होगा।","allCandidateFee":"","answerKeyDate":"","answerKeyLink":"","applicationFee":[{"category":"General","fee":"₹1150"},{"category":"General-EWS / OBC-NCL","fee":"₹600"},{"category":"SC / ST / PwD / PwBD / Third Gender","fee":"₹325"}],"applicationFeeManual":"General-EWS / OBC-NCL: ₹600","applicationFees":[{"category":"General","fee":"₹1150"},{"category":"General-EWS / OBC-NCL","fee":"₹600"},{"category":"SC / ST / PwD / PwBD / Third Gender","fee":"₹325"}],"applyLink":"https://examinationservices.nic.in/ExamSys26Part2/Root/Home.aspx?enc=Ei4cajBkK1gZSfgr53ImFTqGsyg38PlGNCGSuvSzsiVbovgbG6pVEHea7DNFe38E","basicDetailsManual":"","bothExamFee":"","canonicalUrl":"https://emitrawala.online/post/nta-csir-ugc-net-june-2026-online-form/","category":"Latest Job","categoryWiseVacancy":"","createdAt":1780324704922,"department":"National Testing Agency (NTA)","detailLayout":"table","detailLink":"https://cdnbbsr.s3waas.gov.in/s3efdf562ce2fb0ad460fd8e9d33e57f57/uploads/2026/05/202605271224945892.pdf","displayOrder":4,"eligibilityManual":"","examCityDate":"","examDate":"","experience":"","extraUsefulManual":"Q1: NTA CSIR UGC NET June 2026 के लिए आवेदन कब शुरू हुए?\nA1: Online application 27 May 2026 से शुरू हो चुके हैं।\n\nQ2: CSIR NET June 2026 की last date क्या है?\nA2: Online apply करने की last date 19 June 2026 upto 11:50 PM है।\n\nQ3: CSIR NET June 2026 exam date क्या है?\nA3: CSIR NET June 2026 परीक्षा 17 और 18 July 2026 को आयोजित की जाएगी।\n\nQ4: CSIR NET June 2026 application fee कितनी है?\nA4: General के लिए ₹1150, General-EWS/OBC-NCL के लिए ₹600 और SC/ST/PwD/PwBD/Third Gender के लिए ₹325 fee है।\n\nQ5: CSIR NET June 2026 में age limit क्या है?\nA5: JRF के लिए maximum age 30 years है। Assistant Professor और Ph.D. Admission के लिए कोई upper age limit नहीं है।","faq":[{"answer":"Online application 27 May 2026 से शुरू हो चुके हैं।","question":"NTA CSIR UGC NET June 2026 के लिए आवेदन कब शुरू हुए?"},{"answer":"Online apply करने की last date 19 June 2026 upto 11:50 PM है।","question":"CSIR NET June 2026 की last date क्या है?"},{"answer":"CSIR NET June 2026 परीक्षा 17 और 18 July 2026 को आयोजित की जाएगी।","question":"CSIR NET June 2026 exam date क्या है?"},{"answer":"General के लिए ₹1150, General-EWS/OBC-NCL के लिए ₹600 और SC/ST/PwD/PwBD/Third Gender के लिए ₹325 fee है।","question":"CSIR NET June 2026 application fee कितनी है?"},{"answer":"JRF के लिए maximum age 30 years है। Assistant Professor और Ph.D. Admission के लिए कोई upper age limit नहीं है।","question":"CSIR NET June 2026 में age limit क्या है?"}],"faqs":[{"answer":"Online application 27 May 2026 से शुरू हो चुके हैं।","question":"NTA CSIR UGC NET June 2026 के लिए आवेदन कब शुरू हुए?"},{"answer":"Online apply करने की last date 19 June 2026 upto 11:50 PM है।","question":"CSIR NET June 2026 की last date क्या है?"},{"answer":"CSIR NET June 2026 परीक्षा 17 और 18 July 2026 को आयोजित की जाएगी।","question":"CSIR NET June 2026 exam date क्या है?"},{"answer":"General के लिए ₹1150, General-EWS/OBC-NCL के लिए ₹600 और SC/ST/PwD/PwBD/Third Gender के लिए ₹325 fee है।","question":"CSIR NET June 2026 application fee कितनी है?"},{"answer":"JRF के लिए maximum age 30 years है। Assistant Professor और Ph.D. Admission के लिए कोई upper age limit नहीं है।","question":"CSIR NET June 2026 में age limit क्या है?"}],"femaleFee":"","generalObcFee":"₹1150","howToApply":"सबसे पहले CSIR NET की official website csirnet.nta.nic.in पर जाएं।\nJoint CSIR-UGC NET June 2026 application link पर click करें।\nNew registration पूरा करें और login details प्राप्त करें।\nApplication form में personal details, academic details और subject details भरें।\nPhoto, signature और required documents upload करें।\nCategory के अनुसार application fee online mode से जमा करें।\nFinal submit करने से पहले form preview carefully check करें।\nConfirmation page download करके printout सुरक्षित रखें।","importantDates":[{"label":"Application Start Date","value":"27 May 2026"},{"label":"Last Date to Apply Online","value":"19 June 2026 upto 11:50 PM"},{"label":"Fee Payment Last Date","value":"20 June 2026 upto 11:50 PM"},{"label":"Correction Window","value":"22 June 2026 to 23 June 2026 upto 11:50 PM"},{"label":"Exam Date","value":"17 July 2026 and 18 July 2026"},{"label":"City Intimation Slip","value":"To be announced later"},{"label":"Admit Card","value":"To be announced later"},{"label":"Answer Key","value":"As per schedule"},{"label":"Result","value":"To be announced later"}],"importantDatesManual":"Application Start Date: 27 May 2026\nLast Date to Apply Online: 19 June 2026 upto 11:50 PM\nFee Payment Last Date: 20 June 2026 upto 11:50 PM\nCorrection Window: 22 June 2026 to 23 June 2026 upto 11:50 PM\nExam Date: 17 July 2026 and 18 July 2026\nCity Intimation Slip: To be announced later\nAdmit Card: To be announced later\nAnswer Key: As per schedule\nResult: To be announced later","importantLinks":[{"label":"Apply Online","status":"Active","url":"https://examinationservices.nic.in/ExamSys26Part2/Root/Home.aspx?enc=Ei4cajBkK1gZSfgr53ImFTqGsyg38PlGNCGSuvSzsiVbovgbG6pVEHea7DNFe38E"},{"label":"Download Official Notification","url":"https://cdnbbsr.s3waas.gov.in/s3efdf562ce2fb0ad460fd8e9d33e57f57/uploads/2026/05/202605271224945892.pdf"},{"label":"Official Website","url":"https://csirnet.nta.nic.in"},{"label":"NTA Official Website","url":"https://www.nta.ac.in"},{"label":"Join WhatsApp Channel","url":"https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q"}],"importantLinksManual":"Apply Online: https://examinationservices.nic.in/ExamSys26Part2/Root/Home.aspx?enc=Ei4cajBkK1gZSfgr53ImFTqGsyg38PlGNCGSuvSzsiVbovgbG6pVEHea7DNFe38E\nDownload Official Notification: https://cdnbbsr.s3waas.gov.in/s3efdf562ce2fb0ad460fd8e9d33e57f57/uploads/2026/05/202605271224945892.pdf\nOfficial Website: https://csirnet.nta.nic.in\nNTA Official Website: https://www.nta.ac.in\nJoin WhatsApp Channel: https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q","intro":["National Testing Agency (NTA) ने Joint CSIR-UGC NET June 2026 के लिए online application form जारी कर दिया है। यह परीक्षा Junior Research Fellowship (JRF), Assistant Professor और Ph.D. Admission eligibility के लिए आयोजित की जाती है। योग्य उम्मीदवार 27 May 2026 से 19 June 2026 तक online apply कर सकते हैं। परीक्षा 17 और 18 July 2026 को Computer Based Test (CBT) mode में आयोजित की जाएगी।"],"jsonLd":{"@context":"https://schema.org","@graph":[{"@id":"https://emitrawala.online/post/nta-csir-ugc-net-june-2026-online-form/#breadcrumb","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","item":"https://emitrawala.online/","name":"Home","position":1},{"@type":"ListItem","item":"https://emitrawala.online/job-form.html","name":"Latest Jobs","position":2},{"@type":"ListItem","item":"https://emitrawala.online/post/nta-csir-ugc-net-june-2026-online-form/","name":"NTA CSIR UGC NET June 2026 Online Form","position":3}]},{"@id":"https://emitrawala.online/post/nta-csir-ugc-net-june-2026-online-form/#article","@type":["Article","JobPosting"],"dateModified":"2026-06-11T12:19:22.698Z","datePosted":"2026-05-27","datePublished":"2026-06-01T14:38:24.922Z","description":"NTA CSIR UGC NET June 2026 online form released. Apply from 27 May to 19 June 2026. Check exam date, fee, age limit, eligibility, subjects, exam pattern and imp","employmentType":"Online Form","headline":"NTA CSIR UGC NET June 2026 Online Form| E-MITRA WALA","hiringOrganization":{"@type":"Organization","name":"National Testing Agency (NTA)"},"mainEntityOfPage":"https://emitrawala.online/post/nta-csir-ugc-net-june-2026-online-form/","publisher":{"@type":"Organization","name":"E-MITRA WALA","url":"https://emitrawala.online/"},"title":"NTA CSIR UGC NET June 2026 Online Form","url":"https://emitrawala.online/post/nta-csir-ugc-net-june-2026-online-form/"},{"@id":"https://emitrawala.online/post/nta-csir-ugc-net-june-2026-online-form/#faq","@type":"FAQPage","mainEntity":[{"@type":"Question","acceptedAnswer":{"@type":"Answer","text":"Online application 27 May 2026 से शुरू हो चुके हैं।"},"name":"NTA CSIR UGC NET June 2026 के लिए आवेदन कब शुरू हुए?"},{"@type":"Question","acceptedAnswer":{"@type":"Answer","text":"Online apply करने की last date 19 June 2026 upto 11:50 PM है।"},"name":"CSIR NET June 2026 की last date क्या है?"},{"@type":"Question","acceptedAnswer":{"@type":"Answer","text":"CSIR NET June 2026 परीक्षा 17 और 18 July 2026 को आयोजित की जाएगी।"},"name":"CSIR NET June 2026 exam date क्या है?"},{"@type":"Question","acceptedAnswer":{"@type":"Answer","text":"General के लिए ₹1150, General-EWS/OBC-NCL के लिए ₹600 और SC/ST/PwD/PwBD/Third Gender के लिए ₹325 fee है।"},"name":"CSIR NET June 2026 application fee कितनी है?"},{"@type":"Question","acceptedAnswer":{"@type":"Answer","text":"JRF के लिए maximum age 30 years है। Assistant Professor और Ph.D. Admission के लिए कोई upper age limit नहीं है।"},"name":"CSIR NET June 2026 में age limit क्या है?"}]}]},"lastApplyDate":"Update Soon","lastDate":"Update Soon","lastFeeDate":"","location":"All India","maxAge":"","mcqs":[{"answer":"NTA","options":["UPSC","SSC","NTA","DSSSB"],"question":"Joint CSIR-UGC NET June 2026 किस agency द्वारा आयोजित किया जाएगा?"},{"answer":"19 June 2026","options":["19 June 2026","20 June 2026","23 June 2026","18 July 2026"],"question":"CSIR NET June 2026 की last date क्या है?"},{"answer":"Computer Based Test","options":["Offline","Computer Based Test","Interview Only","OMR Based"],"question":"CSIR NET June 2026 exam किस mode में होगा?"},{"answer":"₹1150","options":["₹325","₹600","₹1150","₹1500"],"question":"CSIR NET June 2026 में General category की fee कितनी है?"},{"answer":"30 Years","options":["28 Years","30 Years","35 Years","No Limit"],"question":"CSIR NET June 2026 में JRF के लिए maximum age कितनी है?"}],"metaDescription":"NTA CSIR UGC NET June 2026 online form released. Apply from 27 May to 19 June 2026. Check exam date, fee, age limit, eligibility, subjects, exam pattern and imp","minAge":"","obcFemaleFee":"","officialWebsite":"https://csirnet.nta.nic.in","overview":[{"label":"Exam Name","value":"Joint CSIR-UGC NET June 2026"},{"label":"Conducting Body","value":"National Testing Agency (NTA)"},{"label":"Purpose","value":"JRF, Assistant Professor and Ph.D. Admission"},{"label":"Application Mode","value":"Online"},{"label":"Exam Mode","value":"Computer Based Test (CBT)"},{"label":"Exam Type","value":"Objective Type MCQ"},{"label":"Exam Duration","value":"180 Minutes / 03 Hours"}],"pageContent":"Important Dates:\nlabel: Application Start Date\nvalue: 27 May 2026\nlabel: Last Date to Apply Online\nvalue: 19 June 2026 upto 11:50 PM\nlabel: Fee Payment Last Date\nvalue: 20 June 2026 upto 11:50 PM\nlabel: Correction Window\nvalue: 22 June 2026 to 23 June 2026 upto 11:50 PM\nlabel: Exam Date\nvalue: 17 July 2026 and 18 July 2026\nlabel: City Intimation Slip\nvalue: To be announced later\nlabel: Admit Card\nvalue: To be announced later\nlabel: Answer Key\nvalue: As per schedule\nlabel: Result\nvalue: To be announced later\n\nApplication Fee:\ncategory: General\nfee: ₹1150\ncategory: General-EWS / OBC-NCL\nfee: ₹600\ncategory: SC / ST / PwD / PwBD / Third Gender\nfee: ₹325\n\nEligibility:\nlabel: Master Degree Candidates\nvalue: General / Unreserved / General-EWS candidates के लिए Master Degree या equivalent examination में minimum 55% marks जरूरी हैं।\nlabel: Reserved Category Candidates\nvalue: OBC-NCL / SC / ST / PwD / PwBD / Third Gender candidates के लिए Master Degree या equivalent examination में minimum 50% marks जरूरी हैं।\nlabel: Appearing Candidates\nvalue: Master Degree final year / result awaited candidates भी apply कर सकते हैं, लेकिन उन्हें prescribed time limit में required marks के साथ qualification complete करनी होगी।\nlabel: 4 Year Bachelor Degree Candidates\nvalue: 4-year / 8-semester Bachelor Degree Programme वाले candidates minimum 75% marks के साथ JRF / Ph.D. admission eligibility के लिए apply कर सकते हैं। Reserved categories को 5% relaxation मिल सकता है।\nlabel: Other Eligible Courses\nvalue: Integrated course, B.E., B.Tech, B.Pharma और MBBS candidates भी rules के अनुसार eligible हो सकते हैं।\n\nSelection Process:\nOnline Application\nComputer Based Test (CBT)\nAnswer Key / Recorded Response\nResult Declaration\nEligibility for JRF / Assistant Professor / Ph.D. Admission as per qualifying category\n\nHow To Apply:\nसबसे पहले CSIR NET की official website csirnet.nta.nic.in पर जाएं।\nJoint CSIR-UGC NET June 2026 application link पर click करें।\nNew registration पूरा करें और login details प्राप्त करें।\nApplication form में personal details, academic details और subject details भरें।\nPhoto, signature और required documents upload करें।\nCategory के अनुसार application fee online mode से जमा करें।\nFinal submit करने से पहले form preview carefully check करें।\nConfirmation page download करके printout सुरक्षित रखें।","paymentMode":"Debit Card, Credit Card, UPI, Internet Banking या payment gateway के माध्यम से online fee जमा कर सकते हैं। Bank/payment gateway service charges extra लागू हो सकते हैं।","phCandidateFee":"₹325","physicalEligibility":"","postDate":"27-May-2026","postName":"JRF, Assistant Professor and Ph.D. Admission Eligibility Test","postStatus":"published","postTarget":"latestJob","postWiseApplyLinks":"Apply Online: https://examinationservices.nic.in/ExamSys26Part2/Root/Home.aspx?enc=Ei4cajBkK1gZSfgr53ImFTqGsyg38PlGNCGSuvSzsiVbovgbG6pVEHea7DNFe38E\nDownload Official Notification: https://cdnbbsr.s3waas.gov.in/s3efdf562ce2fb0ad460fd8e9d33e57f57/uploads/2026/05/202605271224945892.pdf\nOfficial Website: https://csirnet.nta.nic.in\nNTA Official Website: https://www.nta.ac.in\nJoin WhatsApp Channel: https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q","qualification":"Update Soon","requiredDocuments":"","resultDate":"","resultLink":"","salary":"","scFemaleFee":"","scStFee":"₹325","selectionProcess":"Online Application\nComputer Based Test (CBT)\nAnswer Key / Recorded Response\nResult Declaration\nEligibility for JRF / Assistant Professor / Ph.D. Admission as per qualifying category","seoTitle":"NTA CSIR UGC NET June 2026 Online Form| E-MITRA WALA","seoUpdatedAt":1781184127946,"shortInfo":"National Testing Agency (NTA) ने Joint CSIR-UGC NET June 2026 के लिए online application form जारी कर दिया है। यह परीक्षा Junior Research Fellowship (JRF), Assistant Professor और Ph.D. Admission eligibility के लिए आयोजित की जाती है। योग्य उम्मीदवार 27 May 2026 से 19 June 2026 तक online apply कर सकते हैं। परीक्षा 17 और 18 July 2026 को Computer Based Test (CBT) mode में आयोजित की जाएगी।","singleExamFee":"","slug":"nta-csir-ugc-net-june-2026-online-form","staBGeneralFee":"","staBRefundFee":"","staBScStFemaleFee":"","startDate":"Update Soon","stateWiseVacancy":"","syllabusLink":"","techAGeneralFee":"","techARefundFee":"","techAScStFemaleFee":"","tierTwoExamDate":"","title":"NTA CSIR UGC NET June 2026 Online Form","totalPosts":"Not Applicable","totalVacancy":"","type":"Online Form","updatedAt":1781180362698,"vacancyDetailsManual":""}};</script>
+<script>window.__EMITRA_STATIC_POST__={"id":"-Ou2bmA6gIYU1QquXCm7","job":{"admitCardDate":"Exam se 3-7 din pehle","admitCardLink":"","advancedArticleData":{"ageLimit":{"ageRelaxation":"OBC-NCL, SC, ST, PwD/PwBD, Third Gender, Women candidates, research experience और armed forces service के लिए rules के अनुसार relaxation लागू होगा।","asOn":"July 2026","assistantProfessorMaximumAge":"No Upper Age Limit","jrfMaximumAge":"30 Years","phdAdmissionMaximumAge":"No Upper Age Limit"},"applicationFee":[{"category":"General","fee":"₹1150"},{"category":"General-EWS / OBC-NCL","fee":"₹600"},{"category":"SC / ST / PwD / PwBD / Third Gender","fee":"₹325"}],"applicationFees":[{"category":"General","fee":"₹1150"},{"category":"General-EWS / OBC-NCL","fee":"₹600"},{"category":"SC / ST / PwD / PwBD / Third Gender","fee":"₹325"}],"faq":[{"answer":"Online application 27 May 2026 से शुरू हो चुके हैं।","question":"NTA CSIR UGC NET June 2026 के लिए आवेदन कब शुरू हुए?"},{"answer":"Online apply करने की last date 19 June 2026 upto 11:50 PM है।","question":"CSIR NET June 2026 की last date क्या है?"},{"answer":"CSIR NET June 2026 परीक्षा 17 और 18 July 2026 को आयोजित की जाएगी।","question":"CSIR NET June 2026 exam date क्या है?"},{"answer":"General के लिए ₹1150, General-EWS/OBC-NCL के लिए ₹600 और SC/ST/PwD/PwBD/Third Gender के लिए ₹325 fee है।","question":"CSIR NET June 2026 application fee कितनी है?"},{"answer":"JRF के लिए maximum age 30 years है। Assistant Professor और Ph.D. Admission के लिए कोई upper age limit नहीं है।","question":"CSIR NET June 2026 में age limit क्या है?"}],"faqs":[{"answer":"Online application 27 May 2026 से शुरू हो चुके हैं।","question":"NTA CSIR UGC NET June 2026 के लिए आवेदन कब शुरू हुए?"},{"answer":"Online apply करने की last date 19 June 2026 upto 11:50 PM है।","question":"CSIR NET June 2026 की last date क्या है?"},{"answer":"CSIR NET June 2026 परीक्षा 17 और 18 July 2026 को आयोजित की जाएगी।","question":"CSIR NET June 2026 exam date क्या है?"},{"answer":"General के लिए ₹1150, General-EWS/OBC-NCL के लिए ₹600 और SC/ST/PwD/PwBD/Third Gender के लिए ₹325 fee है।","question":"CSIR NET June 2026 application fee कितनी है?"},{"answer":"JRF के लिए maximum age 30 years है। Assistant Professor और Ph.D. Admission के लिए कोई upper age limit नहीं है।","question":"CSIR NET June 2026 में age limit क्या है?"}],"howToApply":"सबसे पहले CSIR NET की official website csirnet.nta.nic.in पर जाएं।\nJoint CSIR-UGC NET June 2026 application link पर click करें।\nNew registration पूरा करें और login details प्राप्त करें।\nApplication form में personal details, academic details और subject details भरें।\nPhoto, signature और required documents upload करें।\nCategory के अनुसार application fee online mode से जमा करें।\nFinal submit करने से पहले form preview carefully check करें।\nConfirmation page download करके printout सुरक्षित रखें।","importantDates":[{"label":"Application Start Date","value":"27 May 2026"},{"label":"Last Date to Apply Online","value":"19 June 2026 upto 11:50 PM"},{"label":"Fee Payment Last Date","value":"20 June 2026 upto 11:50 PM"},{"label":"Correction Window","value":"22 June 2026 to 23 June 2026 upto 11:50 PM"},{"label":"Exam Date","value":"17 July 2026 and 18 July 2026"},{"label":"City Intimation Slip","value":"To be announced later"},{"label":"Admit Card","value":"To be announced later"},{"label":"Answer Key","value":"As per schedule"},{"label":"Result","value":"To be announced later"}],"importantLinks":[{"label":"Apply Online","status":"Active","url":"https://examinationservices.nic.in/ExamSys26Part2/Root/Home.aspx?enc=Ei4cajBkK1gZSfgr53ImFTqGsyg38PlGNCGSuvSzsiVbovgbG6pVEHea7DNFe38E"},{"label":"Download Official Notification","url":"https://cdnbbsr.s3waas.gov.in/s3efdf562ce2fb0ad460fd8e9d33e57f57/uploads/2026/05/202605271224945892.pdf"},{"label":"Official Website","url":"https://csirnet.nta.nic.in"},{"label":"NTA Official Website","url":"https://www.nta.ac.in"},{"label":"Join WhatsApp Channel","url":"https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q"}],"intro":["National Testing Agency (NTA) ने Joint CSIR-UGC NET June 2026 के लिए online application form जारी कर दिया है। यह परीक्षा Junior Research Fellowship (JRF), Assistant Professor और Ph.D. Admission eligibility के लिए आयोजित की जाती है। योग्य उम्मीदवार 27 May 2026 से 19 June 2026 तक online apply कर सकते हैं। परीक्षा 17 और 18 July 2026 को Computer Based Test (CBT) mode में आयोजित की जाएगी।"],"mcqs":[{"answer":"NTA","options":["UPSC","SSC","NTA","DSSSB"],"question":"Joint CSIR-UGC NET June 2026 किस agency द्वारा आयोजित किया जाएगा?"},{"answer":"19 June 2026","options":["19 June 2026","20 June 2026","23 June 2026","18 July 2026"],"question":"CSIR NET June 2026 की last date क्या है?"},{"answer":"Computer Based Test","options":["Offline","Computer Based Test","Interview Only","OMR Based"],"question":"CSIR NET June 2026 exam किस mode में होगा?"},{"answer":"₹1150","options":["₹325","₹600","₹1150","₹1500"],"question":"CSIR NET June 2026 में General category की fee कितनी है?"},{"answer":"30 Years","options":["28 Years","30 Years","35 Years","No Limit"],"question":"CSIR NET June 2026 में JRF के लिए maximum age कितनी है?"}],"overview":[{"label":"Exam Name","value":"Joint CSIR-UGC NET June 2026"},{"label":"Conducting Body","value":"National Testing Agency (NTA)"},{"label":"Purpose","value":"JRF, Assistant Professor and Ph.D. Admission"},{"label":"Application Mode","value":"Online"},{"label":"Exam Mode","value":"Computer Based Test (CBT)"},{"label":"Exam Type","value":"Objective Type MCQ"},{"label":"Exam Duration","value":"180 Minutes / 03 Hours"}],"postTarget":"latestJob","selectionProcess":"Online Application\nComputer Based Test (CBT)\nAnswer Key / Recorded Response\nResult Declaration\nEligibility for JRF / Assistant Professor / Ph.D. Admission as per qualifying category","slug":"nta-csir-ugc-net-june-2026-online-form","title":"NTA CSIR UGC NET June 2026 Online Form"},"ageCalculateDate":"","ageLimit":{"ageRelaxation":"OBC-NCL, SC, ST, PwD/PwBD, Third Gender, Women candidates, research experience और armed forces service के लिए rules के अनुसार relaxation लागू होगा।","asOn":"July 2026","assistantProfessorMaximumAge":"No Upper Age Limit","jrfMaximumAge":"30 Years","phdAdmissionMaximumAge":"No Upper Age Limit"},"ageLimitManual":"asOn: July 2026\njrfMaximumAge: 30 Years\nassistantProfessorMaximumAge: No Upper Age Limit\nphdAdmissionMaximumAge: No Upper Age Limit\nageRelaxation: OBC-NCL, SC, ST, PwD/PwBD, Third Gender, Women candidates, research experience और armed forces service के लिए rules के अनुसार relaxation लागू होगा।","ageRelaxation":"OBC-NCL, SC, ST, PwD/PwBD, Third Gender, Women candidates, research experience और armed forces service के लिए rules के अनुसार relaxation लागू होगा।","allCandidateFee":"","answerKeyDate":"","answerKeyLink":"","applicationFee":[{"category":"General","fee":"₹1150"},{"category":"General-EWS / OBC-NCL","fee":"₹600"},{"category":"SC / ST / PwD / PwBD / Third Gender","fee":"₹325"}],"applicationFeeManual":"General-EWS / OBC-NCL: ₹600","applicationFees":[{"category":"General","fee":"₹1150"},{"category":"General-EWS / OBC-NCL","fee":"₹600"},{"category":"SC / ST / PwD / PwBD / Third Gender","fee":"₹325"}],"applyLink":"https://examinationservices.nic.in/ExamSys26Part2/Root/Home.aspx?enc=Ei4cajBkK1gZSfgr53ImFTqGsyg38PlGNCGSuvSzsiVbovgbG6pVEHea7DNFe38E","basicDetailsManual":"","bothExamFee":"","canonicalUrl":"https://emitrawala.online/post/nta-csir-ugc-net-june-2026-online-form/","category":"Latest Job","categoryWiseVacancy":"","createdAt":1780324704922,"department":"National Testing Agency (NTA)","detailLayout":"table","detailLink":"https://cdnbbsr.s3waas.gov.in/s3efdf562ce2fb0ad460fd8e9d33e57f57/uploads/2026/05/202605271224945892.pdf","displayOrder":4,"eligibilityManual":"","examCityDate":"","examDate":"","experience":"","extraUsefulManual":"Q1: NTA CSIR UGC NET June 2026 के लिए आवेदन कब शुरू हुए?\nA1: Online application 27 May 2026 से शुरू हो चुके हैं।\n\nQ2: CSIR NET June 2026 की last date क्या है?\nA2: Online apply करने की last date 19 June 2026 upto 11:50 PM है।\n\nQ3: CSIR NET June 2026 exam date क्या है?\nA3: CSIR NET June 2026 परीक्षा 17 और 18 July 2026 को आयोजित की जाएगी।\n\nQ4: CSIR NET June 2026 application fee कितनी है?\nA4: General के लिए ₹1150, General-EWS/OBC-NCL के लिए ₹600 और SC/ST/PwD/PwBD/Third Gender के लिए ₹325 fee है।\n\nQ5: CSIR NET June 2026 में age limit क्या है?\nA5: JRF के लिए maximum age 30 years है। Assistant Professor और Ph.D. Admission के लिए कोई upper age limit नहीं है।","faq":[{"answer":"Online application 27 May 2026 से शुरू हो चुके हैं।","question":"NTA CSIR UGC NET June 2026 के लिए आवेदन कब शुरू हुए?"},{"answer":"Online apply करने की last date 19 June 2026 upto 11:50 PM है।","question":"CSIR NET June 2026 की last date क्या है?"},{"answer":"CSIR NET June 2026 परीक्षा 17 और 18 July 2026 को आयोजित की जाएगी।","question":"CSIR NET June 2026 exam date क्या है?"},{"answer":"General के लिए ₹1150, General-EWS/OBC-NCL के लिए ₹600 और SC/ST/PwD/PwBD/Third Gender के लिए ₹325 fee है।","question":"CSIR NET June 2026 application fee कितनी है?"},{"answer":"JRF के लिए maximum age 30 years है। Assistant Professor और Ph.D. Admission के लिए कोई upper age limit नहीं है।","question":"CSIR NET June 2026 में age limit क्या है?"}],"faqs":[{"answer":"Online application 27 May 2026 से शुरू हो चुके हैं।","question":"NTA CSIR UGC NET June 2026 के लिए आवेदन कब शुरू हुए?"},{"answer":"Online apply करने की last date 19 June 2026 upto 11:50 PM है।","question":"CSIR NET June 2026 की last date क्या है?"},{"answer":"CSIR NET June 2026 परीक्षा 17 और 18 July 2026 को आयोजित की जाएगी।","question":"CSIR NET June 2026 exam date क्या है?"},{"answer":"General के लिए ₹1150, General-EWS/OBC-NCL के लिए ₹600 और SC/ST/PwD/PwBD/Third Gender के लिए ₹325 fee है।","question":"CSIR NET June 2026 application fee कितनी है?"},{"answer":"JRF के लिए maximum age 30 years है। Assistant Professor और Ph.D. Admission के लिए कोई upper age limit नहीं है।","question":"CSIR NET June 2026 में age limit क्या है?"}],"femaleFee":"","generalObcFee":"₹1150","howToApply":"सबसे पहले CSIR NET की official website csirnet.nta.nic.in पर जाएं।\nJoint CSIR-UGC NET June 2026 application link पर click करें।\nNew registration पूरा करें और login details प्राप्त करें।\nApplication form में personal details, academic details और subject details भरें।\nPhoto, signature और required documents upload करें।\nCategory के अनुसार application fee online mode से जमा करें।\nFinal submit करने से पहले form preview carefully check करें।\nConfirmation page download करके printout सुरक्षित रखें।","importantDates":[{"label":"Application Start Date","value":"27 May 2026"},{"label":"Last Date to Apply Online","value":"19 June 2026 upto 11:50 PM"},{"label":"Fee Payment Last Date","value":"20 June 2026 upto 11:50 PM"},{"label":"Correction Window","value":"22 June 2026 to 23 June 2026 upto 11:50 PM"},{"label":"Exam Date","value":"17 July 2026 and 18 July 2026"},{"label":"City Intimation Slip","value":"To be announced later"},{"label":"Admit Card","value":"To be announced later"},{"label":"Answer Key","value":"As per schedule"},{"label":"Result","value":"To be announced later"}],"importantDatesManual":"Application Start Date: 27 May 2026\nLast Date to Apply Online: 19 June 2026 upto 11:50 PM\nFee Payment Last Date: 20 June 2026 upto 11:50 PM\nCorrection Window: 22 June 2026 to 23 June 2026 upto 11:50 PM\nExam Date: 17 July 2026 and 18 July 2026\nCity Intimation Slip: To be announced later\nAdmit Card: To be announced later\nAnswer Key: As per schedule\nResult: To be announced later","importantLinks":[{"label":"Apply Online","status":"Active","url":"https://examinationservices.nic.in/ExamSys26Part2/Root/Home.aspx?enc=Ei4cajBkK1gZSfgr53ImFTqGsyg38PlGNCGSuvSzsiVbovgbG6pVEHea7DNFe38E"},{"label":"Download Official Notification","url":"https://cdnbbsr.s3waas.gov.in/s3efdf562ce2fb0ad460fd8e9d33e57f57/uploads/2026/05/202605271224945892.pdf"},{"label":"Official Website","url":"https://csirnet.nta.nic.in"},{"label":"NTA Official Website","url":"https://www.nta.ac.in"},{"label":"Join WhatsApp Channel","url":"https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q"}],"importantLinksManual":"Apply Online: https://examinationservices.nic.in/ExamSys26Part2/Root/Home.aspx?enc=Ei4cajBkK1gZSfgr53ImFTqGsyg38PlGNCGSuvSzsiVbovgbG6pVEHea7DNFe38E\nDownload Official Notification: https://cdnbbsr.s3waas.gov.in/s3efdf562ce2fb0ad460fd8e9d33e57f57/uploads/2026/05/202605271224945892.pdf\nOfficial Website: https://csirnet.nta.nic.in\nNTA Official Website: https://www.nta.ac.in\nJoin WhatsApp Channel: https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q","intro":["National Testing Agency (NTA) ने Joint CSIR-UGC NET June 2026 के लिए online application form जारी कर दिया है। यह परीक्षा Junior Research Fellowship (JRF), Assistant Professor और Ph.D. Admission eligibility के लिए आयोजित की जाती है। योग्य उम्मीदवार 27 May 2026 से 19 June 2026 तक online apply कर सकते हैं। परीक्षा 17 और 18 July 2026 को Computer Based Test (CBT) mode में आयोजित की जाएगी।"],"jsonLd":{"@context":"https://schema.org","@graph":[{"@id":"https://emitrawala.online/post/nta-csir-ugc-net-june-2026-online-form/#breadcrumb","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","item":"https://emitrawala.online/","name":"Home","position":1},{"@type":"ListItem","item":"https://emitrawala.online/job-form.html","name":"Latest Jobs","position":2},{"@type":"ListItem","item":"https://emitrawala.online/post/nta-csir-ugc-net-june-2026-online-form/","name":"NTA CSIR UGC NET June 2026 Online Form","position":3}]},{"@id":"https://emitrawala.online/post/nta-csir-ugc-net-june-2026-online-form/#article","@type":["Article","JobPosting"],"dateModified":"2026-06-11T12:19:22.698Z","datePosted":"2026-05-27","datePublished":"2026-06-01T14:38:24.922Z","description":"NTA CSIR UGC NET June 2026 online form released. Apply from 27 May to 19 June 2026. Check exam date, fee, age limit, eligibility, subjects, exam pattern and imp","employmentType":"Online Form","headline":"NTA CSIR UGC NET June 2026 Online Form| E-MITRA WALA","hiringOrganization":{"@type":"Organization","name":"National Testing Agency (NTA)"},"mainEntityOfPage":"https://emitrawala.online/post/nta-csir-ugc-net-june-2026-online-form/","publisher":{"@type":"Organization","name":"E-MITRA WALA","url":"https://emitrawala.online/"},"title":"NTA CSIR UGC NET June 2026 Online Form","url":"https://emitrawala.online/post/nta-csir-ugc-net-june-2026-online-form/"},{"@id":"https://emitrawala.online/post/nta-csir-ugc-net-june-2026-online-form/#faq","@type":"FAQPage","mainEntity":[{"@type":"Question","acceptedAnswer":{"@type":"Answer","text":"Online application 27 May 2026 से शुरू हो चुके हैं।"},"name":"NTA CSIR UGC NET June 2026 के लिए आवेदन कब शुरू हुए?"},{"@type":"Question","acceptedAnswer":{"@type":"Answer","text":"Online apply करने की last date 19 June 2026 upto 11:50 PM है।"},"name":"CSIR NET June 2026 की last date क्या है?"},{"@type":"Question","acceptedAnswer":{"@type":"Answer","text":"CSIR NET June 2026 परीक्षा 17 और 18 July 2026 को आयोजित की जाएगी।"},"name":"CSIR NET June 2026 exam date क्या है?"},{"@type":"Question","acceptedAnswer":{"@type":"Answer","text":"General के लिए ₹1150, General-EWS/OBC-NCL के लिए ₹600 और SC/ST/PwD/PwBD/Third Gender के लिए ₹325 fee है।"},"name":"CSIR NET June 2026 application fee कितनी है?"},{"@type":"Question","acceptedAnswer":{"@type":"Answer","text":"JRF के लिए maximum age 30 years है। Assistant Professor और Ph.D. Admission के लिए कोई upper age limit नहीं है।"},"name":"CSIR NET June 2026 में age limit क्या है?"}]}]},"lastApplyDate":"Update Soon","lastDate":"Update Soon","lastFeeDate":"","location":"All India","maxAge":"","mcqs":[{"answer":"NTA","options":["UPSC","SSC","NTA","DSSSB"],"question":"Joint CSIR-UGC NET June 2026 किस agency द्वारा आयोजित किया जाएगा?"},{"answer":"19 June 2026","options":["19 June 2026","20 June 2026","23 June 2026","18 July 2026"],"question":"CSIR NET June 2026 की last date क्या है?"},{"answer":"Computer Based Test","options":["Offline","Computer Based Test","Interview Only","OMR Based"],"question":"CSIR NET June 2026 exam किस mode में होगा?"},{"answer":"₹1150","options":["₹325","₹600","₹1150","₹1500"],"question":"CSIR NET June 2026 में General category की fee कितनी है?"},{"answer":"30 Years","options":["28 Years","30 Years","35 Years","No Limit"],"question":"CSIR NET June 2026 में JRF के लिए maximum age कितनी है?"}],"metaDescription":"NTA CSIR UGC NET June 2026 online form released. Apply from 27 May to 19 June 2026. Check exam date, fee, age limit, eligibility, subjects, exam pattern and imp","minAge":"","obcFemaleFee":"","officialWebsite":"https://csirnet.nta.nic.in","overview":[{"label":"Exam Name","value":"Joint CSIR-UGC NET June 2026"},{"label":"Conducting Body","value":"National Testing Agency (NTA)"},{"label":"Purpose","value":"JRF, Assistant Professor and Ph.D. Admission"},{"label":"Application Mode","value":"Online"},{"label":"Exam Mode","value":"Computer Based Test (CBT)"},{"label":"Exam Type","value":"Objective Type MCQ"},{"label":"Exam Duration","value":"180 Minutes / 03 Hours"}],"pageContent":"Important Dates:\nlabel: Application Start Date\nvalue: 27 May 2026\nlabel: Last Date to Apply Online\nvalue: 19 June 2026 upto 11:50 PM\nlabel: Fee Payment Last Date\nvalue: 20 June 2026 upto 11:50 PM\nlabel: Correction Window\nvalue: 22 June 2026 to 23 June 2026 upto 11:50 PM\nlabel: Exam Date\nvalue: 17 July 2026 and 18 July 2026\nlabel: City Intimation Slip\nvalue: To be announced later\nlabel: Admit Card\nvalue: To be announced later\nlabel: Answer Key\nvalue: As per schedule\nlabel: Result\nvalue: To be announced later\n\nApplication Fee:\ncategory: General\nfee: ₹1150\ncategory: General-EWS / OBC-NCL\nfee: ₹600\ncategory: SC / ST / PwD / PwBD / Third Gender\nfee: ₹325\n\nEligibility:\nlabel: Master Degree Candidates\nvalue: General / Unreserved / General-EWS candidates के लिए Master Degree या equivalent examination में minimum 55% marks जरूरी हैं।\nlabel: Reserved Category Candidates\nvalue: OBC-NCL / SC / ST / PwD / PwBD / Third Gender candidates के लिए Master Degree या equivalent examination में minimum 50% marks जरूरी हैं।\nlabel: Appearing Candidates\nvalue: Master Degree final year / result awaited candidates भी apply कर सकते हैं, लेकिन उन्हें prescribed time limit में required marks के साथ qualification complete करनी होगी।\nlabel: 4 Year Bachelor Degree Candidates\nvalue: 4-year / 8-semester Bachelor Degree Programme वाले candidates minimum 75% marks के साथ JRF / Ph.D. admission eligibility के लिए apply कर सकते हैं। Reserved categories को 5% relaxation मिल सकता है।\nlabel: Other Eligible Courses\nvalue: Integrated course, B.E., B.Tech, B.Pharma और MBBS candidates भी rules के अनुसार eligible हो सकते हैं।\n\nSelection Process:\nOnline Application\nComputer Based Test (CBT)\nAnswer Key / Recorded Response\nResult Declaration\nEligibility for JRF / Assistant Professor / Ph.D. Admission as per qualifying category\n\nHow To Apply:\nसबसे पहले CSIR NET की official website csirnet.nta.nic.in पर जाएं।\nJoint CSIR-UGC NET June 2026 application link पर click करें।\nNew registration पूरा करें और login details प्राप्त करें।\nApplication form में personal details, academic details और subject details भरें।\nPhoto, signature और required documents upload करें।\nCategory के अनुसार application fee online mode से जमा करें।\nFinal submit करने से पहले form preview carefully check करें।\nConfirmation page download करके printout सुरक्षित रखें।","paymentMode":"Debit Card, Credit Card, UPI, Internet Banking या payment gateway के माध्यम से online fee जमा कर सकते हैं। Bank/payment gateway service charges extra लागू हो सकते हैं।","phCandidateFee":"₹325","physicalEligibility":"","postDate":"27-May-2026","postName":"JRF, Assistant Professor and Ph.D. Admission Eligibility Test","postStatus":"published","postTarget":"latestJob","postWiseApplyLinks":"Apply Online: https://examinationservices.nic.in/ExamSys26Part2/Root/Home.aspx?enc=Ei4cajBkK1gZSfgr53ImFTqGsyg38PlGNCGSuvSzsiVbovgbG6pVEHea7DNFe38E\nDownload Official Notification: https://cdnbbsr.s3waas.gov.in/s3efdf562ce2fb0ad460fd8e9d33e57f57/uploads/2026/05/202605271224945892.pdf\nOfficial Website: https://csirnet.nta.nic.in\nNTA Official Website: https://www.nta.ac.in\nJoin WhatsApp Channel: https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q","qualification":"Update Soon","requiredDocuments":"","resultDate":"","resultLink":"","salary":"","scFemaleFee":"","scStFee":"₹325","selectionProcess":"Online Application\nComputer Based Test (CBT)\nAnswer Key / Recorded Response\nResult Declaration\nEligibility for JRF / Assistant Professor / Ph.D. Admission as per qualifying category","seoTitle":"NTA CSIR UGC NET June 2026 Online Form| E-MITRA WALA","seoUpdatedAt":1781232620834,"shortInfo":"National Testing Agency (NTA) ने Joint CSIR-UGC NET June 2026 के लिए online application form जारी कर दिया है। यह परीक्षा Junior Research Fellowship (JRF), Assistant Professor और Ph.D. Admission eligibility के लिए आयोजित की जाती है। योग्य उम्मीदवार 27 May 2026 से 19 June 2026 तक online apply कर सकते हैं। परीक्षा 17 और 18 July 2026 को Computer Based Test (CBT) mode में आयोजित की जाएगी।","singleExamFee":"","slug":"nta-csir-ugc-net-june-2026-online-form","staBGeneralFee":"","staBRefundFee":"","staBScStFemaleFee":"","startDate":"Update Soon","stateWiseVacancy":"","syllabusLink":"","techAGeneralFee":"","techARefundFee":"","techAScStFemaleFee":"","tierTwoExamDate":"","title":"NTA CSIR UGC NET June 2026 Online Form","totalPosts":"Not Applicable","totalVacancy":"","type":"Online Form","updatedAt":1781180362698,"vacancyDetailsManual":""}};</script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
@@ -992,12 +986,12 @@ const schemaDateOrUndefined = (value = "") => {
   return date ? date.toISOString().slice(0, 10) : undefined;
 };
 
-const buildBreadcrumbSchema = (title = "Job Details", canonicalUrl = location.href) => ({
+const buildBreadcrumbSchema = (title = "Job Details", canonicalUrl = location.href, currentAffairs = false) => ({
   "@type":"BreadcrumbList",
   "@id":`${canonicalUrl}#breadcrumb`,
   "itemListElement":[
     { "@type":"ListItem", "position":1, "name":"Home", "item":`${location.origin}/index.html` },
-    { "@type":"ListItem", "position":2, "name":"Latest Jobs", "item":`${location.origin}/job-form.html` },
+    { "@type":"ListItem", "position":2, "name":currentAffairs ? "Current Affairs" : "Latest Jobs", "item":`${location.origin}/${currentAffairs ? "current-affairs.html" : "job-form.html"}` },
     { "@type":"ListItem", "position":3, "name":title, "item":canonicalUrl }
   ]
 });
@@ -1040,7 +1034,7 @@ const buildJobSchemaGraph = ({ job = {}, title = "Job Update", description = "",
   return {
     "@context":"https://schema.org",
     "@graph":[
-      buildBreadcrumbSchema(title, canonicalUrl),
+      buildBreadcrumbSchema(title, canonicalUrl, currentAffairs),
       article,
       ...(faqItems.length ? [faqPage] : [])
     ]
@@ -1079,15 +1073,92 @@ const hasCurrentAffairsQuestions = (job = {}) => getCurrentAffairsQuestionSource
   const options = Array.isArray(item.options) ? item.options : [item.optionA || item.a, item.optionB || item.b, item.optionC || item.c, item.optionD || item.d];
   return String(item.question || item.q || item.title || "").trim() && options.some((option) => String(option || "").trim());
 });
+const resolveCurrentAffairsPdfUrl = (job = {}) => {
+  const article = job.advancedArticleData && typeof job.advancedArticleData === "object" ? job.advancedArticleData : {};
+  const content = getObjectContent(job);
+  const articleContent = getObjectContent(article);
+  const direct = [
+    job.pdfLink, job.pdfUrl, job.currentAffairsPdf, job.currentAffairsPdfUrl, job.dailyPdf, job.dailyPdfUrl,
+    job.downloadPdf, job.downloadPdfUrl, job.pdfDownloadUrl, job.fileUrl, job.attachmentUrl,
+    content.pdfLink, content.pdfUrl, content.currentAffairsPdf, content.dailyPdf, content.downloadPdfUrl,
+    article.pdfLink, article.pdfUrl, article.currentAffairsPdf, article.dailyPdf, article.downloadPdfUrl,
+    articleContent.pdfLink, articleContent.pdfUrl, articleContent.currentAffairsPdf, articleContent.dailyPdf
+  ];
+  const fromDirect = direct.map(safeUrl).find((url) => url !== "#");
+  if(fromDirect){ return fromDirect; }
+  const linkSources = [job.importantLinks, job.links, job.attachments, content.importantLinks, content.links, article.importantLinks, article.links, articleContent.importantLinks, articleContent.links];
+  const linkItems = linkSources.flatMap((items) => Array.isArray(items) ? items : []);
+  const match = linkItems.find((item) => {
+    if(!item || typeof item !== "object"){ return false; }
+    const label = String(item.label || item.title || item.name || item.text || "").toLowerCase();
+    const url = String(item.url || item.href || item.link || item.file || "").trim();
+    return url && (/pdf|download|डाउनलोड/.test(label) || /\.pdf(?:$|[?#])/i.test(url));
+  });
+  return match ? safeUrl(match.url || match.href || match.link || match.file) : "#";
+};
+const loadScriptOnce = (src = "") => new Promise((resolve, reject) => {
+  const existing = document.querySelector(`script[src="${src}"]`);
+  if(existing){
+    if(existing.dataset.loaded === "true"){ resolve(); return; }
+    existing.addEventListener("load", resolve, { once:true });
+    existing.addEventListener("error", reject, { once:true });
+    return;
+  }
+  const script = document.createElement("script");
+  script.src = src;
+  script.async = true;
+  script.dataset.loaded = "false";
+  script.onload = () => { script.dataset.loaded = "true"; resolve(); };
+  script.onerror = reject;
+  document.head.appendChild(script);
+});
+window.downloadCurrentAffairsPdf = async (fileName = "daily-current-affairs.pdf") => {
+  const button = window.event?.currentTarget;
+  const oldText = button ? button.innerHTML : "";
+  let pdfSource = null;
+  try{
+    if(button){
+      button.disabled = true;
+      button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> PDF Ready ho rahi hai';
+    }
+    await loadScriptOnce("https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js");
+    const source = document.querySelector(".detail-sheet");
+    if(!source || !window.html2pdf){ throw new Error("PDF generator load nahi hua"); }
+    pdfSource = source;
+    if(document.fonts?.ready){ await document.fonts.ready; }
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    source.classList.add("ca-pdf-rendering");
+    await window.html2pdf().set({
+      margin: [8, 8, 8, 8],
+      filename: fileName || "daily-current-affairs.pdf",
+      image: { type:"jpeg", quality:0.98 },
+      html2canvas: { scale:2, useCORS:true, backgroundColor:"#ffffff" },
+      jsPDF: { unit:"mm", format:"a4", orientation:"portrait" },
+      pagebreak: { mode:["css", "legacy"] }
+    }).from(source).save();
+  }catch(error){
+    console.warn(error);
+    window.print();
+  }finally{
+    if(pdfSource){ pdfSource.classList.remove("ca-pdf-rendering"); }
+    if(button){
+      button.disabled = false;
+      button.innerHTML = oldText;
+    }
+  }
+};
 const isCurrentAffairsPost = (job = {}) => {
   const article = job.advancedArticleData && typeof job.advancedArticleData === "object" ? job.advancedArticleData : {};
+  const currentText = [job.title, job.slug, article.title, article.slug, job.category, article.category]
+    .map((value) => String(value || "").toLowerCase())
+    .join(" ");
   return [job.postTarget, job.postType, article.postTarget, article.postType, job.type, article.type]
     .some((value) => normalizePostTarget(value) === "currentAffairs")
+    || /current[-\s]*affairs|करेंट\s*अफेयर्स|करंट\s*अफेयर्स/.test(currentText)
     || Array.isArray(job.currentAffairs)
     || Array.isArray(article.currentAffairs)
     || Array.isArray(job.currentAffairsData)
-    || Array.isArray(job.currentAffairsData?.currentAffairs)
-    || hasCurrentAffairsQuestions(job);
+    || Array.isArray(job.currentAffairsData?.currentAffairs);
 };
 const isAdmissionPost = (job = {}) => {
   const article = job.advancedArticleData && typeof job.advancedArticleData === "object" ? job.advancedArticleData : {};
@@ -2204,20 +2275,27 @@ const renderMcqSection = (job = {}) => {
   const mcqBox = document.getElementById("mcqContent");
   const mcqPanel = document.getElementById("mcqPanel");
   const mcqs = normalizeMcqItems(isCurrentAffairsPost(job) ? getCurrentAffairsQuestionSource(job) : job.mcqs);
+  if(!mcqBox || !mcqPanel){ return; }
   if(!mcqs.length){
     mcqBox.innerHTML = "";
     mcqPanel.style.display = "none";
     return;
   }
+  const premiumClass = isCurrentAffairsPost(job) ? " ca-mcq-card" : "";
   mcqBox.innerHTML = `<div class="mcq-list">${mcqs.map((item, index) => {
     const correct = item.answer.toLowerCase();
     const optionsHtml = item.options.map((option, optionIndex) => {
       const optionLabel = String.fromCharCode(65 + optionIndex);
       const optionText = `${optionLabel}. ${option}`;
       const isCorrect = correct && (option.toLowerCase() === correct || optionText.toLowerCase() === correct || optionLabel.toLowerCase() === correct);
-      return `<div class="mcq-option ${isCorrect ? "correct" : ""}">${renderFormattedText(optionText)}</div>`;
+      return isCurrentAffairsPost(job)
+        ? `<div class="mcq-option ${isCorrect ? "correct" : ""}"><span>${optionLabel}</span>${renderFormattedText(option)}</div>`
+        : `<div class="mcq-option ${isCorrect ? "correct" : ""}">${renderFormattedText(optionText)}</div>`;
     }).join("");
-    return `<article class="mcq-card"><div class="mcq-question">Q${index + 1}. ${renderFormattedText(item.question)}</div><div class="mcq-options">${optionsHtml}</div>${item.answer ? `<div class="mcq-answer"><span class="manual-label">Correct Answer:</span> ${renderFormattedText(item.answer)}</div>` : ""}${item.explanation ? `<div class="mcq-explanation"><span class="manual-label">Explanation:</span> ${renderFormattedText(item.explanation)}</div>` : ""}</article>`;
+    const questionHtml = isCurrentAffairsPost(job)
+      ? `<div class="mcq-question"><span class="ca-q-badge">Q${index + 1}</span><strong>${renderFormattedText(item.question)}</strong></div>`
+      : `<div class="mcq-question">Q${index + 1}. ${renderFormattedText(item.question)}</div>`;
+    return `<article class="mcq-card${premiumClass}">${questionHtml}<div class="mcq-options">${optionsHtml}</div>${item.answer ? `<div class="mcq-answer"><span class="manual-label">Correct Answer:</span> ${renderFormattedText(item.answer)}</div>` : ""}${item.explanation ? `<div class="mcq-explanation"><span class="manual-label">Explanation:</span> ${renderFormattedText(item.explanation)}</div>` : ""}</article>`;
   }).join("")}</div>`;
   mcqPanel.style.display = "block";
 };
@@ -2257,11 +2335,34 @@ const hidePanels = (ids = []) => ids.forEach((id) => {
   if(panel){ panel.style.display = "none"; }
 });
 
+const removeCurrentAffairsJobPanels = () => [
+  "featurePanel", "shortInfoPanel", "importantPanel", "jobInfoPanel", "feePanel", "agePanel",
+  "vacancyPanel", "eligibilityPanel", "selectionPanel", "applyProcessPanel", "extraPanel",
+  "linksPanel", "faqPanel", "mcqPanel", "authorPanel", "jobToolsPanel"
+].forEach((id) => {
+  const panel = document.getElementById(id);
+  if(panel){ panel.remove(); }
+});
+
+const setPageContextLabel = (label = "Job Details") => {
+  const message = document.getElementById("jobMessage");
+  if(message && /load ho rahi/i.test(message.textContent || "")){
+    message.textContent = label === "Current Affairs" ? "Current Affairs load ho rahi hain..." : "Job details load ho rahi hain...";
+  }
+  const footerText = document.querySelector("footer p");
+  if(footerText && /E-MITRA WALA/i.test(footerText.textContent || "")){
+    footerText.textContent = `© 2026 E-MITRA WALA | ${label}`;
+  }
+};
+
 const renderCurrentAffairsDetail = ({ jobId = "", job = {}, title = "", description = "", canonicalUrl = "", allJobs = [] }) => {
+  const isStaticCurrentAffairs = document.body.classList.contains("current-affairs-static");
+  setPageContextLabel("Current Affairs");
   const introText = Array.isArray(job.intro) ? job.intro.map((item) => String(item || "").trim()).filter(Boolean).join("\n\n") : "";
   const dateText = job.postDate || job.date || job.content?.date || job["तारीख"] || job.currentAffairsData?.["तारीख"] || "";
   const categoryText = job.category || job.content?.category || job["श्रेणी"] || job.currentAffairsData?.["श्रेणी"] || "";
   const newsItems = normalizeCurrentAffairsNewsItems(job);
+  const questions = normalizeMcqItems(getCurrentAffairsQuestionSource(job));
   const sourceNames = Array.from(new Set(newsItems.map((item) => item.source).filter(Boolean))).slice(0, 4);
   const sourceDateNote = [
     sourceNames.length ? `Source: ${sourceNames.join(", ")}` : "Source: Official news updates and exam-oriented current affairs references",
@@ -2270,26 +2371,52 @@ const renderCurrentAffairsDetail = ({ jobId = "", job = {}, title = "", descript
   document.getElementById("jobType").textContent = "Current Affairs";
   document.getElementById("jobTitle").textContent = title;
   document.getElementById("jobIntro").innerHTML = renderFormattedText(introText || description || title);
-  document.getElementById("sheetTitle").textContent = title;
-  document.getElementById("sheetSubTitle").innerHTML = renderFormattedText(introText || description || "Important current affairs questions, answers and explanations.");
+  document.getElementById("sheetTitle").textContent = "Daily Current Affairs Quiz";
+  document.getElementById("sheetSubTitle").innerHTML = renderFormattedText(title);
   renderArticleMeta(job);
-  renderAuthorBox(job);
+  if(!isStaticCurrentAffairs){ renderAuthorBox(job); }
+  if(isStaticCurrentAffairs){
+    removeCurrentAffairsJobPanels();
+    renderCurrentAffairsLinks({ currentId:jobId, currentJob:job, allJobs });
+    const fallbackPanel = document.getElementById("seoFallbackPanel");
+    if(fallbackPanel){ fallbackPanel.style.display = "block"; }
+    message.style.display = "none";
+    wrap.style.display = "block";
+    updateArticleWordCount();
+    return;
+  }
   const shortInfoHeading = document.querySelector("#shortInfoPanel h2");
   if(shortInfoHeading){ shortInfoHeading.textContent = "Current Affairs"; }
   renderMetaBadges([
-    { label:"Date", value:dateText, icon:"fa-solid fa-calendar-days" }
+    { label:"Date", value:dateText, icon:"fa-solid fa-calendar-days" },
+    { label:"Total Questions", value:questions.length ? String(questions.length) : "", icon:"fa-solid fa-circle-question" },
+    { label:"Time", value:"15 Min", icon:"fa-solid fa-clock" }
   ]);
   hidePanels([
     "featurePanel", "importantPanel", "jobInfoPanel", "feePanel", "agePanel", "vacancyPanel",
     "eligibilityPanel", "selectionPanel", "applyProcessPanel", "extraPanel",
     "linksPanel", "jobToolsPanel"
   ]);
-  renderTextBlock("shortInfoContent", "shortInfoPanel", [
-    dateText ? `Date: ${dateText}` : "",
-    categoryText ? `Category: ${categoryText}` : "",
-    introText || description || "",
-    sourceDateNote
-  ].filter(Boolean).join("\n\n"));
+  const shortInfoPanel = document.getElementById("shortInfoPanel");
+  const shortInfoContent = document.getElementById("shortInfoContent");
+  if(shortInfoPanel && shortInfoContent){
+    shortInfoContent.innerHTML = `
+      <div class="ca-quiz-summary">
+        <div><strong>${questions.length || 0}</strong><span>Total Questions</span></div>
+        <div><strong>${questions.length || 0}</strong><span>Total Marks</span></div>
+        <div><strong>15 Min</strong><span>Time</span></div>
+        <div><strong>Hindi/English</strong><span>Language</span></div>
+        <a class="btn apply" href="#mcqPanel">Start Quiz</a>
+        <a class="btn notification" href="current-affairs.html">Current Affairs List</a>
+      </div>
+      <div class="content-box ca-intro-box">
+        ${introText || description ? `<p>${renderFormattedText(introText || description)}</p>` : ""}
+        ${dateText ? `<p><strong class="manual-label">Date:</strong> ${renderFormattedText(dateText)}</p>` : ""}
+        ${categoryText ? `<p><strong class="manual-label">Category:</strong> ${renderFormattedText(categoryText)}</p>` : ""}
+        <p><strong class="manual-label">Source/Date Note:</strong> ${renderFormattedText(sourceDateNote)}</p>
+      </div>`;
+    shortInfoPanel.style.display = "block";
+  }
   const importantManual = document.getElementById("importantManual");
   if(importantManual){ importantManual.innerHTML = ""; }
   const contentPanel = document.getElementById("pageContentPanel");
@@ -2311,7 +2438,7 @@ const renderCurrentAffairsDetail = ({ jobId = "", job = {}, title = "", descript
   const faqItems = [];
   renderCurrentAffairsLinks({ currentId:jobId, currentJob:job, allJobs });
   const sidebar = document.querySelector(".detail-sidebar");
-  if(sidebar){ sidebar.style.display = "none"; }
+  if(sidebar){ sidebar.style.display = ""; }
   setJsonLd(buildJobSchemaGraph({ job, title, description, canonicalUrl, faqItems }));
   const fallbackPanel = document.getElementById("seoFallbackPanel");
   if(fallbackPanel){ fallbackPanel.style.display = "none"; }
@@ -2334,22 +2461,43 @@ const isMeaningfulCell = (value) => {
 
 const renderCurrentAffairsLinks = ({ currentId = "", currentJob = {}, allJobs = [] }) => {
   const communityPanel = document.getElementById("communityPanel");
-  if(!communityPanel){ return; }
   const relatedRows = (Array.isArray(allJobs) ? allJobs : [])
     .filter((item) => item && item.id !== currentId && isJobVisible(item.job || {}) && isCurrentAffairsPost(item.job || {}))
     .slice(0, 5);
-  communityPanel.innerHTML = `
-    <h2>More Current Affairs</h2>
-    <div class="community-actions">
-      <a class="btn whatsapp" href="https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q" target="_blank" rel="noopener noreferrer">Join WhatsApp Channel</a>
-      <a class="btn whatsapp" href="https://wa.me/919509453441" target="_blank" rel="noopener noreferrer">WhatsApp +91 9509453441</a>
-      <a class="btn whatsapp" href="https://wa.me/918505090384" target="_blank" rel="noopener noreferrer">WhatsApp +91 8505090384</a>
-      <a class="btn" href="/current-affairs.html"><i class="fa-solid fa-newspaper"></i> Related Current Affairs</a>
-      <a class="btn" href="/mock-test.html"><i class="fa-solid fa-clipboard-check"></i> Mock Test</a>
+  if(communityPanel){
+    communityPanel.innerHTML = "";
+    communityPanel.style.display = "none";
+  }
+  const sidebar = document.querySelector(".detail-sidebar");
+  if(!sidebar){ return; }
+  const pdfUrl = resolveCurrentAffairsPdfUrl(currentJob);
+  const pdfFileName = `${buildCanonicalSlug(currentJob, currentId) || "daily-current-affairs"}.pdf`;
+  sidebar.innerHTML = `
+    <div class="sidebar-card">
+      <h3>Daily Current Affairs PDF</h3>
+      <div class="ca-sidebar-actions">
+        ${pdfUrl !== "#" ? `<a class="btn pdf" href="${pdfUrl}" download="${escapeHTML(pdfFileName)}" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-file-pdf"></i> Daily PDF Download</a>` : `<button class="btn pdf" type="button" onclick="downloadCurrentAffairsPdf('${escapeHTML(pdfFileName)}')"><i class="fa-solid fa-file-pdf"></i> Daily PDF Download</button>`}
+      </div>
     </div>
-    ${relatedRows.length ? `<div class="related-list">${relatedRows.map((item) => `<a href="${canonicalJobHref(item.id, item.job)}">${escapeHTML((item.job || {}).title || "Current Affairs")}</a>`).join("")}</div>` : ""}
-  `;
-  communityPanel.style.display = "block";
+    <div class="sidebar-card">
+      <h3>Join WhatsApp Channel</h3>
+      <div class="ca-sidebar-actions">
+        <a class="btn whatsapp" href="https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp"></i> Join WhatsApp Channel</a>
+      </div>
+    </div>
+    <div class="sidebar-card">
+      <h3>More Current Affairs</h3>
+      <div class="related-list">
+        ${relatedRows.length ? relatedRows.map((item) => `<a href="${canonicalJobHref(item.id, item.job)}">${escapeHTML((item.job || {}).title || "Current Affairs")}</a>`).join("") : `<a href="current-affairs.html">View All Current Affairs</a>`}
+      </div>
+    </div>
+    <div class="sidebar-card">
+      <h3>Mock Test</h3>
+      <div class="ca-sidebar-actions">
+        <a class="btn dark" href="mock-test.html"><i class="fa-solid fa-clipboard-check"></i> Mock Test</a>
+      </div>
+    </div>`;
+  sidebar.style.display = "";
 };
 
 const renderTableBlock = (lines) => {
