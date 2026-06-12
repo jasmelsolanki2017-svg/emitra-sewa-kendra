@@ -165,6 +165,8 @@ body.site-theme-premium .home-portal-quick a,
 body.site-theme-premium .home-portal-quick a:visited,
 body.site-theme-premium .quick-grid a,
 body.site-theme-premium .quick-grid a:visited,
+body.site-theme-premium .home-portal-quick a *,
+body.site-theme-premium .quick-grid a *,
 body.site-theme-premium .box-title,
 body.site-theme-premium .source-special-head,
 body.site-theme-premium .source-special-grid .box-title,
@@ -298,4 +300,17 @@ body.site-theme-premium .sarkari-section-title{
 body.site-theme-premium .lang-switch button.active{
   background:#fff!important;
   color:#0057a8!important;
+}
+
+body.site-theme-premium .home-portal-quick a,
+body.site-theme-premium .home-portal-quick a:visited,
+body.site-theme-premium .home-portal-quick a:hover,
+body.site-theme-premium .home-portal-quick a:active,
+body.site-theme-premium .home-portal-quick a:focus,
+body.site-theme-premium .quick-grid a,
+body.site-theme-premium .quick-grid a:visited,
+body.site-theme-premium .quick-grid a:hover,
+body.site-theme-premium .quick-grid a:active,
+body.site-theme-premium .quick-grid a:focus{
+  color:#fff!important;
 }
