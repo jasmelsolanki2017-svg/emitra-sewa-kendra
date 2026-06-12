@@ -159,3 +159,143 @@ body.site-theme-premium textarea{
 body.site-theme-premium.dark-mode{
   background:#07111f!important;
 }
+
+/* Global contrast guard: keep text readable on dark/colored headers, tiles and buttons. */
+body.site-theme-premium .home-portal-quick a,
+body.site-theme-premium .home-portal-quick a:visited,
+body.site-theme-premium .quick-grid a,
+body.site-theme-premium .quick-grid a:visited,
+body.site-theme-premium .box-title,
+body.site-theme-premium .source-special-head,
+body.site-theme-premium .source-special-grid .box-title,
+body.site-theme-premium .premium-card h2,
+body.site-theme-premium .premium-card[class*="accent-"] h2,
+body.site-theme-premium .sidebar-card h3,
+body.site-theme-premium .aside-top,
+body.site-theme-premium .sarkari-blue-heading,
+body.site-theme-premium .news-head,
+body.site-theme-premium .section-heading,
+body.site-theme-premium .card-header,
+body.site-theme-premium .table-card h2,
+body.site-theme-premium .form-section h3{
+  color:#fff!important;
+}
+
+body.site-theme-premium .btn,
+body.site-theme-premium .btn:visited,
+body.site-theme-premium .btn:hover,
+body.site-theme-premium .btn:active,
+body.site-theme-premium .btn:focus,
+body.site-theme-premium .action-btn,
+body.site-theme-premium .action-btn:visited,
+body.site-theme-premium .action-btn:hover,
+body.site-theme-premium .action-btn:active,
+body.site-theme-premium .action-btn:focus,
+body.site-theme-premium .cta,
+body.site-theme-premium .cta:visited,
+body.site-theme-premium .cta:hover,
+body.site-theme-premium .cta:active,
+body.site-theme-premium .cta:focus,
+body.site-theme-premium .primary-btn,
+body.site-theme-premium .primary-btn:visited,
+body.site-theme-premium .primary-btn:hover,
+body.site-theme-premium .primary-btn:active,
+body.site-theme-premium .primary-btn:focus,
+body.site-theme-premium .signup-btn,
+body.site-theme-premium .signup-btn:visited,
+body.site-theme-premium .signup-btn:hover,
+body.site-theme-premium .signup-btn:active,
+body.site-theme-premium .signup-btn:focus,
+body.site-theme-premium .login-btn,
+body.site-theme-premium .login-btn:visited,
+body.site-theme-premium .login-btn:hover,
+body.site-theme-premium .login-btn:active,
+body.site-theme-premium .login-btn:focus,
+body.site-theme-premium .download-btn,
+body.site-theme-premium .download-btn:visited,
+body.site-theme-premium .download-btn:hover,
+body.site-theme-premium .download-btn:active,
+body.site-theme-premium .download-btn:focus,
+body.site-theme-premium .sidebar-links .btn,
+body.site-theme-premium .sidebar-links .btn:visited,
+body.site-theme-premium .post-apply-links .btn,
+body.site-theme-premium .post-apply-links .btn:visited,
+body.site-theme-premium nav a,
+body.site-theme-premium nav a:visited,
+body.site-theme-premium nav a:hover,
+body.site-theme-premium nav a:active,
+body.site-theme-premium nav a:focus,
+body.site-theme-premium nav button,
+body.site-theme-premium nav button:hover,
+body.site-theme-premium nav button:active,
+body.site-theme-premium nav button:focus,
+body.site-theme-premium button:not(.theme-toggle),
+body.site-theme-premium button:not(.theme-toggle):hover,
+body.site-theme-premium button:not(.theme-toggle):active,
+body.site-theme-premium button:not(.theme-toggle):focus{
+  color:#fff!important;
+  text-decoration:none;
+}
+
+body.site-theme-premium .job-tool-btn.primary,
+body.site-theme-premium .job-tool-btn.primary:visited,
+body.site-theme-premium .job-tool-btn.primary:hover,
+body.site-theme-premium .job-tool-btn.primary:active,
+body.site-theme-premium .job-tool-btn.primary:focus,
+body.site-theme-premium .edit,
+body.site-theme-premium .edit:hover,
+body.site-theme-premium .edit:active,
+body.site-theme-premium .edit:focus,
+body.site-theme-premium .edit-btn,
+body.site-theme-premium .edit-btn:hover,
+body.site-theme-premium .edit-btn:active,
+body.site-theme-premium .edit-btn:focus,
+body.site-theme-premium .helper-btn,
+body.site-theme-premium .helper-btn:hover,
+body.site-theme-premium .helper-btn:active,
+body.site-theme-premium .helper-btn:focus,
+body.site-theme-premium .sample,
+body.site-theme-premium .sample:hover,
+body.site-theme-premium .sample:active,
+body.site-theme-premium .sample:focus,
+body.site-theme-premium .orange,
+body.site-theme-premium .orange:hover,
+body.site-theme-premium .orange:active,
+body.site-theme-premium .orange:focus,
+body.site-theme-premium .job-tab.active,
+body.site-theme-premium .post-target span:hover,
+body.site-theme-premium .repeat-link-add,
+body.site-theme-premium .quick-post-fab,
+body.site-theme-premium .ca-yellow-btn,
+body.site-theme-premium .ca-yellow-btn:visited,
+body.site-theme-premium .ca-yellow-btn:hover,
+body.site-theme-premium .ca-yellow-btn:active,
+body.site-theme-premium .ca-yellow-btn:focus,
+body.site-theme-premium .ca-menu .active a,
+body.site-theme-premium .ca-menu .active a:visited,
+body.site-theme-premium .ca-search button,
+body.site-theme-premium .tag,
+body.site-theme-premium .tag:visited,
+body.site-theme-premium .pill,
+body.site-theme-premium .pill:visited,
+body.site-theme-premium .badge,
+body.site-theme-premium .badge:visited{
+  color:#fff!important;
+}
+
+body.site-theme-premium .sarkari-blue-heading{
+  background:#0057a8!important;
+  border-color:#0057a8!important;
+}
+
+body.site-theme-premium .panel h2,
+body.site-theme-premium .sarkari-section-title{
+  background:#0057a8!important;
+  border-left-color:#ff9f1c!important;
+  color:#fff!important;
+}
+
+body.site-theme-premium .lang-switch button.active{
+  background:#fff!important;
+  color:#0057a8!important;
+}
