@@ -91,8 +91,10 @@
     .table-wrap{width:100%;overflow:auto;border-radius:7px;border:1px solid var(--border)}
     .premium-table{width:100%;border-collapse:collapse;background:#fff;font-size:14px;min-width:0}
     .premium-table th{background:#f3f7fd;color:#071b3f;font-weight:900;text-align:left;padding:12px 11px;border:1px solid var(--border);white-space:nowrap}
+    .premium-table th,.premium-table td{overflow-wrap:normal;word-break:normal}
     .premium-table td{vertical-align:top;padding:12px 11px;border:1px solid var(--border);line-height:1.45;color:#10264a;font-weight:600}
     .premium-table td:first-child{font-weight:800;color:#071b3f}
+    .premium-table th:last-child,.premium-table td:last-child{width:86px;min-width:86px;white-space:nowrap;text-align:left;font-weight:900}
     .fee-note,.notice-box{margin-top:12px;background:#fff2f4;border-left:4px solid var(--red);border-radius:6px;padding:12px;color:#9d1234;font-weight:800;line-height:1.45}
     .timeline{position:relative;display:flex;flex-direction:column;gap:0;margin:2px 0 4px}
     .timeline-step{position:relative;display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:start;padding:0 0 13px}
