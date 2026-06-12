@@ -95,6 +95,14 @@ body.site-theme-premium .logo,
 body.site-theme-premium .logo span{
   color:#ffb15c!important;
 }
+body.site-theme-premium .home-portal-quick a,
+body.site-theme-premium .quick-grid a,
+body.site-theme-premium .home-portal-title,
+body.site-theme-premium .box-title,
+body.site-theme-premium .source-special-head,
+body.site-theme-premium .source-special-grid .box-title{
+  color:#fff!important;
+}
 body.site-theme-premium .panel h2,
 body.site-theme-premium .sarkari-section-title,
 body.site-theme-premium .detail-table th,
