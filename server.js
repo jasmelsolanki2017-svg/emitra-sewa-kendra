@@ -4929,6 +4929,9 @@ app.post("/api/settings", async (req, res) => {
       const model = String(incoming.openRouterModel || "").trim();
       incoming.openRouterModel = model || "";
     }
+    if (Object.prototype.hasOwnProperty.call(incoming, "siteTheme")) {
+      incoming.siteTheme = String(incoming.siteTheme || "premium").toLowerCase() === "classic" ? "classic" : "premium";
+    }
     const current = readSettingsFile();
     const updated = { ...current, ...incoming };
     const ok = writeSettingsFile(updated);

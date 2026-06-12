@@ -247,6 +247,7 @@ body.dark-mode .nav-logo img {
 @media(max-width:820px){.nav-tools{width:100%}.nav-tools-menu{position:static;width:100%;margin-top:8px}}
 </style>
 <link rel="stylesheet" href="mobile-responsive-fix.css">
+<link rel="stylesheet" href="/site-theme.css">
 </head>
 <body>
 <nav>
@@ -351,5 +352,6 @@ onValue(ref(db,"usefulContentPages"),(snapshot)=>{
   applyTheme(localStorage.getItem(key) || "light");
 })();
 </script>
+<script src="/site-theme.js" defer></script>
 </body>
 </html>

@@ -36,6 +36,7 @@ button{border:0;border-radius:6px;padding:8px 11px;font-size:12px;font-weight:80
 .empty{padding:18px;text-align:center;color:#55657a;font-weight:700}
 @media(max-width:720px){.grid{grid-template-columns:1fr}.wide{grid-column:auto}.row{align-items:flex-start;flex-direction:column}.row-actions{width:100%}.row-actions button,.row-actions a{flex:1}nav{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap}nav a,nav button{white-space:nowrap}}
 </style>
+<link rel="stylesheet" href="/site-theme.css">
 </head>
 <body>
 <div class="topbar"><div>Current Affairs Manager</div><div id="liveTime">Loading...</div></div>
@@ -119,5 +120,6 @@ onAuthStateChanged(auth,(user)=>{if(user&&user.email===adminEmail){adminAllowed=
 onValue(jobsRef,(snapshot)=>{rows=[];cache={};if(snapshot.exists()){snapshot.forEach((child)=>{const data=child.val()||{};if((data.postTarget||data.advancedArticleData?.postTarget)==="currentAffairs"){cache[child.key]=data;rows.push({id:child.key,data})}})}rows.sort((a,b)=>Number(a.data.displayOrder||999999)-Number(b.data.displayOrder||999999)||Number(b.data.createdAt||0)-Number(a.data.createdAt||0));renderList()});
 window.logoutUser=async()=>{adminAllowed=false;localStorage.removeItem("loginTime");try{await signOut(auth)}catch(error){console.warn("Admin logout failed",error)}location.replace("index.html")};
 </script>
+<script src="/site-theme.js" defer></script>
 </body>
 </html>

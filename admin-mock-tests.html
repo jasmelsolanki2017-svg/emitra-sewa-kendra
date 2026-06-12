@@ -61,6 +61,7 @@ button.secondary{background:#eaf4ff;color:var(--blue);border:1px solid #bdd0e5}
 .empty{padding:18px;text-align:center;color:var(--muted);font-weight:800}
 @media(max-width:800px){nav{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap}nav a,nav button{white-space:nowrap}.form-grid,.admin-list-controls{grid-template-columns:1fr}.test-card{grid-template-columns:auto minmax(0,1fr)}.test-actions{grid-column:1/-1;justify-content:flex-start}textarea{min-height:260px}}
 </style>
+<link rel="stylesheet" href="/site-theme.css">
 </head>
 <body>
 <div class="topbar"><div>Mock Test Manager</div><div id="liveTime">Loading...</div></div>
@@ -1068,5 +1069,6 @@ onAuthStateChanged(auth, (user) => {
 
 window.logoutUser = async () => { adminAllowed = false; localStorage.removeItem("loginTime"); try{ await signOut(auth); }catch(error){ console.warn("Admin logout failed", error); } location.replace("index.html"); };
 </script>
+<script src="/site-theme.js" defer></script>
 </body>
 </html>

@@ -94,6 +94,7 @@
     .quick-list{max-height:260px;overflow:auto;margin-top:8px}
     @media(max-width:820px){.grid,.form-grid{grid-template-columns:1fr}.wide{grid-column:auto}.row{display:block}.row .actions{justify-content:flex-start;margin-top:8px}nav{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap}nav a,nav button{white-space:nowrap}}
   </style>
+<link rel="stylesheet" href="/site-theme.css">
 </head>
 <body>
   <div class="topbar"><div>Auto Job Checker</div><div id="liveTime">Loading...</div></div>
@@ -1425,5 +1426,6 @@
     });
     window.logoutUser=async()=>{adminAllowed=false;localStorage.removeItem("loginTime");try{await signOut(auth)}catch(error){console.warn("Admin logout failed",error)}location.replace("index.html")};
   </script>
+<script src="/site-theme.js" defer></script>
 </body>
 </html>

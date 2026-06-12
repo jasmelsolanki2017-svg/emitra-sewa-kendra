@@ -34,6 +34,7 @@ footer{background:#0057a8;color:#fff;text-align:center;padding:22px 6%;margin-to
 @media(max-width:760px){nav{flex-direction:column;align-items:flex-start}.grid{grid-template-columns:1fr}.hero{padding:24px 5%}}
 </style>
 <link rel="stylesheet" href="mobile-responsive-fix.css">
+<link rel="stylesheet" href="/site-theme.css">
 </head>
 <body>
 <nav>
@@ -127,5 +128,6 @@ onValue(ref(db, "LatestJobs"), (snapshot) => {
   list.innerHTML = `<div class="message">Current affairs load nahi ho paya: ${escapeHTML(error.message)}</div>`;
 });
 </script>
+<script src="/site-theme.js" defer></script>
 </body>
 </html>

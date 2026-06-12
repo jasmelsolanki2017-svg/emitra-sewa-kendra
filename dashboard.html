@@ -46,8 +46,13 @@
     .stat-card strong{display:block;color:#0057a8;font-size:22px;line-height:1.1;margin-top:3px;}
     .stat-card.hot strong{color:#d90000;}
     .stat-card.visitor-card{display:grid;gap:5px;align-content:start;}
+    .stat-card.theme-card{display:grid;gap:8px;align-content:start;}
     .visitor-counter-number{display:inline-flex;align-items:center;justify-content:center;background:#fff;border:1px solid #d8e7f7;border-radius:5px;padding:4px 8px;margin-top:2px;font-family:"Courier New",monospace;font-size:24px;font-weight:900;letter-spacing:3px;color:#111;box-shadow:inset 0 0 0 2px #f1f5fb;}
     .stat-card.visitor-card em{font-style:normal;color:#66748a;font-size:10px;font-weight:700;}
+    .theme-card select{width:100%;padding:8px 10px;border:1px solid #d8e7f7;border-radius:6px;background:#fff;font-weight:800;color:#0a3760;}
+    .theme-card button{background:#0057a8;color:white;border:0;border-radius:6px;padding:8px 10px;font-weight:900;cursor:pointer;}
+    .theme-card button:hover{background:#ff7a00;color:#03224d;}
+    .theme-card em{font-style:normal;color:#66748a;font-size:10px;font-weight:700;}
 
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;}
     .card{background:white;border-radius:6px;padding:10px 8px;text-align:left;box-shadow:0 4px 12px rgba(0,0,0,.06);border-top:3px solid #ff7a00;min-height:126px;display:flex;flex-direction:column;}
@@ -294,6 +299,7 @@ body.dark-mode .nav-logo img {
   }
 }
 </style>
+<link rel="stylesheet" href="/site-theme.css">
 </head>
 
 <body>
@@ -346,6 +352,15 @@ body.dark-mode .nav-logo img {
     <div class="stat-card"><small>Links</small><strong id="linksCount">0</strong></div>
     <div class="stat-card"><small>Auto Drafts</small><strong id="autoDraftsCount">0</strong></div>
     <div class="stat-card"><small>Service Pages</small><strong id="serviceGuidesCount">0</strong></div>
+    <div class="stat-card theme-card">
+      <small>Site Theme</small>
+      <select id="siteThemeSelect">
+        <option value="premium">Premium Colorful</option>
+        <option value="classic">Classic Blue</option>
+      </select>
+      <button type="button" id="saveSiteThemeBtn">Save Theme</button>
+      <em id="siteThemeStatus">Loading</em>
+    </div>
     <div class="stat-card visitor-card">
       <small>Website Visitors</small>
       <strong class="visitor-counter-number" id="websiteVisitorsCount">000000</strong>
@@ -659,6 +674,7 @@ Cook | 1426 |"></textarea>
   const adminEmail = "jasmelsolanki@gmail.com";
   const visitorStatsPath = "visitorStatsV2";
   const visitorVisibilityStorageKey = "emitraVisitorCounterVisibility";
+  const siteThemeStorageKey = "emitraSiteTheme";
   const adminServerStorageKey = "emitraAdminServerUrl";
   const defaultAdminServerUrl = "https://emitra-sewa-kendra.onrender.com";
   let adminAllowed = false;
@@ -748,6 +764,57 @@ Cook | 1426 |"></textarea>
     return settings;
   };
 
+  const normalizeSiteTheme = (value) => String(value || "premium").toLowerCase() === "classic" ? "classic" : "premium";
+  const applyDashboardSiteTheme = (theme) => {
+    const active = normalizeSiteTheme(theme);
+    document.body.classList.toggle("site-theme-premium", active === "premium");
+    document.documentElement.dataset.siteTheme = active;
+    localStorage.setItem(siteThemeStorageKey, active);
+    if(typeof window.applyEmitraSiteTheme === "function"){
+      window.applyEmitraSiteTheme(active);
+    }
+  };
+
+  const initSiteThemeControl = async () => {
+    const select = document.getElementById("siteThemeSelect");
+    const button = document.getElementById("saveSiteThemeBtn");
+    const status = document.getElementById("siteThemeStatus");
+    if(!select || !button){ return; }
+    try{
+      const settings = await loadPublicSettings();
+      const current = normalizeSiteTheme(settings.siteTheme || localStorage.getItem(siteThemeStorageKey));
+      select.value = current;
+      applyDashboardSiteTheme(current);
+      if(status){ status.innerText = current === "premium" ? "Premium active" : "Classic active"; }
+    }catch(e){
+      const current = normalizeSiteTheme(localStorage.getItem(siteThemeStorageKey));
+      select.value = current;
+      applyDashboardSiteTheme(current);
+      if(status){ status.innerText = "Offline"; }
+    }
+    select.addEventListener("change", () => {
+      applyDashboardSiteTheme(select.value);
+      if(status){ status.innerText = "Preview"; }
+    });
+    button.addEventListener("click", async () => {
+      const value = normalizeSiteTheme(select.value);
+      button.disabled = true;
+      if(status){ status.innerText = "Saving"; }
+      try{
+        const result = await callAdminApi("/api/settings", { siteTheme:value });
+        const saved = normalizeSiteTheme(result.settings?.siteTheme || value);
+        select.value = saved;
+        applyDashboardSiteTheme(saved);
+        if(status){ status.innerText = "Saved"; }
+      }catch(err){
+        alert(String(err.message || err));
+        if(status){ status.innerText = "Failed"; }
+      }finally{
+        button.disabled = false;
+      }
+    });
+  };
+
   const initVisitorVisibilityToggle = async () => {
     const select = document.getElementById("visitorVisibilitySelect");
     const status = document.getElementById("visitorVisibilityStatus");
@@ -798,6 +865,7 @@ Cook | 1426 |"></textarea>
   };
 
   watchVisitorCount();
+  initSiteThemeControl();
   initVisitorVisibilityToggle();
 
   const cleanDisplayOrder = (value) => {
@@ -1751,5 +1819,6 @@ Cook | 1426 |"></textarea>
   applyTheme(localStorage.getItem(key) || "light");
 })();
 </script>
+<script src="/site-theme.js" defer></script>
 </body>
 </html>

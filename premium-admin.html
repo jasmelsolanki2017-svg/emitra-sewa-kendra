@@ -48,6 +48,7 @@
     .preview-box .hero-media{height:170px}
     .preview-box .premium-hero h1{font-size:28px}
   </style>
+<link rel="stylesheet" href="/site-theme.css">
 </head>
 <body>
   <div class="premium-topbar"><div>Create Premium Post</div><div id="liveTime"></div></div>
@@ -167,5 +168,6 @@
     window.logoutUser=async()=>{adminAllowed=false;localStorage.removeItem("loginTime");try{await signOut(auth)}catch(error){console.warn("Admin logout failed",error)}location.replace("index.html")};
     loadSamplePremiumPost();
   </script>
+<script src="/site-theme.js" defer></script>
 </body>
 </html>

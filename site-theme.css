@@ -1,0 +1,153 @@
+body.site-theme-premium{
+  background:#eef5ff!important;
+  color:#122036;
+}
+body.site-theme-premium .topbar,
+body.site-theme-premium nav,
+body.site-theme-premium footer{
+  background:linear-gradient(135deg,#063b78,#061a3a)!important;
+  color:#fff!important;
+}
+body.site-theme-premium header,
+body.site-theme-premium .hero,
+body.site-theme-premium .news-head,
+body.site-theme-premium .masthead{
+  background:linear-gradient(135deg,#0057a8 0%,#07356f 55%,#ff7a00 130%)!important;
+  color:#fff!important;
+  border-bottom-color:#ff9f1c!important;
+}
+body.site-theme-premium main,
+body.site-theme-premium .section,
+body.site-theme-premium .section.white,
+body.site-theme-premium .features,
+body.site-theme-premium .services,
+body.site-theme-premium .about,
+body.site-theme-premium .contact,
+body.site-theme-premium .latest-section,
+body.site-theme-premium .document-help,
+body.site-theme-premium .useful-pages,
+body.site-theme-premium .home-job-portal{
+  background:#eef5ff!important;
+}
+body.site-theme-premium .panel,
+body.site-theme-premium .card,
+body.site-theme-premium .feature-box,
+body.site-theme-premium .service-card,
+body.site-theme-premium .doc-panel,
+body.site-theme-premium .enquiry-panel,
+body.site-theme-premium .doc-list,
+body.site-theme-premium .counter-box,
+body.site-theme-premium .ad-box,
+body.site-theme-premium .latest-box,
+body.site-theme-premium .news-line,
+body.site-theme-premium .news-item,
+body.site-theme-premium .login-box,
+body.site-theme-premium .story-text,
+body.site-theme-premium .contact-panel,
+body.site-theme-premium .contact-info,
+body.site-theme-premium .search-panel,
+body.site-theme-premium .table-card,
+body.site-theme-premium .user-box,
+body.site-theme-premium .manager,
+body.site-theme-premium .row,
+body.site-theme-premium .job-card,
+body.site-theme-premium .notice,
+body.site-theme-premium .portal-box,
+body.site-theme-premium .contact-box,
+body.site-theme-premium .special-card,
+body.site-theme-premium .search,
+body.site-theme-premium .detail-sheet,
+body.site-theme-premium .detail-sidebar,
+body.site-theme-premium .sidebar-card,
+body.site-theme-premium .content-box,
+body.site-theme-premium .message{
+  background:#ffffff!important;
+  border-color:#cfe0f5!important;
+  box-shadow:0 10px 24px rgba(0,87,168,.12)!important;
+}
+body.site-theme-premium .panel,
+body.site-theme-premium .card,
+body.site-theme-premium .manager,
+body.site-theme-premium .stat-card,
+body.site-theme-premium .job-card,
+body.site-theme-premium .detail-sheet,
+body.site-theme-premium .sidebar-card{
+  border-top-color:#ff7a00!important;
+}
+body.site-theme-premium h1,
+body.site-theme-premium h2,
+body.site-theme-premium h3,
+body.site-theme-premium strong,
+body.site-theme-premium .section-title h2,
+body.site-theme-premium .panel h2,
+body.site-theme-premium .panel h3,
+body.site-theme-premium .card strong,
+body.site-theme-premium .feature-box h3,
+body.site-theme-premium .service-card h3,
+body.site-theme-premium .doc-list h3,
+body.site-theme-premium .contact-box h2,
+body.site-theme-premium .user-box h2{
+  color:#0057a8!important;
+}
+body.site-theme-premium header h1,
+body.site-theme-premium .hero h1,
+body.site-theme-premium .logo,
+body.site-theme-premium .logo span{
+  color:#ffb15c!important;
+}
+body.site-theme-premium .panel h2,
+body.site-theme-premium .sarkari-section-title,
+body.site-theme-premium .detail-table th,
+body.site-theme-premium .content-table th,
+body.site-theme-premium .article-head{
+  background:#e7f4ff!important;
+  border-color:#ff9f1c!important;
+  color:#07356f!important;
+}
+body.site-theme-premium a,
+body.site-theme-premium .auto-link,
+body.site-theme-premium .row a{
+  color:#0057a8;
+}
+body.site-theme-premium nav a,
+body.site-theme-premium nav button,
+body.site-theme-premium .btn,
+body.site-theme-premium .cta,
+body.site-theme-premium .primary-btn,
+body.site-theme-premium .signup-btn,
+body.site-theme-premium .card a,
+body.site-theme-premium .action-btn,
+body.site-theme-premium button{
+  background:#0057a8;
+  color:#fff;
+}
+body.site-theme-premium nav a:hover,
+body.site-theme-premium nav button:hover,
+body.site-theme-premium .btn:hover,
+body.site-theme-premium .cta:hover,
+body.site-theme-premium .primary-btn:hover,
+body.site-theme-premium .signup-btn:hover,
+body.site-theme-premium .card a:hover,
+body.site-theme-premium .action-btn:hover,
+body.site-theme-premium button:hover{
+  background:#ff7a00;
+  color:#03224d;
+}
+body.site-theme-premium .edit-btn,
+body.site-theme-premium .edit,
+body.site-theme-premium .helper-btn,
+body.site-theme-premium .status-badge,
+body.site-theme-premium .theme-toggle{
+  background:#ff7a00!important;
+  color:#03224d!important;
+}
+body.site-theme-premium input,
+body.site-theme-premium select,
+body.site-theme-premium textarea{
+  background:#fff!important;
+  color:#122036!important;
+  border-color:#b9d2ee!important;
+}
+body.site-theme-premium.dark-mode{
+  background:#07111f!important;
+}
