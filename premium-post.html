@@ -272,6 +272,19 @@
     const getSection=(data,key)=>{const keys=aliases[key]||[key];for(const k of keys){if(isFilled(data[k]))return data[k]}return null};
     const arrayify=value=>{if(!isFilled(value))return[];if(Array.isArray(value))return value.filter(isFilled);if(isPlainObject(value))return Object.entries(value).map(([key,val])=>isPlainObject(val)?{label:toTitle(key),...val}:{label:toTitle(key),value:val}).filter(isFilled);return String(value).split(/\n+/).map(s=>s.trim()).filter(Boolean)};
     const safeUrl=url=>{try{const u=new URL(String(url||""),location.href);return ["http:","https:"].includes(u.protocol)?u.href:""}catch{return""}};
+    const firstSafeUrl=(...values)=>{
+      for(const value of values){
+        if(!isFilled(value))continue;
+        if(isPlainObject(value)){
+          const nested=firstSafeUrl(value.url,value.href,value.link,value.pdf,value.file,value.downloadUrl);
+          if(nested)return nested;
+          continue;
+        }
+        const url=safeUrl(value);
+        if(url)return url;
+      }
+      return "";
+    };
     const linkLabel=(item,fallback="Open Link")=>typeof item==="string"?fallback:(item?.label||item?.title||item?.name||item?.type||fallback);
     const linkUrl=item=>typeof item==="string"?item:(item?.url||item?.link||item?.href||item?.value||"");
     const displayDate=value=>{if(!value)return new Date().toLocaleDateString("hi-IN");if(typeof value==="number")return new Date(value).toLocaleDateString("hi-IN");const d=new Date(value);return isNaN(d.getTime())?String(value):d.toLocaleDateString("hi-IN")};
@@ -410,15 +423,15 @@
     }
     function renderRegionWiseLinks(value){
       const rows=arrayify(value).map((item,index)=>{
-        if(!isPlainObject(item))return {region:`Region ${index+1}`,resultUrl:item};
+        if(!isPlainObject(item))return {region:`Region ${index+1}`,resultUrl:firstSafeUrl(item),cutoffUrl:""};
         return {
           region:item.region||item.regionName||item.rrb||item.board||item.name||item.title||item.label||`Region ${index+1}`,
-          resultUrl:item.resultUrl||item.resultURL||item.resultPdf||item.resultPDF||item.resultLink||item.url||item.link||item.pdf||"",
-          cutoffUrl:item.cutoffUrl||item.cutoffURL||item.cutoffPdf||item.cutoffPDF||item.cutoffLink||item.cutOffUrl||item.cutOffPDF||""
+          resultUrl:firstSafeUrl(item.result,item.resultUrl,item.resultURL,item.resultPdf,item.resultPDF,item.resultLink,item.url,item.link,item.pdf),
+          cutoffUrl:firstSafeUrl(item.cutoff,item.cutoffUrl,item.cutoffURL,item.cutoffPdf,item.cutoffPDF,item.cutoffLink,item.cutOffUrl,item.cutOffPDF)
         };
-      }).filter(item=>isFilled(item.region)&&(safeUrl(item.resultUrl)||safeUrl(item.cutoffUrl)));
+      }).filter(item=>isFilled(item.region)&&(item.resultUrl||item.cutoffUrl));
       if(!rows.length)return "";
-      return `<div class="region-links-grid">${rows.map(item=>{const result=safeUrl(item.resultUrl),cutoff=safeUrl(item.cutoffUrl);return `<div class="region-card"><h4>${escapeHTML(item.region)}</h4>${result?`<a href="${escapeHTML(result)}" target="_blank" rel="noopener noreferrer">Result PDF</a>`:""}${cutoff?`<a href="${escapeHTML(cutoff)}" target="_blank" rel="noopener noreferrer">Cutoff PDF</a>`:""}</div>`}).join("")}</div>`;
+      return `<div class="region-links-grid">${rows.map(item=>{const result=item.resultUrl,cutoff=item.cutoffUrl;console.debug("Region link",item.region,{resultUrl:result,cutoffUrl:cutoff});return `<div class="region-card"><h4>${escapeHTML(item.region)}</h4>${result?`<a href="${escapeHTML(result)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">Result PDF</a>`:""}${cutoff?`<a href="${escapeHTML(cutoff)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">Cutoff PDF</a>`:""}</div>`}).join("")}</div>`;
     }
     function renderFaq(value){
       const rows=arrayify(value).map(item=>isPlainObject(item)?item:{question:"Question",answer:item});
