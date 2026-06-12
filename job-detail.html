@@ -2755,10 +2755,18 @@ const renderFlexibleSection = (section = {}) => {
   return body ? `<div class="content-section">${title ? `<h2 class="sarkari-section-title">${escapeHTML(title)}</h2>` : ""}${body}</div>` : "";
 };
 
+const isPublicHiddenSection = (section = {}) => {
+  if(!section || typeof section !== "object" || Array.isArray(section)){ return false; }
+  const rawTitle = String(section.heading || section.title || section.name || section.label || section.key || "").trim();
+  const normalizedTitle = rawTitle.toLowerCase().replace(/[^a-z0-9]/g, "");
+  return ["displayorder", "posttarget"].includes(normalizedTitle);
+};
+
 const renderUniversalSections = (sections = []) => {
   const seen = new Set();
   return asArray(sections).map((section) => {
     if(!isFilledFlexibleValue(section)){ return ""; }
+    if(isPublicHiddenSection(section)){ return ""; }
     const key = typeof section === "object" ? JSON.stringify({
       title:section.title || section.heading || section.name || section.label || "",
       type:section.type || "",
