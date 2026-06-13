@@ -124,6 +124,15 @@
     .done-btn{background:#138a36;}
     .status-badge{display:inline-block;background:#ff7a00;color:#0057a8;padding:2px 6px;border-radius:6px;font-size:10px;font-weight:800;margin-top:3px;}
     .status-badge.done{background:#138a36;color:white;}
+    .card-alert-badge{position:absolute;right:8px;top:8px;min-width:22px;height:22px;border-radius:999px;background:#d10000;color:white;display:inline-flex;align-items:center;justify-content:center;padding:0 7px;font-size:11px;font-weight:900;box-shadow:0 6px 14px rgba(209,0,0,.24);}
+    .card-alert-badge:empty{display:none;}
+    .admin-toast{position:fixed;right:18px;bottom:88px;width:min(340px,calc(100vw - 30px));background:white;border:1px solid #d8e7f7;border-left:5px solid #d10000;border-radius:8px;padding:12px 13px;box-shadow:0 16px 36px rgba(8,31,74,.22);z-index:9000;display:none;gap:10px;align-items:flex-start;}
+    .admin-toast.show{display:flex;}
+    .admin-toast i{width:34px;height:34px;border-radius:9px;background:#fff0f0;color:#d10000;display:inline-flex;align-items:center;justify-content:center;flex:0 0 34px;}
+    .admin-toast strong{display:block;color:#03224d;font-size:14px;line-height:1.25;}
+    .admin-toast small{display:block;color:#56677c;font-size:12px;font-weight:800;margin-top:3px;}
+    .admin-toast a{display:inline-flex;margin-top:8px;background:#0057a8;color:white;text-decoration:none;border-radius:6px;padding:6px 10px;font-size:12px;font-weight:900;}
+    .admin-toast button{margin-left:auto;background:transparent;color:#56677c;border:0;padding:0;font-size:16px;line-height:1;cursor:pointer;}
     .danger-date{color:#d90000!important;font-weight:900;}
     .status{margin-top:4px;margin-bottom:6px;text-align:center;font-weight:700;color:#0057a8;font-size:12px;}
 
@@ -520,8 +529,9 @@ body.dark-mode .nav-logo img {
 
     <div class="card">
       <i class="fa-solid fa-file-circle-check"></i>
+      <span class="card-alert-badge" id="pdfPendingCardBadge"></span>
       <h3>PDF Verification Requests</h3>
-      <p>User original PDF download karein aur verified green-tick PDF upload karein.</p>
+      <p>User original PDF download karein aur verified green-tick PDF upload karein. Pending: <strong id="pdfPendingInlineCount">0</strong></p>
       <a href="admin-pdf-verification.html">Open</a>
     </div>
 
@@ -618,6 +628,16 @@ Cook | 1426 |"></textarea>
   </section>
 
 </section>
+
+<div class="admin-toast" id="pdfRequestToast" role="status" aria-live="polite">
+  <i class="fa-solid fa-file-circle-check"></i>
+  <div>
+    <strong id="pdfRequestToastTitle">New PDF verification request</strong>
+    <small id="pdfRequestToastText">Pending files ready for verification.</small>
+    <a href="admin-pdf-verification.html">Open PDF Requests</a>
+  </div>
+  <button type="button" aria-label="Close" onclick="hidePdfRequestToast()">×</button>
+</div>
 
 <footer>
   © 2026 E-MITRA WALA | Admin Dashboard
@@ -1261,6 +1281,14 @@ Cook | 1426 |"></textarea>
   const membersRef = ref(db, "members");
   const serviceGuidesRef = ref(db, "serviceGuides");
   const autoJobDraftsRef = ref(db, "autoJobDrafts");
+  const pdfRequestsRef = ref(db, "pdfVerificationRequests");
+  const userPdfRequestsRef = ref(db, "userPdfVerificationRequests");
+  let topPdfRequestRows = [];
+  let userPdfRequestRows = [];
+  let topPdfRequestsLoaded = false;
+  let userPdfRequestsLoaded = false;
+  let pdfPendingBootstrapped = false;
+  let previousPdfPendingCount = 0;
 
   const setCount = (id, value) => {
     const element = document.getElementById(id);
@@ -1274,6 +1302,61 @@ Cook | 1426 |"></textarea>
     }
     return count;
   };
+
+  const isPendingPdfRequest = (data = {}) => String(data.status || "Pending").toLowerCase() !== "verified";
+
+  const updatePdfPendingCount = () => {
+    const byId = new Map();
+    [...topPdfRequestRows, ...userPdfRequestRows].forEach((item) => {
+      if(!item?.id){ return; }
+      byId.set(item.id, { ...(byId.get(item.id) || {}), ...(item.data || {}) });
+    });
+    const rows = [...byId.values()];
+    const pendingRows = rows.filter(isPendingPdfRequest);
+    const pendingCount = pendingRows.length;
+    setCount("pdfPendingInlineCount", pendingCount);
+    setCount("pdfPendingCardBadge", pendingCount ? pendingCount : "");
+    if(!topPdfRequestsLoaded || !userPdfRequestsLoaded){ return; }
+    if(pdfPendingBootstrapped && pendingCount > previousPdfPendingCount){
+      showPdfRequestToast(pendingCount, pendingRows[0] || {});
+    }
+    previousPdfPendingCount = pendingCount;
+    pdfPendingBootstrapped = true;
+  };
+
+  window.hidePdfRequestToast = () => {
+    document.getElementById("pdfRequestToast")?.classList.remove("show");
+  };
+
+  function showPdfRequestToast(pendingCount, latest = {}){
+    const toast = document.getElementById("pdfRequestToast");
+    if(!toast){ return; }
+    document.getElementById("pdfRequestToastTitle").innerText = "New PDF verification request";
+    document.getElementById("pdfRequestToastText").innerText = `${pendingCount} PDF file pending hai. Latest: ${latest.fileName || "Certificate PDF"}`;
+    toast.classList.add("show");
+    clearTimeout(window.__pdfToastTimer);
+    window.__pdfToastTimer = setTimeout(() => toast.classList.remove("show"), 9000);
+  }
+
+  onValue(pdfRequestsRef, (snapshot) => {
+    topPdfRequestRows = [];
+    if(snapshot.exists()){
+      snapshot.forEach((child) => topPdfRequestRows.push({ id:child.key, data:child.val() || {} }));
+    }
+    topPdfRequestsLoaded = true;
+    updatePdfPendingCount();
+  });
+
+  onValue(userPdfRequestsRef, (snapshot) => {
+    userPdfRequestRows = [];
+    if(snapshot.exists()){
+      snapshot.forEach((userSnap) => {
+        userSnap.forEach((child) => userPdfRequestRows.push({ id:child.key, data:{ ...(child.val() || {}), userUid:(child.val() || {}).userUid || userSnap.key } }));
+      });
+    }
+    userPdfRequestsLoaded = true;
+    updatePdfPendingCount();
+  });
 
   onValue(membersRef, (snapshot) => {
     let count = 0;
