@@ -3908,26 +3908,35 @@ const isAdmin = currentLoginMode === "admin";
 
 window.setAuthView("login", isAdmin);
 
-document.getElementById("loginModal").style.display = "flex";
-
 loadFirebaseAuthBundle().then(async ({ auth, authModule })=>{
 const currentUser = await waitForAuthUser(auth, authModule);
+const modal = document.getElementById("loginModal");
 
 if(hasAdminLogoutMarker() && currentUser && currentUser.email === adminEmail){
 await authModule.signOut(auth).catch(() => {});
 clearAdminLogoutMarker();
+if(modal)modal.style.display = "flex";
 return;
 }
 
 if(currentLoginMode === "admin" && currentUser && currentUser.email === adminEmail){
+if(modal)modal.style.display = "none";
 redirectByRole(currentUser.email);
 return;
 }
 
 if(currentLoginMode === "user" && currentUser && currentUser.email !== adminEmail && hasActiveUserSession()){
+if(modal)modal.style.display = "none";
 redirectByRole(currentUser.email);
+return;
 }
-}).catch((error)=>console.warn("Login module load skipped", error));
+
+if(modal)modal.style.display = "flex";
+}).catch((error)=>{
+console.warn("Login module load skipped", error);
+const modal = document.getElementById("loginModal");
+if(modal)modal.style.display = "flex";
+});
 };
 
 /* LOGIN */
