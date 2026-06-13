@@ -4697,15 +4697,9 @@ async function uploadPdfToStorage(buffer, storagePath = "", originalName = "cert
     }
     throw error;
   } catch (uploadError) {
-    const localFilePath = buildLocalPdfStoragePath(safeStoragePath);
-    fs.mkdirSync(path.dirname(localFilePath), { recursive: true });
-    await fs.promises.writeFile(localFilePath, Buffer.from(buffer));
-    return {
-      storageKind: "local",
-      storagePath: path.relative(PDF_VERIFICATION_LOCAL_DIR, localFilePath).split(path.sep).join("/"),
-      localFilePath,
-      downloadUrl: `/api/pdf-verification/file/${encodeURIComponent(path.relative(PDF_VERIFICATION_LOCAL_DIR, localFilePath).split(path.sep).join("/"))}`
-    };
+    const error = new Error(getPdfStorageErrorMessage(uploadError));
+    error.statusCode = uploadError?.statusCode || 503;
+    throw error;
   }
 }
 
@@ -4723,10 +4717,10 @@ async function resolvePdfVerificationDownloadUrl(record = {}, fileKind = "verifi
   if (!storagePath) return "";
   try {
     const supabase = getSupabaseAdminClient();
-    const { data: publicData } = supabase.storage.from(PDF_VERIFICATION_BUCKET).getPublicUrl(storagePath);
-    if (publicData?.publicUrl) return publicData.publicUrl;
     const { data, error } = await supabase.storage.from(PDF_VERIFICATION_BUCKET).createSignedUrl(storagePath, 60 * 10);
     if (!error && data?.signedUrl) return data.signedUrl;
+    const { data: publicData } = supabase.storage.from(PDF_VERIFICATION_BUCKET).getPublicUrl(storagePath);
+    if (publicData?.publicUrl) return publicData.publicUrl;
   } catch (_error) {}
   return "";
 }
@@ -4817,7 +4811,10 @@ app.post("/api/pdf-verification/download-url", async (req, res) => {
     if (!storagePath) return res.status(404).json({ ok: false, error: "PDF not available" });
     const signedUrl = await resolvePdfVerificationDownloadUrl(record, fileKind);
     if (!signedUrl) return res.status(404).json({ ok: false, error: "PDF download URL not available" });
-    return res.json({ ok: true, signedUrl, fileName: fileKind === "original" ? record.fileName : `verified-${record.fileName || "certificate.pdf"}` });
+    const absoluteUrl = String(signedUrl || "").startsWith("/")
+      ? `${req.protocol}://${req.get("host")}${signedUrl}`
+      : signedUrl;
+    return res.json({ ok: true, signedUrl: absoluteUrl, fileName: fileKind === "original" ? record.fileName : `verified-${record.fileName || "certificate.pdf"}` });
   } catch (err) {
     return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
   }

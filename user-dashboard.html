@@ -443,10 +443,61 @@
       padding:10px 10px 11px;
       box-shadow:0 14px 34px rgba(8,31,74,.16);
       z-index:850;
+      transition:width .2s ease, padding .2s ease, box-shadow .2s ease;
     }
 
-    .action-strip::before{
-      content:"Quick Actions";
+    .quick-actions-toggle{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      width:100%;
+      border:0;
+      border-radius:7px;
+      background:var(--blue);
+      color:#fff;
+      padding:9px 10px;
+      font-size:13px;
+      font-weight:900;
+      cursor:pointer;
+    }
+
+    .quick-actions-toggle i{
+      color:var(--yellow);
+    }
+
+    .quick-actions-toggle .quick-actions-chevron{
+      color:#fff;
+      transition:transform .2s ease;
+    }
+
+    .action-strip.collapsed{
+      width:58px;
+      padding:8px 6px;
+      overflow:hidden;
+      border-left-width:4px;
+      box-shadow:0 10px 24px rgba(8,31,74,.12);
+    }
+
+    .action-strip.collapsed .quick-actions-toggle{
+      width:42px;
+      height:42px;
+      padding:0;
+      justify-content:center;
+    }
+
+    .action-strip.collapsed .quick-actions-toggle span,
+    .action-strip.collapsed .quick-actions-chevron,
+    .action-strip.collapsed .quick-actions-title,
+    .action-strip.collapsed .action-tile{
+      display:none;
+    }
+
+    .action-strip:not(.collapsed) .quick-actions-chevron{
+      transform:rotate(180deg);
+    }
+
+    .quick-actions-title{
       color:var(--blue);
       font-size:13px;
       font-weight:900;
@@ -1166,7 +1217,7 @@
         border-top:1px solid var(--line);
         border-radius:8px 0 0 8px;
       }
-      .action-strip::before{content:"Quick Actions";display:block;}
+      .action-strip.collapsed{width:58px;padding:8px 6px;}
       .action-tile{justify-content:flex-start;padding:10px 11px;min-height:54px;}
       .action-tile span{display:inline;line-height:1.28;}
       .action-tile i{width:34px;height:34px;}
@@ -1533,7 +1584,13 @@ body.dark-mode .nav-logo img {
       </section>
     </div>
 
-    <div class="action-strip">
+    <div class="action-strip collapsed" id="quickActionsMenu">
+      <button class="quick-actions-toggle" type="button" id="quickActionsToggle" onclick="toggleQuickActions()" aria-expanded="false" aria-controls="quickActionsList" title="Quick Actions">
+        <i class="fa-solid fa-bolt"></i>
+        <span>Quick Actions</span>
+        <i class="fa-solid fa-chevron-up quick-actions-chevron"></i>
+      </button>
+      <div class="quick-actions-title" id="quickActionsList">Quick Actions</div>
       <a class="action-tile" href="user-data-folder.html"><i class="fa-solid fa-cloud-arrow-up"></i><span>Upload / View Documents</span></a>
       <a class="action-tile" href="user-latest-jobs.html"><i class="fa-solid fa-magnifying-glass"></i><span>Search Latest Jobs</span></a>
       <a class="action-tile" href="mock-test.html"><i class="fa-solid fa-clipboard-check"></i><span>Daily Mock Test</span></a>
@@ -1729,6 +1786,32 @@ body.dark-mode .nav-logo img {
 </footer>
 
 <script>
+  function setQuickActionsOpen(open){
+    const menu = document.getElementById("quickActionsMenu");
+    const toggle = document.getElementById("quickActionsToggle");
+    if(!menu || !toggle){ return; }
+    menu.classList.toggle("collapsed", !open);
+    toggle.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+
+  function toggleQuickActions(){
+    const menu = document.getElementById("quickActionsMenu");
+    setQuickActionsOpen(menu ? menu.classList.contains("collapsed") : false);
+  }
+
+  document.addEventListener("click", (event) => {
+    const menu = document.getElementById("quickActionsMenu");
+    if(menu && !menu.classList.contains("collapsed") && !menu.contains(event.target)){
+      setQuickActionsOpen(false);
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if(event.key === "Escape"){
+      setQuickActionsOpen(false);
+    }
+  });
+
   function updateLiveTime(){
     const now = new Date();
     document.getElementById("liveTime").innerText = now.toLocaleString("hi-IN");
