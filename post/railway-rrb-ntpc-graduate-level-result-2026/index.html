@@ -682,6 +682,18 @@
       if(!location.hash)return;
       setTimeout(()=>{const el=document.querySelector(location.hash);if(el)el.scrollIntoView({behavior:"smooth",block:"start"});},350);
     }
+    function bindSummaryCardScroll(){
+      root.querySelectorAll('.summary-card[href^="#section-"]').forEach((card)=>{
+        card.addEventListener("click",(event)=>{
+          const hash=card.getAttribute("href")||"";
+          const target=hash?document.querySelector(hash):null;
+          if(!target)return;
+          event.preventDefault();
+          history.replaceState(null,"",`${location.pathname}${location.search}${hash}`);
+          target.scrollIntoView({behavior:"smooth",block:"start"});
+        });
+      });
+    }
     function renderSidebar(data,links){
       const mini=["importantDates","applicationFee","ageLimit","vacancyDetails","importantLinks","regionWiseResultLinks"].filter(k=>hasRenderableSection(data,k));
       return `<aside class="premium-aside"><div class="aside-phone"><div class="aside-screen"><div class="aside-top"><span>E-MITRA WALA</span><span>☰</span></div><div class="aside-body">${renderMedia(data,true)}<span class="pill">Verified Update</span><h2>${escapeHTML(data.title||"Premium Update")}</h2>${data.shortInfo?`<p>${escapeHTML(data.shortInfo)}</p>`:""}<div class="aside-mini-list"><div class="aside-mini">✓ Verified Update</div><div class="aside-mini">✓ Official Update</div></div>${renderActionButtons(links,4)}<div class="summary-grid">${mini.map(k=>{const def=SECTION_DEFS.find(d=>d[0]===k)||[k,toTitle(k)];return `<a class="summary-card" href="#section-${k}"><span class="summary-icon">${iconFor(k)}</span><span><strong>${escapeHTML(def[1])}</strong><span>${escapeHTML(summaryText(k,getSection(data,k),data))}</span></span></a>`}).join("")}</div></div></div></div></aside>`;
@@ -706,6 +718,7 @@
       const sticky=links.filter(l=>/(apply|download|notification)/i.test(l.label)).slice(0,2);
       mobileSticky.innerHTML=sticky.map(l=>`<a class="action-btn ${linkClass(l.label)}" href="${escapeHTML(l.url)}" target="_blank" rel="noopener noreferrer">${linkIcon(l.label)} ${escapeHTML(l.label)}</a>`).join("");
       attachPremiumDesignPicker();
+      bindSummaryCardScroll();
       scrollHashAfterRender();
     }
     async function loadPremiumPostBySlug(slug){
@@ -995,6 +1008,7 @@
 <script src="/site-theme.js" defer></script>
 </body>
 </html>
+
 
 
 
