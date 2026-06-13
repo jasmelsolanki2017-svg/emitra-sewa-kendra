@@ -644,7 +644,7 @@
     }
     function renderSidebar(data,links){
       const mini=["importantDates","applicationFee","ageLimit","vacancyDetails","importantLinks","regionWiseResultLinks"].filter(k=>hasRenderableSection(data,k));
-      return `<aside class="premium-aside"><div class="aside-phone"><div class="aside-screen"><div class="aside-top"><span>E-MITRA WALA</span><span>☰</span></div><div class="aside-body"><div class="breadcrumb"><a href="index.html">Home</a> › Premium Post</div>${renderMedia(data,true)}<span class="pill">Verified Update</span><h2>${escapeHTML(data.title||"Premium Update")}</h2>${data.shortInfo?`<p>${escapeHTML(data.shortInfo)}</p>`:""}<div class="aside-mini-list"><div class="aside-mini">✓ Verified Update</div><div class="aside-mini">✓ Official Update</div></div>${renderActionButtons(links,4)}<div class="summary-grid">${mini.map(k=>{const def=SECTION_DEFS.find(d=>d[0]===k)||[k,toTitle(k)];return `<a class="summary-card" href="#section-${k}"><span class="summary-icon">${iconFor(k)}</span><span><strong>${escapeHTML(def[1])}</strong><span>${escapeHTML(summaryText(k,getSection(data,k),data))}</span></span></a>`}).join("")}</div></div></div></div></aside>`;
+      return `<aside class="premium-aside"><div class="aside-phone"><div class="aside-screen"><div class="aside-top"><span>E-MITRA WALA</span><span>☰</span></div><div class="aside-body">${renderMedia(data,true)}<span class="pill">Verified Update</span><h2>${escapeHTML(data.title||"Premium Update")}</h2>${data.shortInfo?`<p>${escapeHTML(data.shortInfo)}</p>`:""}<div class="aside-mini-list"><div class="aside-mini">✓ Verified Update</div><div class="aside-mini">✓ Official Update</div></div>${renderActionButtons(links,4)}<div class="summary-grid">${mini.map(k=>{const def=SECTION_DEFS.find(d=>d[0]===k)||[k,toTitle(k)];return `<a class="summary-card" href="#section-${k}"><span class="summary-icon">${iconFor(k)}</span><span><strong>${escapeHTML(def[1])}</strong><span>${escapeHTML(summaryText(k,getSection(data,k),data))}</span></span></a>`}).join("")}</div></div></div></div></aside>`;
     }
     function renderAdminEditor(){
       if(!adminAllowed)return"";
@@ -659,7 +659,7 @@
       setSeo(data);
       updatePremiumHeaderActive(data);
       const links=quickLinks(data);
-      const hero=`${renderAdminEditor()}<div class="breadcrumb"><a href="index.html">Home</a> › <span>Premium Post</span> › <strong>${escapeHTML(data.title||"Update")}</strong></div><section class="premium-hero">${renderMedia(data)}<div class="hero-copy"><span class="pill">Verified Update</span><h1>${valueHTML(data.title||"Premium Update",["title"])}</h1>${data.shortInfo?`<p class="hero-short">${valueHTML(data.shortInfo,["shortInfo"])}</p>`:""}<div class="status-row"><span class="status-chip">✅ Verified Update</span><span class="status-chip">✅ Official Update</span></div></div></section>${renderActionButtons(links,4)}<div class="verified-strip"><span>✅ E-MITRA WALA VERIFIED UPDATE ✅</span></div>${renderSummaryCards(data)}`;
+      const hero=`${renderAdminEditor()}<section class="premium-hero">${renderMedia(data)}<div class="hero-copy"><span class="pill">Verified Update</span><h1>${valueHTML(data.title||"Premium Update",["title"])}</h1>${data.shortInfo?`<p class="hero-short">${valueHTML(data.shortInfo,["shortInfo"])}</p>`:""}<div class="status-row"><span class="status-chip">✅ Verified Update</span><span class="status-chip">✅ Official Update</span></div></div></section>${renderActionButtons(links,4)}<div class="verified-strip"><span>✅ E-MITRA WALA VERIFIED UPDATE ✅</span></div>${renderSummaryCards(data)}`;
       const sections=`<div class="section-grid">${SECTION_DEFS.map(([key,title,accent,span])=>renderCard(key,title,renderSection(data,key),accent,span)).join("")}</div>`;
       root.classList.toggle("premium-admin-editing",adminEditMode);
       root.innerHTML=`<div class="premium-layout"><div class="premium-main">${hero}${sections}</div>${renderSidebar(data,links)}</div>`;
@@ -955,4 +955,5 @@
 <script src="/site-theme.js" defer></script>
 </body>
 </html>
+
 
