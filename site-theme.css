@@ -553,3 +553,219 @@ body.site-theme-premium textarea{
   border-color:#b9d2ee!important;
   color:var(--premium-text)!important;
 }
+
+/* Final dark-mode guard. Keep this after premium overrides so dark mode wins. */
+.theme-toggle{
+  position:fixed;
+  right:22px;
+  bottom:96px;
+  width:54px;
+  height:54px;
+  border:0;
+  border-radius:50%;
+  background:#0b9444;
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:22px;
+  font-weight:900;
+  cursor:pointer;
+  box-shadow:0 8px 22px rgba(0,0,0,.26);
+  z-index:7000;
+}
+
+.theme-toggle:hover{
+  transform:translateY(-2px);
+}
+
+.theme-symbol{
+  line-height:1;
+}
+
+body.site-theme-premium.dark-mode,
+body.dark-mode{
+  background:#07111f!important;
+  color:#e8f1ff!important;
+}
+
+body.site-theme-premium.dark-mode nav,
+body.site-theme-premium.dark-mode .navbar,
+body.site-theme-premium.dark-mode .topbar,
+body.site-theme-premium.dark-mode footer,
+body.site-theme-premium.dark-mode .premium-header,
+body.dark-mode nav,
+body.dark-mode .navbar,
+body.dark-mode .topbar,
+body.dark-mode footer,
+body.dark-mode .premium-header{
+  background:#06101f!important;
+  border-color:#24405f!important;
+  color:#f4f8ff!important;
+}
+
+body.site-theme-premium.dark-mode main,
+body.site-theme-premium.dark-mode .section,
+body.site-theme-premium.dark-mode .section.white,
+body.site-theme-premium.dark-mode .features,
+body.site-theme-premium.dark-mode .services,
+body.site-theme-premium.dark-mode .about,
+body.site-theme-premium.dark-mode .contact,
+body.site-theme-premium.dark-mode .latest-section,
+body.site-theme-premium.dark-mode .document-help,
+body.site-theme-premium.dark-mode .useful-pages,
+body.site-theme-premium.dark-mode .home-portal,
+body.site-theme-premium.dark-mode .home-portal-main,
+body.site-theme-premium.dark-mode .business-strip,
+body.site-theme-premium.dark-mode .process-section,
+body.dark-mode main,
+body.dark-mode .section,
+body.dark-mode .section.white{
+  background:#07111f!important;
+  color:#e8f1ff!important;
+}
+
+body.site-theme-premium.dark-mode header,
+body.site-theme-premium.dark-mode .hero,
+body.site-theme-premium.dark-mode .masthead,
+body.site-theme-premium.dark-mode .news-head,
+body.dark-mode header,
+body.dark-mode .hero,
+body.dark-mode .masthead,
+body.dark-mode .news-head{
+  background:#0b2749!important;
+  color:#f4f8ff!important;
+  border-color:#24405f!important;
+}
+
+body.site-theme-premium.dark-mode .panel,
+body.site-theme-premium.dark-mode .card,
+body.site-theme-premium.dark-mode .feature-box,
+body.site-theme-premium.dark-mode .service-card,
+body.site-theme-premium.dark-mode .home-job-card,
+body.site-theme-premium.dark-mode .home-portal-box,
+body.site-theme-premium.dark-mode .business-card,
+body.site-theme-premium.dark-mode .process-card,
+body.site-theme-premium.dark-mode .doc-panel,
+body.site-theme-premium.dark-mode .enquiry-panel,
+body.site-theme-premium.dark-mode .doc-list,
+body.site-theme-premium.dark-mode .counter-box,
+body.site-theme-premium.dark-mode .ad-box,
+body.site-theme-premium.dark-mode .latest-box,
+body.site-theme-premium.dark-mode .news-line,
+body.site-theme-premium.dark-mode .news-item,
+body.site-theme-premium.dark-mode .login-box,
+body.site-theme-premium.dark-mode .story-text,
+body.site-theme-premium.dark-mode .contact-panel,
+body.site-theme-premium.dark-mode .contact-info,
+body.site-theme-premium.dark-mode .search-panel,
+body.site-theme-premium.dark-mode .table-card,
+body.site-theme-premium.dark-mode .user-box,
+body.site-theme-premium.dark-mode .manager,
+body.site-theme-premium.dark-mode .row,
+body.site-theme-premium.dark-mode .job-card,
+body.site-theme-premium.dark-mode .notice,
+body.site-theme-premium.dark-mode .portal-box,
+body.site-theme-premium.dark-mode .contact-box,
+body.site-theme-premium.dark-mode .special-card,
+body.site-theme-premium.dark-mode .search,
+body.site-theme-premium.dark-mode .detail-sheet,
+body.site-theme-premium.dark-mode .detail-sidebar,
+body.site-theme-premium.dark-mode .sidebar-card,
+body.site-theme-premium.dark-mode .content-box,
+body.site-theme-premium.dark-mode .message,
+body.site-theme-premium.dark-mode .tool-card,
+body.site-theme-premium.dark-mode .tool-hub-card,
+body.site-theme-premium.dark-mode .tool-index,
+body.site-theme-premium.dark-mode .admin-tool-panel,
+body.dark-mode .panel,
+body.dark-mode .card,
+body.dark-mode .content-box,
+body.dark-mode .message{
+  background:#101b2d!important;
+  border-color:#24405f!important;
+  color:#e8f1ff!important;
+  box-shadow:0 8px 24px rgba(0,0,0,.34)!important;
+}
+
+body.site-theme-premium.dark-mode h1,
+body.site-theme-premium.dark-mode h2,
+body.site-theme-premium.dark-mode h3,
+body.site-theme-premium.dark-mode strong,
+body.site-theme-premium.dark-mode .section-title h2,
+body.site-theme-premium.dark-mode .tool-head h2,
+body.site-theme-premium.dark-mode .card strong,
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode strong{
+  color:#ffb15c!important;
+}
+
+body.site-theme-premium.dark-mode p,
+body.site-theme-premium.dark-mode li,
+body.site-theme-premium.dark-mode small,
+body.site-theme-premium.dark-mode span,
+body.site-theme-premium.dark-mode .muted,
+body.site-theme-premium.dark-mode .card span,
+body.site-theme-premium.dark-mode .hero p,
+body.site-theme-premium.dark-mode header p,
+body.site-theme-premium.dark-mode .masthead p,
+body.dark-mode p,
+body.dark-mode li,
+body.dark-mode small,
+body.dark-mode span,
+body.dark-mode .muted{
+  color:#cbd8ea!important;
+}
+
+body.site-theme-premium.dark-mode a:not(nav a):not(.btn):not(.cta):not(.action-btn):not(.download-btn),
+body.dark-mode a:not(nav a):not(.btn):not(.cta):not(.action-btn):not(.download-btn){
+  color:#8ec5ff!important;
+}
+
+body.site-theme-premium.dark-mode .panel h2,
+body.site-theme-premium.dark-mode .sarkari-section-title,
+body.site-theme-premium.dark-mode .detail-table th,
+body.site-theme-premium.dark-mode .content-table th,
+body.site-theme-premium.dark-mode .article-head,
+body.site-theme-premium.dark-mode .tool-index h2,
+body.site-theme-premium.dark-mode .table-card h2,
+body.site-theme-premium.dark-mode .form-section h3{
+  background:#0b2749!important;
+  border-color:#24405f!important;
+  color:#ffb15c!important;
+}
+
+body.site-theme-premium.dark-mode input,
+body.site-theme-premium.dark-mode select,
+body.site-theme-premium.dark-mode textarea,
+body.dark-mode input,
+body.dark-mode select,
+body.dark-mode textarea{
+  background:#081322!important;
+  border-color:#2f4d70!important;
+  color:#f5f8ff!important;
+}
+
+body.site-theme-premium.dark-mode input::placeholder,
+body.site-theme-premium.dark-mode textarea::placeholder,
+body.dark-mode input::placeholder,
+body.dark-mode textarea::placeholder{
+  color:#8ea3bd!important;
+}
+
+body.site-theme-premium.dark-mode .theme-toggle,
+body.dark-mode .theme-toggle{
+  background:#ffb15c!important;
+  color:#06101f!important;
+}
+
+@media(max-width:820px){
+  .theme-toggle{
+    right:16px;
+    bottom:86px;
+    width:50px;
+    height:50px;
+  }
+}
