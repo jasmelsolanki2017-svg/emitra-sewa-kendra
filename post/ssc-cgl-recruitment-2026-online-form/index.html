@@ -863,8 +863,8 @@
         if(!response.ok||result.ok===false)throw new Error(result.error||`HTTP ${response.status}`);
         setAdminStatus("Telegram par premium post send ho gayi.","success");
       }catch(error){
-        setAdminStatus("Telegram send nahi hua: "+error.message,"error");
         window.open(`https://t.me/share/url?url=${encodeURIComponent(publicPremiumUrl(data.slug||currentPostSlug||requestedSlug||""))}&text=${encodeURIComponent(text)}`,'_blank','noopener,noreferrer');
+        setAdminStatus("Telegram API available nahi hai, Telegram share window open kar di. Wahan se channel/group me send kar dein.","success");
       }
     };
     window.enablePremiumLiveEdit=()=>{
