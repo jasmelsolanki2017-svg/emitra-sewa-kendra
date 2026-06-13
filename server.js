@@ -4862,6 +4862,34 @@ app.post("/api/pdf-verification/request", requireFirebaseUserApi, pdfVerificatio
   }
 });
 
+app.post("/api/pdf-verification/my-requests", async (req, res) => {
+  try {
+    const { decoded, db } = await requireFirebaseUser(req);
+    const uid = decoded.uid;
+    const [topSnapshot, userSnapshot] = await Promise.all([
+      db.ref("pdfVerificationRequests").orderByChild("userUid").equalTo(uid).get(),
+      db.ref(`userPdfVerificationRequests/${uid}`).get()
+    ]);
+    const requests = {};
+    if (topSnapshot.exists()) {
+      topSnapshot.forEach((child) => {
+        requests[child.key] = { ...(child.val() || {}), requestId: child.key };
+      });
+    }
+    if (userSnapshot.exists()) {
+      userSnapshot.forEach((child) => {
+        requests[child.key] = { ...(requests[child.key] || {}), ...(child.val() || {}), requestId: child.key };
+      });
+    }
+    const list = Object.entries(requests)
+      .map(([id, request]) => ({ id, request }))
+      .sort((a, b) => Number(b.request.createdAt || 0) - Number(a.request.createdAt || 0));
+    return res.json({ ok: true, requests: list });
+  } catch (err) {
+    return res.status(err.statusCode || 500).json({ ok: false, error: err.message || "PDF requests load nahi hui" });
+  }
+});
+
 app.post("/api/pdf-verification/download-url", async (req, res) => {
   try {
     const { decoded, db } = await requireFirebaseUser(req);
