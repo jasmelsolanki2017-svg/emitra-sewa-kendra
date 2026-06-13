@@ -41,16 +41,18 @@
     body{margin:0;background:#f3f7fd;color:var(--text);font-family:Arial,'Noto Sans Devanagari',sans-serif;font-weight:500}
     a{color:inherit;text-decoration:none}
     .premium-topbar{display:none}
-    .premium-header{position:sticky;top:0;z-index:50;background:#061d4b;border-bottom:3px solid #0b9444;box-shadow:0 2px 14px rgba(0,0,0,.16)}
-    .premium-header-inner{max-width:1280px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:8px 18px}
-    .brand{display:flex;align-items:center;gap:10px;color:#ffcf28;font-weight:900;font-size:23px;letter-spacing:.2px;white-space:nowrap;min-width:0}
+    .premium-header{position:sticky;top:0;z-index:50;background:#061d4b;border-bottom:1px solid #0b9444;box-shadow:0 2px 14px rgba(0,0,0,.16)}
+    .premium-header-inner{max-width:1280px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:10px 18px;min-height:62px}
+    .brand{display:flex;align-items:center;gap:10px;color:#fff;font-weight:900;font-size:23px;letter-spacing:.2px;white-space:nowrap;min-width:0}
     .brand:after{display:none!important}
-    .brand img{width:42px;height:42px;object-fit:contain;background:#fff;border-radius:5px;padding:3px}
+    .brand img{width:38px;height:38px;object-fit:contain;background:#fff;border-radius:3px;padding:3px}
     .brand span{display:flex;flex-direction:column;line-height:.98;min-width:0}
-    .brand small{display:block;color:#fff;font-size:9px;line-height:1.15;font-weight:900;letter-spacing:.3px;text-transform:uppercase;margin-top:3px;white-space:normal}
-    .premium-nav{display:flex;align-items:center;justify-content:flex-end;gap:2px;flex-wrap:wrap}
-    .premium-nav a{color:#fff;font-weight:900;font-size:16px;text-transform:uppercase;padding:17px 16px;border-radius:3px;line-height:1.05}
-    .premium-nav a:hover,.premium-nav a.active{background:#0b9444}
+    .brand b{color:#fff}.brand em{font-style:normal;color:#ffcf28}
+    .brand small{display:block;color:#fff;font-size:9px;line-height:1.15;font-weight:900;letter-spacing:.3px;text-transform:uppercase;margin-top:4px;white-space:normal}
+    .premium-nav{display:flex;align-items:center;justify-content:flex-end;gap:4px;flex-wrap:nowrap}
+    .premium-nav a{color:#fff;font-weight:900;font-size:13px;text-transform:uppercase;padding:17px 14px;border-radius:2px;line-height:1.05;white-space:nowrap}
+    .premium-nav a:hover,.premium-nav a.active{background:#0b9444;color:#fff}
+    .premium-search-link{font-size:19px!important;padding:14px 13px!important}
     .language-bar{background:#f8fbff;border-bottom:1px solid #dce7f5;color:#071b3f;font-size:13px;font-weight:900}
     .language-bar-inner{max-width:1280px;margin:0 auto;padding:7px 18px;text-align:right}
     .language-bar a{color:#075dcc;text-decoration:none}
@@ -180,7 +182,7 @@
     .premium-admin-status{font-size:13px;color:#075dcc;font-weight:900;min-height:18px}
 
     @media(max-width:1100px){.section-grid,.detail-grid,.info-grid,.overview-grid,.post-info-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.premium-layout,.skeleton-layout{grid-template-columns:1fr}.premium-aside{position:static;max-height:none}.aside-phone{max-width:390px;margin:0 auto}.hero-copy h1{font-size:38px}.premium-nav a{padding:14px 10px;font-size:14px}.quick-actions,.skeleton-actions{grid-template-columns:repeat(2,minmax(0,1fr))}.summary-grid,.skeleton-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.skeleton-aside{display:none}}
-    @media(max-width:700px){.section-grid,.detail-grid,.info-grid,.overview-grid,.post-info-grid{grid-template-columns:1fr}.premium-header-inner{padding:8px 12px}.brand{max-width:calc(100% - 8px)}.brand span{font-size:20px}.brand small{font-size:8px;max-width:210px}.brand img{width:38px;height:38px}.premium-nav{display:none}.language-bar-inner{text-align:left;padding:7px 12px}.premium-shell{padding:14px 10px 85px}.premium-hero,.skeleton-hero{grid-template-columns:1fr;gap:14px}.media-box,.skeleton-media{min-height:220px}.hero-copy h1{font-size:31px}.hero-short{font-size:16px}.verified-strip{align-items:flex-start;flex-direction:column;font-size:13px}.summary-grid,.skeleton-summary{grid-template-columns:1fr}.premium-card.wide-span,.premium-card.full-span{grid-column:auto}.steps{grid-template-columns:1fr}.link-grid,.related-grid,.region-links-grid{grid-template-columns:1fr}.overview-list{grid-template-columns:1fr}.overview-row{grid-template-columns:108px minmax(0,1fr)}.mobile-sticky{display:flex}.mobile-sticky:empty{display:none}.quick-actions,.skeleton-actions{grid-template-columns:1fr}.premium-table{min-width:0;font-size:14px}.premium-table th,.premium-table td{padding:10px 8px}.aside-phone{display:none}.skeleton-title{max-width:100%;height:40px}}
+    @media(max-width:700px){.section-grid,.detail-grid,.info-grid,.overview-grid,.post-info-grid{grid-template-columns:1fr}.premium-header-inner{padding:8px 12px;flex-direction:column;align-items:flex-start;gap:8px}.brand{max-width:calc(100% - 8px)}.brand span{font-size:20px}.brand small{font-size:8px;max-width:260px}.brand img{width:38px;height:38px}.premium-nav{display:flex;width:100%;overflow-x:auto;justify-content:flex-start;padding-bottom:4px}.premium-nav a{font-size:12px;padding:10px 12px;background:#08275f;border-radius:4px}.language-bar-inner{text-align:left;padding:7px 12px}.premium-shell{padding:14px 10px 85px}.premium-hero,.skeleton-hero{grid-template-columns:1fr;gap:14px}.media-box,.skeleton-media{min-height:220px}.hero-copy h1{font-size:31px}.hero-short{font-size:16px}.verified-strip{align-items:flex-start;flex-direction:column;font-size:13px}.summary-grid,.skeleton-summary{grid-template-columns:1fr}.premium-card.wide-span,.premium-card.full-span{grid-column:auto}.steps{grid-template-columns:1fr}.link-grid,.related-grid,.region-links-grid{grid-template-columns:1fr}.overview-list{grid-template-columns:1fr}.overview-row{grid-template-columns:108px minmax(0,1fr)}.mobile-sticky{display:flex}.mobile-sticky:empty{display:none}.quick-actions,.skeleton-actions{grid-template-columns:1fr}.premium-table{min-width:0;font-size:14px}.premium-table th,.premium-table td{padding:10px 8px}.aside-phone{display:none}.skeleton-title{max-width:100%;height:40px}}
   </style>
 <link rel="stylesheet" href="/site-theme.css">
   <style>
@@ -207,17 +209,17 @@
     <div class="premium-header-inner">
       <a class="brand" href="index.html">
         <img src="site-logo.png" alt="E-MITRA WALA">
-        <span>E-MITRA WALA<small>Naukri · Admit Card · Result · Syllabus</small></span>
+        <span><b>E-MITRA <em>WALA</em></b><small>Sarkari Naukri · Admit Card · Result · Syllabus</small></span>
       </a>
       <nav class="premium-nav" aria-label="Main Navigation">
         <a href="index.html">Home</a>
         <a href="/#homePortalLatestJobs">Latest Jobs</a>
-        <a href="current-affairs.html">Current Affairs</a>
-        <a href="pdf-forms.html">PDF Forms</a>
-        <a href="about.html">About</a>
-        <a href="contact.html">Contact</a>
-        <a href="privacy-policy.html">Privacy Policy</a>
-        <a href="disclaimer.html">Disclaimer</a>
+        <a href="/#homePortalAdmitCard" data-nav-category="admit">Admit Card</a>
+        <a href="/#homePortalResults" data-nav-category="result">Result</a>
+        <a href="/#homePortalAnswerKey" data-nav-category="answer">Answer Key</a>
+        <a href="/#homePortalSyllabus" data-nav-category="syllabus">Syllabus</a>
+        <a href="useful-pages.html">More ▾</a>
+        <a class="premium-search-link" href="/#homePortalJobSearch" aria-label="Search">⌕</a>
       </nav>
     </div>
     <div class="language-bar">
@@ -557,6 +559,13 @@
       if(Array.isArray(faq)&&faq.length)addSchema({"@context":"https://schema.org","@type":"FAQPage",mainEntity:faq.map(f=>({"@type":"Question",name:String(f.question||f.q||""),acceptedAnswer:{"@type":"Answer",text:String(f.answer||f.a||"")}})).filter(f=>f.name&&f.acceptedAnswer.text)});
     }
     function addSchema(obj){const s=document.createElement("script");s.type="application/ld+json";s.dataset.schema="premium";s.textContent=JSON.stringify(obj);document.head.appendChild(s);}
+    function updatePremiumHeaderActive(data={}){
+      const text=String(data.postTarget||data.category||data.type||data.title||"").toLowerCase();
+      document.querySelectorAll(".premium-nav a").forEach(a=>a.classList.remove("active"));
+      const key=/admit/.test(text)?"admit":/result/.test(text)?"result":/answer/.test(text)?"answer":/syllabus/.test(text)?"syllabus":"";
+      const active=key?document.querySelector(`.premium-nav a[data-nav-category="${key}"]`):null;
+      if(active)active.classList.add("active");
+    }
     function scrollHashAfterRender(){
       if(!location.hash)return;
       setTimeout(()=>{const el=document.querySelector(location.hash);if(el)el.scrollIntoView({behavior:"smooth",block:"start"});},350);
@@ -576,6 +585,7 @@
       hasRenderedPost=true;
       if(timeoutId)clearTimeout(timeoutId);
       setSeo(data);
+      updatePremiumHeaderActive(data);
       const links=quickLinks(data),views=data.views||"12,345";
       const hero=`${renderAdminEditor()}<div class="breadcrumb"><a href="index.html">Home</a> › <span>Premium Post</span> › <strong>${escapeHTML(data.title||"Update")}</strong></div><section class="premium-hero">${renderMedia(data)}<div class="hero-copy"><span class="pill">Verified Update</span><h1>${valueHTML(data.title||"Premium Update",["title"])}</h1>${data.shortInfo?`<p class="hero-short">${valueHTML(data.shortInfo,["shortInfo"])}</p>`:""}<div class="status-row"><span class="status-chip">✅ Verified Update</span><span class="status-chip">✅ Official Update</span></div></div></section>${renderActionButtons(links,4)}<div class="verified-strip"><span>✅ E-MITRA WALA VERIFIED UPDATE ✅</span><span>👁 Views: ${escapeHTML(views)}</span></div>${renderSummaryCards(data)}`;
       const sections=`<div class="section-grid">${SECTION_DEFS.map(([key,title,accent,span])=>renderCard(key,title,renderSection(data,key),accent,span)).join("")}</div>`;

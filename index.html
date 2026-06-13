@@ -4594,11 +4594,12 @@ const rowGroups=[updates.filter((_,index)=>index%3===0),updates.filter((_,index)
 const fallbackItems=updates.length?updates:[];
 const rows = rowGroups.map((group,index)=>{
 const items=group.length?group:fallbackItems.slice(index,index+1);
+const rowHref=items[0]?makePostUrl(items[0]):"#";
 const titleLength=items.reduce((sum,item)=>sum+String(item.title||"").length,0);
 const duration=Math.max(42,Math.min(110,Math.round((titleLength + items.length * 24) * 0.38)));
 const links=items.map((item,itemIndex)=>`<a class="news-link latest-update-link" href="${escapeHTML(makePostUrl(item))}" data-news-link="true">${escapeHTML(item.title)}</a>${itemIndex<items.length-1?'<span class="news-separator">•</span>':""}`).join("");
 return `
-  <div class="news-line live-news-item" style="--news-duration:${duration}s">
+  <div class="news-line live-news-item" data-row-href="${escapeHTML(rowHref)}" style="--news-duration:${duration}s">
     <span class="news-track multi-link-track">${links}</span>
   </div>
 `;
@@ -4640,12 +4641,17 @@ const latestBox=document.querySelector(".latest-box");
 const newsModalTrigger=document.querySelector(".news-head");
 if(latestBox){
 latestBox.addEventListener("click",(event)=>{
-const clickedLink=event.target.closest("a, .live-news-item, .latest-update-link");
-if(clickedLink){
+const clickedAnchor=event.target.closest("a");
+if(clickedAnchor){
 event.stopPropagation();
-if(clickedLink.closest(".live-news-item, .latest-update-link")){
 return;
 }
+const clickedRow=event.target.closest(".live-news-item[data-row-href]");
+if(clickedRow){
+event.stopPropagation();
+const href=clickedRow.getAttribute("data-row-href");
+if(href&&href!=="#")location.href=href;
+return;
 }
 if(event.target.closest(".news-head") || event.target.closest(".news-ticker-rows")){
 if(!event.target.closest("a")){
