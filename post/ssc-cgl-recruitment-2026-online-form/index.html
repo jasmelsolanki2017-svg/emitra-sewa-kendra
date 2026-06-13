@@ -868,6 +868,10 @@
         return {...result,ok:response.ok&&(result.ok!==false)&&(publish.ok!==false),publish};
       }catch(error){return {ok:false,error:error.message}}
     }
+    const adminServerStorageKey="emitraAdminServerUrl",defaultAdminServerUrl="https://emitra-sewa-kendra.onrender.com";
+    const isStaticAdminHost=(url="")=>{try{return /^emitrawala\.online$|github\.io$/i.test(new URL(url,location.origin).hostname)}catch{return false}};
+    const adminApiBase=()=>{const saved=String(localStorage.getItem(adminServerStorageKey)||"").trim().replace(/\/+$/,"");if(saved&&!isStaticAdminHost(saved))return saved;if(location.protocol==="file:"||/^emitrawala\.online$|github\.io$/i.test(location.hostname))return defaultAdminServerUrl;return ""};
+    const adminApiUrl=(path)=>{const base=adminApiBase();return base?base+path:path};
     function buildPremiumShareText(data={}){
       const title=data.title||currentPostData?.title||"Premium Update";
       const shortInfo=data.shortInfo||currentPostData?.shortInfo||"";
@@ -895,15 +899,14 @@
       const data=currentPostData||editorDraft||{};
       const text=buildPremiumShareText(data);
       try{
-        setAdminStatus("Telegram post bheji ja rahi hai...");
+        setAdminStatus("Telegram API se post bheji ja rahi hai...");
         const token=await auth.currentUser?.getIdToken();
-        const response=await fetch("/admin/auto-job-checker/share/send",{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${token}`},body:JSON.stringify({channel:"telegram",jobId:`premium-${data.slug||currentPostSlug||requestedSlug||Date.now()}`,draft:{...data,sourceLink:publicPremiumUrl(data.slug||currentPostSlug||requestedSlug||""),detailLink:publicPremiumUrl(data.slug||currentPostSlug||requestedSlug||""),whatsappPostText:text,telegramPostText:text}})});
+        const response=await fetch(adminApiUrl("/admin/auto-job-checker/share/send"),{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${token}`},body:JSON.stringify({channel:"telegram",jobId:`premium-${data.slug||currentPostSlug||requestedSlug||Date.now()}`,text,draft:{...data,sourceLink:publicPremiumUrl(data.slug||currentPostSlug||requestedSlug||""),detailLink:publicPremiumUrl(data.slug||currentPostSlug||requestedSlug||""),whatsappPostText:text,telegramPostText:text}})});
         const result=await response.json().catch(()=>({}));
         if(!response.ok||result.ok===false)throw new Error(result.error||`HTTP ${response.status}`);
-        setAdminStatus("Telegram par premium post send ho gayi.","success");
+        setAdminStatus("Telegram API se premium post send ho gayi.","success");
       }catch(error){
-        window.open(`https://t.me/share/url?url=${encodeURIComponent(publicPremiumUrl(data.slug||currentPostSlug||requestedSlug||""))}&text=${encodeURIComponent(text)}`,'_blank','noopener,noreferrer');
-        setAdminStatus("Telegram API available nahi hai, Telegram share window open kar di. Wahan se channel/group me send kar dein.","success");
+        setAdminStatus("Telegram API send fail: "+error.message,"error");
       }
     };
     window.enablePremiumLiveEdit=()=>{
