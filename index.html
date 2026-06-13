@@ -739,6 +739,17 @@ font-weight:800;
 animation:newsSlide var(--news-duration, 42s) linear infinite;
 }
 
+.news-track.multi-link-track{
+display:inline-flex;
+align-items:center;
+gap:18px;
+}
+
+.news-separator{
+color:#ff7a00;
+font-weight:900;
+}
+
 .news-track .news-link,
 .news-track .news-breaking-link,
 .news-item-link{
@@ -4570,7 +4581,7 @@ return `<div id="latestBreakingBar" class="news-breaking is-visible"><span class
 function renderLiveNews(posts=[]) {
 const rowsBox=document.getElementById("newsTickerRows");
 if(!rowsBox)return;
-const updates=getLatestUpdates(posts, 3);
+const updates=getLatestUpdates(posts, 9);
 if(!updates.length){
 rowsBox.innerHTML=`
   <div class="news-line static"><span class="news-track">अभी कोई latest update नहीं है।</span></div>
@@ -4579,12 +4590,16 @@ rowsBox.innerHTML=`
 `;
 return;
 }
-const rows = updates.map((item)=>{
-const href=makePostUrl(item);
-const duration=Math.max(34,Math.min(90,Math.round((String(item.title).length + 20) * 0.32)));
+const rowGroups=[updates.filter((_,index)=>index%3===0),updates.filter((_,index)=>index%3===1),updates.filter((_,index)=>index%3===2)];
+const fallbackItems=updates.length?updates:[];
+const rows = rowGroups.map((group,index)=>{
+const items=group.length?group:fallbackItems.slice(index,index+1);
+const titleLength=items.reduce((sum,item)=>sum+String(item.title||"").length,0);
+const duration=Math.max(42,Math.min(110,Math.round((titleLength + items.length * 24) * 0.38)));
+const links=items.map((item,itemIndex)=>`<a class="news-link latest-update-link" href="${escapeHTML(makePostUrl(item))}" data-news-link="true">${escapeHTML(item.title)}</a>${itemIndex<items.length-1?'<span class="news-separator">•</span>':""}`).join("");
 return `
   <div class="news-line live-news-item" style="--news-duration:${duration}s">
-    <span class="news-track"><a class="news-link latest-update-link" href="${escapeHTML(href)}" data-news-link="true">${escapeHTML(item.title)}</a></span>
+    <span class="news-track multi-link-track">${links}</span>
   </div>
 `;
 }).join("");
@@ -4655,7 +4670,7 @@ window.openNewsBox();
 
 scheduleDataTask(() => {
 firebaseRestGet("latestUpdates").then((updatesData)=>{
-latestNewsItems=getLatestUpdates(updatesData, 6);
+latestNewsItems=getLatestUpdates(updatesData, 9);
 renderLiveNews(latestNewsItems);
 renderNewsModal(latestNewsItems);
 });

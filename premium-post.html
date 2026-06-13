@@ -742,7 +742,9 @@
         const token=await auth.currentUser?.getIdToken();
         if(!token)return {ok:false,error:"Admin token missing"};
         const response=await fetch("/admin/seo/normalize",{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${token}`},body:JSON.stringify({jobId:`premium-${slug}`,publishStatic:true,reason})});
-        return await response.json().catch(()=>({ok:response.ok}));
+        const result=await response.json().catch(()=>({ok:response.ok}));
+        const publish=result.publish||{};
+        return {...result,ok:response.ok&&(result.ok!==false)&&(publish.ok!==false),publish};
       }catch(error){return {ok:false,error:error.message}}
     }
     function buildPremiumShareText(data={}){
