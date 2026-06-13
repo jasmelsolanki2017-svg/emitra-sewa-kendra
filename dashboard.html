@@ -57,8 +57,15 @@
     .theme-card em{font-style:normal;color:#66748a;font-size:10px;font-weight:700;}
 
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;}
-    .card{background:white;border-radius:6px;padding:10px 8px;text-align:left;box-shadow:0 4px 12px rgba(0,0,0,.06);border-top:3px solid #ff7a00;min-height:126px;display:flex;flex-direction:column;}
-    .card i{font-size:20px;color:#0057a8;margin-bottom:5px;}
+    .card{background:white;border-radius:6px;padding:10px 8px;text-align:left;box-shadow:0 4px 12px rgba(0,0,0,.06);border-top:3px solid #ff7a00;min-height:126px;display:flex;flex-direction:column;position:relative;overflow:hidden;}
+    .card:before{content:"";position:absolute;right:-22px;top:-22px;width:76px;height:76px;border-radius:50%;background:rgba(0,87,168,.08);pointer-events:none;}
+    .card i{width:38px;height:38px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-size:19px;color:#fff;margin-bottom:7px;background:linear-gradient(135deg,#0057a8,#16a3ff);box-shadow:0 8px 18px rgba(0,87,168,.24);}
+    .card:nth-child(2n) i{background:linear-gradient(135deg,#ff7a00,#ffb000);box-shadow:0 8px 18px rgba(255,122,0,.24);}
+    .card:nth-child(3n) i{background:linear-gradient(135deg,#0b9444,#22c55e);box-shadow:0 8px 18px rgba(11,148,68,.24);}
+    .card:nth-child(4n) i{background:linear-gradient(135deg,#d31837,#ff4774);box-shadow:0 8px 18px rgba(211,24,55,.22);}
+    .card:nth-child(5n) i{background:linear-gradient(135deg,#6735b8,#a855f7);box-shadow:0 8px 18px rgba(103,53,184,.24);}
+    .card:nth-child(6n) i{background:linear-gradient(135deg,#0d8f99,#14b8a6);box-shadow:0 8px 18px rgba(13,143,153,.24);}
+    .card:hover i{transform:translateY(-2px) scale(1.04);transition:.18s ease;}
     .card h3{color:#0057a8;margin-bottom:3px;font-size:14px;}
     .card p{color:#555;margin-bottom:7px;line-height:1.25;font-size:11px;flex:1;}
     .card a{display:inline-block;align-self:flex-start;background:#0057a8;color:white;text-decoration:none;padding:5px 9px;border-radius:6px;font-weight:700;font-size:11px;}
