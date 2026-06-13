@@ -6023,7 +6023,7 @@ app.post("/admin/auto-job-checker/share/send", async (req, res) => {
     }
     const enrichedShareItem = enrichJobAutomation(item, shareId);
     text = channel === "telegram"
-      ? buildTelegramPostText(shareId, enrichedShareItem)
+      ? (text || item.telegramPostText || buildTelegramPostText(shareId, enrichedShareItem))
       : (text || item.whatsappPostText || buildWhatsappPostText(shareId, enrichedShareItem));
     if (!text) {
       return res.status(400).json({ ok: false, error: "Share text missing" });
