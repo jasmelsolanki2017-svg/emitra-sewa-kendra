@@ -368,17 +368,22 @@
       list.innerHTML = allPdfVerificationRequests.map((data) => {
         const status = String(data.status || "Pending");
         const verified = status.toLowerCase() === "verified" && data.verifiedPath;
+        const userLabel = data.userName || data.userEmail || data.userUid || "User";
+        const folderLabel = [data.uploadDateFolder || "Old Upload", data.userFolderName || userLabel].filter(Boolean).join(" / ");
         return `
           <article class="pdf-request ${verified ? "verified" : ""}">
             <h3>${escapeHTML(data.fileName || "Certificate PDF")}</h3>
             <span class="badge ${verified ? "done" : ""}">${escapeHTML(status)}</span>
             <small><b>Request ID:</b> ${escapeHTML(data.requestId || data.id)}</small>
-            <small><b>User:</b> ${escapeHTML(data.userEmail || data.userUid || "User")}</small>
+            <small><b>User:</b> ${escapeHTML(userLabel)}</small>
+            <small><b>User Email:</b> ${escapeHTML(data.userEmail || "")}</small>
+            <small><b>Folder:</b> ${escapeHTML(folderLabel)}</small>
             <small><b>Date:</b> ${escapeHTML(formatDate(data.createdAt))}</small>
             ${data.adminNote ? `<small><b>Note:</b> ${escapeHTML(data.adminNote)}</small>` : ""}
             <div class="actions">
               <button onclick="downloadPdfForAdmin('${escapeHTML(data.id)}','original')">Download Original</button>
               ${verified ? `<button class="done" onclick="downloadPdfForAdmin('${escapeHTML(data.id)}','verified')">Download Verified</button>` : ""}
+              <button class="danger" onclick="deletePdfRequest('${escapeHTML(data.id)}')">Delete PDFs</button>
             </div>
             <div class="pdf-upload-row">
               <input type="file" accept="application/pdf,.pdf" data-pdf-file="${escapeHTML(data.id)}">
@@ -520,6 +525,19 @@
         status.innerText = result.message || "Verified PDF upload ho gayi.";
       }catch(error){
         status.innerText = "Verified upload nahi hua: " + error.message;
+      }
+    };
+
+    window.deletePdfRequest = async (id) => {
+      if(!adminAllowed){ alert("Admin verify nahi hua."); return; }
+      if(!confirm("Is request ki original aur verified PDF storage se delete karni hai?")){ return; }
+      const status = document.getElementById("pdfAdminStatus");
+      try{
+        status.innerText = "PDF delete ho rahi hai...";
+        const result = await adminPostJson("/api/pdf-verification/delete", { requestId:id });
+        status.innerText = result.message || "PDF delete ho gayi.";
+      }catch(error){
+        status.innerText = "Delete nahi hua: " + error.message;
       }
     };
 

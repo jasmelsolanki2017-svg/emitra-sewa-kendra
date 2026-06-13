@@ -4650,6 +4650,38 @@ function cleanStorageFileName(name = "certificate.pdf") {
     .slice(0, 90) || "certificate.pdf";
 }
 
+function cleanStorageFolderName(name = "user") {
+  return String(name || "user")
+    .trim()
+    .replace(/[^a-z0-9._-]+/gi, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 70) || "user";
+}
+
+function getIndiaDateFolder(time = Date.now()) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).formatToParts(new Date(time));
+  const get = (type) => parts.find((part) => part.type === type)?.value || "";
+  return `${get("year")}-${get("month")}-${get("day")}`;
+}
+
+async function getPdfUploadUserMeta(db, uid = "", decoded = {}) {
+  let member = {};
+  try {
+    const snapshot = uid ? await db.ref(`members/${uid}`).get() : null;
+    member = snapshot?.exists() ? snapshot.val() || {} : {};
+  } catch (_error) {}
+  const userName = String(member.name || member.fullName || member.displayName || decoded.name || decoded.email || uid || "User").trim();
+  const userEmail = String(decoded.email || member.email || member.profileEmail || "").trim();
+  const folderName = cleanStorageFolderName(`${userName || "User"}-${String(uid || "").slice(0, 8)}`);
+  return { userName, userEmail, folderName };
+}
+
 function buildLocalPdfStoragePath(storagePath = "") {
   const relative = String(storagePath || "")
     .replace(/\\/g, "/")
@@ -4725,6 +4757,30 @@ async function resolvePdfVerificationDownloadUrl(record = {}, fileKind = "verifi
   return "";
 }
 
+async function removePdfVerificationStorageFiles(record = {}) {
+  const supabasePaths = [];
+  const localPaths = [];
+  if (record.originalPath && record.originalStorageProvider === "supabase") supabasePaths.push(record.originalPath);
+  if (record.verifiedPath && record.verifiedStorageProvider === "supabase") supabasePaths.push(record.verifiedPath);
+  if (record.originalLocalPath || record.originalStorageProvider === "local") localPaths.push(record.originalLocalPath || record.originalPath);
+  if (record.verifiedLocalPath || record.verifiedStorageProvider === "local") localPaths.push(record.verifiedLocalPath || record.verifiedPath);
+
+  if (supabasePaths.length) {
+    const supabase = getSupabaseAdminClient();
+    const { error } = await supabase.storage.from(PDF_VERIFICATION_BUCKET).remove([...new Set(supabasePaths)]);
+    if (error) throw new Error(getPdfStorageErrorMessage(error));
+  }
+
+  await Promise.all([...new Set(localPaths)].filter(Boolean).map(async (localPath) => {
+    const normalizedPath = String(localPath || "").replace(/\\/g, "/").split("/").filter(Boolean).join("/");
+    const filePath = path.resolve(PDF_VERIFICATION_LOCAL_DIR, normalizedPath);
+    const relativePath = path.relative(PDF_VERIFICATION_LOCAL_DIR, filePath);
+    if (normalizedPath && !relativePath.startsWith("..") && !path.isAbsolute(relativePath)) {
+      await fs.promises.unlink(filePath).catch(() => {});
+    }
+  }));
+}
+
 app.get("/api/pdf-verification/file/:storagePath(*)", (req, res) => {
   try {
     const storagePath = decodeURIComponent(String(req.params.storagePath || ""));
@@ -4759,13 +4815,18 @@ app.post("/api/pdf-verification/request", requireFirebaseUserApi, pdfVerificatio
     const requestRef = db.ref("pdfVerificationRequests").push();
     const requestId = requestRef.key;
     const originalName = cleanStorageFileName(req.file.originalname || "certificate.pdf");
-    const originalPath = `${uid}/${requestId}/original-${originalName}`;
+    const uploadDateFolder = getIndiaDateFolder(now);
+    const userMeta = await getPdfUploadUserMeta(db, uid, decoded);
+    const originalPath = `${uploadDateFolder}/${userMeta.folderName}/${requestId}/original-${originalName}`;
     const uploadResult = await uploadPdfToStorage(req.file.buffer, originalPath, originalName);
 
     const record = {
       requestId,
       userUid: uid,
-      userEmail: decoded.email || "",
+      userEmail: userMeta.userEmail,
+      userName: userMeta.userName,
+      userFolderName: userMeta.folderName,
+      uploadDateFolder,
       fileName: originalName,
       fileSize: req.file.size || req.file.buffer.length,
       originalPath: uploadResult.storagePath,
@@ -4820,6 +4881,33 @@ app.post("/api/pdf-verification/download-url", async (req, res) => {
   }
 });
 
+app.post("/api/pdf-verification/delete", async (req, res) => {
+  try {
+    const { decoded, db } = await requireFirebaseUser(req);
+    const requestId = String(req.body?.requestId || "").trim();
+    if (!requestId) return res.status(400).json({ ok: false, error: "Request ID required" });
+    const snapshot = await db.ref(`pdfVerificationRequests/${requestId}`).get();
+    if (!snapshot.exists()) return res.status(404).json({ ok: false, error: "Request not found" });
+    const record = snapshot.val() || {};
+    const isAdminUser = decoded.email === ADMIN_EMAIL;
+    if (!isAdminUser && record.userUid !== decoded.uid) {
+      return res.status(403).json({ ok: false, error: "Access denied" });
+    }
+    if (!isAdminUser && String(record.status || "").toLowerCase() !== "verified") {
+      return res.status(400).json({ ok: false, error: "Verified hone ke baad hi PDF delete kar sakte hain." });
+    }
+    await removePdfVerificationStorageFiles(record);
+    const uid = record.userUid || decoded.uid;
+    await Promise.all([
+      db.ref(`pdfVerificationRequests/${requestId}`).remove(),
+      uid ? db.ref(`userPdfVerificationRequests/${uid}/${requestId}`).remove() : Promise.resolve()
+    ]);
+    return res.json({ ok: true, message: "PDF verification request aur storage files delete ho gayi." });
+  } catch (err) {
+    return res.status(err.statusCode || 500).json({ ok: false, error: err.message || "PDF delete nahi hua" });
+  }
+});
+
 app.post("/admin/pdf-verification/verified-upload", requireAdminApi, pdfVerificationRequestUpload.single("pdf"), async (req, res) => {
   try {
     const { db, decoded } = await requireAdmin(req);
@@ -4835,7 +4923,9 @@ app.post("/admin/pdf-verification/verified-upload", requireAdminApi, pdfVerifica
     const oldRecord = snapshot.val() || {};
     const uid = oldRecord.userUid || "";
     const verifiedName = cleanStorageFileName(req.file.originalname || `verified-${oldRecord.fileName || "certificate.pdf"}`);
-    const verifiedPath = `${uid}/${requestId}/verified-${Date.now()}-${verifiedName}`;
+    const verifiedDateFolder = getIndiaDateFolder(Date.now());
+    const userFolderName = oldRecord.userFolderName || cleanStorageFolderName(`${oldRecord.userName || oldRecord.userEmail || "User"}-${String(uid || "").slice(0, 8)}`);
+    const verifiedPath = `${oldRecord.uploadDateFolder || verifiedDateFolder}/${userFolderName}/${requestId}/verified-${Date.now()}-${verifiedName}`;
     const uploadResult = await uploadPdfToStorage(req.file.buffer, verifiedPath, verifiedName);
     const updates = {
       verifiedPath: uploadResult.storagePath,
@@ -4843,6 +4933,8 @@ app.post("/admin/pdf-verification/verified-upload", requireAdminApi, pdfVerifica
       verifiedLocalPath: uploadResult.storageKind === "local" ? uploadResult.storagePath : "",
       verifiedDownloadUrl: uploadResult.downloadUrl || "",
       verifiedFileName: verifiedName,
+      userFolderName,
+      verifiedDateFolder,
       verifiedSize: req.file.size || req.file.buffer.length,
       status: "Verified",
       adminNote,

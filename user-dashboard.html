@@ -2427,12 +2427,14 @@ body.dark-mode .nav-logo img {
           <div>
             <strong>${escapeHTML(data.fileName || "Certificate PDF")}</strong>
             <small>Request ID: ${escapeHTML(data.requestId || item.id)} · ${data.createdAt ? new Date(Number(data.createdAt)).toLocaleString("hi-IN") : "Recently"}</small>
+            <small>Folder: ${escapeHTML(data.uploadDateFolder || "Old Upload")} / ${escapeHTML(data.userFolderName || data.userName || "User")}</small>
             <small>${escapeHTML(data.adminNote || "Admin manual verification pending hai.")}</small>
             <span class="pdf-verify-badge">${escapeHTML(status)}</span>
           </div>
           <div class="pdf-verify-actions">
             ${isVerified ? `<button type="button" onclick="downloadPdfVerification('${escapeHTML(item.id)}','verified')">Download Verified PDF</button>` : ""}
             <button type="button" onclick="downloadPdfVerification('${escapeHTML(item.id)}','original')">Original PDF</button>
+            ${isVerified ? `<button type="button" onclick="deletePdfVerification('${escapeHTML(item.id)}')">Delete</button>` : ""}
           </div>
         </div>
       `;
@@ -2870,6 +2872,19 @@ body.dark-mode .nav-logo img {
       window.open(result.signedUrl, "_blank", "noopener,noreferrer");
     }catch(error){
       alert("Download nahi hua: " + error.message);
+    }
+  };
+
+  window.deletePdfVerification = async (id) => {
+    if(!confirm("Verified PDF request delete karni hai? Original aur verified PDF storage se remove ho jayengi.")){
+      return;
+    }
+    try{
+      const result = await apiPostJson("/api/pdf-verification/delete", { requestId:id });
+      const status = document.getElementById("pdfVerifyStatus");
+      if(status){ status.innerText = result.message || "PDF delete ho gayi."; }
+    }catch(error){
+      alert("Delete nahi hua: " + error.message);
     }
   };
 
