@@ -225,6 +225,10 @@
     .pdf-verify-form button,.pdf-verify-actions button{border:0;border-radius:6px;background:var(--blue);color:#fff;font-weight:900;padding:9px 12px;cursor:pointer;}
     .pdf-verify-form button:hover,.pdf-verify-actions button:hover{background:var(--yellow);color:var(--blue-dark);}
     .pdf-verify-list{display:grid;gap:8px;}
+    .pdf-verify-folder{background:#fff;border:1px solid var(--line);border-radius:8px;overflow:hidden;}
+    .pdf-verify-folder-title{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#eef5ff;color:var(--blue-dark);font-weight:900;padding:9px 11px;font-size:13px;}
+    .pdf-verify-folder-title span:last-child{color:var(--muted);font-size:11px;}
+    .pdf-verify-folder-body{display:grid;gap:8px;padding:9px;}
     .pdf-verify-row{background:#f9fbff;border:1px solid var(--line);border-left:4px solid var(--blue);border-radius:7px;padding:10px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;}
     .pdf-verify-row.verified{border-left-color:#138a36;background:#f2fbf5;}
     .pdf-verify-row small{display:block;color:var(--muted);font-size:11px;font-weight:700;overflow-wrap:anywhere;}
@@ -1865,6 +1869,9 @@ body.dark-mode .nav-logo img {
   let currentFiles = [];
   let currentCloudLinks = [];
   let currentPdfVerificationRequests = [];
+  let currentPdfMirrorRequests = [];
+  let currentPdfTopRequests = [];
+  let currentPdfServerRequests = [];
   let currentRequestNotifications = [];
   let currentAdminMessages = [];
   let requestNotificationsLoaded = false;
@@ -2411,7 +2418,7 @@ body.dark-mode .nav-logo img {
       list.innerHTML = '<div class="message">Abhi koi PDF verification request nahi hai.</div>';
       return;
     }
-    list.innerHTML = currentPdfVerificationRequests.map((item) => {
+    const renderPdfCard = (item) => {
       const data = item.request || {};
       const status = String(data.status || "Pending");
       const isVerified = status.toLowerCase() === "verified" && data.verifiedPath;
@@ -2431,7 +2438,52 @@ body.dark-mode .nav-logo img {
           </div>
         </div>
       `;
-    }).join("");
+    };
+    const groups = new Map();
+    currentPdfVerificationRequests.forEach((item) => {
+      const folder = String(item.request?.uploadDateFolder || "Old Upload");
+      if(!groups.has(folder)){ groups.set(folder, []); }
+      groups.get(folder).push(item);
+    });
+    list.innerHTML = Array.from(groups.entries()).map(([folder, items]) => `
+      <section class="pdf-verify-folder">
+        <div class="pdf-verify-folder-title">
+          <span><i class="fa-solid fa-folder-open"></i> ${escapeHTML(folder)}</span>
+          <span>${items.length} PDF</span>
+        </div>
+        <div class="pdf-verify-folder-body">${items.map(renderPdfCard).join("")}</div>
+      </section>
+    `).join("");
+  };
+
+  const mergePdfVerificationRequests = () => {
+    const map = new Map();
+    [...currentPdfTopRequests, ...currentPdfMirrorRequests, ...currentPdfServerRequests].forEach((item) => {
+      if(!item?.id){ return; }
+      const existing = map.get(item.id);
+      map.set(item.id, { id:item.id, request:{ ...(existing?.request || {}), ...(item.request || {}) } });
+    });
+    currentPdfVerificationRequests = Array.from(map.values())
+      .filter((item) => !item.request?.userUid || item.request.userUid === currentUser?.uid)
+      .sort((a, b) => Number(b.request.createdAt || 0) - Number(a.request.createdAt || 0));
+    const status = document.getElementById("pdfVerifyStatus");
+    if(status){
+      status.innerText = currentPdfVerificationRequests.length
+        ? `${currentPdfVerificationRequests.length} PDF request loaded.`
+        : "Abhi koi PDF request nahi hai.";
+    }
+    renderPdfVerificationRequests();
+  };
+
+  const refreshPdfVerificationRequests = async () => {
+    if(!currentUser){ return; }
+    try{
+      const result = await apiPostJson("/api/pdf-verification/my-requests", {});
+      currentPdfServerRequests = Array.isArray(result.requests) ? result.requests : [];
+      mergePdfVerificationRequests();
+    }catch(error){
+      console.warn("PDF requests API load failed", error);
+    }
   };
 
   const renderUserProfile = () => {
@@ -2587,15 +2639,31 @@ body.dark-mode .nav-logo img {
         renderUserFiles();
       });
 
+      refreshPdfVerificationRequests();
+
       onValue(ref(db, "userPdfVerificationRequests/" + user.uid), (snapshot) => {
-        currentPdfVerificationRequests = [];
+        currentPdfMirrorRequests = [];
         if(snapshot.exists()){
           snapshot.forEach((child) => {
-            currentPdfVerificationRequests.push({ id:child.key, request:child.val() || {} });
+            currentPdfMirrorRequests.push({ id:child.key, request:{ ...(child.val() || {}), userUid:(child.val() || {}).userUid || user.uid } });
           });
         }
-        currentPdfVerificationRequests.sort((a, b) => Number(b.request.createdAt || 0) - Number(a.request.createdAt || 0));
-        renderPdfVerificationRequests();
+        mergePdfVerificationRequests();
+      });
+
+      onValue(ref(db, "pdfVerificationRequests"), (snapshot) => {
+        currentPdfTopRequests = [];
+        if(snapshot.exists()){
+          snapshot.forEach((child) => {
+            const request = child.val() || {};
+            if(request.userUid === user.uid){
+              currentPdfTopRequests.push({ id:child.key, request });
+            }
+          });
+        }
+        mergePdfVerificationRequests();
+      }, (error) => {
+        console.warn("Top PDF requests listener failed", error);
       });
 
       onValue(ref(db, "memberCloudLinks/" + user.uid), (snapshot) => {
@@ -2853,6 +2921,7 @@ body.dark-mode .nav-logo img {
       const result = await apiPostForm("/api/pdf-verification/request", formData);
       input.value = "";
       status.innerText = result.message || "PDF verification request submit ho gayi.";
+      refreshPdfVerificationRequests();
     }catch(error){
       status.innerText = "Upload nahi hua: " + error.message;
     }
@@ -2876,6 +2945,7 @@ body.dark-mode .nav-logo img {
       const result = await apiPostJson("/api/pdf-verification/delete", { requestId:id });
       const status = document.getElementById("pdfVerifyStatus");
       if(status){ status.innerText = result.message || "PDF delete ho gayi."; }
+      refreshPdfVerificationRequests();
     }catch(error){
       alert("Delete nahi hua: " + error.message);
     }
