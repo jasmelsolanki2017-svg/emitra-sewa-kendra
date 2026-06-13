@@ -6,11 +6,24 @@ const SITE_BASE_URL = (process.env.SITE_BASE_URL || "https://emitrawala.online")
 const FIREBASE_URL = (process.env.FIREBASE_URL || "https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app").replace(/\/+$/, "");
 const SITEMAP_PATH = path.join(__dirname, "..", "sitemap.xml");
 const JOB_SITEMAP_PATH = path.join(__dirname, "..", "sitemap-jobs.xml");
+const LEGAL_SITEMAP_PATH = path.join(__dirname, "..", "sitemap-legal.xml");
 const INDEX_PATH = path.join(__dirname, "..", "index.html");
 const JOB_DETAIL_PATH = path.join(__dirname, "..", "job-detail.html");
 const PREMIUM_POST_PATH = path.join(__dirname, "..", "premium-post.html");
 const NOT_FOUND_PATH = path.join(__dirname, "..", "404.html");
 const POST_ROOT = path.join(__dirname, "..", "post");
+const LEGAL_SITEMAP_URLS = [
+  "about.html",
+  "contact.html",
+  "privacy-policy.html",
+  "terms-and-conditions.html",
+  "disclaimer.html",
+  "cookie-policy.html",
+  "editorial-policy.html",
+  "correction-policy.html",
+  "advertising-policy.html",
+  "dmca.html"
+];
 
 const xmlEscape = (value = "") => String(value || "")
   .replace(/&/g, "&amp;")
@@ -130,6 +143,17 @@ const sitemapEntry = ({ loc, lastmod, changefreq = "daily", priority = "0.8" }) 
     <changefreq>${xmlEscape(changefreq)}</changefreq>
     <priority>${xmlEscape(priority)}</priority>
   </url>`;
+
+const buildLegalSitemapXml = () => `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${LEGAL_SITEMAP_URLS.map((page) => sitemapEntry({
+  loc: `${SITE_BASE_URL}/${page}`,
+  lastmod: sitemapDate(Date.now()),
+  changefreq: "monthly",
+  priority: "0.6"
+})).join("\n")}
+</urlset>
+`;
 
 const parseLooseDate = (value = "") => {
   const text = String(value || "").trim();
@@ -1128,6 +1152,7 @@ ${entries.join("\n")}
 `;
   fs.writeFileSync(SITEMAP_PATH, nextXml, "utf8");
   fs.writeFileSync(JOB_SITEMAP_PATH, jobSitemapXml, "utf8");
+  fs.writeFileSync(LEGAL_SITEMAP_PATH, buildLegalSitemapXml(), "utf8");
   updateIndexFallback(rows);
   updateStaticPostPages(rows);
   const noindexedCount = noindexExcludedStaticPages(sitemapRows);

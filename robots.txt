@@ -1,12 +1,5 @@
 User-agent: *
 Allow: /
-Allow: /about.html
-Allow: /contact.html
-Allow: /privacy-policy.html
-Allow: /disclaimer.html
-Allow: /terms-and-conditions.html
-Allow: /job-form.html
-Allow: /job-detail.html
 Allow: /post/
 Disallow: /dashboard.html
 Disallow: /admin-links.html
@@ -18,6 +11,9 @@ Disallow: /admin-mock-tests.html
 Disallow: /admin-auto-checker.html
 Disallow: /admin-requests.html
 Disallow: /admin-services.html
+Disallow: /admin-current-affairs.html
+Disallow: /admin-pdf-verification.html
+Disallow: /admin-useful-pages.html
 Disallow: /all-members.html
 Disallow: /user-dashboard.html
 Disallow: /user-latest-updates.html
@@ -30,3 +26,4 @@ Disallow: /server.js
 
 Sitemap: https://emitrawala.online/sitemap.xml
 Sitemap: https://emitrawala.online/sitemap-jobs.xml
+Sitemap: https://emitrawala.online/sitemap-legal.xml

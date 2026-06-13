@@ -4,12 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Free Online Tools | E-MITRA WALA</title>
-<meta name="description" content="E-MITRA WALA free online tools: image resizer, 20KB photo resize, compressor, converter, passport photo, signature resize, PDF tools, QR code generator and age calculator.">
+<meta name="description" content="Use E-MITRA WALA free browser-based image, PDF, QR code, photo resize, signature resize and age calculator tools with internal tool links.">
 <meta name="robots" content="index,follow">
 <link rel="canonical" href="https://emitrawala.online/tools.html">
 <meta property="og:title" content="Free Online Tools | E-MITRA WALA">
-<meta property="og:description" content="Browser based free image, PDF, QR and age calculator tools. Files are processed in your browser only.">
-<meta property="og:type" content="website">
+<meta property="og:description" content="Use E-MITRA WALA free browser-based image, PDF, QR code, photo resize, signature resize and age calculator tools with internal tool links.">
+<meta property="og:type" content="article">
 <meta property="og:url" content="https://emitrawala.online/tools.html">
 <link rel="icon" type="image/png" sizes="512x512" href="favicon.png">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
@@ -106,7 +106,7 @@ button.danger{background:var(--red)}
 .preview-box img,.preview-box canvas{max-width:100%;height:auto;border-radius:4px}
 .status{min-height:20px;color:var(--blue);font-size:13px;font-weight:800;margin-top:6px}
 .result-list{display:grid;gap:8px;width:100%;align-items:start}
-.result-list a{color:var(--blue);font-weight:900;text-decoration:none;background:#fff;border:1px solid var(--line);border-radius:6px;padding:8px 10px}
+.result-list a,.result-list span{color:var(--blue);font-weight:900;text-decoration:none;background:#fff;border:1px solid var(--line);border-radius:6px;padding:8px 10px}
 .qr-preview canvas,.qr-preview img{image-rendering:pixelated}
 footer{background:var(--blue);color:white;text-align:center;padding:22px 6%;margin-top:20px}
 footer a{color:#ffcf75;text-decoration:none;font-weight:800;margin:0 7px;display:inline-block}
@@ -119,6 +119,7 @@ body.embed-mode .tool-card{box-shadow:none;border-radius:8px;margin:0}
 @media(max-width:920px){.tool-hub-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tools-layout{grid-template-columns:1fr}.tool-index{position:static}.tool-index div{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.preview-grid{grid-template-columns:1fr}.admin-tool-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:620px){nav{flex-direction:column;align-items:flex-start;padding:12px 4%}nav ul{justify-content:flex-start;gap:12px}.logo img{width:170px;max-width:74vw}.hero{padding:26px 4%}main{padding:16px 3%}.tool-hub-grid{grid-template-columns:1fr;gap:12px}.tool-hub-card{min-height:126px}.tool-hub-icon{width:58px;height:58px;font-size:22px}.tool-card{padding:13px}.tool-head{display:block}.badge{display:inline-flex;margin-top:8px}.form-grid{grid-template-columns:1fr}.tool-index div{grid-template-columns:1fr}.actions>*{width:100%}.admin-tool-list{grid-template-columns:1fr}}
 </style>
+<link rel="stylesheet" href="/site-theme.css">
 </head>
 <body>
 <nav>
@@ -216,7 +217,7 @@ body.embed-mode .tool-card{box-shadow:none;border-radius:8px;margin:0}
           <div class="field"><label for="resizerQuality">Quality %</label><input id="resizerQuality" type="number" min="1" max="100" value="85"></div>
           <div class="field"><label for="resizerFormat">Output</label><select id="resizerFormat"><option value="image/jpeg">JPG</option><option value="image/png">PNG</option><option value="image/webp">WEBP</option></select></div>
         </div>
-        <div class="actions"><button type="button" onclick="runImageResizer()"><i class="fa-solid fa-wand-magic-sparkles"></i> Resize</button><a id="resizerDownload" class="download-btn disabled" href="#" download><i class="fa-solid fa-download"></i> Download</a></div>
+        <div class="actions"><button type="button" onclick="runImageResizer()"><i class="fa-solid fa-wand-magic-sparkles"></i> Resize</button><a id="resizerDownload" class="download-btn disabled" download><i class="fa-solid fa-download"></i> Download</a></div>
         <div class="preview-grid"><div class="preview-box" id="resizerPreview">Preview</div><div><div class="status" id="resizerStatus"></div></div></div>
       </section>
 
@@ -226,7 +227,7 @@ body.embed-mode .tool-card{box-shadow:none;border-radius:8px;margin:0}
           <div class="field full"><label for="kb20File">Image upload</label><input id="kb20File" type="file" accept="image/*"></div>
           <div class="field"><label for="kb20Target">Target KB</label><input id="kb20Target" type="number" min="5" value="20"></div>
         </div>
-        <div class="actions"><button type="button" onclick="runKbTool('kb20')"><i class="fa-solid fa-compress"></i> Resize to Target</button><a id="kb20Download" class="download-btn disabled" href="#" download><i class="fa-solid fa-download"></i> Download</a></div>
+        <div class="actions"><button type="button" onclick="runKbTool('kb20')"><i class="fa-solid fa-compress"></i> Resize to Target</button><a id="kb20Download" class="download-btn disabled" download><i class="fa-solid fa-download"></i> Download</a></div>
         <div class="preview-grid"><div class="preview-box" id="kb20Preview">Preview</div><div><div class="status" id="kb20Status"></div></div></div>
       </section>
 
@@ -236,7 +237,7 @@ body.embed-mode .tool-card{box-shadow:none;border-radius:8px;margin:0}
           <div class="field full"><label for="compressFile">Image upload</label><input id="compressFile" type="file" accept="image/*"></div>
           <div class="field"><label for="compressTarget">Target KB</label><input id="compressTarget" type="number" min="5" value="100"></div>
         </div>
-        <div class="actions"><button type="button" onclick="runKbTool('compress')"><i class="fa-solid fa-minimize"></i> Compress</button><a id="compressDownload" class="download-btn disabled" href="#" download><i class="fa-solid fa-download"></i> Download</a></div>
+        <div class="actions"><button type="button" onclick="runKbTool('compress')"><i class="fa-solid fa-minimize"></i> Compress</button><a id="compressDownload" class="download-btn disabled" download><i class="fa-solid fa-download"></i> Download</a></div>
         <div class="preview-grid"><div class="preview-box" id="compressPreview">Preview</div><div><div class="status" id="compressStatus"></div></div></div>
       </section>
 
@@ -247,7 +248,7 @@ body.embed-mode .tool-card{box-shadow:none;border-radius:8px;margin:0}
           <div class="field"><label for="convertFormat">Output</label><select id="convertFormat"><option value="image/jpeg">JPG</option><option value="image/png">PNG</option><option value="image/webp">WEBP</option></select></div>
           <div class="field"><label for="convertQuality">Quality %</label><input id="convertQuality" type="number" min="1" max="100" value="90"></div>
         </div>
-        <div class="actions"><button type="button" onclick="runImageConverter()"><i class="fa-solid fa-repeat"></i> Convert</button><a id="convertDownload" class="download-btn disabled" href="#" download><i class="fa-solid fa-download"></i> Download</a></div>
+        <div class="actions"><button type="button" onclick="runImageConverter()"><i class="fa-solid fa-repeat"></i> Convert</button><a id="convertDownload" class="download-btn disabled" download><i class="fa-solid fa-download"></i> Download</a></div>
         <div class="preview-grid"><div class="preview-box" id="convertPreview">Preview</div><div><div class="status" id="convertStatus"></div></div></div>
       </section>
 
@@ -257,35 +258,35 @@ body.embed-mode .tool-card{box-shadow:none;border-radius:8px;margin:0}
           <div class="field full"><label for="passportFile">Photo upload</label><input id="passportFile" type="file" accept="image/*"></div>
           <div class="field"><label for="passportBg">Background color</label><select id="passportBg"><option value="#ffffff">White</option><option value="#dff1ff">Light Blue</option><option value="#ffe7e7">Light Red</option></select></div>
         </div>
-        <div class="actions"><button type="button" onclick="runPresetImage('passport')"><i class="fa-solid fa-id-card"></i> Make Photo</button><a id="passportDownload" class="download-btn disabled" href="#" download><i class="fa-solid fa-download"></i> Download JPG</a></div>
+        <div class="actions"><button type="button" onclick="runPresetImage('passport')"><i class="fa-solid fa-id-card"></i> Make Photo</button><a id="passportDownload" class="download-btn disabled" download><i class="fa-solid fa-download"></i> Download JPG</a></div>
         <div class="preview-grid"><div class="preview-box" id="passportPreview">Preview</div><div><div class="status" id="passportStatus"></div></div></div>
       </section>
 
       <section class="tool-card" id="ssc-signature">
         <div class="tool-head"><div><h2>SSC Signature Resizer</h2><p>Signature ko 140x60 px JPG me resize karein, target max 20KB.</p></div><span class="badge">140x60</span></div>
         <div class="form-grid"><div class="field full"><label for="sscSignatureFile">Signature upload</label><input id="sscSignatureFile" type="file" accept="image/*"></div></div>
-        <div class="actions"><button type="button" onclick="runPresetImage('sscSignature')"><i class="fa-solid fa-signature"></i> Resize</button><a id="sscSignatureDownload" class="download-btn disabled" href="#" download><i class="fa-solid fa-download"></i> Download JPG</a></div>
+        <div class="actions"><button type="button" onclick="runPresetImage('sscSignature')"><i class="fa-solid fa-signature"></i> Resize</button><a id="sscSignatureDownload" class="download-btn disabled" download><i class="fa-solid fa-download"></i> Download JPG</a></div>
         <div class="preview-grid"><div class="preview-box" id="sscSignaturePreview">Preview</div><div><div class="status" id="sscSignatureStatus"></div></div></div>
       </section>
 
       <section class="tool-card" id="rrb-signature">
         <div class="tool-head"><div><h2>RRB Signature Resizer</h2><p>Signature ko 140x60 px JPG me resize karein, target max 20KB.</p></div><span class="badge">140x60</span></div>
         <div class="form-grid"><div class="field full"><label for="rrbSignatureFile">Signature upload</label><input id="rrbSignatureFile" type="file" accept="image/*"></div></div>
-        <div class="actions"><button type="button" onclick="runPresetImage('rrbSignature')"><i class="fa-solid fa-signature"></i> Resize</button><a id="rrbSignatureDownload" class="download-btn disabled" href="#" download><i class="fa-solid fa-download"></i> Download JPG</a></div>
+        <div class="actions"><button type="button" onclick="runPresetImage('rrbSignature')"><i class="fa-solid fa-signature"></i> Resize</button><a id="rrbSignatureDownload" class="download-btn disabled" download><i class="fa-solid fa-download"></i> Download JPG</a></div>
         <div class="preview-grid"><div class="preview-box" id="rrbSignaturePreview">Preview</div><div><div class="status" id="rrbSignatureStatus"></div></div></div>
       </section>
 
       <section class="tool-card" id="pan-signature">
         <div class="tool-head"><div><h2>NSDL PAN Signature Resizer</h2><p>Signature ko 354x132 px JPG me resize karein, target max 50KB.</p></div><span class="badge">354x132</span></div>
         <div class="form-grid"><div class="field full"><label for="panSignatureFile">Signature upload</label><input id="panSignatureFile" type="file" accept="image/*"></div></div>
-        <div class="actions"><button type="button" onclick="runPresetImage('panSignature')"><i class="fa-solid fa-pen-nib"></i> Resize</button><a id="panSignatureDownload" class="download-btn disabled" href="#" download><i class="fa-solid fa-download"></i> Download JPG</a></div>
+        <div class="actions"><button type="button" onclick="runPresetImage('panSignature')"><i class="fa-solid fa-pen-nib"></i> Resize</button><a id="panSignatureDownload" class="download-btn disabled" download><i class="fa-solid fa-download"></i> Download JPG</a></div>
         <div class="preview-grid"><div class="preview-box" id="panSignaturePreview">Preview</div><div><div class="status" id="panSignatureStatus"></div></div></div>
       </section>
 
       <section class="tool-card" id="pan-photo">
         <div class="tool-head"><div><h2>NSDL PAN Photo Resizer</h2><p>Photo ko 213x213 px JPG me resize karein, target max 50KB.</p></div><span class="badge">213x213</span></div>
         <div class="form-grid"><div class="field full"><label for="panPhotoFile">Photo upload</label><input id="panPhotoFile" type="file" accept="image/*"></div></div>
-        <div class="actions"><button type="button" onclick="runPresetImage('panPhoto')"><i class="fa-solid fa-user"></i> Resize</button><a id="panPhotoDownload" class="download-btn disabled" href="#" download><i class="fa-solid fa-download"></i> Download JPG</a></div>
+        <div class="actions"><button type="button" onclick="runPresetImage('panPhoto')"><i class="fa-solid fa-user"></i> Resize</button><a id="panPhotoDownload" class="download-btn disabled" download><i class="fa-solid fa-download"></i> Download JPG</a></div>
         <div class="preview-grid"><div class="preview-box" id="panPhotoPreview">Preview</div><div><div class="status" id="panPhotoStatus"></div></div></div>
       </section>
 
@@ -295,7 +296,7 @@ body.embed-mode .tool-card{box-shadow:none;border-radius:8px;margin:0}
           <div class="field"><label for="joinPhotoFile">Photo upload</label><input id="joinPhotoFile" type="file" accept="image/*"></div>
           <div class="field"><label for="joinSignFile">Signature upload</label><input id="joinSignFile" type="file" accept="image/*"></div>
         </div>
-        <div class="actions"><button type="button" onclick="runPhotoSignatureJoiner()"><i class="fa-solid fa-object-group"></i> Join</button><a id="joinDownload" class="download-btn disabled" href="#" download><i class="fa-solid fa-download"></i> Download JPG</a></div>
+        <div class="actions"><button type="button" onclick="runPhotoSignatureJoiner()"><i class="fa-solid fa-object-group"></i> Join</button><a id="joinDownload" class="download-btn disabled" download><i class="fa-solid fa-download"></i> Download JPG</a></div>
         <div class="preview-grid"><div class="preview-box" id="joinPreview">Preview</div><div><div class="status" id="joinStatus"></div></div></div>
       </section>
 
@@ -306,14 +307,14 @@ body.embed-mode .tool-card{box-shadow:none;border-radius:8px;margin:0}
           <div class="field"><label for="nameDateName">Name</label><input id="nameDateName" type="text" placeholder="Candidate name"></div>
           <div class="field"><label for="nameDateDate">Date</label><input id="nameDateDate" type="date"></div>
         </div>
-        <div class="actions"><button type="button" onclick="runPhotoNameDateJoiner()"><i class="fa-solid fa-calendar-days"></i> Add Name Date</button><a id="nameDateDownload" class="download-btn disabled" href="#" download><i class="fa-solid fa-download"></i> Download JPG</a></div>
+        <div class="actions"><button type="button" onclick="runPhotoNameDateJoiner()"><i class="fa-solid fa-calendar-days"></i> Add Name Date</button><a id="nameDateDownload" class="download-btn disabled" download><i class="fa-solid fa-download"></i> Download JPG</a></div>
         <div class="preview-grid"><div class="preview-box" id="nameDatePreview">Preview</div><div><div class="status" id="nameDateStatus"></div></div></div>
       </section>
 
       <section class="tool-card" id="image-to-pdf">
         <div class="tool-head"><div><h2>Image to PDF Converter</h2><p>Multiple images select karke one PDF banayein.</p></div><span class="badge">jsPDF</span></div>
         <div class="form-grid"><div class="field full"><label for="imagePdfFiles">Images upload</label><input id="imagePdfFiles" type="file" accept="image/*" multiple></div></div>
-        <div class="actions"><button type="button" onclick="runImageToPdf()"><i class="fa-solid fa-file-pdf"></i> Convert to PDF</button><a id="imagePdfDownload" class="download-btn disabled" href="#" download><i class="fa-solid fa-download"></i> Download PDF</a></div>
+        <div class="actions"><button type="button" onclick="runImageToPdf()"><i class="fa-solid fa-file-pdf"></i> Convert to PDF</button><a id="imagePdfDownload" class="download-btn disabled" download><i class="fa-solid fa-download"></i> Download PDF</a></div>
         <div class="preview-grid"><div class="preview-box" id="imagePdfPreview">PDF preview ready status</div><div><div class="status" id="imagePdfStatus"></div></div></div>
       </section>
 
@@ -330,14 +331,14 @@ body.embed-mode .tool-card{box-shadow:none;border-radius:8px;margin:0}
       <section class="tool-card" id="pdf-merge">
         <div class="tool-head"><div><h2>PDF Merge Tool</h2><p>Multiple PDF files ko same order me merge karke one PDF download karein.</p></div><span class="badge">pdf-lib</span></div>
         <div class="form-grid"><div class="field full"><label for="pdfMergeFiles">PDF files upload</label><input id="pdfMergeFiles" type="file" accept="application/pdf,.pdf" multiple></div></div>
-        <div class="actions"><button type="button" onclick="runPdfMerge()"><i class="fa-solid fa-layer-group"></i> Merge PDF</button><a id="pdfMergeDownload" class="download-btn disabled" href="#" download><i class="fa-solid fa-download"></i> Download PDF</a></div>
+        <div class="actions"><button type="button" onclick="runPdfMerge()"><i class="fa-solid fa-layer-group"></i> Merge PDF</button><a id="pdfMergeDownload" class="download-btn disabled" download><i class="fa-solid fa-download"></i> Download PDF</a></div>
         <div class="preview-grid"><div class="preview-box" id="pdfMergePreview">Merged PDF status</div><div><div class="status" id="pdfMergeStatus"></div></div></div>
       </section>
 
       <section class="tool-card" id="qr-generator">
         <div class="tool-head"><div><h2>QR Code Generator</h2><p>Text ya URL enter karke QR code PNG download karein.</p></div><span class="badge">QR</span></div>
         <div class="form-grid"><div class="field full"><label for="qrText">Text / URL</label><textarea id="qrText" placeholder="https://emitrawala.online/"></textarea></div></div>
-        <div class="actions"><button type="button" onclick="runQrGenerator()"><i class="fa-solid fa-qrcode"></i> Generate QR</button><a id="qrDownload" class="download-btn disabled" href="#" download><i class="fa-solid fa-download"></i> Download PNG</a></div>
+        <div class="actions"><button type="button" onclick="runQrGenerator()"><i class="fa-solid fa-qrcode"></i> Generate QR</button><a id="qrDownload" class="download-btn disabled" download><i class="fa-solid fa-download"></i> Download PNG</a></div>
         <div class="preview-grid"><div class="preview-box qr-preview" id="qrPreview">QR preview</div><div><div class="status" id="qrStatus"></div></div></div>
       </section>
 
@@ -847,7 +848,7 @@ function runAgeCalculator(){
   }
   if(months < 0){ years -= 1; months += 12; }
   const totalDays = Math.floor((new Date(onDate.getFullYear(), onDate.getMonth(), onDate.getDate()) - dob) / 86400000);
-  $("agePreview").innerHTML = `<div class="result-list"><a href="#">${years} Years</a><a href="#">${months} Months</a><a href="#">${days} Days</a><a href="#">Total ${totalDays} Days</a></div>`;
+  $("agePreview").innerHTML = `<div class="result-list"><span>${years} Years</span><span>${months} Months</span><span>${days} Days</span><span>Total ${totalDays} Days</span></div>`;
   setStatus("ageStatus", "Age calculate ho gayi.");
 }
 function clearAgeTool(){
@@ -945,5 +946,7 @@ window.addEventListener("DOMContentLoaded", () => {
   initAdminToolControls();
 });
 </script>
+<script src="/site-theme.js" defer></script>
 </body>
 </html>
+
