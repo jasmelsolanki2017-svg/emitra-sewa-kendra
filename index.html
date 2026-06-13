@@ -2743,7 +2743,7 @@ Create Account
 
 <section class="latest-section">
 
-<div class="latest-box" onclick="openNewsBox()" role="button" tabindex="0">
+<div class="latest-box" role="group" aria-label="Latest updates">
 
 <div class="news-head">
 <span>LIVE NEWS</span>
@@ -4535,7 +4535,7 @@ function getLatestUpdates(posts, limit=3) {
 const sourceItems=Array.isArray(posts) ? posts : (posts && typeof posts === "object" ? Object.values(posts) : []);
 const seen=new Set();
 const normalized=sourceItems.map((item)=>normalizeLatestUpdate(item)).filter(Boolean).filter((item)=>item.isActive !== false && item.title).filter((item)=>{
-const key=`${item.slug || ""}:${item.title}`.trim().toLowerCase();
+const key=`${String(item.slug||"").trim().toLowerCase()}:${String(item.title).trim().toLowerCase()}`;
 if(!key || seen.has(key))return false;
 seen.add(key);
 return true;
@@ -4575,10 +4575,11 @@ rowsBox.innerHTML=`
 return;
 }
 const rows = updates.map((item)=>{
+const href=makePostUrl(item);
 const duration=Math.max(34,Math.min(90,Math.round((String(item.title).length + 20) * 0.32)));
 return `
-  <div class="news-line" style="--news-duration:${duration}s">
-    <span class="news-track"><a class="news-link" href="${escapeHTML(makePostUrl(item))}">${escapeHTML(item.title)}</a></span>
+  <div class="news-line live-news-item" style="--news-duration:${duration}s">
+    <span class="news-track"><a class="news-link latest-update-link" href="${escapeHTML(href)}" data-news-link="true">${escapeHTML(item.title)}</a></span>
   </div>
 `;
 }).join("");
@@ -4616,18 +4617,32 @@ window.closeNewsBox();
 });
 
 const latestBox=document.querySelector(".latest-box");
+const newsModalTrigger=document.querySelector(".news-head");
 if(latestBox){
 latestBox.addEventListener("click",(event)=>{
-const clickedLink=event.target.closest("a");
+const clickedLink=event.target.closest("a, .live-news-item, .latest-update-link");
 if(clickedLink){
 event.stopPropagation();
+if(clickedLink.closest(".live-news-item, .latest-update-link")){
 return;
 }
+}
+if(event.target.closest(".news-head") || event.target.closest(".news-ticker-rows")){
+if(!event.target.closest("a")){
+window.openNewsBox();
+}
+}
+});
+}
+if(newsModalTrigger){
+newsModalTrigger.addEventListener("click",(event)=>{
+if(event.target.closest("a"))return;
 window.openNewsBox();
 });
-latestBox.addEventListener("keydown",(event)=>{
+newsModalTrigger.addEventListener("keydown",(event)=>{
 if(event.key === "Enter" || event.key === " "){
 event.preventDefault();
+if(event.target.closest("a"))return;
 window.openNewsBox();
 }
 });
