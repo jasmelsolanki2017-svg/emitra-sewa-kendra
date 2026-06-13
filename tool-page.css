@@ -3,9 +3,9 @@
 body{font-family:'Poppins','Noto Sans Devanagari',sans-serif;background:var(--page);color:var(--text)}
 nav{background:var(--blue);padding:12px 6%;display:flex;align-items:center;justify-content:space-between;gap:18px;position:sticky;top:0;z-index:20;box-shadow:0 4px 16px rgba(0,0,0,.16)}
 .logo img{width:190px;max-width:48vw;display:block}
-nav ul{display:flex;list-style:none;gap:15px;flex-wrap:wrap;align-items:center}
-nav a{color:#fff;text-decoration:none;font-weight:800;font-size:15px}
-nav a:hover,nav a.active{color:#ffcf75}
+nav ul{display:flex;list-style:none;gap:8px;flex-wrap:wrap;align-items:center;justify-content:flex-end}
+nav a{color:#fff;text-decoration:none;font-weight:800;font-size:14px;display:inline-flex;align-items:center;justify-content:center;min-height:32px;padding:7px 11px;border:1px solid rgba(255,255,255,.32);border-radius:8px;background:rgba(255,255,255,.08);box-shadow:0 4px 12px rgba(0,0,0,.08);transition:background .25s ease,color .25s ease,border-color .25s ease,transform .25s ease}
+nav a:hover,nav a.active{background:#ff7a00;border-color:#ff7a00;color:#fff;transform:translateY(-1px)}
 .hero{background:linear-gradient(135deg,var(--blue),var(--deep));color:#fff;border-bottom:4px solid var(--orange);padding:24px 6%}
 .hero h1{color:#ffcf75;font-size:clamp(28px,4vw,42px);line-height:1.15}
 .hero p{font-weight:700;color:#fff3df;margin-top:6px}
