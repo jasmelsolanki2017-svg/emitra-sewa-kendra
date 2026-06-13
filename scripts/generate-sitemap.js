@@ -794,6 +794,12 @@ const wordCount = (value = "") => visibleText(value).split(/\s+/).filter((word) 
 
 const lowValuePattern = /\b(?:dummy|sample|test|testing|demo|empty|untitled|lorem|fgf|asdf|qwerty)\b|^job-\d+$/i;
 
+const qualityValueText = (value = "") => {
+  if (Array.isArray(value)) return value.map(qualityValueText).join(" ");
+  if (value && typeof value === "object") return Object.values(value).map(qualityValueText).join(" ");
+  return String(value || "");
+};
+
 const postQualityText = (job = {}) => [
   job.title,
   job.seoTitle,
@@ -821,11 +827,11 @@ const postQualityText = (job = {}) => [
   job.importantLinks,
   job.pageContent,
   job.contentText,
-  Array.isArray(job.intro) ? job.intro.join(" ") : "",
-  Array.isArray(job.sections) ? job.sections.map((section) => `${section.heading || section.title || ""} ${section.content || section.text || ""}`).join(" ") : "",
-  Array.isArray(job.faq) ? job.faq.map((item) => `${item.question || ""} ${item.answer || ""}`).join(" ") : "",
-  Array.isArray(job.mcqs) ? job.mcqs.map((item) => `${item.question || ""} ${(item.options || []).join(" ")} ${item.answer || ""} ${item.explanation || ""}`).join(" ") : ""
-].filter(Boolean).join(" ");
+  job.faqs,
+  job.sections,
+  job.intro,
+  job.mcqs
+].filter(Boolean).map(qualityValueText).join(" ");
 
 const getPostQuality = (id = "", job = {}) => {
   const seo = buildSeoFields(job, id);
