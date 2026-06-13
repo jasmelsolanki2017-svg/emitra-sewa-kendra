@@ -210,21 +210,24 @@ color:#03224d;
 .important-menu-panel{
 display:none;
 position:fixed;
-top:214px;
+top:166px;
 left:6%;
-width:260px;
-background:white;
-border:1px solid #d8e0f0;
+width:280px;
+background:#061d4b;
+border:1px solid #0b9444;
 border-radius:8px;
 box-shadow:0 12px 26px rgba(0,0,0,.18);
 overflow:hidden;
 z-index:1200;
-max-height:min(72vh, 430px);
+max-height:min(70vh, 360px);
 overflow-y:auto;
+margin-top:8px;
 }
 
 .brand-menu.open .important-menu-panel{
 display:block;
+height:auto!important;
+min-height:0!important;
 }
 
 .important-menu-title{
@@ -248,7 +251,7 @@ display:flex;
 align-items:center;
 gap:10px;
 background:#f7fbff;
-color:#52657d;
+color:#061d4b;
 padding:11px 16px;
 border-bottom:1px solid #e2edf8;
 font-size:13px;
@@ -256,16 +259,21 @@ font-weight:800;
 line-height:1.35;
 }
 
+.important-menu-panel:empty,
+#importantLinksMenuList:empty{
+display:none!important;
+}
+
 .side-menu-row,
 #importantLinksMenuList a{
 display:flex;
 align-items:center;
 gap:12px;
-background:white;
-color:#0057a8;
+background:#0b2749;
+color:#fff;
 text-decoration:none;
 padding:11px 16px;
-border-bottom:1px solid #e2edf8;
+border-bottom:1px solid #24405f;
 font-size:15px;
 font-weight:800;
 line-height:1.35;
@@ -280,7 +288,7 @@ font-size:18px;
 
 .side-menu-row:hover,
 #importantLinksMenuList a:hover{
-background:#0057a8;
+background:#ff7a00;
 color:white;
 }
 
@@ -291,7 +299,7 @@ width:100%;
 }
 
 .important-menu-panel{
-position:static;
+position:absolute;
 width:min(280px, 100%);
 margin-top:2px;
 max-height:70vh;
