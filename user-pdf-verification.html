@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="description" content="PDF Verification page for E-MITRA WALA user panel.">
+  <title>PDF Verification | E-MITRA WALA User Panel</title>
+  <link rel="icon" type="image/png" sizes="512x512" href="favicon.png">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="shortcut icon" href="favicon.ico">
+  <link rel="apple-touch-icon" href="favicon.png">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="user-panel-pages.css">
+  <link rel="stylesheet" href="/site-theme.css">
+  <link rel="canonical" href="https://emitrawala.online/user-pdf-verification.html">
+  <style>
+    .pdf-upload-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin:12px 0;}
+    .pdf-upload-form input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:#f9fbff;font-size:13px;}
+    .pdf-upload-form button,.pdf-actions button{border:0;border-radius:7px;background:var(--blue);color:white;font-weight:900;padding:9px 12px;cursor:pointer;}
+    .pdf-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px;}
+    .pdf-actions .verified{background:#138a36;}
+    .pdf-actions .delete{background:#d10000;}
+    .pdf-row{background:#f9fbff;border:1px solid var(--line);border-left:5px solid var(--blue);border-radius:8px;padding:12px;margin-bottom:10px;}
+    .pdf-row.done{border-left-color:#138a36;background:#f2fbf5;}
+    .pdf-row strong{display:block;color:var(--blue-dark);font-size:16px;overflow-wrap:anywhere;}
+    .pdf-row small{display:block;color:var(--muted);font-weight:700;font-size:12px;margin-top:3px;overflow-wrap:anywhere;}
+    .pdf-badge{display:inline-flex;margin-top:8px;border-radius:999px;background:#fff7ed;color:#8a3b00;border:1px solid #ffd2a4;padding:4px 9px;font-size:11px;font-weight:900;}
+    .pdf-row.done .pdf-badge{background:#eaf8ef;color:#12723c;border-color:#bde8ca;}
+    @media(max-width:720px){.pdf-upload-form{grid-template-columns:1fr}.pdf-actions button{width:100%;}}
+  </style>
+</head>
+<body>
+  <div class="topbar"><div>User Panel</div><div>Time: <span id="liveTime"></span></div></div>
+  <div id="sessionTimer" class="session-timer">Logout in: 60:00</div>
+  <header>
+    <div class="hero-wrap">
+      <div class="hero-copy">
+        <h1>PDF Verification</h1>
+        <p>Original PDF upload karein, verified PDF status aur download yahin dekhein.</p>
+      </div>
+      <div class="hero-badge">Logged in: <span id="userEmail">Checking...</span></div>
+    </div>
+  </header>
+  <nav>
+    <a href="user-dashboard.html">User Panel</a>
+    <a href="user-latest-updates.html">Latest Updates</a>
+    <a href="user-important-links.html">Important Links</a>
+    <a href="user-download-center.html">Download Center</a>
+    <a href="user-data-folder.html">My Data Folder</a>
+    <a href="user-my-requests.html">My Requests</a>
+    <button onclick="logoutUser()">Logout</button>
+  </nav>
+  <main class="container">
+    <section class="section">
+      <h2>PDF Signature Verification</h2>
+      <div class="panel-note"><i class="fa-solid fa-shield-halved"></i><span>File upload hote hi date-wise folder me save hogi. Admin verify karke green-tick PDF wapas upload karega.</span></div>
+      <div class="pdf-upload-form">
+        <input id="pdfVerifyInput" type="file" accept="application/pdf,.pdf">
+        <button type="button" onclick="submitPdfVerificationRequest()">Submit PDF</button>
+      </div>
+      <div class="message" id="pdfVerifyStatus">PDF verification requests loading...</div>
+      <div id="pdfVerifyList" style="margin-top:12px;"></div>
+    </section>
+  </main>
+  <a class="whatsapp" target="_blank" rel="noopener noreferrer" href="https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q"><i class="fa-brands fa-whatsapp"></i></a>
+  <footer><p>© 2026 E-MITRA WALA | User Panel</p></footer>
+  <button class="theme-toggle" type="button" aria-label="Toggle dark mode" title="Dark mode" onclick="toggleDarkMode()"><span class="theme-symbol" aria-hidden="true">☾</span></button>
+  <script>
+    function updateLiveTime(){document.getElementById("liveTime").innerText=new Date().toLocaleString("hi-IN")}
+    updateLiveTime();setInterval(updateLiveTime,1000);
+  </script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+    import { getAuth,onAuthStateChanged,signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+    import { getDatabase,ref,onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+    const firebaseConfig={apiKey:"AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",authDomain:"my-website-73785.firebaseapp.com",databaseURL:"https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app/",projectId:"my-website-73785",storageBucket:"my-website-73785.firebasestorage.app",messagingSenderId:"854088341990",appId:"1:854088341990:web:3211d4ef9fe4b78d025e27"};
+    const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getDatabase(app);
+    const sessionKey="loginTime",sessionLimitMs=60*60*1000,serverKey="emitraAdminServerUrl",defaultServer="https://emitra-sewa-kendra.onrender.com";
+    let currentUser=null,sessionIntervalId=null,pdfRows=[];
+    const $=(id)=>document.getElementById(id);
+    const escapeHTML=(value="")=>String(value).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+    const apiBase=()=>{const saved=String(localStorage.getItem(serverKey)||"").trim().replace(/\/+$/,"");if(saved)return saved;if(location.protocol==="file:"||/^emitrawala\.online$|github\.io$/i.test(location.hostname))return defaultServer;return ""};
+    const apiUrl=(path)=>{const base=apiBase();return base?base+path:path};
+    const readApi=async(response)=>{const text=await response.text();let data={};try{data=text?JSON.parse(text):{}}catch{throw new Error(text.slice(0,180)||"Server response invalid")}if(!response.ok||data.ok===false)throw new Error(data.error||data.message||`Request failed (${response.status})`);return data};
+    const apiJson=async(path,payload={})=>{if(!currentUser)throw new Error("Login required");const token=await currentUser.getIdToken();const response=await fetch(apiUrl(path),{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},body:JSON.stringify(payload)});return readApi(response)};
+    const apiForm=async(path,formData)=>{if(!currentUser)throw new Error("Login required");const token=await currentUser.getIdToken();const response=await fetch(apiUrl(path),{method:"POST",headers:{"Authorization":"Bearer "+token},body:formData});return readApi(response)};
+    function startSessionTimer(){const box=$("sessionTimer");let loginTime=Number(localStorage.getItem(sessionKey));if(sessionIntervalId)clearInterval(sessionIntervalId);if(!loginTime){loginTime=Date.now();localStorage.setItem(sessionKey,String(loginTime))}const tick=()=>{const remaining=sessionLimitMs-(Date.now()-loginTime);if(remaining<=0){box.innerText="Session Expired";localStorage.removeItem(sessionKey);clearInterval(sessionIntervalId);signOut(auth).then(()=>location.href="index.html");return}const total=Math.floor(remaining/1000),m=Math.floor(total/60),s=total%60;box.innerText=`Logout in: ${m}:${String(s).padStart(2,"0")}`};tick();sessionIntervalId=setInterval(tick,1000)}
+    const renderPdfRows=()=>{const list=$("pdfVerifyList");if(!pdfRows.length){list.innerHTML='<div class="message">Abhi koi PDF verification request nahi hai.</div>';return}list.innerHTML=pdfRows.map(({id,request})=>{const status=String(request.status||"Pending"),verified=status.toLowerCase()==="verified"&&request.verifiedPath;return `<article class="pdf-row ${verified?"done":""}"><strong>${escapeHTML(request.fileName||"Certificate PDF")}</strong><small>Request ID: ${escapeHTML(request.requestId||id)} · ${request.createdAt?new Date(Number(request.createdAt)).toLocaleString("hi-IN"):"Recently"}</small><small>Folder: ${escapeHTML(request.uploadDateFolder||"Old Upload")} / ${escapeHTML(request.userFolderName||request.userName||"User")}</small><small>${escapeHTML(request.adminNote||"Admin manual verification pending hai.")}</small><span class="pdf-badge">${escapeHTML(status)}</span><div class="pdf-actions">${verified?`<button class="verified" type="button" onclick="downloadPdfVerification('${escapeHTML(id)}','verified')">Download Verified PDF</button>`:""}<button type="button" onclick="downloadPdfVerification('${escapeHTML(id)}','original')">Original PDF</button>${verified?`<button class="delete" type="button" onclick="deletePdfVerification('${escapeHTML(id)}')">Delete</button>`:""}</div></article>`}).join("")};
+    window.submitPdfVerificationRequest=async()=>{const input=$("pdfVerifyInput"),status=$("pdfVerifyStatus"),file=input?.files?.[0];if(!file){alert("Original PDF select karein.");return}if(file.type!=="application/pdf"&&!/\.pdf$/i.test(file.name||"")){status.innerText="Sirf PDF file upload karein.";return}if(file.size>20*1024*1024){status.innerText="PDF 20MB se chhoti honi chahiye.";return}try{status.innerText="PDF upload ho rahi hai...";const formData=new FormData();formData.append("pdf",file);const result=await apiForm("/api/pdf-verification/request",formData);input.value="";status.innerText=result.message||"PDF verification request submit ho gayi."}catch(error){status.innerText="Upload nahi hua: "+error.message}};
+    window.downloadPdfVerification=async(id,fileKind="verified")=>{try{const result=await apiJson("/api/pdf-verification/download-url",{requestId:id,fileKind});if(!result.signedUrl)throw new Error("Download link nahi mila");window.open(result.signedUrl,"_blank","noopener,noreferrer")}catch(error){alert("Download nahi hua: "+error.message)}};
+    window.deletePdfVerification=async(id)=>{if(!confirm("Verified PDF request delete karni hai? Original aur verified PDF storage se remove ho jayengi."))return;try{const result=await apiJson("/api/pdf-verification/delete",{requestId:id});$("pdfVerifyStatus").innerText=result.message||"PDF delete ho gayi."}catch(error){alert("Delete nahi hua: "+error.message)}};
+    window.logoutUser=async()=>{localStorage.removeItem(sessionKey);try{await signOut(auth)}catch(_error){}location.replace("index.html")};
+    onAuthStateChanged(auth,(user)=>{if(!user){location.replace("index.html");return}if(!user.emailVerified){alert("Email verify karein.");signOut(auth).then(()=>location.href="index.html");return}currentUser=user;$("userEmail").innerText=user.email||"User";startSessionTimer();onValue(ref(db,"userPdfVerificationRequests/"+user.uid),(snapshot)=>{pdfRows=[];if(snapshot.exists())snapshot.forEach((child)=>pdfRows.push({id:child.key,request:child.val()||{}}));pdfRows.sort((a,b)=>Number(b.request.createdAt||0)-Number(a.request.createdAt||0));$("pdfVerifyStatus").innerText=pdfRows.length?`${pdfRows.length} PDF request loaded.`:"Abhi koi PDF request nahi hai.";renderPdfRows()})});
+  </script>
+  <script src="/site-theme.js" defer></script>
+</body>
+</html>

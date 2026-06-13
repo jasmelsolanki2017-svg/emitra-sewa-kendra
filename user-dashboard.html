@@ -1594,6 +1594,7 @@ body.dark-mode .nav-logo img {
       <a class="action-tile" href="user-data-folder.html"><i class="fa-solid fa-cloud-arrow-up"></i><span>Upload / View Documents</span></a>
       <a class="action-tile" href="user-latest-jobs.html"><i class="fa-solid fa-magnifying-glass"></i><span>Search Latest Jobs</span></a>
       <a class="action-tile" href="mock-test.html"><i class="fa-solid fa-clipboard-check"></i><span>Daily Mock Test</span></a>
+      <a class="action-tile" href="user-pdf-verification.html"><i class="fa-solid fa-shield-halved"></i><span>PDF Verification</span></a>
       <a class="action-tile" href="invoice-generator.html"><i class="fa-solid fa-file-invoice"></i><span>Invoice Generator</span></a>
       <a class="action-tile" href="resume-format.html"><i class="fa-solid fa-file-lines"></i><span>Resume Builder</span></a>
       <a class="action-tile" href="user-download-center.html"><i class="fa-solid fa-file-arrow-down"></i><span>Download Forms</span></a>
@@ -1608,21 +1609,6 @@ body.dark-mode .nav-logo img {
         <small>Profile, password, documents aur admin-added data folder links ke liye ye main hub hai.</small>
       </div>
       <a href="user-data-folder.html">Open Folder</a>
-    </div>
-
-    <div class="pdf-verify-panel" id="pdfVerificationPanel">
-      <div class="pdf-verify-head">
-        <div>
-          <h3><i class="fa-solid fa-shield-halved"></i> PDF Signature Verification</h3>
-          <p>Original PDF upload karein. Admin Foxit Reader ya dusre software se manually verify karke green-tick PDF wapas upload karega.</p>
-        </div>
-      </div>
-      <div class="pdf-verify-form">
-        <input id="pdfVerifyInput" type="file" accept="application/pdf,.pdf">
-        <button type="button" onclick="submitPdfVerificationRequest()">Submit PDF</button>
-      </div>
-      <div class="pdf-verify-status" id="pdfVerifyStatus"></div>
-      <div class="pdf-verify-list" id="pdfVerifyList"><div class="message">PDF verification requests loading...</div></div>
     </div>
 
     <div class="service-request-panel">
@@ -1756,8 +1742,8 @@ body.dark-mode .nav-logo img {
     <div class="card">
       <i class="fa-solid fa-shield-halved"></i>
       <h3>PDF Verification</h3>
-      <p>Original PDF submit karein aur verified PDF status/download yahin dekhein.</p>
-      <a href="#pdfVerificationPanel">Open PDF</a>
+      <p>Original PDF submit karein aur verified PDF status/download alag page par dekhein.</p>
+      <a href="user-pdf-verification.html">Open PDF</a>
     </div>
 
     <div class="card">
