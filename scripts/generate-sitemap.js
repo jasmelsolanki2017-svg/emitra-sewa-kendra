@@ -156,7 +156,7 @@ ${LEGAL_SITEMAP_URLS.map((page) => sitemapEntry({
 `;
 
 const parseLooseDate = (value = "") => {
-  const text = String(value || "").trim();
+  const text = String(value || "").replace(/\bup to\b.*$/i, "").trim();
   if (!text) {
     return null;
   }
@@ -189,7 +189,76 @@ const isoDateOrUndefined = (value = "") => {
 
 const schemaDateOrUndefined = (value = "") => {
   const date = parseLooseDate(value);
-  return date ? date.toISOString().slice(0, 10) : undefined;
+  if (!date) {
+    return undefined;
+  }
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const getRowValue = (row = {}) => row.value ?? row.date ?? row.lastDate ?? row.lastApplyDate ?? row.applicationLastDate ?? row.endDate ?? "";
+
+const findApplicationLastDate = (job = {}) => {
+  const direct = job.applicationLastDate || job.lastApplyDate || job.lastDate;
+  if (direct) {
+    return direct;
+  }
+  const rows = Array.isArray(job.importantDates) ? job.importantDates
+    : (Array.isArray(job.important_dates) ? job.important_dates : []);
+  const match = rows.find((row) => {
+    if (!row || typeof row !== "object") {
+      return false;
+    }
+    const label = String(row.label || row.title || row.name || row.key || row.event || "").toLowerCase();
+    return /(last|end|close|apply\s*online|apply\s*date|fee\s*payment)/i.test(label);
+  });
+  return match ? getRowValue(match) : "";
+};
+
+const isJobPostingCategory = (job = {}) => {
+  const text = [
+    job.category,
+    job.postTarget,
+    job.postType,
+    job.type,
+    job.title,
+    job.slug
+  ].filter(Boolean).join(" ").toLowerCase();
+  return /\b(latest\s*jobs?|recruitment|online\s*form|apprentice|admission)\b/i.test(text)
+    || /latestjob|onlineform/.test(text);
+};
+
+const buildJobPostingSchema = ({ job = {}, title = "", description = "", canonicalUrl = "" }) => {
+  if (!isJobPostingCategory(job)) {
+    return null;
+  }
+  const applicationLastDate = findApplicationLastDate(job);
+  return {
+    "@type": "JobPosting",
+    "@id": `${canonicalUrl}#jobposting`,
+    "title": title || textValue(job.title || "Recruitment Update", "hi"),
+    "description": textValue(job.shortInfo || job.description || description || job.notificationSummary || title || "Recruitment details", "hi"),
+    "datePosted": schemaDateOrUndefined(job.createdAt || job.postDate),
+    "validThrough": schemaDateOrUndefined(applicationLastDate),
+    "employmentType": "FULL_TIME",
+    "hiringOrganization": {
+      "@type": "Organization",
+      "name": textValue(job.organization || job.department || "E-MITRA WALA", "hi")
+    },
+    "jobLocation": {
+      "@type": "Place",
+      "address": {
+        "@type": "PostalAddress",
+        "addressCountry": "IN"
+      }
+    },
+    "baseSalary": {
+      "@type": "MonetaryAmount",
+      "currency": "INR"
+    }
+  };
 };
 
 const buildSeoFields = (job = {}, id = "") => {
@@ -255,7 +324,7 @@ const buildSchemaGraph = ({ id = "", job = {}, canonicalUrl = "" }) => {
   const manualFaqs = currentAffairs ? normalizeCurrentAffairsFaqItems(job.faq) : normalizeFaqItems(job.faq);
   const faqItems = manualFaqs.length ? manualFaqs : (currentAffairs ? [] : buildDefaultFaqItems(job, seo.title));
   const article = {
-    "@type": currentAffairs ? "Article" : ["Article", "JobPosting"],
+    "@type": "Article",
     "@id": `${canonicalUrl}#article`,
     "headline": job.seoTitle || seo.title,
     "title": seo.title,
@@ -266,12 +335,7 @@ const buildSchemaGraph = ({ id = "", job = {}, canonicalUrl = "" }) => {
     "dateModified": isoDateOrUndefined(job.updatedAt) || isoDateOrUndefined(job.createdAt),
     "publisher": publisher
   };
-  if (!currentAffairs) {
-    article.employmentType = job.type || "Online Form";
-    article.datePosted = schemaDateOrUndefined(job.postDate) || schemaDateOrUndefined(job.createdAt);
-    article.validThrough = schemaDateOrUndefined(job.lastApplyDate || job.lastDate);
-    article.hiringOrganization = job.department ? { "@type": "Organization", "name": job.department } : publisher;
-  }
+  const jobPosting = currentAffairs ? null : buildJobPostingSchema({ job, title: seo.title, description: seo.metaDescription, canonicalUrl });
   const breadcrumbSecond = currentAffairs
     ? { name: "Current Affairs", item: `${SITE_BASE_URL}/current-affairs.html` }
     : { name: "Latest Jobs", item: `${SITE_BASE_URL}/#homePortalLatestJobs` };
@@ -288,6 +352,7 @@ const buildSchemaGraph = ({ id = "", job = {}, canonicalUrl = "" }) => {
         ]
       },
       article,
+      jobPosting,
       faqItems.length ? {
         "@type": "FAQPage",
         "@id": `${canonicalUrl}#faq`,
@@ -329,6 +394,10 @@ const buildPremiumSchemaGraph = ({ id = "", job = {}, canonicalUrl = "" }) => {
       "publisher": publisher
     }
   ];
+  const jobPosting = buildJobPostingSchema({ job, title: seo.title, description: seo.metaDescription, canonicalUrl });
+  if (jobPosting) {
+    graph.push(jobPosting);
+  }
   if (faqItems.length) {
     graph.push({
       "@type": "FAQPage",

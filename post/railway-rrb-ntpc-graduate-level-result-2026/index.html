@@ -555,6 +555,29 @@
       if(key==="faqs")return renderFaq(value);
       return renderTable(value);
     }
+    function schemaDate(value){
+      if(!value)return undefined;
+      const numeric=Number(value);
+      const cleaned=String(value).replace(/\bup to\b.*$/i,"").trim();
+      const date=numeric?new Date(numeric):new Date(cleaned);
+      if(Number.isNaN(date.getTime()))return undefined;
+      return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`;
+    }
+    function schemaRowValue(row){return row?.value??row?.date??row?.lastDate??row?.lastApplyDate??row?.applicationLastDate??row?.endDate??"";}
+    function applicationLastDate(data){
+      if(data.applicationLastDate||data.lastApplyDate||data.lastDate)return data.applicationLastDate||data.lastApplyDate||data.lastDate;
+      const rows=Array.isArray(data.importantDates)?data.importantDates:(Array.isArray(data.important_dates)?data.important_dates:[]);
+      const row=rows.find(item=>{const label=String(item?.label||item?.title||item?.name||item?.key||item?.event||"").toLowerCase();return /(last|end|close|apply\s*online|apply\s*date|fee\s*payment)/i.test(label);});
+      return row?schemaRowValue(row):"";
+    }
+    function shouldRenderJobPosting(data){
+      const text=[data.category,data.postTarget,data.postType,data.type,data.title,data.slug].filter(Boolean).join(" ").toLowerCase();
+      return /\b(latest\s*jobs?|recruitment|online\s*form|apprentice|admission)\b/i.test(text)||/latestjob|onlineform/.test(text);
+    }
+    function jobPostingSchema(data,title,description,canonical){
+      if(!shouldRenderJobPosting(data))return null;
+      return {"@context":"https://schema.org","@type":"JobPosting","@id":`${canonical}#jobposting`,title:data.title||title,description:String(data.shortInfo||data.description||description||title),datePosted:schemaDate(data.createdAt||data.postDate),validThrough:schemaDate(applicationLastDate(data)),employmentType:"FULL_TIME",hiringOrganization:{"@type":"Organization",name:String(data.organization||data.department||"E-MITRA WALA")},jobLocation:{"@type":"Place",address:{"@type":"PostalAddress",addressCountry:"IN"}},baseSalary:{"@type":"MonetaryAmount",currency:"INR"}};
+    }
     function renderCard(id,title,html,accent,span=""){return html?`<section id="section-${id}" class="premium-card ${accent||"accent-teal"} ${span||""}"><h2>${escapeHTML(title)}</h2><div class="card-body">${html}</div></section>`:"";}
     function setSeo(data){
       const seo=data.seo||{},title=seo.metaTitle||data.title||"Premium Post";
@@ -564,6 +587,8 @@
       document.querySelector("link[rel='canonical']")?.setAttribute("href",canonical);
       document.querySelectorAll("script[data-schema='premium']").forEach(s=>s.remove());
       addSchema({"@context":"https://schema.org","@type":"Article",headline:data.title||title,description:seo.metaDescription||data.shortInfo||data.description||title,url:canonical,datePublished:data.createdAt?new Date(data.createdAt).toISOString():undefined,dateModified:data.updatedAt?new Date(data.updatedAt).toISOString():undefined,publisher:{"@type":"Organization",name:"E-MITRA WALA",url:location.origin+"/"}});
+      const jobSchema=jobPostingSchema(data,title,seo.metaDescription||data.shortInfo||data.description||title,canonical);
+      if(jobSchema)addSchema(jobSchema);
       const faq=getSection(data,"faqs");
       if(Array.isArray(faq)&&faq.length)addSchema({"@context":"https://schema.org","@type":"FAQPage",mainEntity:faq.map(f=>({"@type":"Question",name:String(f.question||f.q||""),acceptedAnswer:{"@type":"Answer",text:String(f.answer||f.a||"")}})).filter(f=>f.name&&f.acceptedAnswer.text)});
     }
