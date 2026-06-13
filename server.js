@@ -92,10 +92,17 @@ const FORMS_FIELDS_CONFIG_PATH = path.join(__dirname, "emitra-offline-form-fill"
 const FORMS_TEMPLATE_UPLOAD_DIR = path.join(__dirname, "emitra-offline-form-fill", "assets", "uploaded-templates");
 const PDF_SIGNATURE_TEMP_DIR = path.join(__dirname, ".tmp", "pdf-signature-verification");
 const PDF_SIGNATURE_REPORT_DIR = path.join(PDF_SIGNATURE_TEMP_DIR, "reports");
-const PDF_VERIFICATION_BUCKET = String(process.env.SUPABASE_PDF_VERIFICATION_BUCKET || "pdf-verification").trim();
-const SUPABASE_URL = String(process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || "").trim();
+const DEFAULT_SUPABASE_URL = "https://wjzutgwmdrtlhmgebmua.supabase.co";
+const DEFAULT_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_MbH1WNIeOHFkVqI13peLpg_TFgzfFjW";
+const hasExplicitSupabaseStorageConfig = Boolean(
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.SUPABASE_SERVICE_KEY ||
+  process.env.SUPABASE_PDF_VERIFICATION_BUCKET
+);
+const PDF_VERIFICATION_BUCKET = String(process.env.SUPABASE_PDF_VERIFICATION_BUCKET || (hasExplicitSupabaseStorageConfig ? "pdf-verification" : "user-files")).trim();
+const SUPABASE_URL = String(process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || DEFAULT_SUPABASE_URL).trim();
 const SUPABASE_SERVICE_ROLE_KEY = String(process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || "").trim();
-const SUPABASE_PUBLISHABLE_KEY = String(process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || "").trim();
+const SUPABASE_PUBLISHABLE_KEY = String(process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || DEFAULT_SUPABASE_PUBLISHABLE_KEY).trim();
 const PDF_VERIFICATION_LOCAL_DIR = path.join(__dirname, ".uploads", "pdf-verification");
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "jasmelsolanki@gmail.com";
 const SITE_BASE_URL = extractUrl(process.env.SITE_BASE_URL, "https://emitrawala.online");
