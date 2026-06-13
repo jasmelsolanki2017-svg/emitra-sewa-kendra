@@ -621,7 +621,7 @@
     }
     function renderAdminEditor(){
       if(!adminAllowed)return"";
-      return `<div class="premium-admin-editor" role="region" aria-label="Admin live editor"><div><strong>Admin Live Edit</strong><small>${adminEditMode?"Yellow fields edit karein, phir Save Changes dabayein.":"Edit Live dabakar isi page par post update karein."}</small><div class="premium-admin-status" id="premiumAdminStatus"></div></div><div class="premium-admin-actions"><button type="button" onclick="enablePremiumLiveEdit()" ${adminEditMode?"disabled":""}>Edit Live</button><button type="button" class="save" onclick="savePremiumLiveEdit()" ${adminEditMode?"":"disabled"}>Save Changes</button><button type="button" class="cancel" onclick="cancelPremiumLiveEdit()" ${adminEditMode?"":"disabled"}>Cancel</button><a class="action-btn website" href="premium-admin.html" target="_blank" rel="noopener noreferrer" style="min-height:auto;padding:10px 13px;font-size:13px">Admin Panel</a></div></div>`;
+      return `<div class="premium-admin-editor" role="region" aria-label="Admin live editor"><div><strong>Admin Live Edit</strong><small>${adminEditMode?"Yellow fields edit karein, phir Save Changes dabayein.":"Edit Live dabakar isi page par post update karen."}</small><div class="premium-admin-status" id="premiumAdminStatus"></div></div><div class="premium-admin-actions"><button type="button" onclick="enablePremiumLiveEdit()" ${adminEditMode?"disabled":""}>Edit Live</button><button type="button" class="save" onclick="savePremiumLiveEdit()" ${adminEditMode?"":"disabled"}>Save Changes</button><button type="button" class="cancel" onclick="cancelPremiumLiveEdit()" ${adminEditMode?"":"disabled"}>Cancel</button><button type="button" onclick="sharePremiumToWhatsapp()">WhatsApp</button><button type="button" onclick="sendPremiumToTelegram()">Telegram</button><a class="action-btn website" href="premium-admin.html" target="_blank" rel="noopener noreferrer" style="min-height:auto;padding:10px 13px;font-size:13px">Admin Panel</a></div></div>`;
     }
     function renderPremiumPost(data){
       data={...data};
@@ -715,6 +715,44 @@
         return await response.json().catch(()=>({ok:response.ok}));
       }catch(error){return {ok:false,error:error.message}}
     }
+    function buildPremiumShareText(data={}){
+      const title=data.title||currentPostData?.title||"Premium Update";
+      const shortInfo=data.shortInfo||currentPostData?.shortInfo||"";
+      const lastDate=data.lastDate||data.lastApplyDate||data.importantDates?.lastDate||data.importantDates?.applicationLastDate||data.importantDates?.feeLastDate||"";
+      const url=publicPremiumUrl(data.slug||currentPostSlug||requestedSlug||"");
+      const lines=[`📢 *${title}*`,shortInfo?`\n${shortInfo}`:"",lastDate?`⏳ Last Date: ${lastDate}`:"","",`🔗 Details / Apply:`,url,"","🌐 E-MITRA WALA"];
+      return lines.filter(Boolean).join("\n");
+    }
+    async function copyTextToClipboard(text=""){
+      try{
+        if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(text);return true;}
+      }catch(error){}
+      return false;
+    }
+    window.sharePremiumToWhatsapp=async()=>{
+      if(!adminAllowed){alert("Admin login required.");return}
+      const data=currentPostData||editorDraft||{};
+      const text=buildPremiumShareText(data);
+      const copied=await copyTextToClipboard(text);
+      setAdminStatus(copied?"WhatsApp post copy ho gaya. WhatsApp me paste/send kar do.":"Copy nahi hua, WhatsApp share open ho raha hai.",copied?"success":"error");
+      if(!copied){window.open(`https://wa.me/?text=${encodeURIComponent(text)}`,'_blank','noopener,noreferrer')}
+    };
+    window.sendPremiumToTelegram=async()=>{
+      if(!adminAllowed){alert("Admin login required.");return}
+      const data=currentPostData||editorDraft||{};
+      const text=buildPremiumShareText(data);
+      try{
+        setAdminStatus("Telegram post bheji ja rahi hai...");
+        const token=await auth.currentUser?.getIdToken();
+        const response=await fetch("/admin/auto-job-checker/share/send",{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${token}`},body:JSON.stringify({channel:"telegram",jobId:`premium-${data.slug||currentPostSlug||requestedSlug||Date.now()}`,draft:{...data,sourceLink:publicPremiumUrl(data.slug||currentPostSlug||requestedSlug||""),detailLink:publicPremiumUrl(data.slug||currentPostSlug||requestedSlug||""),whatsappPostText:text,telegramPostText:text}})});
+        const result=await response.json().catch(()=>({}));
+        if(!response.ok||result.ok===false)throw new Error(result.error||`HTTP ${response.status}`);
+        setAdminStatus("Telegram par premium post send ho gayi.","success");
+      }catch(error){
+        setAdminStatus("Telegram send nahi hua: "+error.message,"error");
+        window.open(`https://t.me/share/url?url=${encodeURIComponent(publicPremiumUrl(data.slug||currentPostSlug||requestedSlug||""))}&text=${encodeURIComponent(text)}`,'_blank','noopener,noreferrer');
+      }
+    };
     window.enablePremiumLiveEdit=()=>{
       if(!adminAllowed){alert("Admin login required.");return}
       adminEditMode=true;
@@ -757,6 +795,10 @@
       if(!adminAllowed)adminEditMode=false;
       if(currentPostData&&isFilled(currentPostData))renderPremiumPost(currentPostData);
     });
+    function renderEmptyPremiumState(message="No premium post selected."){
+      root.innerHTML=`<div class="message">${escapeHTML(message)}</div>`;
+      mobileSticky.innerHTML="";
+    }
     async function loadWithCache(){
       const staticPost=window.__EMITRA_STATIC_PREMIUM_POST__;
       if(staticPost&&isFilled(staticPost)){
@@ -764,7 +806,7 @@
         return;
       }
       if(!requestedSlug||requestedSlug===samplePremiumPost.slug){
-        renderPremiumPost(samplePremiumPost);
+        renderEmptyPremiumState("No premium post selected. Admin panel se sahi post choose karein.");
         return;
       }
       const cached=readCachedPost(requestedSlug);
