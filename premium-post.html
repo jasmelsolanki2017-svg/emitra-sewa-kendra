@@ -797,7 +797,8 @@
       }catch(error){return {ok:false,error:error.message}}
     }
     const adminServerStorageKey="emitraAdminServerUrl",defaultAdminServerUrl="https://emitra-sewa-kendra.onrender.com";
-    const adminApiBase=()=>{const saved=String(localStorage.getItem(adminServerStorageKey)||"").trim().replace(/\/+$/,"");if(saved)return saved;if(location.protocol==="file:"||/^emitrawala\.online$|github\.io$/i.test(location.hostname))return defaultAdminServerUrl;return ""};
+    const isStaticAdminHost=(url="")=>{try{return /^emitrawala\.online$|github\.io$/i.test(new URL(url,location.origin).hostname)}catch{return false}};
+    const adminApiBase=()=>{const saved=String(localStorage.getItem(adminServerStorageKey)||"").trim().replace(/\/+$/,"");if(saved&&!isStaticAdminHost(saved))return saved;if(location.protocol==="file:"||/^emitrawala\.online$|github\.io$/i.test(location.hostname))return defaultAdminServerUrl;return ""};
     const adminApiUrl=(path)=>{const base=adminApiBase();return base?base+path:path};
     function buildPremiumShareText(data={}){
       const title=data.title||currentPostData?.title||"Premium Update";
