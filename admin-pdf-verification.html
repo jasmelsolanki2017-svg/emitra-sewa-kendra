@@ -36,9 +36,10 @@
     const firebaseConfig={apiKey:"AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",authDomain:"my-website-73785.firebaseapp.com",databaseURL:"https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app/",projectId:"my-website-73785",storageBucket:"my-website-73785.firebasestorage.app",messagingSenderId:"854088341990",appId:"1:854088341990:web:3211d4ef9fe4b78d025e27"};
     const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getDatabase(app),adminEmail="jasmelsolanki@gmail.com";
     const serverKey="emitraAdminServerUrl",defaultServer="https://emitra-sewa-kendra.onrender.com";
-    let adminAllowed=false,requests=[],topPdfRequests=[],userPdfRequests=[];
+    let adminAllowed=false,requests=[],topPdfRequests=[],userPdfRequests=[],selectedUserKey="";
     const $=(id)=>document.getElementById(id);
     const escapeHTML=(value="")=>String(value).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+    const escapeJs=(value="")=>String(value).replace(/\\/g,"\\\\").replace(/'/g,"\\'");
     const apiBase=()=>String(localStorage.getItem(serverKey)||defaultServer).trim().replace(/\/+$/,"")||defaultServer;
     const apiUrl=(path)=>apiBase()+path;
     const readApi=async(response)=>{const text=await response.text();let data={};try{data=text?JSON.parse(text):{}}catch{throw new Error(text.slice(0,180)||"Server response invalid")}if(!response.ok||data.ok===false||data.success===false)throw new Error(data.error||data.message||`Request failed (${response.status})`);return data};
@@ -54,15 +55,26 @@
       requests=[...byId.values()].sort((a,b)=>Number(b.data.createdAt||0)-Number(a.data.createdAt||0));
       render();
     };
+    const getUserKey=(data={})=>data.userUid||data.userEmail||data.userName||"unknown-user";
+    const getUserLabel=(data={})=>data.userName||data.userEmail||data.userUid||"User";
+    const getGroupedUsers=()=>{const map=new Map();requests.forEach(({data})=>{const key=getUserKey(data),label=getUserLabel(data);const row=map.get(key)||{key,label,email:data.userEmail||"",count:0,pending:0,latest:0};row.count+=1;if(String(data.status||"Pending").toLowerCase()!=="verified")row.pending+=1;row.latest=Math.max(row.latest,Number(data.createdAt||0));map.set(key,row)});return [...map.values()].sort((a,b)=>b.pending-a.pending||b.latest-a.latest||a.label.localeCompare(b.label))};
+    window.selectPdfUser=(key="")=>{selectedUserKey=key;render()};
+    window.showPdfUserList=()=>{selectedUserKey="";render()};
     const render=()=>{
       const list=$("requestList");
       if(!requests.length){
         list.innerHTML='<div class="empty">Abhi koi PDF verification request nahi hai.</div>';
         return;
       }
-      list.innerHTML=requests.map(({id,data})=>{
+      if(!selectedUserKey){
+        list.innerHTML=`<div class="user-list">${getGroupedUsers().map((user)=>`<button type="button" class="user-card" onclick="selectPdfUser('${escapeJs(user.key)}')"><strong>${escapeHTML(user.label)}</strong>${user.email?`<small>${escapeHTML(user.email)}</small>`:""}<span>${user.count} PDF${user.pending?` | ${user.pending} Pending`:""}</span></button>`).join("")}</div>`;
+        return;
+      }
+      const selectedRows=requests.filter(({data})=>getUserKey(data)===selectedUserKey);
+      const selectedUser=selectedRows[0]?.data||{};
+      list.innerHTML=`<button type="button" class="back-btn" onclick="showPdfUserList()">Back to Users</button><div class="status">Showing: ${escapeHTML(getUserLabel(selectedUser))} (${selectedRows.length} PDF)</div>`+selectedRows.map(({id,data})=>{
         const verified=String(data.status||"").toLowerCase()==="verified";
-        const userLabel=data.userName||data.userEmail||data.userUid||"User";
+        const userLabel=getUserLabel(data);
         const folderLabel=[data.uploadDateFolder||"Old Upload",data.userFolderName||userLabel].filter(Boolean).join(" / ");
         return `<div class="row ${verified?"verified":""}"><div><strong>${escapeHTML(data.fileName||"Certificate PDF")}</strong><small>Request ID: ${escapeHTML(id)}</small><small>User: ${escapeHTML(userLabel)}</small><small>User Email: ${escapeHTML(data.userEmail||"")}</small><small>Folder: ${escapeHTML(folderLabel)}</small><small>Created: ${data.createdAt?escapeHTML(new Date(Number(data.createdAt)).toLocaleString("hi-IN")):"Recently"}</small><small>Note: ${escapeHTML(data.adminNote||"Pending manual verification")}</small><span class="badge">${escapeHTML(data.status||"Pending")}</span></div><div class="actions"><button class="download" type="button" onclick="downloadPdf('${escapeHTML(id)}','original')">Download Original PDF</button>${verified?`<button class="download" type="button" onclick="downloadPdf('${escapeHTML(id)}','verified')">Download Verified PDF</button>`:""}<input id="file-${escapeHTML(id)}" type="file" accept="application/pdf,.pdf"><textarea id="note-${escapeHTML(id)}" placeholder="Admin note">Verified PDF uploaded by admin.</textarea><button class="upload" type="button" onclick="uploadVerifiedPdf('${escapeHTML(id)}')">Upload Verified PDF</button><button type="button" onclick="deletePdfRequest('${escapeHTML(id)}')">Delete PDFs</button></div></div>`;
       }).join("");
