@@ -4932,6 +4932,17 @@ app.post("/api/settings", async (req, res) => {
     if (Object.prototype.hasOwnProperty.call(incoming, "siteTheme")) {
       incoming.siteTheme = String(incoming.siteTheme || "premium").toLowerCase() === "classic" ? "classic" : "premium";
     }
+    if (Object.prototype.hasOwnProperty.call(incoming, "toolVisibility")) {
+      const visibility = incoming.toolVisibility && typeof incoming.toolVisibility === "object" && !Array.isArray(incoming.toolVisibility)
+        ? incoming.toolVisibility
+        : {};
+      incoming.toolVisibility = Object.fromEntries(Object.entries(visibility)
+        .map(([key, value]) => [
+          String(key || "").trim().toLowerCase().replace(/[^a-z0-9_-]/g, ""),
+          String(value || "visible").toLowerCase() === "hidden" ? "hidden" : "visible"
+        ])
+        .filter(([key]) => key));
+    }
     const current = readSettingsFile();
     const updated = { ...current, ...incoming };
     const ok = writeSettingsFile(updated);

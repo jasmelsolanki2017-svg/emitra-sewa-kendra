@@ -1,5 +1,6 @@
 {
   "allowVisitors": true,
   "visitorCounterVisibility": "public",
-  "siteTheme": "premium"
+  "siteTheme": "premium",
+  "toolVisibility": {}
 }

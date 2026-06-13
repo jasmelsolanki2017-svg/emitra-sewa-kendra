@@ -58,6 +58,16 @@ nav a:hover,nav a.active{color:#ffcf75}
 .hero p{color:#fff1df;font-weight:600;max-width:860px}
 main{max-width:1180px;margin:auto;padding:22px 3% 44px}
 .privacy-note{background:#fff7ed;border:1px solid #fed7aa;border-left:5px solid var(--orange);border-radius:8px;padding:12px 14px;margin-bottom:16px;color:#7c2d12;font-weight:800}
+.admin-tool-panel{display:none;background:#eef8ff;border:1px solid #b7d8f4;border-left:5px solid var(--blue);border-radius:8px;padding:13px 14px;margin-bottom:16px;box-shadow:0 8px 24px rgba(8,31,74,.07)}
+.admin-tool-panel.show{display:block}
+.admin-tool-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.admin-tool-head h2{color:var(--blue);font-size:18px;line-height:1.25}
+.admin-tool-head p{color:var(--muted);font-size:12px;font-weight:800;margin-top:2px}
+.admin-tool-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.admin-tool-row{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#fff;border:1px solid var(--line);border-radius:7px;padding:8px 9px}
+.admin-tool-row span{font-size:12px;font-weight:900;color:var(--deep)}
+.admin-tool-row select{width:auto;min-width:95px;padding:7px 8px;font-size:12px;font-weight:900}
+.admin-tool-status{color:var(--blue);font-size:12px;font-weight:900;min-height:18px}
 .tools-layout{display:grid;grid-template-columns:280px minmax(0,1fr);gap:18px;align-items:start}
 .tool-index{position:sticky;top:86px;background:var(--surface);border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 24px rgba(8,31,74,.07);overflow:hidden}
 .tool-index h2{font-size:18px;background:var(--blue);color:#fff;padding:12px 14px;border-bottom:3px solid var(--orange)}
@@ -66,6 +76,9 @@ main{max-width:1180px;margin:auto;padding:22px 3% 44px}
 .tool-stack{display:grid;gap:16px}
 .tool-card{display:none;background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--orange);border-radius:8px;box-shadow:0 8px 24px rgba(8,31,74,.07);padding:16px;scroll-margin-top:92px}
 .tool-card.active{display:block}
+.tool-card.admin-hidden-tool{border-top-color:#94a3b8;opacity:.72}
+.tool-index a.is-hidden-tool,.nav-tools-menu a.is-hidden-tool{display:none}
+.admin-mode .tool-index a.is-hidden-tool,.admin-mode .nav-tools-menu a.is-hidden-tool{display:flex;opacity:.62}
 .tool-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
 .tool-head h2{color:var(--blue);font-size:clamp(19px,3vw,24px);line-height:1.2}
 .tool-head p{color:var(--muted);font-weight:600;font-size:13px;margin-top:3px}
@@ -92,8 +105,8 @@ button.danger{background:var(--red)}
 .qr-preview canvas,.qr-preview img{image-rendering:pixelated}
 footer{background:var(--blue);color:white;text-align:center;padding:22px 6%;margin-top:20px}
 footer a{color:#ffcf75;text-decoration:none;font-weight:800;margin:0 7px;display:inline-block}
-@media(max-width:920px){.tools-layout{grid-template-columns:1fr}.tool-index{position:static}.tool-index div{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.preview-grid{grid-template-columns:1fr}}
-@media(max-width:620px){nav{flex-direction:column;align-items:flex-start;padding:12px 4%}nav ul{justify-content:flex-start;gap:12px}.nav-tools{width:100%}.nav-tools-menu{position:static;width:100%;margin-top:8px}.logo img{width:170px;max-width:74vw}.hero{padding:26px 4%}main{padding:16px 3%}.tool-card{padding:13px}.tool-head{display:block}.badge{display:inline-flex;margin-top:8px}.form-grid{grid-template-columns:1fr}.tool-index div{grid-template-columns:1fr}.actions>*{width:100%}}
+@media(max-width:920px){.tools-layout{grid-template-columns:1fr}.tool-index{position:static}.tool-index div{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.preview-grid{grid-template-columns:1fr}.admin-tool-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){nav{flex-direction:column;align-items:flex-start;padding:12px 4%}nav ul{justify-content:flex-start;gap:12px}.nav-tools{width:100%}.nav-tools-menu{position:static;width:100%;margin-top:8px}.logo img{width:170px;max-width:74vw}.hero{padding:26px 4%}main{padding:16px 3%}.tool-card{padding:13px}.tool-head{display:block}.badge{display:inline-flex;margin-top:8px}.form-grid{grid-template-columns:1fr}.tool-index div{grid-template-columns:1fr}.actions>*{width:100%}.admin-tool-list{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -133,6 +146,16 @@ footer a{color:#ffcf75;text-decoration:none;font-weight:800;margin:0 7px;display
 
 <main>
   <div class="privacy-note"><i class="fa-solid fa-lock"></i> Privacy: selected files page refresh par clear ho jati hain. Processing sirf current browser tab ki memory me hoti hai.</div>
+  <section class="admin-tool-panel" id="adminToolPanel" aria-label="Admin tool visibility controls">
+    <div class="admin-tool-head">
+      <div>
+        <h2>Admin Tool Visibility</h2>
+        <p>Yahan se public tools hide/unhide karein. Admin ko hidden tools manage karne ke liye dikhte rahenge.</p>
+      </div>
+      <div class="admin-tool-status" id="adminToolStatus">Checking admin login...</div>
+    </div>
+    <div class="admin-tool-list" id="adminToolList"></div>
+  </section>
   <div class="tools-layout">
     <aside class="tool-index" aria-label="Free tools list">
       <h2>All Free Tools</h2>
@@ -322,12 +345,105 @@ const $ = (id) => document.getElementById(id);
 const toKB = (bytes) => (bytes / 1024).toFixed(1);
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 const extForMime = (mime) => ({ "image/jpeg":"jpg", "image/png":"png", "image/webp":"webp", "application/pdf":"pdf" }[mime] || "file");
+const ADMIN_EMAIL = "jasmelsolanki@gmail.com";
+const DEFAULT_ADMIN_SERVER_URL = "https://emitra-sewa-kendra.onrender.com";
+let toolVisibility = {};
+let adminToolMode = false;
+let adminAuthContext = null;
+
+function settingsUrl(path = "/api/settings"){
+  if(location.protocol === "file:" || /^emitrawala\.online$|github\.io$/i.test(location.hostname)){
+    return DEFAULT_ADMIN_SERVER_URL + path;
+  }
+  return path;
+}
+
+function normalizeToolVisibility(value){
+  const result = {};
+  if(value && typeof value === "object" && !Array.isArray(value)){
+    Object.keys(value).forEach((key) => {
+      const id = String(key || "").trim().toLowerCase().replace(/[^a-z0-9_-]/g, "");
+      if(id){ result[id] = String(value[key] || "visible").toLowerCase() === "hidden" ? "hidden" : "visible"; }
+    });
+  }
+  return result;
+}
+
+function isToolHidden(id){
+  return toolVisibility[id] === "hidden";
+}
+
+function toolTitle(card){
+  const heading = card.querySelector("h2");
+  return heading ? heading.textContent.trim() : card.id;
+}
+
+function linkToolId(link){
+  const href = link.getAttribute("href") || "";
+  if(href.startsWith("#")){ return href.slice(1); }
+  if(/emitra-offline-form-fill\/?$/i.test(href)){ return "emitra-offline-form-fill"; }
+  return "";
+}
+
+function applyToolVisibility(){
+  document.body.classList.toggle("admin-mode", adminToolMode);
+  document.querySelectorAll(".tool-card[id]").forEach((card) => {
+    const hidden = isToolHidden(card.id);
+    card.classList.toggle("admin-hidden-tool", hidden && adminToolMode);
+    if(!adminToolMode && hidden){
+      card.classList.remove("active");
+      card.hidden = true;
+    }
+  });
+  document.querySelectorAll(".tool-index a, .nav-tools-menu a").forEach((link) => {
+    const id = linkToolId(link);
+    const hidden = id && isToolHidden(id);
+    link.classList.toggle("is-hidden-tool", Boolean(hidden));
+    if(!adminToolMode && hidden && link.classList.contains("active")){
+      link.classList.remove("active");
+    }
+  });
+}
+
+async function loadToolSettings(){
+  try{
+    const response = await fetch(settingsUrl(), { cache:"no-store" });
+    const data = await response.json().catch(() => ({}));
+    if(!response.ok || data.ok === false){ throw new Error(data.error || "Settings load failed"); }
+    toolVisibility = normalizeToolVisibility(data.settings && data.settings.toolVisibility);
+  }catch(error){
+    toolVisibility = {};
+  }
+  applyToolVisibility();
+  openToolFromHash(location.hash || "#emitra-offline-form-fill", false);
+}
+
+async function saveToolVisibility(id, value){
+  if(!adminAuthContext || !adminAuthContext.auth.currentUser){ throw new Error("Admin login missing"); }
+  const nextVisibility = { ...toolVisibility, [id]: value === "hidden" ? "hidden" : "visible" };
+  const token = await adminAuthContext.auth.currentUser.getIdToken();
+  const response = await fetch(settingsUrl(), {
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "Authorization":"Bearer " + token
+    },
+    body:JSON.stringify({ toolVisibility: nextVisibility })
+  });
+  const data = await response.json().catch(() => ({}));
+  if(!response.ok || data.ok === false){ throw new Error(data.error || "Settings save failed"); }
+  toolVisibility = normalizeToolVisibility(data.settings && data.settings.toolVisibility);
+  applyToolVisibility();
+  openToolFromHash(location.hash || "#emitra-offline-form-fill", false);
+}
 
 function openToolFromHash(hash, updateUrl = true){
   const cards = Array.from(document.querySelectorAll(".tool-card[id]"));
   if(!cards.length){ return; }
   const requestedId = String(hash || "").replace(/^#/, "");
-  const target = cards.find((card) => card.id === requestedId) || cards[0];
+  const visibleCards = adminToolMode ? cards : cards.filter((card) => !isToolHidden(card.id));
+  const candidates = visibleCards.length ? visibleCards : cards;
+  const target = candidates.find((card) => card.id === requestedId) || candidates[0];
   document.querySelectorAll(".tool-index a[href^='#']").forEach((link) => {
     link.classList.toggle("active", link.getAttribute("href") === `#${target.id}`);
   });
@@ -346,10 +462,12 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll(".tool-index a[href^='#'], .nav-tools-menu a[href^='#']").forEach((link) => {
     link.addEventListener("click", (event) => {
       event.preventDefault();
+      const id = linkToolId(link);
+      if(!adminToolMode && id && isToolHidden(id)){ return; }
       openToolFromHash(link.getAttribute("href"));
     });
   });
-  openToolFromHash(location.hash || "#emitra-offline-form-fill", false);
+  loadToolSettings();
 });
 
 window.addEventListener("hashchange", () => openToolFromHash(location.hash, false));
@@ -700,12 +818,93 @@ function clearAgeTool(){
   $("agePreview").textContent = "Age result";
   setStatus("ageStatus", "");
 }
+
+function setAdminToolStatus(text){
+  const status = $("adminToolStatus");
+  if(status){ status.textContent = text || ""; }
+}
+
+function renderAdminToolPanel(){
+  const panel = $("adminToolPanel");
+  const list = $("adminToolList");
+  if(!panel || !list){ return; }
+  panel.classList.toggle("show", adminToolMode);
+  if(!adminToolMode){ return; }
+  const cards = Array.from(document.querySelectorAll(".tool-card[id]"));
+  list.innerHTML = cards.map((card) => {
+    const value = isToolHidden(card.id) ? "hidden" : "visible";
+    return `<label class="admin-tool-row" for="toolVisibility-${card.id}">
+      <span>${toolTitle(card)}</span>
+      <select id="toolVisibility-${card.id}" data-tool-visibility="${card.id}">
+        <option value="visible"${value === "visible" ? " selected" : ""}>Show</option>
+        <option value="hidden"${value === "hidden" ? " selected" : ""}>Hide</option>
+      </select>
+    </label>`;
+  }).join("");
+  list.querySelectorAll("[data-tool-visibility]").forEach((select) => {
+    select.addEventListener("change", async () => {
+      const id = select.dataset.toolVisibility;
+      const value = select.value === "hidden" ? "hidden" : "visible";
+      select.disabled = true;
+      setAdminToolStatus("Saving...");
+      try{
+        await saveToolVisibility(id, value);
+        renderAdminToolPanel();
+        setAdminToolStatus("Saved");
+      }catch(error){
+        select.value = isToolHidden(id) ? "hidden" : "visible";
+        setAdminToolStatus("Failed: " + String(error.message || error));
+      }finally{
+        select.disabled = false;
+      }
+    });
+  });
+}
+
+async function initAdminToolControls(){
+  const panel = $("adminToolPanel");
+  if(!panel){ return; }
+  setAdminToolStatus("Checking admin login...");
+  try{
+    const [{ initializeApp }, authModule] = await Promise.all([
+      import("https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js"),
+      import("https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js")
+    ]);
+    const app = initializeApp({
+      apiKey: "AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",
+      authDomain: "my-website-73785.firebaseapp.com",
+      databaseURL: "https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app/",
+      projectId: "my-website-73785",
+      storageBucket: "my-website-73785.firebasestorage.app",
+      messagingSenderId: "854088341990",
+      appId: "1:854088341990:web:3211d4ef9fe4b78d025e27"
+    });
+    const auth = authModule.getAuth(app);
+    await authModule.setPersistence(auth, authModule.browserLocalPersistence).catch(() => {});
+    adminAuthContext = { auth, authModule };
+    authModule.onAuthStateChanged(auth, (user) => {
+      adminToolMode = Boolean(user && String(user.email || "").toLowerCase() === ADMIN_EMAIL.toLowerCase());
+      applyToolVisibility();
+      renderAdminToolPanel();
+      if(adminToolMode){
+        setAdminToolStatus("Admin verified: " + user.email);
+      }else{
+        setAdminToolStatus("");
+      }
+      openToolFromHash(location.hash || "#emitra-offline-form-fill", false);
+    });
+  }catch(error){
+    setAdminToolStatus("Admin check failed");
+  }
+}
+
 window.addEventListener("beforeunload", () => {
   activeUrls.forEach((url) => URL.revokeObjectURL(url));
   activeUrls.clear();
 });
 window.addEventListener("DOMContentLoaded", () => {
   $("ageOn").value = new Date().toISOString().slice(0,10);
+  initAdminToolControls();
 });
 </script>
 </body>
