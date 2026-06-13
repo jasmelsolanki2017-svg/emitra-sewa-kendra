@@ -4519,7 +4519,7 @@ const normalizeLatestUpdate = (item={}) => {
 const source=typeof item === "string" ? {title:item,text:item} : (item && typeof item === "object" ? item : {});
 const title=String(source.title || source.jobTitle || source.postTitle || source.heading || source.name || source.text || source.label || "").trim();
 const text=String(source.text || source.description || source.summary || title || "").trim();
-const slug=String(source.slug || source.postSlug || source.post_id || source.postId || source.id || source.sourcePostSlug || "").trim();
+const slug=String(source.slug || source.postSlug || source.post_slug || source.premiumPostSlug || source.sourcePostSlug || source.post_id || source.postId || source.id || "").trim();
 const priority=Number.isFinite(Number(source.priority)) ? Number(source.priority) : 0;
 const isPinned=source.isPinned===true || String(source.isPinned||"").toLowerCase()==="true" || Number(source.isPinned)===1;
 const isBreaking=source.isBreaking===true || String(source.isBreaking||"").toLowerCase()==="true" || Number(source.isBreaking)===1;
@@ -4527,8 +4527,9 @@ const isActive=String(source.isActive || source.active || "true").toLowerCase() 
 const dateValue=source.date || source.updatedAt || source.createdAt || source.timestamp || source.postDate || source.publishedAt || source.postedAt || "";
 const createdAt=Number(source.createdAt || source.updatedAt || source.timestamp || 0);
 const resolvedTitle=title || text || "Latest Update";
-const resolvedUrl=makePostUrl({...source,slug});
-return { ...source, title:resolvedTitle, text:text || resolvedTitle, slug, url:resolvedUrl, link:resolvedUrl, postUrl:resolvedUrl, category:String(source.category || source.type || source.tag || "").trim(), date:dateValue, createdAt:createdAt || (dateValue ? Date.parse(dateValue) : 0), priority, isPinned, isBreaking, isActive };
+const inferredSlug=slug || String(source.sourceSlug || "").trim();
+const resolvedUrl=makePostUrl({...source,slug:inferredSlug});
+return { ...source, title:resolvedTitle, text:text || resolvedTitle, slug:inferredSlug, url:resolvedUrl, link:resolvedUrl, postUrl:resolvedUrl, category:String(source.category || source.type || source.tag || "").trim(), date:dateValue, createdAt:createdAt || (dateValue ? Date.parse(dateValue) : 0), priority, isPinned, isBreaking, isActive };
 };
 
 function getLatestUpdates(posts, limit=3) {
