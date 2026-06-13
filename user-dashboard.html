@@ -1890,9 +1890,16 @@ body.dark-mode .nav-logo img {
 
   const userApiServerStorageKey = "emitraAdminServerUrl";
   const defaultUserApiServerUrl = "https://emitra-sewa-kendra.onrender.com";
+  const isStaticApiHost = (url = "") => {
+    try{
+      return /^emitrawala\.online$|github\.io$/i.test(new URL(url, location.origin).hostname);
+    }catch(_error){
+      return false;
+    }
+  };
   const getUserApiBaseUrl = () => {
     const saved = String(localStorage.getItem(userApiServerStorageKey) || "").trim().replace(/\/+$/, "");
-    if(saved){ return saved; }
+    if(saved && !isStaticApiHost(saved)){ return saved; }
     if(location.protocol === "file:" || /^emitrawala\.online$|github\.io$/i.test(location.hostname)){
       return defaultUserApiServerUrl;
     }

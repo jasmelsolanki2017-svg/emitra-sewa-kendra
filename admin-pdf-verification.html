@@ -36,11 +36,12 @@
     const firebaseConfig={apiKey:"AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",authDomain:"my-website-73785.firebaseapp.com",databaseURL:"https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app/",projectId:"my-website-73785",storageBucket:"my-website-73785.firebasestorage.app",messagingSenderId:"854088341990",appId:"1:854088341990:web:3211d4ef9fe4b78d025e27"};
     const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getDatabase(app),adminEmail="jasmelsolanki@gmail.com";
     const serverKey="emitraAdminServerUrl",defaultServer="https://emitra-sewa-kendra.onrender.com";
-    let adminAllowed=false,requests=[],topPdfRequests=[],userPdfRequests=[],selectedUserKey="";
+    let adminAllowed=false,requests=[],topPdfRequests=[],userPdfRequests=[],serverPdfRequests=[],selectedUserKey="";
     const $=(id)=>document.getElementById(id);
     const escapeHTML=(value="")=>String(value).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
     const escapeJs=(value="")=>String(value).replace(/\\/g,"\\\\").replace(/'/g,"\\'");
-    const apiBase=()=>String(localStorage.getItem(serverKey)||defaultServer).trim().replace(/\/+$/,"")||defaultServer;
+    const isStaticApiHost=(url="")=>{try{return /^emitrawala\.online$|github\.io$/i.test(new URL(url,location.origin).hostname)}catch{return false}};
+    const apiBase=()=>{const saved=String(localStorage.getItem(serverKey)||"").trim().replace(/\/+$/,"");if(saved&&!isStaticApiHost(saved))return saved;return defaultServer};
     const apiUrl=(path)=>apiBase()+path;
     const readApi=async(response)=>{const text=await response.text();let data={};try{data=text?JSON.parse(text):{}}catch{throw new Error(text.slice(0,180)||"Server response invalid")}if(!response.ok||data.ok===false||data.success===false)throw new Error(data.error||data.message||`Request failed (${response.status})`);return data};
     const apiJson=async(path,payload={})=>{const token=await auth.currentUser.getIdToken();const response=await fetch(apiUrl(path),{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},body:JSON.stringify(payload)});return readApi(response)};
@@ -48,12 +49,24 @@
     const setStatus=(text)=>{$("adminStatus").innerText=text};
     const syncPdfRequests=()=>{
       const byId=new Map();
-      [...topPdfRequests,...userPdfRequests].forEach((item)=>{
+      [...topPdfRequests,...userPdfRequests,...serverPdfRequests].forEach((item)=>{
         if(!item?.id)return;
         byId.set(item.id,{id:item.id,data:{...(byId.get(item.id)?.data||{}),...(item.data||{})}});
       });
       requests=[...byId.values()].sort((a,b)=>Number(b.data.createdAt||0)-Number(a.data.createdAt||0));
       render();
+    };
+    const refreshPdfRequestsFromServer=async()=>{
+      try{
+        const result=await apiJson("/admin/pdf-verification/requests",{});
+        if(Array.isArray(result.requests)){
+          serverPdfRequests=result.requests.map((item)=>({id:item.id,data:item.data||{}}));
+          syncPdfRequests();
+          setStatus(`${requests.length} PDF request loaded.`);
+        }
+      }catch(error){
+        setStatus("Server PDF list load nahi hui: "+error.message);
+      }
     };
     const getUserKey=(data={})=>data.userUid||data.userEmail||data.userName||"unknown-user";
     const getUserLabel=(data={})=>data.userName||data.userEmail||data.userUid||"User";
@@ -80,9 +93,9 @@
       }).join("");
     };
     window.downloadPdf=async(id,fileKind)=>{try{setStatus("Download link ban raha hai...");const result=await apiJson("/api/pdf-verification/download-url",{requestId:id,fileKind});if(!result.signedUrl)throw new Error("Download link nahi mila");window.open(result.signedUrl,"_blank","noopener,noreferrer");setStatus("Download link open ho gaya.")}catch(error){setStatus("Download nahi hua: "+error.message);alert("Download nahi hua: "+error.message)}};
-    window.uploadVerifiedPdf=async(id)=>{try{const input=$(`file-${id}`),note=$(`note-${id}`);const file=input?.files?.[0];if(!file){alert("Verified PDF select karein.");return}if(file.type!=="application/pdf"&&!/\.pdf$/i.test(file.name||"")){alert("Sirf PDF upload karein.");return}const formData=new FormData();formData.append("requestId",id);formData.append("adminNote",note?.value||"Verified PDF uploaded by admin.");formData.append("pdf",file);setStatus("Verified PDF upload ho rahi hai...");const result=await apiForm("/admin/pdf-verification/verified-upload",formData);input.value="";setStatus(result.message||"Verified PDF upload ho gayi.")}catch(error){setStatus("Verified upload nahi hua: "+error.message);alert("Verified upload nahi hua: "+error.message)}};
-    window.deletePdfRequest=async(id)=>{try{if(!confirm("Is request ki original aur verified PDF storage se delete karni hai?"))return;setStatus("PDF delete ho rahi hai...");const result=await apiJson("/api/pdf-verification/delete",{requestId:id});setStatus(result.message||"PDF delete ho gayi.")}catch(error){setStatus("Delete nahi hua: "+error.message);alert("Delete nahi hua: "+error.message)}};
-    onAuthStateChanged(auth,(user)=>{if(user&&user.email===adminEmail){adminAllowed=true;$("accessTitle").innerText="Admin Access Verified";$("adminEmailText").innerText=user.email;onValue(ref(db,"pdfVerificationRequests"),(snapshot)=>{topPdfRequests=[];if(snapshot.exists())snapshot.forEach((child)=>topPdfRequests.push({id:child.key,data:child.val()||{}}));syncPdfRequests()},(error)=>{setStatus("Requests load nahi hui: "+error.message)});onValue(ref(db,"userPdfVerificationRequests"),(snapshot)=>{userPdfRequests=[];if(snapshot.exists())snapshot.forEach((userSnap)=>{userSnap.forEach((child)=>userPdfRequests.push({id:child.key,data:{...(child.val()||{}),userUid:(child.val()||{}).userUid||userSnap.key}}))});syncPdfRequests()},(error)=>{setStatus("User PDF list load nahi hui: "+error.message)})}else{location.replace("index.html")}});
+    window.uploadVerifiedPdf=async(id)=>{try{const input=$(`file-${id}`),note=$(`note-${id}`);const file=input?.files?.[0];if(!file){alert("Verified PDF select karein.");return}if(file.type!=="application/pdf"&&!/\.pdf$/i.test(file.name||"")){alert("Sirf PDF upload karein.");return}const formData=new FormData();formData.append("requestId",id);formData.append("adminNote",note?.value||"Verified PDF uploaded by admin.");formData.append("pdf",file);setStatus("Verified PDF upload ho rahi hai...");const result=await apiForm("/admin/pdf-verification/verified-upload",formData);input.value="";setStatus(result.message||"Verified PDF upload ho gayi.");refreshPdfRequestsFromServer()}catch(error){setStatus("Verified upload nahi hua: "+error.message);alert("Verified upload nahi hua: "+error.message)}};
+    window.deletePdfRequest=async(id)=>{try{if(!confirm("Is request ki original aur verified PDF storage se delete karni hai?"))return;setStatus("PDF delete ho rahi hai...");const result=await apiJson("/api/pdf-verification/delete",{requestId:id});setStatus(result.message||"PDF delete ho gayi.");refreshPdfRequestsFromServer()}catch(error){setStatus("Delete nahi hua: "+error.message);alert("Delete nahi hua: "+error.message)}};
+    onAuthStateChanged(auth,(user)=>{if(user&&user.email===adminEmail){adminAllowed=true;$("accessTitle").innerText="Admin Access Verified";$("adminEmailText").innerText=user.email;refreshPdfRequestsFromServer();onValue(ref(db,"pdfVerificationRequests"),(snapshot)=>{topPdfRequests=[];if(snapshot.exists())snapshot.forEach((child)=>topPdfRequests.push({id:child.key,data:child.val()||{}}));syncPdfRequests()},(error)=>{setStatus("Requests load nahi hui: "+error.message)});onValue(ref(db,"userPdfVerificationRequests"),(snapshot)=>{userPdfRequests=[];if(snapshot.exists())snapshot.forEach((userSnap)=>{userSnap.forEach((child)=>userPdfRequests.push({id:child.key,data:{...(child.val()||{}),userUid:(child.val()||{}).userUid||userSnap.key}}))});syncPdfRequests()},(error)=>{setStatus("User PDF list load nahi hui: "+error.message)})}else{location.replace("index.html")}});
     window.logoutUser=async()=>{adminAllowed=false;localStorage.removeItem("loginTime");try{await signOut(auth)}catch(error){console.warn("Logout failed",error)}location.replace("index.html")};
   </script>
 <script src="/site-theme.js" defer></script>

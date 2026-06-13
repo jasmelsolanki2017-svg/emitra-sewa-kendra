@@ -86,7 +86,8 @@
     let currentUser=null,sessionIntervalId=null,pdfRows=[],userMirrorRows=[],allRequestRows=[],serverRows=[];
     const $=(id)=>document.getElementById(id);
     const escapeHTML=(value="")=>String(value).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
-    const apiBase=()=>{const saved=String(localStorage.getItem(serverKey)||"").trim().replace(/\/+$/,"");if(saved)return saved;if(location.protocol==="file:"||/^emitrawala\.online$|github\.io$/i.test(location.hostname))return defaultServer;return ""};
+    const isStaticApiHost=(url="")=>{try{return /^emitrawala\.online$|github\.io$/i.test(new URL(url,location.origin).hostname)}catch{return false}};
+    const apiBase=()=>{const saved=String(localStorage.getItem(serverKey)||"").trim().replace(/\/+$/,"");if(saved&&!isStaticApiHost(saved))return saved;if(location.protocol==="file:"||/^emitrawala\.online$|github\.io$/i.test(location.hostname))return defaultServer;return ""};
     const apiUrl=(path)=>{const base=apiBase();return base?base+path:path};
     const readApi=async(response)=>{const text=await response.text();let data={};try{data=text?JSON.parse(text):{}}catch{throw new Error(text.slice(0,180)||"Server response invalid")}if(!response.ok||data.ok===false)throw new Error(data.error||data.message||`Request failed (${response.status})`);return data};
     const apiJson=async(path,payload={})=>{if(!currentUser)throw new Error("Login required");const token=await currentUser.getIdToken();const response=await fetch(apiUrl(path),{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},body:JSON.stringify(payload)});return readApi(response)};
