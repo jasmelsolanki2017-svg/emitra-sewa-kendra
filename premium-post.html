@@ -206,7 +206,7 @@
     </div>
   </header>
   <main class="premium-shell" id="premiumRoot">
-    <div class="skeleton-layout" aria-label="Premium post loading">
+    <div class="skeleton-layout" aria-label="Premium post placeholder">
       <div class="skeleton-main">
         <div class="skeleton-hero">
           <div class="skeleton-box skeleton-media"></div>
@@ -231,7 +231,7 @@
     window.__premiumSlowTimer=setTimeout(function(){
       var root=document.getElementById("premiumRoot");
       if(root&&root.querySelector(".skeleton-layout")){
-        root.innerHTML='<div class="message">पोस्ट लोड होने में समय लग रहा है, कृपया refresh करें.</div>';
+        root.setAttribute("data-slow-render","1");
       }
     },8000);
   </script>
@@ -562,7 +562,7 @@
     }
     function showSlowFallback(){
       if(hasRenderedPost)return;
-      root.innerHTML='<div class="message">पोस्ट लोड होने में समय लग रहा है, कृपया refresh करें.</div>';
+      root.setAttribute("data-slow-render","1");
     }
     async function loadWithCache(){
       const staticPost=window.__EMITRA_STATIC_PREMIUM_POST__;

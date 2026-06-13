@@ -2760,7 +2760,7 @@ Important Links
 
         <div class="home-portal-box" id="homePortalLatestJobs">
           <h3 class="home-portal-title">Top Online Form</h3>
-          <ul class="home-portal-list" id="homePortalJobList"><li class="home-portal-message">Jobs load ho rahi hain...</li></ul>
+          <ul class="home-portal-list" id="homePortalJobList"><li class="home-portal-message">Latest jobs ready ho rahe hain...</li></ul>
           <a class="home-portal-view-all" href="/#homePortalLatestJobs">View All »</a>
         </div>
 
@@ -4245,7 +4245,7 @@ filterHomePortalJobs();
 Object.keys(homePortalCategoryMap).forEach((category)=>{
 const list = document.getElementById(homePortalCategoryMap[category]);
 if(list){
-list.innerHTML = `<li class="home-portal-message">Data load nahi hua: ${escapeHTML(error.message)}</li>`;
+list.innerHTML = `<li class="home-portal-message">Update fetch nahi hua: ${escapeHTML(error.message)}</li>`;
 }
 });
 filterHomePortalJobs();

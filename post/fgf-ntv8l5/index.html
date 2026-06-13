@@ -404,8 +404,8 @@ body.dark-mode .job-tool-btn:hover{background:#ffb15c!important;border-color:#ff
 </header>
 
 <main>
-  <div id="jobMessage" class="message">Job details load ho rahi hain...</div>
-  <div id="jobDetailWrap" class="layout" style="display:none;">
+  <div id="jobMessage" class="message" style="display:none;"></div>
+  <div id="jobDetailWrap" class="layout" style="display:grid;">
     <article>
       <div class="detail-sheet">
         <div class="article-head">
@@ -2411,8 +2411,9 @@ const removeCurrentAffairsJobPanels = () => [
 
 const setPageContextLabel = (label = "Job Details") => {
   const message = document.getElementById("jobMessage");
-  if(message && /load ho rahi/i.test(message.textContent || "")){
-    message.textContent = label === "Current Affairs" ? "Current Affairs load ho rahi hain..." : "Job details load ho rahi hain...";
+  if(message && message.textContent){
+    message.textContent = "";
+    message.style.display = "none";
   }
   const footerText = document.querySelector("footer p");
   if(footerText && /E-MITRA WALA/i.test(footerText.textContent || "")){
@@ -3233,6 +3234,7 @@ const renderJobDetail = (jobId, rawJob, allJobs = []) => {
     applyLanguageLabels();
     if(!isJobVisible(job)){
       message.textContent = "Ye post abhi public page par hidden hai.";
+      message.style.display = "block";
       wrap.style.display = "none";
       return;
     }
@@ -3596,16 +3598,19 @@ const renderJobDetail = (jobId, rawJob, allJobs = []) => {
 
 if(!id && !pathSlug){
   message.textContent = "Please open this page from Latest Jobs.";
+  message.style.display = "block";
 }else if(id){
   onValue(ref(db, "LatestJobs/" + id), (snapshot) => {
     if(!snapshot.exists()){
       message.textContent = "Job detail nahi mili ya delete ho chuki hai.";
+      message.style.display = "block";
       wrap.style.display = "none";
       return;
     }
     renderJobDetail(id, snapshot.val());
   }, (error) => {
     message.textContent = "Job details load nahi ho payi: " + error.message;
+    message.style.display = "block";
   });
 }else{
   onValue(ref(db, "LatestJobs"), (snapshot) => {
@@ -3627,12 +3632,14 @@ if(!id && !pathSlug){
         return;
       }
       message.textContent = "Job detail nahi mili ya delete ho chuki hai.";
+      message.style.display = "block";
       wrap.style.display = "none";
       return;
     }
     renderJobDetail(match.id, match.job, allJobs);
   }, (error) => {
     message.textContent = "Job details load nahi ho payi: " + error.message;
+    message.style.display = "block";
   });
 }
 </script>
