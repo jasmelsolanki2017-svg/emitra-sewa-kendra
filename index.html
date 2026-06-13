@@ -4499,14 +4499,14 @@ return `
 let latestNewsItems = [];
 
 function makePostUrl(post={}) {
-const orderedCandidates = [post?.url, post?.link, post?.postUrl, post?.href, post?.detailLink, post?.applyLink, post?.sourceLink, post?.canonicalUrl];
-for(const candidate of orderedCandidates){
-const text=String(candidate||"").trim();
-if(text && text !== "#")return text;
-}
 const slug=String(post?.slug || post?.postSlug || post?.post_slug || post?.premiumPostSlug || post?.sourcePostSlug || post?.post_id || post?.postId || "").trim();
 if(slug){
 return `/post/${encodeURIComponent(slug)}/`;
+}
+const orderedCandidates = [post?.postUrl, post?.url, post?.link, post?.href, post?.canonicalUrl, post?.detailLink, post?.applyLink, post?.sourceLink];
+for(const candidate of orderedCandidates){
+const text=String(candidate||"").trim();
+if(text && text !== "#")return text;
 }
 const jobId=String(post?.sourceJobId || post?.jobId || post?.sourceId || "").trim();
 if(jobId){
@@ -4523,7 +4523,8 @@ const slug=String(source.slug || source.postSlug || source.post_slug || source.p
 const priority=Number.isFinite(Number(source.priority)) ? Number(source.priority) : 0;
 const isPinned=source.isPinned===true || String(source.isPinned||"").toLowerCase()==="true" || Number(source.isPinned)===1;
 const isBreaking=source.isBreaking===true || String(source.isBreaking||"").toLowerCase()==="true" || Number(source.isBreaking)===1;
-const isActive=String(source.isActive || source.active || "true").toLowerCase() !== "false" && source.isActive !== false;
+const status=String(source.status || source.postStatus || "published").toLowerCase();
+const isActive=status !== "draft" && status !== "hidden" && String(source.isActive || source.active || "true").toLowerCase() !== "false" && source.isActive !== false;
 const dateValue=source.date || source.updatedAt || source.createdAt || source.timestamp || source.postDate || source.publishedAt || source.postedAt || "";
 const createdAt=Number(source.createdAt || source.updatedAt || source.timestamp || 0);
 const resolvedTitle=title || text || "Latest Update";
