@@ -739,6 +739,31 @@ font-weight:800;
 animation:newsSlide var(--news-duration, 42s) linear infinite;
 }
 
+.news-track .news-link,
+.news-track .news-breaking-link,
+.news-item-link{
+color:#0057a8;
+text-decoration:none;
+font-weight:800;
+transition:color .2s ease, transform .2s ease;
+cursor:pointer;
+}
+
+.news-track .news-link:hover,
+.news-track .news-breaking-link:hover,
+.news-item-link:hover{
+color:#ff7a00;
+text-decoration:underline;
+transform:translateX(2px);
+}
+
+.news-track .news-link:focus-visible,
+.news-track .news-breaking-link:focus-visible,
+.news-item-link:focus-visible{
+outline:2px solid #ff7a00;
+outline-offset:2px;
+}
+
 .news-line:nth-child(2) .news-track{
 animation-duration:var(--news-duration, 48s);
 }
@@ -750,6 +775,34 @@ animation-duration:var(--news-duration, 54s);
 .news-line.static .news-track{
 padding-left:14px;
 animation:none;
+}
+
+.news-breaking{
+display:none;
+margin-bottom:8px;
+padding:10px 12px;
+background:#fff5e8;
+border:1px solid #ffd19e;
+border-left:4px solid #ff7a00;
+border-radius:6px;
+}
+
+.news-breaking.is-visible{
+display:flex;
+align-items:center;
+gap:8px;
+flex-wrap:wrap;
+}
+
+.news-breaking-label{
+background:#ff7a00;
+color:#03224d;
+padding:3px 8px;
+border-radius:999px;
+font-size:11px;
+font-weight:900;
+text-transform:uppercase;
+letter-spacing:.04em;
 }
 
 @keyframes newsSlide{
@@ -4445,74 +4498,103 @@ return `
 
 let latestNewsItems = [];
 
-const getUpdateRows = (value) => {
-const rows = [];
-if(!value){ return rows; }
-
-if(value && typeof value === "object" && "text" in value){
-return [value];
+function makePostUrl(post={}) {
+const orderedCandidates = [post?.url, post?.link, post?.postUrl, post?.href];
+for(const candidate of orderedCandidates){
+const text=String(candidate||"").trim();
+if(text && text !== "#")return text;
+}
+const slug=String(post?.slug || post?.postSlug || post?.post_id || post?.postId || post?.id || "").trim();
+return slug ? `/post/${encodeURIComponent(slug)}/` : "#";
 }
 
-if(value && typeof value === "object"){
-Object.values(value).forEach((item)=>{
-if(typeof item === "string"){
-rows.push({ text:item, createdAt:0 });
-} else if(item && typeof item === "object"){
-rows.push(item);
-}
-});
-}
-
-return rows
-.filter((item)=>String(item.text || "").trim() !== "")
-.filter((item)=>String(item.status || "published").toLowerCase() !== "draft")
-.sort((a,b)=>Number(b.createdAt || 0) - Number(a.createdAt || 0));
+const normalizeLatestUpdate = (item={}) => {
+const source=typeof item === "string" ? {title:item,text:item} : (item && typeof item === "object" ? item : {});
+const title=String(source.title || source.jobTitle || source.postTitle || source.heading || source.name || source.text || source.label || "").trim();
+const text=String(source.text || source.description || source.summary || title || "").trim();
+const slug=String(source.slug || source.postSlug || source.post_id || source.postId || source.id || source.sourcePostSlug || "").trim();
+const priority=Number.isFinite(Number(source.priority)) ? Number(source.priority) : 0;
+const isPinned=source.isPinned===true || String(source.isPinned||"").toLowerCase()==="true" || Number(source.isPinned)===1;
+const isBreaking=source.isBreaking===true || String(source.isBreaking||"").toLowerCase()==="true" || Number(source.isBreaking)===1;
+const isActive=String(source.isActive || source.active || "true").toLowerCase() !== "false" && source.isActive !== false;
+const dateValue=source.date || source.updatedAt || source.createdAt || source.timestamp || source.postDate || source.publishedAt || source.postedAt || "";
+const createdAt=Number(source.createdAt || source.updatedAt || source.timestamp || 0);
+const resolvedTitle=title || text || "Latest Update";
+const resolvedUrl=makePostUrl({...source,slug});
+return { ...source, title:resolvedTitle, text:text || resolvedTitle, slug, url:resolvedUrl, link:resolvedUrl, postUrl:resolvedUrl, category:String(source.category || source.type || source.tag || "").trim(), date:dateValue, createdAt:createdAt || (dateValue ? Date.parse(dateValue) : 0), priority, isPinned, isBreaking, isActive };
 };
 
-const renderNewsRows = () => {
-const rowsBox = document.getElementById("newsTickerRows");
+function getLatestUpdates(posts, limit=3) {
+const sourceItems=Array.isArray(posts) ? posts : (posts && typeof posts === "object" ? Object.values(posts) : []);
+const seen=new Set();
+const normalized=sourceItems.map((item)=>normalizeLatestUpdate(item)).filter(Boolean).filter((item)=>item.isActive !== false && item.title).filter((item)=>{
+const key=`${item.slug || ""}:${item.title}`.trim().toLowerCase();
+if(!key || seen.has(key))return false;
+seen.add(key);
+return true;
+});
+normalized.sort((a,b)=>{
+const pinnedDiff=Number(b.isPinned)-Number(a.isPinned);
+if(pinnedDiff!==0)return pinnedDiff;
+const breakingDiff=Number(b.isBreaking)-Number(a.isBreaking);
+if(breakingDiff!==0)return breakingDiff;
+const priorityDiff=Number(a.priority||0)-Number(b.priority||0);
+if(priorityDiff!==0)return priorityDiff;
+const dateA=Number(a.createdAt || (a.date ? Date.parse(a.date) : 0) || 0);
+const dateB=Number(b.createdAt || (b.date ? Date.parse(b.date) : 0) || 0);
+if(dateB!==dateA)return dateB-dateA;
+return String(a.title).localeCompare(String(b.title),"en",{sensitivity:"base"});
+});
+return typeof limit === "number" && limit > 0 ? normalized.slice(0, limit) : normalized;
+}
 
-if(latestNewsItems.length === 0){
-rowsBox.innerHTML = `
+function renderBreakingUpdate(posts=[]) {
+const update = getLatestUpdates(posts, 10).find((item)=>item.isPinned || item.isBreaking);
+if(!update)return "";
+const href=makePostUrl(update);
+return `<div id="latestBreakingBar" class="news-breaking is-visible"><span class="news-breaking-label">Breaking</span><a class="news-breaking-link" href="${escapeHTML(href)}">${escapeHTML(update.title)}</a></div>`;
+};
+
+function renderLiveNews(posts=[]) {
+const rowsBox=document.getElementById("newsTickerRows");
+if(!rowsBox)return;
+const updates=getLatestUpdates(posts, 3);
+if(!updates.length){
+rowsBox.innerHTML=`
   <div class="news-line static"><span class="news-track">अभी कोई latest update नहीं है।</span></div>
   <div class="news-line static"><span class="news-track">अभी कोई latest update नहीं है।</span></div>
   <div class="news-line static"><span class="news-track">अभी कोई latest update नहीं है।</span></div>
 `;
 return;
 }
-
-const rows = [0,1,2].map((rowIndex)=>{
-const rowItems = latestNewsItems.filter((_,index)=>index % 3 === rowIndex);
-const text = (rowItems.length ? rowItems : latestNewsItems).join("  •  ");
-const duration = Math.max(44, Math.min(120, Math.round(text.length * 0.34)));
-
+const rows = updates.map((item)=>{
+const duration=Math.max(34,Math.min(90,Math.round((String(item.title).length + 20) * 0.32)));
 return `
   <div class="news-line" style="--news-duration:${duration}s">
-    <span class="news-track">${escapeHTML(text)}  •  ${escapeHTML(text)}</span>
+    <span class="news-track"><a class="news-link" href="${escapeHTML(makePostUrl(item))}">${escapeHTML(item.title)}</a></span>
   </div>
 `;
-});
-
-rowsBox.innerHTML = rows.join("");
+}).join("");
+rowsBox.innerHTML=`${renderBreakingUpdate(updates)}${rows}`;
 };
 
-const renderNewsModal = () => {
-const list = document.getElementById("newsModalList");
-
-if(latestNewsItems.length === 0){
-list.innerHTML = '<div class="news-item"><strong>अभी कोई latest update नहीं है।</strong></div>';
+function renderNewsModal(posts=[]) {
+const list=document.getElementById("newsModalList");
+if(!list)return;
+const updates=getLatestUpdates(posts, 10);
+if(!updates.length){
+list.innerHTML='<div class="news-item"><strong>अभी कोई latest update नहीं है।</strong></div>';
 return;
 }
-
-list.innerHTML = latestNewsItems.map((text,index)=>`
+list.innerHTML = updates.map((item,index)=>`
   <div class="news-item">
-    <strong>${index + 1}. ${escapeHTML(text)}</strong>
+    <strong>${index + 1}. <a class="news-item-link" href="${escapeHTML(makePostUrl(item))}">${escapeHTML(item.title)}</a></strong>
   </div>
 `).join("");
 };
 
 window.openNewsBox = () => {
-renderNewsModal();
+renderNewsModal(latestNewsItems);
 document.getElementById("newsModal").style.display = "flex";
 };
 
@@ -4526,20 +4608,29 @@ window.closeNewsBox();
 }
 });
 
-document.querySelector(".latest-box").addEventListener("keydown",(event)=>{
+const latestBox=document.querySelector(".latest-box");
+if(latestBox){
+latestBox.addEventListener("click",(event)=>{
+const clickedLink=event.target.closest("a");
+if(clickedLink){
+event.stopPropagation();
+return;
+}
+window.openNewsBox();
+});
+latestBox.addEventListener("keydown",(event)=>{
 if(event.key === "Enter" || event.key === " "){
 event.preventDefault();
 window.openNewsBox();
 }
 });
+}
 
 scheduleDataTask(() => {
 firebaseRestGet("latestUpdates").then((updatesData)=>{
-
-latestNewsItems = getUpdateRows(updatesData).map((item)=>item.text);
-
-renderNewsRows();
-
+latestNewsItems=getLatestUpdates(updatesData, 6);
+renderLiveNews(latestNewsItems);
+renderNewsModal(latestNewsItems);
 });
 }, 3200);
 
