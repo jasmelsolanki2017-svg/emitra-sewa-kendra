@@ -4499,13 +4499,20 @@ return `
 let latestNewsItems = [];
 
 function makePostUrl(post={}) {
-const orderedCandidates = [post?.url, post?.link, post?.postUrl, post?.href];
+const orderedCandidates = [post?.url, post?.link, post?.postUrl, post?.href, post?.detailLink, post?.applyLink, post?.sourceLink, post?.canonicalUrl];
 for(const candidate of orderedCandidates){
 const text=String(candidate||"").trim();
 if(text && text !== "#")return text;
 }
-const slug=String(post?.slug || post?.postSlug || post?.post_id || post?.postId || post?.id || "").trim();
-return slug ? `/post/${encodeURIComponent(slug)}/` : "#";
+const slug=String(post?.slug || post?.postSlug || post?.post_slug || post?.premiumPostSlug || post?.sourcePostSlug || post?.post_id || post?.postId || "").trim();
+if(slug){
+return `/post/${encodeURIComponent(slug)}/`;
+}
+const jobId=String(post?.sourceJobId || post?.jobId || post?.sourceId || "").trim();
+if(jobId){
+return `/job-detail.html?id=${encodeURIComponent(jobId)}`;
+}
+return "#";
 }
 
 const normalizeLatestUpdate = (item={}) => {
