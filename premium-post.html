@@ -166,6 +166,14 @@
     .premium-admin-actions button{border:0;border-radius:7px;padding:10px 13px;font-weight:900;cursor:pointer;background:#075dcc;color:#fff;box-shadow:0 4px 10px rgba(7,93,204,.22)}
     .premium-admin-actions button.save{background:#0b9444}.premium-admin-actions button.cancel{background:#6b7280}
     .premium-admin-actions button:disabled{opacity:.58;cursor:not-allowed}
+    .premium-design-tools{display:none;width:100%;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-top:10px;padding-top:10px;border-top:1px dashed #ffb55d}
+    .premium-admin-editing .premium-design-tools{display:grid}
+    .premium-design-tools label{display:grid;gap:4px;color:#7a2f00;font-size:11px;font-weight:900;text-transform:uppercase}
+    .premium-design-tools input,.premium-design-tools select{width:100%;min-width:0;border:1px solid #ffb55d;border-radius:6px;background:#fff;color:#071b3f;padding:7px 8px;font-weight:800}
+    .premium-design-tools input[type=color]{height:36px;padding:3px}
+    .premium-design-tools .tool-buttons{display:flex;align-items:end;gap:7px;flex-wrap:wrap}
+    .premium-design-tools .tool-buttons button{padding:8px 10px;min-height:36px}
+    .premium-design-target{outline:3px solid #ff8a00!important;outline-offset:2px!important}
     .premium-editable{border-radius:4px;outline:2px dashed rgba(7,93,204,.18);outline-offset:2px}
     .premium-admin-editing .premium-editable{background:#fff7d6;outline-color:#ff8a00;cursor:text}
     .premium-admin-editing .premium-editable:focus{background:#fff;border-radius:4px;box-shadow:0 0 0 3px rgba(255,138,0,.2);outline:2px solid #ff8a00}
@@ -265,7 +273,7 @@
     };
     const stableStringify=value=>JSON.stringify(value||{});
     let hasRenderedPost=false;
-    let adminAllowed=false,adminEditMode=false,currentPostData=null,editorDraft=null,currentPostSlug="";
+    let adminAllowed=false,adminEditMode=false,currentPostData=null,editorDraft=null,currentPostSlug="",selectedDesignKey="";
     let timeoutId=window.__premiumSlowTimer||null;
 
     const SECTION_DEFS=[
@@ -314,6 +322,15 @@
     const cloneJson=value=>JSON.parse(JSON.stringify(value||{}));
     const editPathAttr=path=>encodeURIComponent(JSON.stringify(path||[]));
     const decodeEditPath=value=>{try{return JSON.parse(decodeURIComponent(value||"[]"))}catch{return[]}};
+    const designKeyForPath=path=>`field:${JSON.stringify(path||[])}`;
+    const cssEscapeValue=value=>String(value||"").replace(/[<>"']/g,"");
+    const getDesignStyles=()=>adminEditMode?(editorDraft?.designStyles||currentPostData?.designStyles||{}):(currentPostData?.designStyles||{});
+    const styleStringForKey=key=>{
+      const styles=getDesignStyles()[key]||{};
+      const map={backgroundColor:"background-color",color:"color",borderColor:"border-color",borderWidth:"border-width",borderStyle:"border-style",fontSize:"font-size",fontWeight:"font-weight",fontStyle:"font-style",textDecoration:"text-decoration",textAlign:"text-align",borderRadius:"border-radius",padding:"padding",boxShadow:"box-shadow"};
+      return Object.entries(styles).filter(([,v])=>v!==undefined&&v!==null&&String(v)!=="").map(([k,v])=>`${map[k]||k}:${cssEscapeValue(v)}`).join(";");
+    };
+    const styleAttrForKey=key=>{const style=styleStringForKey(key);return style?` style="${escapeHTML(style)}"`:""};
     function setByPath(target,path,value){
       if(!target||!Array.isArray(path)||!path.length)return;
       let refObj=target;
@@ -327,7 +344,8 @@
     const editableHTML=(value,path)=>{
       const html=escapeHTML(valueText(value)).replace(/\n/g,"<br>");
       if(!adminAllowed||!path||!path.length)return html;
-      return `<span class="premium-editable" data-edit-path="${editPathAttr(path)}" contenteditable="${adminEditMode?'true':'false'}" spellcheck="false">${html}</span>`;
+      const key=designKeyForPath(path);
+      return `<span class="premium-editable" data-edit-path="${editPathAttr(path)}" data-style-key="${escapeHTML(key)}" contenteditable="${adminEditMode?'true':'false'}" spellcheck="false"${styleAttrForKey(key)}>${html}</span>`;
     };
     const valueHTML=(value,path=null)=>editableHTML(value,path);
     const iconFor=key=>({importantDates:"📅",applicationFee:"💰",ageLimit:"👤",vacancyDetails:"👥",selectionProcess:"🔢",howToCheckResult:"✅",howToApply:"⬇",importantLinks:"🔗",regionWiseResultLinks:"📄",faqs:"❓"}[key]||"✓");
@@ -524,7 +542,7 @@
       if(!shouldRenderJobPosting(data))return null;
       return {"@context":"https://schema.org","@type":"JobPosting","@id":`${canonical}#jobposting`,title:data.title||title,description:String(data.shortInfo||data.description||description||title),datePosted:schemaDate(data.createdAt||data.postDate),validThrough:schemaDate(applicationLastDate(data)),employmentType:"FULL_TIME",hiringOrganization:{"@type":"Organization",name:String(data.organization||data.department||"E-MITRA WALA")},jobLocation:{"@type":"Place",address:{"@type":"PostalAddress",addressCountry:"IN"}},baseSalary:{"@type":"MonetaryAmount",currency:"INR"}};
     }
-    function renderCard(id,title,html,accent,span=""){return html?`<section id="section-${id}" class="premium-card ${accent||"accent-teal"} ${span||""}"><h2>${escapeHTML(title)}</h2><div class="card-body">${html}</div></section>`:"";}
+    function renderCard(id,title,html,accent,span=""){if(!html)return"";const cardKey=`section:${id}`;const titleKey=`section-title:${id}`;const bodyKey=`section-body:${id}`;return `<section id="section-${id}" class="premium-card ${accent||"accent-teal"} ${span||""}" data-style-key="${escapeHTML(cardKey)}"${styleAttrForKey(cardKey)}><h2 data-style-key="${escapeHTML(titleKey)}"${styleAttrForKey(titleKey)}>${escapeHTML(title)}</h2><div class="card-body" data-style-key="${escapeHTML(bodyKey)}"${styleAttrForKey(bodyKey)}>${html}</div></section>`;}
     function setSeo(data){
       const seo=data.seo||{},title=seo.metaTitle||data.title||"Premium Post";
       document.title=`${title} | E-MITRA WALA`;
@@ -549,7 +567,7 @@
     }
     function renderAdminEditor(){
       if(!adminAllowed)return"";
-      return `<div class="premium-admin-editor" role="region" aria-label="Admin live editor"><div><strong>Admin Live Edit</strong><small>${adminEditMode?"Yellow fields edit karein, phir Save Changes dabayein.":"Edit Live dabakar isi page par post update karen."}</small><div class="premium-admin-status" id="premiumAdminStatus"></div></div><div class="premium-admin-actions"><button type="button" onclick="enablePremiumLiveEdit()" ${adminEditMode?"disabled":""}>Edit Live</button><button type="button" class="save" onclick="savePremiumLiveEdit()" ${adminEditMode?"":"disabled"}>Save Changes</button><button type="button" class="cancel" onclick="cancelPremiumLiveEdit()" ${adminEditMode?"":"disabled"}>Cancel</button><button type="button" onclick="sharePremiumToWhatsapp()">WhatsApp Post</button><button type="button" onclick="sendPremiumToTelegram()">Telegram Post</button><a class="action-btn website" href="premium-admin.html" target="_blank" rel="noopener noreferrer" style="min-height:auto;padding:10px 13px;font-size:13px">Admin Panel</a></div></div>`;
+      return `<div class="premium-admin-editor" role="region" aria-label="Admin live editor"><div><strong>Admin Live Edit</strong><small>${adminEditMode?"Box/title/line select karke text aur design edit karein, phir Save Changes dabayein.":"Edit Live dabakar isi page par post update karen."}</small><div class="premium-admin-status" id="premiumAdminStatus"></div></div><div class="premium-admin-actions"><button type="button" onclick="enablePremiumLiveEdit()" ${adminEditMode?"disabled":""}>Edit Live</button><button type="button" class="save" onclick="savePremiumLiveEdit()" ${adminEditMode?"":"disabled"}>Save Changes</button><button type="button" class="cancel" onclick="cancelPremiumLiveEdit()" ${adminEditMode?"":"disabled"}>Cancel</button><button type="button" onclick="sharePremiumToWhatsapp()">WhatsApp Post</button><button type="button" onclick="sendPremiumToTelegram()">Telegram Post</button><a class="action-btn website" href="premium-admin.html" target="_blank" rel="noopener noreferrer" style="min-height:auto;padding:10px 13px;font-size:13px">Admin Panel</a></div><div class="premium-design-tools" id="premiumDesignTools"><label>Selected<input id="designTargetName" type="text" value="Click box/line" readonly></label><label>Box Colour<input id="designBg" type="color" onchange="applyPremiumDesignControl()"></label><label>Font Colour<input id="designColor" type="color" onchange="applyPremiumDesignControl()"></label><label>Border Colour<input id="designBorderColor" type="color" onchange="applyPremiumDesignControl()"></label><label>Border Width<select id="designBorderWidth" onchange="applyPremiumDesignControl()"><option value="">Default</option><option value="0">0</option><option value="1px">1px</option><option value="2px">2px</option><option value="3px">3px</option><option value="4px">4px</option><option value="6px">6px</option></select></label><label>Border Style<select id="designBorderStyle" onchange="applyPremiumDesignControl()"><option value="">Default</option><option value="solid">Solid</option><option value="double">Double</option><option value="dashed">Dashed</option><option value="dotted">Dotted</option></select></label><label>Font Size<select id="designFontSize" onchange="applyPremiumDesignControl()"><option value="">Default</option><option value="12px">12px</option><option value="14px">14px</option><option value="16px">16px</option><option value="18px">18px</option><option value="20px">20px</option><option value="24px">24px</option><option value="30px">30px</option></select></label><label>Align<select id="designAlign" onchange="applyPremiumDesignControl()"><option value="">Default</option><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></label><label>Radius<select id="designRadius" onchange="applyPremiumDesignControl()"><option value="">Default</option><option value="0">0</option><option value="4px">4px</option><option value="8px">8px</option><option value="14px">14px</option><option value="22px">22px</option></select></label><label>Padding<select id="designPadding" onchange="applyPremiumDesignControl()"><option value="">Default</option><option value="4px">Small</option><option value="8px">Normal</option><option value="12px">Big</option><option value="18px">Large</option></select></label><div class="tool-buttons"><button type="button" onclick="togglePremiumDesign('bold')">Bold</button><button type="button" onclick="togglePremiumDesign('italic')">Italic</button><button type="button" onclick="togglePremiumDesign('underline')">Underline</button><button type="button" class="cancel" style="display:block" onclick="resetPremiumDesign()">Reset Style</button></div></div></div>`;
     }
     function renderPremiumPost(data){
       data={...data};
@@ -565,6 +583,7 @@
       root.innerHTML=`<div class="premium-layout"><div class="premium-main">${hero}${sections}</div>${renderSidebar(data,links)}</div>`;
       const sticky=links.filter(l=>/(apply|download|notification)/i.test(l.label)).slice(0,2);
       mobileSticky.innerHTML=sticky.map(l=>`<a class="action-btn ${linkClass(l.label)}" href="${escapeHTML(l.url)}" target="_blank" rel="noopener noreferrer">${linkIcon(l.label)} ${escapeHTML(l.label)}</a>`).join("");
+      attachPremiumDesignPicker();
       scrollHashAfterRender();
     }
     async function loadPremiumPostBySlug(slug){
@@ -626,6 +645,88 @@
       el.textContent=message||"";
       el.style.color=type==="error"?"#b91c1c":type==="success"?"#0b9444":"#075dcc";
     }
+    const designControlIds=["designBg","designColor","designBorderColor","designBorderWidth","designBorderStyle","designFontSize","designAlign","designRadius","designPadding"];
+    const normalizeColor=value=>{if(!value)return"#ffffff";const text=String(value).trim();if(/^#[0-9a-f]{6}$/i.test(text))return text;const probe=document.createElement("span");probe.style.color=text;document.body.appendChild(probe);const rgb=getComputedStyle(probe).color;probe.remove();const m=rgb.match(/\d+/g);return m&&m.length>=3?"#"+m.slice(0,3).map(n=>Number(n).toString(16).padStart(2,"0")).join(""):"#ffffff"};
+    const cssEscapeIdent=value=>window.CSS?.escape?CSS.escape(value):String(value).replace(/["\\]/g,"\\$&");
+    const selectedDesignEl=()=>selectedDesignKey?root.querySelector(`[data-style-key="${cssEscapeIdent(selectedDesignKey)}"]`):null;
+    function setDesignControlsFromStyles(styles={}){
+      const set=(id,value)=>{const el=document.getElementById(id);if(el)el.value=value||""};
+      set("designBg",normalizeColor(styles.backgroundColor||"#ffffff"));
+      set("designColor",normalizeColor(styles.color||"#071b3f"));
+      set("designBorderColor",normalizeColor(styles.borderColor||"#dce7f5"));
+      set("designBorderWidth",styles.borderWidth||"");
+      set("designBorderStyle",styles.borderStyle||"");
+      set("designFontSize",styles.fontSize||"");
+      set("designAlign",styles.textAlign||"");
+      set("designRadius",styles.borderRadius||"");
+      set("designPadding",styles.padding||"");
+    }
+    function selectPremiumDesignElement(el){
+      if(!adminEditMode||!el)return;
+      root.querySelectorAll(".premium-design-target").forEach(node=>node.classList.remove("premium-design-target"));
+      selectedDesignKey=el.getAttribute("data-style-key")||"";
+      el.classList.add("premium-design-target");
+      const name=document.getElementById("designTargetName");
+      if(name)name.value=selectedDesignKey.replace(/^field:/,"Line ").replace("section-title:","Box Title: ").replace("section-body:","Box Body: ").replace("section:","Box: ");
+      setDesignControlsFromStyles((editorDraft?.designStyles||{})[selectedDesignKey]||{});
+      setAdminStatus("Design target selected. Colour/font/border controls use karein.");
+    }
+    function attachPremiumDesignPicker(){
+      if(!adminEditMode)return;
+      root.querySelectorAll("[data-style-key]").forEach(el=>{
+        el.addEventListener("click",(event)=>{
+          const target=event.target.closest("[data-style-key]");
+          if(target){selectPremiumDesignElement(target)}
+        });
+      });
+    }
+    window.applyPremiumDesignControl=()=>{
+      if(!adminEditMode){alert("Pehle Edit Live dabayein.");return}
+      if(!selectedDesignKey){alert("Pehle kisi box/title/line par click karein.");return}
+      if(!editorDraft)editorDraft=cloneJson(currentPostData||{});
+      if(!editorDraft.designStyles)editorDraft.designStyles={};
+      const styles={...(editorDraft.designStyles[selectedDesignKey]||{})};
+      const val=id=>document.getElementById(id)?.value||"";
+      styles.backgroundColor=val("designBg");
+      styles.color=val("designColor");
+      styles.borderColor=val("designBorderColor");
+      styles.borderWidth=val("designBorderWidth");
+      styles.borderStyle=val("designBorderStyle");
+      styles.fontSize=val("designFontSize");
+      styles.textAlign=val("designAlign");
+      styles.borderRadius=val("designRadius");
+      styles.padding=val("designPadding");
+      editorDraft.designStyles[selectedDesignKey]=styles;
+      const el=selectedDesignEl();
+      if(el){Object.assign(el.style,styles)}
+      setAdminStatus("Design apply ho gaya. Permanent karne ke liye Save Changes dabayein.","success");
+    };
+    window.togglePremiumDesign=(type)=>{
+      if(!selectedDesignKey){alert("Pehle kisi box/title/line par click karein.");return}
+      if(!editorDraft)editorDraft=cloneJson(currentPostData||{});
+      if(!editorDraft.designStyles)editorDraft.designStyles={};
+      const styles={...(editorDraft.designStyles[selectedDesignKey]||{})};
+      if(type==="bold")styles.fontWeight=styles.fontWeight==="900"?"":"900";
+      if(type==="italic")styles.fontStyle=styles.fontStyle==="italic"?"":"italic";
+      if(type==="underline")styles.textDecoration=styles.textDecoration==="underline"?"":"underline";
+      editorDraft.designStyles[selectedDesignKey]=styles;
+      const el=selectedDesignEl();
+      if(el){Object.assign(el.style,styles)}
+      setAdminStatus(`${type} style apply ho gaya. Save Changes dabayein.`,"success");
+    };
+    window.resetPremiumDesign=()=>{
+      if(!selectedDesignKey){alert("Pehle kisi box/title/line par click karein.");return}
+      if(!editorDraft)editorDraft=cloneJson(currentPostData||{});
+      if(!editorDraft.designStyles)editorDraft.designStyles={};
+      delete editorDraft.designStyles[selectedDesignKey];
+      const key=selectedDesignKey;
+      const draft=collectLiveEdits();
+      draft.designStyles=editorDraft.designStyles;
+      editorDraft=draft;
+      renderPremiumPost(editorDraft);
+      setTimeout(()=>{const el=root.querySelector(`[data-style-key="${cssEscapeIdent(key)}"]`);if(el)selectPremiumDesignElement(el)},0);
+      setAdminStatus("Selected style reset ho gaya. Save Changes dabayein.","success");
+    };
     function collectLiveEdits(){
       const draft=cloneJson(editorDraft||currentPostData||{});
       root.querySelectorAll("[data-edit-path]").forEach((el)=>{
@@ -633,6 +734,7 @@
         if(!path.length)return;
         setByPath(draft,path,el.innerText.replace(/\u00a0/g," ").trim());
       });
+      if(editorDraft?.designStyles)draft.designStyles=cloneJson(editorDraft.designStyles);
       return draft;
     }
     async function triggerPremiumStaticPublish(slug,reason="premium-live-edit"){
@@ -685,12 +787,14 @@
       if(!adminAllowed){alert("Admin login required.");return}
       adminEditMode=true;
       editorDraft=cloneJson(currentPostData||{});
+      selectedDesignKey="";
       renderPremiumPost(editorDraft);
       setAdminStatus("Edit mode ON. Yellow fields me direct typing karein.");
     };
     window.cancelPremiumLiveEdit=()=>{
       adminEditMode=false;
       editorDraft=null;
+      selectedDesignKey="";
       renderPremiumPost(currentPostData||{});
       setAdminStatus("");
     };
@@ -709,6 +813,7 @@
         const publish=await triggerPremiumStaticPublish(draft.slug,"premium-live-edit");
         adminEditMode=false;
         editorDraft=null;
+        selectedDesignKey="";
         currentPostData=cloneJson(draft);
         renderPremiumPost(draft);
         setAdminStatus(publish.ok?"Saved. Static post update trigger ho gaya.":"Saved. Static trigger pending: "+(publish.error||"server check karein"),publish.ok?"success":"error");

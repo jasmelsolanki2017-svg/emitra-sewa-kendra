@@ -475,6 +475,13 @@ body.site-theme-premium .admin-tool-panel{
   box-shadow:var(--premium-shadow)!important;
 }
 
+body.site-theme-premium .home-portal-box{
+  border:3px double #b30000!important;
+  outline:3px solid #0057a8!important;
+  outline-offset:3px!important;
+  box-shadow:0 0 0 6px #fff,0 8px 22px rgba(0,87,168,.18)!important;
+}
+
 body.site-theme-premium .panel h2,
 body.site-theme-premium .sarkari-section-title,
 body.site-theme-premium .detail-table th,
