@@ -94,18 +94,6 @@
     overflow-wrap: anywhere !important;
   }
 
-  .nav-tools {
-    width: 100% !important;
-  }
-
-  .nav-tools summary {
-    min-height: 38px !important;
-  }
-
-  .nav-tools-menu {
-    width: 100% !important;
-  }
-
   .side-menu-trigger {
     width: 40px !important;
     height: 40px !important;

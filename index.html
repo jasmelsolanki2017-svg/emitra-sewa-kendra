@@ -324,80 +324,6 @@ transform:translateY(-1px);
 .lang-switch button.active{background:#fff;color:#0057a8;}
 .lang-switch span{opacity:.75;}
 
-.nav-tools{
-position:relative;
-}
-
-.nav-tools summary{
-list-style:none;
-color:white;
-font-size:14px;
-font-weight:700;
-cursor:pointer;
-display:flex;
-align-items:center;
-justify-content:center;
-gap:7px;
-min-height:32px;
-padding:7px 11px;
-border:1px solid rgba(255,255,255,.32);
-border-radius:8px;
-background:rgba(255,255,255,.08);
-box-shadow:0 4px 12px rgba(0,0,0,.08);
-transition:background .25s ease,color .25s ease,border-color .25s ease,transform .25s ease;
-}
-
-.nav-tools summary::-webkit-details-marker{
-display:none;
-}
-
-.nav-tools[open] summary,
-.nav-tools summary:hover{
-background:#ff7a00;
-border-color:#ff7a00;
-color:#fff;
-transform:translateY(-1px);
-}
-
-.nav-tools-menu{
-position:absolute;
-right:0;
-top:calc(100% + 12px);
-width:220px;
-background:white;
-border:1px solid #d8e0f0;
-border-radius:8px;
-box-shadow:0 14px 28px rgba(0,0,0,.18);
-padding:7px;
-z-index:1300;
-display:grid;
-gap:4px;
-}
-
-.nav-tools-menu a{
-display:flex;
-align-items:center;
-justify-content:flex-start;
-gap:9px;
-color:#0057a8;
-min-height:auto;
-padding:9px 10px;
-border:0;
-border-radius:6px;
-background:transparent;
-box-shadow:none;
-font-size:13px;
-font-weight:800;
-text-decoration:none;
-transform:none;
-}
-
-.nav-tools-menu a:hover{
-background:#0057a8;
-color:white;
-transform:none;
-}
-
 /* IMPORTANT LINKS */
 
 .important-links{
@@ -2091,20 +2017,6 @@ justify-content:center;
 gap:8px;
 }
 
-.nav-tools{
-width:100%;
-}
-
-.nav-tools summary{
-justify-content:center;
-}
-
-.nav-tools-menu{
-position:static;
-width:min(280px, 100%);
-margin:8px auto 0;
-}
-
 .ad-section{
 padding:22px 4%;
 }
@@ -2677,7 +2589,7 @@ body.dark-mode #importantLinksMenuList a:hover {
 <li><a href="#" onclick="openLogin('user')">Login</a></li>
 <li><a href="job-form.html">Latest Job</a></li>
 <li><a href="current-affairs.html">Current Affairs</a></li>
-<li><a href="/tools.html"><i class="fa-solid fa-toolbox"></i> Tools</a></li>
+<li><a href="/tools.html">🧰 Tools</a></li>
 <li><a href="useful-pages.html">Useful Pages</a></li>
 <li><a href="contact.html">Contact</a></li>
 </ul>

@@ -44,13 +44,6 @@ nav{background:var(--blue);padding:12px 6%;display:flex;align-items:center;justi
 nav ul{display:flex;list-style:none;gap:15px;flex-wrap:wrap;justify-content:flex-end;align-items:center}
 nav a{color:#fff;text-decoration:none;font-weight:700;font-size:15px}
 nav a:hover,nav a.active{color:#ffcf75}
-.nav-tools{position:relative}
-.nav-tools summary{list-style:none;color:#fff;font-weight:800;font-size:15px;cursor:pointer;display:flex;align-items:center;gap:7px}
-.nav-tools summary::-webkit-details-marker{display:none}
-.nav-tools[open] summary,.nav-tools summary:hover{color:#ffcf75}
-.nav-tools-menu{position:absolute;right:0;top:calc(100% + 10px);width:235px;background:var(--surface);border:1px solid var(--line);border-radius:8px;box-shadow:0 12px 26px rgba(0,0,0,.18);padding:7px;display:grid;gap:4px;z-index:50}
-.nav-tools-menu a{color:var(--blue);padding:9px 10px;border-radius:6px;font-size:13px;font-weight:900;display:flex;gap:8px;align-items:center}
-.nav-tools-menu a:hover,.nav-tools-menu a.active{background:var(--blue);color:#fff}
 .hero{background:linear-gradient(135deg,var(--blue),var(--deep));color:#fff;border-bottom:4px solid var(--orange);padding:30px 6%}
 .hero-inner{max-width:1120px;margin:auto}
 .tag{display:inline-flex;align-items:center;gap:8px;background:var(--orange);color:var(--deep);padding:7px 12px;border-radius:6px;font-weight:900;font-size:13px;margin-bottom:12px}
@@ -89,8 +82,8 @@ body.hub-mode .tools-layout{display:none}
 .tool-card{display:none;background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--orange);border-radius:8px;box-shadow:0 8px 24px rgba(8,31,74,.07);padding:16px;scroll-margin-top:92px}
 .tool-card.active{display:block}
 .tool-card.admin-hidden-tool{border-top-color:#94a3b8;opacity:.72}
-.tool-index a.is-hidden-tool,.nav-tools-menu a.is-hidden-tool{display:none}
-.admin-mode .tool-index a.is-hidden-tool,.admin-mode .nav-tools-menu a.is-hidden-tool{display:flex;opacity:.62}
+.tool-index a.is-hidden-tool{display:none}
+.admin-mode .tool-index a.is-hidden-tool{display:flex;opacity:.62}
 .tool-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
 .tool-head h2{color:var(--blue);font-size:clamp(19px,3vw,24px);line-height:1.2}
 .tool-head p{color:var(--muted);font-weight:600;font-size:13px;margin-top:3px}
@@ -123,8 +116,8 @@ body.embed-mode main{max-width:none;padding:0;margin:0}
 body.embed-mode .tools-layout{display:block}
 body.embed-mode .tool-stack{display:block}
 body.embed-mode .tool-card{box-shadow:none;border-radius:8px;margin:0}
-@media(max-width:920px){.tool-hub-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.tools-layout{grid-template-columns:1fr}.tool-index{position:static}.tool-index div{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.preview-grid{grid-template-columns:1fr}.admin-tool-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:620px){nav{flex-direction:column;align-items:flex-start;padding:12px 4%}nav ul{justify-content:flex-start;gap:12px}.nav-tools{width:100%}.nav-tools-menu{position:static;width:100%;margin-top:8px}.logo img{width:170px;max-width:74vw}.hero{padding:26px 4%}main{padding:16px 3%}.tool-hub-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.tool-hub-card{min-height:126px}.tool-hub-icon{width:58px;height:58px;font-size:22px}.tool-card{padding:13px}.tool-head{display:block}.badge{display:inline-flex;margin-top:8px}.form-grid{grid-template-columns:1fr}.tool-index div{grid-template-columns:1fr}.actions>*{width:100%}.admin-tool-list{grid-template-columns:1fr}}
+@media(max-width:920px){.tool-hub-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tools-layout{grid-template-columns:1fr}.tool-index{position:static}.tool-index div{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.preview-grid{grid-template-columns:1fr}.admin-tool-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){nav{flex-direction:column;align-items:flex-start;padding:12px 4%}nav ul{justify-content:flex-start;gap:12px}.logo img{width:170px;max-width:74vw}.hero{padding:26px 4%}main{padding:16px 3%}.tool-hub-grid{grid-template-columns:1fr;gap:12px}.tool-hub-card{min-height:126px}.tool-hub-icon{width:58px;height:58px;font-size:22px}.tool-card{padding:13px}.tool-head{display:block}.badge{display:inline-flex;margin-top:8px}.form-grid{grid-template-columns:1fr}.tool-index div{grid-template-columns:1fr}.actions>*{width:100%}.admin-tool-list{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -134,21 +127,7 @@ body.embed-mode .tool-card{box-shadow:none;border-radius:8px;margin:0}
     <li><a href="index.html">Home</a></li>
     <li><a href="job-form.html">Latest Jobs</a></li>
     <li><a href="OFFLINEFORM.HTML">PDF Forms</a></li>
-    <li>
-      <details class="nav-tools" open>
-        <summary><i class="fa-solid fa-toolbox"></i> Tools</summary>
-        <div class="nav-tools-menu">
-          <a class="active" href="tools.html"><i class="fa-solid fa-screwdriver-wrench"></i> All Free Tools</a>
-          <a href="emitra-offline-form-fill/"><i class="fa-solid fa-file-pen"></i> eMitra Offline Form Fill</a>
-          <a href="OFFLINEFORM.HTML"><i class="fa-solid fa-file-pdf"></i> PDF Form</a>
-          <a href="stationery.html"><i class="fa-solid fa-print"></i> Stationery</a>
-          <a href="resume-format.html"><i class="fa-solid fa-file-lines"></i> Resume Builder</a>
-          <a href="invoice-generator.html"><i class="fa-solid fa-file-invoice"></i> Invoice Generator</a>
-          <a href="age-calculator.html"><i class="fa-solid fa-calculator"></i> Age Calculator</a>
-          <a href="mock-test.html"><i class="fa-solid fa-clipboard-check"></i> Daily Mock Test</a>
-        </div>
-      </details>
-    </li>
+    <li><a class="active" href="/tools.html">🧰 Tools</a></li>
     <li><a href="useful-pages.html">Useful Pages</a></li>
     <li><a href="contact.html">Contact</a></li>
   </ul>
@@ -175,23 +154,27 @@ body.embed-mode .tool-card{box-shadow:none;border-radius:8px;margin:0}
     <div class="admin-tool-list" id="adminToolList"></div>
   </section>
   <section class="tool-hub-grid" id="toolHubGrid" aria-label="All free tools">
-    <a class="tool-hub-card" data-tool-id="image-resizer" href="image-resizer.html"><span class="tool-hub-icon"><i class="fa-solid fa-image"></i></span><h2>Image Resizer</h2></a>
     <a class="tool-hub-card" data-tool-id="emitra-offline-form-fill" href="emitra-offline-form-fill/"><span class="tool-hub-icon"><i class="fa-solid fa-file-pen"></i></span><h2>eMitra Offline Form Fill</h2></a>
+    <a class="tool-hub-card" data-tool-id="pdf-form" href="OFFLINEFORM.HTML"><span class="tool-hub-icon"><i class="fa-solid fa-file-pdf"></i></span><h2>PDF Form</h2></a>
+    <a class="tool-hub-card" data-tool-id="stationery" href="stationery.html"><span class="tool-hub-icon"><i class="fa-solid fa-print"></i></span><h2>Stationery</h2></a>
+    <a class="tool-hub-card" data-tool-id="resume-builder" href="resume-format.html"><span class="tool-hub-icon"><i class="fa-solid fa-file-lines"></i></span><h2>Resume Builder</h2></a>
+    <a class="tool-hub-card" data-tool-id="invoice-generator" href="invoice-generator.html"><span class="tool-hub-icon"><i class="fa-solid fa-file-invoice"></i></span><h2>Invoice Generator</h2></a>
+    <a class="tool-hub-card" data-tool-id="age-calculator" href="age-calculator.html"><span class="tool-hub-icon"><i class="fa-solid fa-calculator"></i></span><h2>Age Calculator</h2></a>
+    <a class="tool-hub-card" data-tool-id="mock-test" href="mock-test.html"><span class="tool-hub-icon"><i class="fa-solid fa-clipboard-check"></i></span><h2>Daily Mock Test</h2></a>
+    <a class="tool-hub-card" data-tool-id="image-resizer" href="image-resizer.html"><span class="tool-hub-icon"><i class="fa-solid fa-image"></i></span><h2>Image Resizer</h2></a>
     <a class="tool-hub-card" data-tool-id="resize-20kb" href="resize-image-20kb.html"><span class="tool-hub-icon"><i class="fa-solid fa-compress"></i></span><h2>Resize Image to 20KB</h2></a>
     <a class="tool-hub-card" data-tool-id="image-compressor" href="image-compressor.html"><span class="tool-hub-icon"><i class="fa-solid fa-minimize"></i></span><h2>Image Compressor</h2></a>
-    <a class="tool-hub-card" data-tool-id="image-converter" href="image-converter.html"><span class="tool-hub-icon"><i class="fa-solid fa-repeat"></i></span><h2>JPG/PNG/WEBP Converter</h2></a>
+    <a class="tool-hub-card" data-tool-id="image-converter" href="image-converter.html"><span class="tool-hub-icon"><i class="fa-solid fa-repeat"></i></span><h2>Image Converter</h2></a>
     <a class="tool-hub-card" data-tool-id="passport-photo" href="passport-photo.html"><span class="tool-hub-icon"><i class="fa-solid fa-id-card"></i></span><h2>Passport Size Photo Maker</h2></a>
     <a class="tool-hub-card" data-tool-id="ssc-signature" href="ssc-signature-resizer.html"><span class="tool-hub-icon"><i class="fa-solid fa-signature"></i></span><h2>SSC Signature Resizer</h2></a>
     <a class="tool-hub-card" data-tool-id="rrb-signature" href="rrb-signature-resizer.html"><span class="tool-hub-icon"><i class="fa-solid fa-signature"></i></span><h2>RRB Signature Resizer</h2></a>
-    <a class="tool-hub-card" data-tool-id="pan-signature" href="pan-signature-resizer.html"><span class="tool-hub-icon"><i class="fa-solid fa-pen-nib"></i></span><h2>NSDL PAN Signature Resizer</h2></a>
     <a class="tool-hub-card" data-tool-id="pan-photo" href="pan-photo-resizer.html"><span class="tool-hub-icon"><i class="fa-solid fa-user"></i></span><h2>NSDL PAN Photo Resizer</h2></a>
     <a class="tool-hub-card" data-tool-id="photo-signature-joiner" href="photo-signature-joiner.html"><span class="tool-hub-icon"><i class="fa-solid fa-object-group"></i></span><h2>Photo Signature Joiner</h2></a>
     <a class="tool-hub-card" data-tool-id="photo-name-date" href="photo-name-date-joiner.html"><span class="tool-hub-icon"><i class="fa-solid fa-calendar-days"></i></span><h2>Photo Name Date Joiner</h2></a>
-    <a class="tool-hub-card" data-tool-id="image-to-pdf" href="image-to-pdf.html"><span class="tool-hub-icon"><i class="fa-solid fa-file-pdf"></i></span><h2>Image to PDF Converter</h2></a>
+    <a class="tool-hub-card" data-tool-id="image-to-pdf" href="image-to-pdf.html"><span class="tool-hub-icon"><i class="fa-solid fa-file-pdf"></i></span><h2>Image to PDF</h2></a>
     <a class="tool-hub-card" data-tool-id="pdf-to-jpg" href="pdf-to-jpg.html"><span class="tool-hub-icon"><i class="fa-solid fa-file-image"></i></span><h2>PDF to JPG Converter</h2></a>
     <a class="tool-hub-card" data-tool-id="pdf-merge" href="pdf-merge.html"><span class="tool-hub-icon"><i class="fa-solid fa-layer-group"></i></span><h2>PDF Merge Tool</h2></a>
-    <a class="tool-hub-card" data-tool-id="qr-generator" href="qr-generator.html"><span class="tool-hub-icon"><i class="fa-solid fa-qrcode"></i></span><h2>QR Code Generator</h2></a>
-    <a class="tool-hub-card" data-tool-id="age-calculator" href="age-calculator.html"><span class="tool-hub-icon"><i class="fa-solid fa-calculator"></i></span><h2>Age Calculator</h2></a>
+    <a class="tool-hub-card" data-tool-id="qr-generator" href="qr-generator.html"><span class="tool-hub-icon"><i class="fa-solid fa-qrcode"></i></span><h2>QR Generator</h2></a>
   </section>
   <div class="tools-layout">
     <aside class="tool-index" aria-label="Free tools list">
@@ -435,7 +418,7 @@ function applyToolVisibility(){
       card.hidden = true;
     }
   });
-  document.querySelectorAll(".tool-index a, .nav-tools-menu a").forEach((link) => {
+  document.querySelectorAll(".tool-index a").forEach((link) => {
     const id = linkToolId(link);
     const hidden = id && isToolHidden(id);
     link.classList.toggle("is-hidden-tool", Boolean(hidden));
@@ -514,7 +497,7 @@ function openToolFromHash(hash, updateUrl = true){
 
 document.addEventListener("DOMContentLoaded", () => {
   applyToolVisibility();
-  document.querySelectorAll(".tool-index a[href^='#'], .nav-tools-menu a[href^='#']").forEach((link) => {
+  document.querySelectorAll(".tool-index a[href^='#']").forEach((link) => {
     link.addEventListener("click", (event) => {
       event.preventDefault();
       const id = linkToolId(link);
