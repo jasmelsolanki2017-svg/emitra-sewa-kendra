@@ -61,7 +61,7 @@ app.use((req, res, next) => {
 const staticMiddleware = express.static(__dirname);
 app.use((req, res, next) => {
   const publicPath = String(req.path || "").toLowerCase();
-  if (publicPath === "/sitemap.xml" || publicPath === "/sitemap-jobs.xml" || publicPath === "/robots.txt") {
+  if (publicPath === "/sitemap.xml" || publicPath === "/sitemap-jobs.xml" || publicPath === "/robots.txt" || publicPath === "/job-form.html") {
     return next();
   }
   if (publicPath.startsWith("/post/")) {
@@ -1000,7 +1000,7 @@ const jobSchemaGraph = ({ id = "", job = {}, title = "Job Update", description =
         "@id": `${canonicalUrl}#breadcrumb`,
         itemListElement: [
           { "@type": "ListItem", position: 1, name: "Home", item: `${SITE_BASE_URL}/` },
-          { "@type": "ListItem", position: 2, name: "Latest Jobs", item: `${SITE_BASE_URL}/job-form.html` },
+          { "@type": "ListItem", position: 2, name: "Latest Jobs", item: `${SITE_BASE_URL}/#homePortalLatestJobs` },
           { "@type": "ListItem", position: 3, name: title, item: canonicalUrl }
         ]
       },
@@ -1180,7 +1180,7 @@ const renderPrerenderedJobDetail = (id = "", job = {}) => {
             <div class="content-box">
               <p>${htmlEscape(description)}</p>
               <table class="detail-table"><tbody>${summaryRows.map(([label, value]) => `<tr><th>${htmlEscape(label)}</th><td>${htmlEscape(value)}</td></tr>`).join("")}</tbody></table>
-              <p><a class="auto-link" href="${htmlEscape(canonicalUrl)}">Canonical job detail link</a> | <a class="auto-link" href="job-form.html">All Latest Jobs</a></p>
+              <p><a class="auto-link" href="${htmlEscape(canonicalUrl)}">Canonical job detail link</a> | <a class="auto-link" href="/#homePortalLatestJobs">All Latest Jobs</a></p>
             </div>`;
   return html
     .replace(/<title>[\s\S]*?<\/title>/i, `<title>${htmlEscape(seo.seoTitle)}</title>`)
@@ -5192,6 +5192,10 @@ app.post("/api/quick-post/status", async (req, res) => {
 app.get("/robots.txt", (req, res) => {
   const robots = fs.readFileSync(path.join(__dirname, "robots.txt"), "utf8");
   res.type("text/plain").send(robots);
+});
+
+app.get("/job-form.html", (_req, res) => {
+  return res.redirect(301, "/#homePortalLatestJobs");
 });
 
 app.get("/job-detail.html", async (req, res, next) => {

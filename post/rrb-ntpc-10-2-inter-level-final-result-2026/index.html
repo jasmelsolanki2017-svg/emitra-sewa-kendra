@@ -62,7 +62,7 @@
           "@type": "ListItem",
           "position": 2,
           "name": "Latest Jobs",
-          "item": "https://emitrawala.online/job-form.html"
+          "item": "https://emitrawala.online/#homePortalLatestJobs"
         },
         {
           "@type": "ListItem",
@@ -371,7 +371,7 @@ body.dark-mode .job-tool-btn:hover{background:#ffb15c!important;border-color:#ff
   <a class="logo" href="index.html">E-MITRA <span>WALA</span></a>
   <ul>
     <li><a href="index.html">Home</a></li>
-    <li><a href="job-form.html">Latest Jobs</a></li>
+    <li><a href="/#homePortalLatestJobs">Latest Jobs</a></li>
     <li><a href="current-affairs.html">Current Affairs</a></li>
     <li><a href="OFFLINEFORM.HTML">PDF Forms</a></li>
     <li><a href="about.html">About</a></li>
@@ -410,7 +410,7 @@ body.dark-mode .job-tool-btn:hover{background:#ffb15c!important;border-color:#ff
             <div class="content-box">
               <p>RRB NTPC 10+2 Inter Level CEN 06/2024 Final Result 2026 जारी। कुल 3445 पदों के लिए Result, Cut-Off और Score Card download करें।</p>
               <table class="detail-table"><tbody><tr><th>Department</th><td>Railway Recruitment Board (RRB)</td></tr><tr><th>Post Name</th><td>RRB NTPC 10+2 Inter Level CEN 06/2024 Final Result 2026</td></tr><tr><th>Total Posts</th><td>3445</td></tr><tr><th>Last Date</th><td>Update Soon</td></tr><tr><th>Qualification</th><td>10+2 Intermediate</td></tr><tr><th>Location</th><td>All India</td></tr></tbody></table>
-              <p><a class="auto-link" href="https://emitrawala.online/post/rrb-ntpc-10-2-inter-level-final-result-2026/">Canonical job detail link</a> | <a class="auto-link" href="../../job-form.html">All Latest Jobs</a></p>
+              <p><a class="auto-link" href="https://emitrawala.online/post/rrb-ntpc-10-2-inter-level-final-result-2026/">Canonical job detail link</a> | <a class="auto-link" href="../../#homePortalLatestJobs">All Latest Jobs</a></p>
             </div>
         </section>
         <section class="panel" id="featurePanel" style="display:none;">
@@ -992,7 +992,7 @@ const buildBreadcrumbSchema = (title = "Job Details", canonicalUrl = location.hr
   "@id":`${canonicalUrl}#breadcrumb`,
   "itemListElement":[
     { "@type":"ListItem", "position":1, "name":"Home", "item":`${location.origin}/index.html` },
-    { "@type":"ListItem", "position":2, "name":currentAffairs ? "Current Affairs" : "Latest Jobs", "item":`${location.origin}/${currentAffairs ? "current-affairs.html" : "job-form.html"}` },
+    { "@type":"ListItem", "position":2, "name":currentAffairs ? "Current Affairs" : "Latest Jobs", "item":`${location.origin}/${currentAffairs ? "current-affairs.html" : "/#homePortalLatestJobs"}` },
     { "@type":"ListItem", "position":3, "name":title, "item":canonicalUrl }
   ]
 });
@@ -2121,7 +2121,7 @@ const renderSidebarLinks = (items = []) => {
     seen.add(key);
     return buildButton(item, item.className || "");
   }).filter(Boolean).join("");
-  box.innerHTML = html || '<a class="btn notification" href="job-form.html">Latest Jobs</a>';
+  box.innerHTML = html || '<a class="btn notification" href="/#homePortalLatestJobs">Latest Jobs</a>';
 };
 
 const renderArticleMeta = (job = {}) => {

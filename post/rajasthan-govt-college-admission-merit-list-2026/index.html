@@ -62,7 +62,7 @@
           "@type": "ListItem",
           "position": 2,
           "name": "Latest Jobs",
-          "item": "https://emitrawala.online/job-form.html"
+          "item": "https://emitrawala.online/#homePortalLatestJobs"
         },
         {
           "@type": "ListItem",
@@ -371,7 +371,7 @@ body.dark-mode .job-tool-btn:hover{background:#ffb15c!important;border-color:#ff
   <a class="logo" href="index.html">E-MITRA <span>WALA</span></a>
   <ul>
     <li><a href="index.html">Home</a></li>
-    <li><a href="job-form.html">Latest Jobs</a></li>
+    <li><a href="/#homePortalLatestJobs">Latest Jobs</a></li>
     <li><a href="current-affairs.html">Current Affairs</a></li>
     <li><a href="OFFLINEFORM.HTML">PDF Forms</a></li>
     <li><a href="about.html">About</a></li>
@@ -420,7 +420,7 @@ body.dark-mode .job-tool-btn:hover{background:#ffb15c!important;border-color:#ff
             <section class="panel"><h2>How to Check</h2><div class="content-box"><ol><li>Official DCE Rajasthan admission portal open karein.</li><li>Merit List / Waiting List Status Check link par click karein.</li><li>Application Number, Date of Birth aur captcha fill karein.</li><li>Status check karke application form / merit status print kar lein.</li></ol></div></section>
             <section class="panel"><h2>Important Links</h2><div class="post-wise-links"><a class="btn" href="https://dceapp.rajasthan.gov.in/DCE_Application/SearchMeritNew.aspx" target="_blank" rel="noopener noreferrer">Apply Online</a><a class="btn" href="https://dceapp.rajasthan.gov.in" target="_blank" rel="noopener noreferrer">Official Notification</a><a class="btn" href="https://dceapp.rajasthan.gov.in" target="_blank" rel="noopener noreferrer">Official Website</a><a class="btn" href="https://dceapp.rajasthan.gov.in/DCE_Application/SearchMeritNew.aspx" target="_blank" rel="noopener noreferrer">Rajasthan Govt College Merit List Status Check</a><a class="btn" href="https://dceapp.rajasthan.gov.in/DCE_Application/AdmissionFee.aspx" target="_blank" rel="noopener noreferrer">Admission Fee Payment</a><a class="btn" href="https://dceapp.rajasthan.gov.in/DCE_Application/SearchApplication.aspx" target="_blank" rel="noopener noreferrer">View / Print Application Form</a></div></section>
             <section class="panel"><h2>FAQ</h2><div class="content-box"><details class="faq-item"><summary>Rajasthan Govt College Merit List 2026 कब जारी हुई?</summary><p>UG First Semester Admission 2026-27 के लिए अंतरिम मेरिट सूची और प्रतीक्षा सूची 09 जून 2026 को जारी की गई।</p></details><details class="faq-item"><summary>Rajasthan Govt College Merit List 2026 कैसे चेक करें?</summary><p>अभ्यर्थी dceapp.rajasthan.gov.in पर जाकर Search Merit UG लिंक से Application Number, Date of Birth और Captcha भरकर अपना स्टेटस चेक कर सकते हैं।</p></details><details class="faq-item"><summary>दस्तावेज सत्यापन की अंतिम तिथि क्या है?</summary><p>दस्तावेज सत्यापन और ई-मित्र पर शुल्क जमा करने की अंतिम तिथि 13 जून 2026 है।</p></details><details class="faq-item"><summary>प्रथम प्रवेश सूची कब जारी होगी?</summary><p>प्रथम प्रवेश सूची 15 जून 2026 को जारी की जाएगी।</p></details><details class="faq-item"><summary>कौन-कौन से कोर्स के लिए मेरिट लिस्ट जारी हुई है?</summary><p>B.A, B.Sc और B.Com प्रथम सेमेस्टर प्रवेश के लिए मेरिट लिस्ट जारी की गई है।</p></details></div></section>
-            <p><a class="auto-link" href="https://emitrawala.online/post/rajasthan-govt-college-admission-merit-list-2026/">Canonical admission detail link</a> | <a class="auto-link" href="../../job-form.html">All Updates</a></p>
+            <p><a class="auto-link" href="https://emitrawala.online/post/rajasthan-govt-college-admission-merit-list-2026/">Canonical admission detail link</a> | <a class="auto-link" href="../../#homePortalLatestJobs">All Updates</a></p>
         </section>
         <section class="panel" id="featurePanel" style="display:none;">
           <h2>Overview Table</h2>
@@ -1001,7 +1001,7 @@ const buildBreadcrumbSchema = (title = "Job Details", canonicalUrl = location.hr
   "@id":`${canonicalUrl}#breadcrumb`,
   "itemListElement":[
     { "@type":"ListItem", "position":1, "name":"Home", "item":`${location.origin}/index.html` },
-    { "@type":"ListItem", "position":2, "name":currentAffairs ? "Current Affairs" : "Latest Jobs", "item":`${location.origin}/${currentAffairs ? "current-affairs.html" : "job-form.html"}` },
+    { "@type":"ListItem", "position":2, "name":currentAffairs ? "Current Affairs" : "Latest Jobs", "item":`${location.origin}/${currentAffairs ? "current-affairs.html" : "/#homePortalLatestJobs"}` },
     { "@type":"ListItem", "position":3, "name":title, "item":canonicalUrl }
   ]
 });
@@ -2130,7 +2130,7 @@ const renderSidebarLinks = (items = []) => {
     seen.add(key);
     return buildButton(item, item.className || "");
   }).filter(Boolean).join("");
-  box.innerHTML = html || '<a class="btn notification" href="job-form.html">Latest Jobs</a>';
+  box.innerHTML = html || '<a class="btn notification" href="/#homePortalLatestJobs">Latest Jobs</a>';
 };
 
 const renderArticleMeta = (job = {}) => {

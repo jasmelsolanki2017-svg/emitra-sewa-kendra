@@ -62,7 +62,7 @@
           "@type": "ListItem",
           "position": 2,
           "name": "Latest Jobs",
-          "item": "https://emitrawala.online/job-form.html"
+          "item": "https://emitrawala.online/#homePortalLatestJobs"
         },
         {
           "@type": "ListItem",
@@ -356,7 +356,7 @@ body.dark-mode .job-tool-btn:hover{background:#ffb15c!important;border-color:#ff
   <a class="logo" href="index.html">E-MITRA <span>WALA</span></a>
   <ul>
     <li><a href="index.html">Home</a></li>
-    <li><a href="job-form.html">Latest Jobs</a></li>
+    <li><a href="/#homePortalLatestJobs">Latest Jobs</a></li>
     <li><a href="current-affairs.html">Current Affairs</a></li>
     <li><a href="OFFLINEFORM.HTML">PDF Forms</a></li>
     <li><a href="about.html">About</a></li>
@@ -395,7 +395,7 @@ body.dark-mode .job-tool-btn:hover{background:#ffb15c!important;border-color:#ff
             <div class="content-box">
               <p>Bihar BPSC AES Admit Card Date 2026, Bihar Public Service Commission (BPSC), 17 posts, Last date 19 September 2025, apply link, qualification and important date</p>
               <table class="detail-table"><tbody><tr><th>Department</th><td>Bihar Public Service Commission (BPSC)</td></tr><tr><th>Post Name</th><td>Assistant Environmental Scientist (AES)</td></tr><tr><th>Total Posts</th><td>17</td></tr><tr><th>Last Date</th><td>19 September 2025</td></tr><tr><th>Qualification</th><td>Update Soon</td></tr><tr><th>Location</th><td>All India</td></tr></tbody></table>
-              <p><a class="auto-link" href="https://emitrawala.online/post/bihar-bpsc-aes-admit-card-date-2026/">Canonical job detail link</a> | <a class="auto-link" href="../../job-form.html">All Latest Jobs</a></p>
+              <p><a class="auto-link" href="https://emitrawala.online/post/bihar-bpsc-aes-admit-card-date-2026/">Canonical job detail link</a> | <a class="auto-link" href="../../#homePortalLatestJobs">All Latest Jobs</a></p>
             </div>
         </section>
         <section class="panel" id="featurePanel" style="display:none;">
@@ -977,7 +977,7 @@ const buildBreadcrumbSchema = (title = "Job Details", canonicalUrl = location.hr
   "@id":`${canonicalUrl}#breadcrumb`,
   "itemListElement":[
     { "@type":"ListItem", "position":1, "name":"Home", "item":`${location.origin}/index.html` },
-    { "@type":"ListItem", "position":2, "name":currentAffairs ? "Current Affairs" : "Latest Jobs", "item":`${location.origin}/${currentAffairs ? "current-affairs.html" : "job-form.html"}` },
+    { "@type":"ListItem", "position":2, "name":currentAffairs ? "Current Affairs" : "Latest Jobs", "item":`${location.origin}/${currentAffairs ? "current-affairs.html" : "/#homePortalLatestJobs"}` },
     { "@type":"ListItem", "position":3, "name":title, "item":canonicalUrl }
   ]
 });
@@ -2106,7 +2106,7 @@ const renderSidebarLinks = (items = []) => {
     seen.add(key);
     return buildButton(item, item.className || "");
   }).filter(Boolean).join("");
-  box.innerHTML = html || '<a class="btn notification" href="job-form.html">Latest Jobs</a>';
+  box.innerHTML = html || '<a class="btn notification" href="/#homePortalLatestJobs">Latest Jobs</a>';
 };
 
 const renderArticleMeta = (job = {}) => {

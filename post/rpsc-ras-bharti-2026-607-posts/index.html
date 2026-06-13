@@ -62,7 +62,7 @@
           "@type": "ListItem",
           "position": 2,
           "name": "Latest Jobs",
-          "item": "https://emitrawala.online/job-form.html"
+          "item": "https://emitrawala.online/#homePortalLatestJobs"
         },
         {
           "@type": "ListItem",
@@ -372,7 +372,7 @@ body.dark-mode .job-tool-btn:hover{background:#ffb15c!important;border-color:#ff
   <a class="logo" href="index.html">E-MITRA <span>WALA</span></a>
   <ul>
     <li><a href="index.html">Home</a></li>
-    <li><a href="job-form.html">Latest Jobs</a></li>
+    <li><a href="/#homePortalLatestJobs">Latest Jobs</a></li>
     <li><a href="current-affairs.html">Current Affairs</a></li>
     <li><a href="OFFLINEFORM.HTML">PDF Forms</a></li>
     <li><a href="about.html">About</a></li>
@@ -411,7 +411,7 @@ body.dark-mode .job-tool-btn:hover{background:#ffb15c!important;border-color:#ff
             <div class="content-box">
               <p>RPSC RAS Recruitment 2026 का 607 पदों पर नोटिफिकेशन जारी। आवेदन 04 जून से 03 जुलाई 2026 तक होंगे। SDM 57, RPS 26, RTS 136 और RAcS 36 पद शामिल।</p>
               <table class="detail-table"><tbody><tr><th>Department</th><td>Rajasthan Public Service Commission (RPSC)</td></tr><tr><th>Post Name</th><td>RPSC RAS / RTS Recruitment 2026</td></tr><tr><th>Total Posts</th><td>607</td></tr><tr><th>Last Date</th><td>03 July 2026</td></tr><tr><th>Qualification</th><td>किसी मान्यता प्राप्त विश्वविद्यालय से स्नातक / Graduation Degree</td></tr><tr><th>Location</th><td>Rajasthan</td></tr></tbody></table>
-              <p><a class="auto-link" href="https://emitrawala.online/post/rpsc-ras-bharti-2026-607-posts/">Canonical job detail link</a> | <a class="auto-link" href="../../job-form.html">All Latest Jobs</a></p>
+              <p><a class="auto-link" href="https://emitrawala.online/post/rpsc-ras-bharti-2026-607-posts/">Canonical job detail link</a> | <a class="auto-link" href="../../#homePortalLatestJobs">All Latest Jobs</a></p>
             </div>
         </section>
         <section class="panel" id="featurePanel" style="display:none;">
@@ -993,7 +993,7 @@ const buildBreadcrumbSchema = (title = "Job Details", canonicalUrl = location.hr
   "@id":`${canonicalUrl}#breadcrumb`,
   "itemListElement":[
     { "@type":"ListItem", "position":1, "name":"Home", "item":`${location.origin}/index.html` },
-    { "@type":"ListItem", "position":2, "name":currentAffairs ? "Current Affairs" : "Latest Jobs", "item":`${location.origin}/${currentAffairs ? "current-affairs.html" : "job-form.html"}` },
+    { "@type":"ListItem", "position":2, "name":currentAffairs ? "Current Affairs" : "Latest Jobs", "item":`${location.origin}/${currentAffairs ? "current-affairs.html" : "/#homePortalLatestJobs"}` },
     { "@type":"ListItem", "position":3, "name":title, "item":canonicalUrl }
   ]
 });
@@ -2122,7 +2122,7 @@ const renderSidebarLinks = (items = []) => {
     seen.add(key);
     return buildButton(item, item.className || "");
   }).filter(Boolean).join("");
-  box.innerHTML = html || '<a class="btn notification" href="job-form.html">Latest Jobs</a>';
+  box.innerHTML = html || '<a class="btn notification" href="/#homePortalLatestJobs">Latest Jobs</a>';
 };
 
 const renderArticleMeta = (job = {}) => {
