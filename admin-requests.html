@@ -166,6 +166,8 @@
     let adminAllowed = false;
     let allRequests = [];
     let allPdfVerificationRequests = [];
+    let topPdfVerificationRequests = [];
+    let userPdfVerificationMirrorRequests = [];
 
     const escapeHTML = (value = "") => String(value)
       .replace(/&/g, "&amp;")
@@ -395,6 +397,20 @@
       }).join("");
     }
 
+    function syncPdfVerificationQueue(){
+      const byId = new Map();
+      [...topPdfVerificationRequests, ...userPdfVerificationMirrorRequests].forEach((item) => {
+        if(!item || !item.id){ return; }
+        byId.set(item.id, { ...(byId.get(item.id) || {}), ...item });
+      });
+      allPdfVerificationRequests = [...byId.values()].sort((a, b) => {
+        const aDone = String(a.status || "").toLowerCase() === "verified" ? 1 : 0;
+        const bDone = String(b.status || "").toLowerCase() === "verified" ? 1 : 0;
+        return aDone - bDone || Number(b.createdAt || 0) - Number(a.createdAt || 0);
+      });
+      renderPdfVerificationQueue();
+    }
+
     onAuthStateChanged(auth, (user) => {
       if(user && user.email === adminEmail){
         adminAllowed = true;
@@ -416,16 +432,21 @@
     });
 
     onValue(ref(db, "pdfVerificationRequests"), (snapshot) => {
-      allPdfVerificationRequests = [];
+      topPdfVerificationRequests = [];
       if(snapshot.exists()){
-        snapshot.forEach((child) => allPdfVerificationRequests.push({ id:child.key, ...(child.val() || {}) }));
+        snapshot.forEach((child) => topPdfVerificationRequests.push({ id:child.key, ...(child.val() || {}) }));
       }
-      allPdfVerificationRequests.sort((a, b) => {
-        const aDone = String(a.status || "").toLowerCase() === "verified" ? 1 : 0;
-        const bDone = String(b.status || "").toLowerCase() === "verified" ? 1 : 0;
-        return aDone - bDone || Number(b.createdAt || 0) - Number(a.createdAt || 0);
-      });
-      renderPdfVerificationQueue();
+      syncPdfVerificationQueue();
+    });
+
+    onValue(ref(db, "userPdfVerificationRequests"), (snapshot) => {
+      userPdfVerificationMirrorRequests = [];
+      if(snapshot.exists()){
+        snapshot.forEach((userSnap) => {
+          userSnap.forEach((child) => userPdfVerificationMirrorRequests.push({ id:child.key, ...(child.val() || {}), userUid:(child.val() || {}).userUid || userSnap.key }));
+        });
+      }
+      syncPdfVerificationQueue();
     });
 
     document.getElementById("requestSearch").addEventListener("input", renderRequests);
