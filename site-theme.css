@@ -156,6 +156,45 @@ body.site-theme-premium textarea{
   color:#122036!important;
   border-color:#b9d2ee!important;
 }
+body.site-theme-premium .message,
+body.site-theme-premium .panel,
+body.site-theme-premium .card,
+body.site-theme-premium .row,
+body.site-theme-premium .job-card,
+body.site-theme-premium .summary-card,
+body.site-theme-premium .status-chip,
+body.site-theme-premium .aside-mini,
+body.site-theme-premium .link-card,
+body.site-theme-premium .related-card,
+body.site-theme-premium .region-card{
+  color:#071b3f!important;
+}
+body.site-theme-premium .message strong,
+body.site-theme-premium .panel strong,
+body.site-theme-premium .card strong,
+body.site-theme-premium .row strong,
+body.site-theme-premium .job-card strong,
+body.site-theme-premium .summary-card strong,
+body.site-theme-premium .status-chip,
+body.site-theme-premium .aside-mini,
+body.site-theme-premium .link-card strong,
+body.site-theme-premium .related-card strong,
+body.site-theme-premium .region-card h4{
+  color:#071b3f!important;
+}
+body.site-theme-premium .poster-fallback,
+body.site-theme-premium .media-box .poster-fallback,
+body.site-theme-premium .poster-fallback strong{
+  color:#fff!important;
+}
+body.site-theme-premium .poster-fallback span{
+  color:#ffdf4c!important;
+}
+body.site-theme-premium .poster-fallback small{
+  background:#fff!important;
+  color:#0647a6!important;
+  border:1px solid rgba(6,71,166,.18)!important;
+}
 body.site-theme-premium.dark-mode{
   background:#07111f!important;
 }
