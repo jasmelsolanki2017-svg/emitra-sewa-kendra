@@ -160,6 +160,17 @@
     .aside-phone{background:#fff;border-radius:18px;padding:10px;box-shadow:var(--shadow);border:1px solid var(--border)}
     .aside-screen{background:#fff;border-radius:12px;overflow:hidden;border:1px solid #d9e6f7}.aside-top{display:flex;align-items:center;justify-content:space-between;background:#061d4b;color:#fff;padding:14px 15px;font-size:17px;font-weight:900}.aside-body{padding:14px}.aside-body .breadcrumb{font-size:12px;margin-bottom:10px}.aside-body .media-box{min-height:175px;border-radius:5px}.aside-body .poster-fallback strong{font-size:21px}.aside-body .pill{font-size:11px;padding:8px 12px;margin:12px 0 10px}.aside-body h2{font-size:25px;line-height:1.06;margin:0 0 10px;color:#061d4b;font-weight:900}.aside-body p{font-size:13px;line-height:1.45;margin:0 0 12px;color:#31415e;font-weight:800}.aside-mini-list{display:grid;gap:8px;margin:10px 0}.aside-mini{border:1px solid var(--border);border-radius:7px;background:#fff;padding:10px 11px;font-size:12px;font-weight:900;color:#071b3f}.aside-body .quick-actions{grid-template-columns:1fr;gap:9px}.aside-body .summary-grid{grid-template-columns:1fr;gap:9px;margin-top:12px}.aside-body .summary-card{min-height:60px;padding:11px}.aside-body .summary-icon{width:36px;height:36px;flex-basis:36px}.aside-body .summary-card strong{font-size:12px}.aside-body .summary-card span span{font-size:11px}
     .mobile-sticky{position:fixed;left:0;right:0;bottom:0;z-index:70;display:none;background:#fff;border-top:1px solid var(--border);box-shadow:0 -5px 20px rgba(0,0,0,.12);padding:9px;gap:9px}.mobile-sticky .action-btn{min-height:44px;font-size:14px}
+    .premium-admin-editor{position:sticky;top:74px;z-index:45;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:#fff8e7;border:2px solid #ff8a00;border-radius:10px;padding:10px 12px;margin:0 0 14px;box-shadow:0 10px 24px rgba(8,28,70,.14)}
+    .premium-admin-editor strong{color:#7a2f00;font-weight:900}
+    .premium-admin-editor small{display:block;color:#7a2f00;font-weight:800;margin-top:2px}
+    .premium-admin-actions{display:flex;gap:8px;flex-wrap:wrap}
+    .premium-admin-actions button{border:0;border-radius:7px;padding:10px 13px;font-weight:900;cursor:pointer;background:#075dcc;color:#fff;box-shadow:0 4px 10px rgba(7,93,204,.22)}
+    .premium-admin-actions button.save{background:#0b9444}.premium-admin-actions button.cancel{background:#6b7280}
+    .premium-admin-actions button:disabled{opacity:.58;cursor:not-allowed}
+    .premium-editable{border-radius:4px;outline:2px dashed rgba(7,93,204,.18);outline-offset:2px}
+    .premium-admin-editing .premium-editable{background:#fff7d6;outline-color:#ff8a00;cursor:text}
+    .premium-admin-editing .premium-editable:focus{background:#fff;border-radius:4px;box-shadow:0 0 0 3px rgba(255,138,0,.2);outline:2px solid #ff8a00}
+    .premium-admin-status{font-size:13px;color:#075dcc;font-weight:900;min-height:18px}
 
     @media(max-width:1100px){.section-grid,.detail-grid,.info-grid,.overview-grid,.post-info-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.premium-layout,.skeleton-layout{grid-template-columns:1fr}.premium-aside{position:static;max-height:none}.aside-phone{max-width:390px;margin:0 auto}.hero-copy h1{font-size:38px}.premium-nav a{padding:12px 8px;font-size:12px}.quick-actions,.skeleton-actions{grid-template-columns:repeat(2,minmax(0,1fr))}.summary-grid,.skeleton-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.skeleton-aside{display:none}}
     @media(max-width:700px){.section-grid,.detail-grid,.info-grid,.overview-grid,.post-info-grid{grid-template-columns:1fr}.premium-header-inner{padding:8px 12px}.brand{max-width:calc(100% - 8px)}.brand span{font-size:20px}.brand small{font-size:8px;max-width:210px}.brand img{width:38px;height:38px}.premium-nav{display:none}.language-bar-inner{text-align:left;padding:7px 12px}.premium-shell{padding:14px 10px 85px}.premium-hero,.skeleton-hero{grid-template-columns:1fr;gap:14px}.media-box,.skeleton-media{min-height:220px}.hero-copy h1{font-size:31px}.hero-short{font-size:16px}.verified-strip{align-items:flex-start;flex-direction:column;font-size:13px}.summary-grid,.skeleton-summary{grid-template-columns:1fr}.premium-card.wide-span,.premium-card.full-span{grid-column:auto}.steps{grid-template-columns:1fr}.link-grid,.related-grid,.region-links-grid{grid-template-columns:1fr}.overview-list{grid-template-columns:1fr}.overview-row{grid-template-columns:108px minmax(0,1fr)}.mobile-sticky{display:flex}.mobile-sticky:empty{display:none}.quick-actions,.skeleton-actions{grid-template-columns:1fr}.premium-table{min-width:0;font-size:14px}.premium-table th,.premium-table td{padding:10px 8px}.aside-phone{display:none}.skeleton-title{max-width:100%;height:40px}}
@@ -309,10 +320,11 @@
 <script>window.__EMITRA_STATIC_PREMIUM_POST__={"ageLimit":{"ageRelaxation":"As per SSC CGL 2026 rules","asOn":"01 August 2026","maximumAge":"27-32 Years Post Wise","minimumAge":"18 Years"},"applicationFee":[{"label":"General / OBC / EWS","value":"₹100/-"},{"label":"SC / ST / PwBD","value":"₹0/-"},{"label":"All Female Candidates","value":"₹0/-"},{"label":"Correction Charge First Time","value":"₹200/-"},{"label":"Correction Charge Second Time","value":"₹500/-"},{"label":"Payment Mode","value":"BHIM UPI, Net Banking, Debit Card"}],"category":"LATEST JOBS","createdAt":1781327535300,"displayOrder":"1","eligibility":[{"post":"All Other Posts","qualification":"Bachelor Degree from any recognized University in India."},{"post":"Junior Statistical Officer JSO","qualification":"Bachelor Degree with 60% marks in Mathematics at 12th level OR Bachelor Degree with Statistics as one subject."},{"post":"Statistical Investigator Grade-II","qualification":"Bachelor Degree in Statistics / Mathematics / Economics / Demography / Population Studies / Operation Research / IT / Computer Science / Computer Engineering / Computer Technology / Computer Application / Data Science / Artificial Intelligence."},{"post":"Assistant Audit Officer / Assistant Accounts Officer","qualification":"Bachelor Degree from recognized University. CA / CMA / CS / M.Com / MBA Finance / Masters in Business Economics desirable."}],"examPattern":{"negativeMarking":"0.50 marks for each wrong answer","tier1":[{"marks":"50","questions":"25","subject":"General Intelligence and Reasoning"},{"marks":"50","questions":"25","subject":"General Awareness"},{"marks":"50","questions":"25","subject":"Quantitative Aptitude"},{"marks":"50","questions":"25","subject":"English Comprehension"}],"tier1Time":"1 Hour"},"howToApply":["Visit SSC official website ssc.gov.in","Complete One Time Registration if not already registered","Open Combined Graduate Level Examination 2026 apply link","Fill application form carefully","Upload required photo, signature and documents","Pay application fee if applicable","Submit form and take printout"],"importantDates":[{"label":"Application Start","value":"21 May 2026"},{"label":"Last Date Apply Online","value":"22 June 2026 up to 11:00 PM"},{"label":"Last Date Fee Payment","value":"23 June 2026 up to 11:00 PM"},{"label":"Correction Window","value":"29 June 2026 to 01 July 2026"},{"label":"Tier I Exam Date","value":"August - September 2026"},{"label":"Tier II Exam Date","value":"December 2026"}],"importantLinks":[{"label":"Apply Online","url":"https://ssc.gov.in/"},{"label":"Download Official Notification","url":"https://ssc.gov.in/api/attachment/uploads/masterData/NoticeBoards/Notice_of_adv_cgl_2026.pdf"},{"label":"Official Website","url":"https://ssc.gov.in/"}],"organization":"Staff Selection Commission (SSC)","postName":"Combined Graduate Level Examination 2026","postTarget":"latestJob","postType":"VERIFIED","selectionProcess":["Tier I Computer Based Examination","Tier II Computer Based Examination","Data Entry Speed Test / Computer Knowledge Test where applicable","Document Verification","Medical / Physical Standard if applicable"],"seo":{"keywords":["SSC CGL 2026","SSC CGL Online Form 2026","SSC CGL Recruitment 2026","SSC CGL 12256 Posts","SSC CGL Notification 2026"],"metaDescription":"SSC CGL 2026 official notification released for 12256 posts. Apply online from 21 May to 22 June 2026. Check eligibility, age limit, fee, exam date and official","metaTitle":"SSC CGL Recruitment 2026 Online Form | E-MITRA WALA"},"shortInfo":"Staff Selection Commission SSC has released the official notification for Combined Graduate Level CGL Examination 2026. Eligible graduate candidates can apply online from 21 May 2026 to 22 June 2026.","slug":"ssc-cgl-recruitment-2026-online-form","status":"Active","title":"SSC CGL Recruitment 2026 Online Form","totalPosts":"12256","updatedAt":1781327749161,"vacancyDetails":[{"ageLimit":"18-27 / 18-30 / 20-30 / 18-32 Years Post Wise","payLevel":"Pay Level 4 to Pay Level 8","postName":"SSC CGL Various Group B and Group C Posts","totalPosts":"12256"}],"views":0,"postStatus":"published","isPremiumPost":true,"premiumPostSlug":"ssc-cgl-recruitment-2026-online-form","canonicalUrl":"https://emitrawala.online/post/ssc-cgl-recruitment-2026-online-form/","detailLink":"https://emitrawala.online/post/ssc-cgl-recruitment-2026-online-form/"};</script>
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-    import { getDatabase,ref,get,query,orderByChild,equalTo } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+    import { getAuth,onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+    import { getDatabase,ref,get,query,orderByChild,equalTo,update } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
     const firebaseConfig={apiKey:"AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",authDomain:"my-website-73785.firebaseapp.com",databaseURL:"https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app/",projectId:"my-website-73785",storageBucket:"my-website-73785.firebasestorage.app",messagingSenderId:"854088341990",appId:"1:854088341990:web:3211d4ef9fe4b78d025e27"};
-    const app=initializeApp(firebaseConfig),db=getDatabase(app),root=document.getElementById("premiumRoot"),mobileSticky=document.getElementById("mobileSticky");
+    const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getDatabase(app),root=document.getElementById("premiumRoot"),mobileSticky=document.getElementById("mobileSticky"),adminEmail="jasmelsolanki@gmail.com";
     const requestedSlug=new URLSearchParams(location.search).get("slug")||"";
     const cacheKey=slug=>`premium_post_${slug}`;
     const readCachedPost=slug=>{
@@ -325,6 +337,7 @@
     };
     const stableStringify=value=>JSON.stringify(value||{});
     let hasRenderedPost=false;
+    let adminAllowed=false,adminEditMode=false,currentPostData=null,editorDraft=null,currentPostSlug="";
     let timeoutId=window.__premiumSlowTimer||null;
 
     const SECTION_DEFS=[
@@ -370,12 +383,30 @@
     const linkUrl=item=>typeof item==="string"?item:(item?.url||item?.link||item?.href||item?.value||"");
     const displayDate=value=>{if(!value)return new Date().toLocaleDateString("hi-IN");if(typeof value==="number")return new Date(value).toLocaleDateString("hi-IN");const d=new Date(value);return isNaN(d.getTime())?String(value):d.toLocaleDateString("hi-IN")};
     const valueText=value=>{if(!isFilled(value))return"";if(Array.isArray(value))return value.map(valueText).filter(Boolean).join(", ");if(isPlainObject(value))return Object.entries(value).map(([k,v])=>`${toTitle(k)}: ${valueText(v)}`).join(" | ");return String(value)};
-    const valueHTML=value=>escapeHTML(valueText(value)).replace(/\n/g,"<br>");
+    const cloneJson=value=>JSON.parse(JSON.stringify(value||{}));
+    const editPathAttr=path=>encodeURIComponent(JSON.stringify(path||[]));
+    const decodeEditPath=value=>{try{return JSON.parse(decodeURIComponent(value||"[]"))}catch{return[]}};
+    function setByPath(target,path,value){
+      if(!target||!Array.isArray(path)||!path.length)return;
+      let refObj=target;
+      for(let i=0;i<path.length-1;i++){
+        const key=path[i];
+        if(refObj[key]===undefined||refObj[key]===null)refObj[key]=typeof path[i+1]==="number"?[]:{};
+        refObj=refObj[key];
+      }
+      refObj[path[path.length-1]]=value;
+    }
+    const editableHTML=(value,path)=>{
+      const html=escapeHTML(valueText(value)).replace(/\n/g,"<br>");
+      if(!adminAllowed||!path||!path.length)return html;
+      return `<span class="premium-editable" data-edit-path="${editPathAttr(path)}" contenteditable="${adminEditMode?'true':'false'}" spellcheck="false">${html}</span>`;
+    };
+    const valueHTML=(value,path=null)=>editableHTML(value,path);
     const iconFor=key=>({importantDates:"📅",applicationFee:"💰",ageLimit:"👤",vacancyDetails:"👥",selectionProcess:"🔢",howToCheckResult:"✅",howToApply:"⬇",importantLinks:"🔗",regionWiseResultLinks:"📄",faqs:"❓"}[key]||"✓");
     const linkClass=label=>/whatsapp/i.test(label)?"whatsapp":/telegram/i.test(label)?"telegram":/apply/i.test(label)?"apply":/download|notification/i.test(label)?"download":/official|website/i.test(label)?"website":/source/i.test(label)?"source":"default";
     const linkIcon=label=>/whatsapp/i.test(label)?"🟢":/telegram/i.test(label)?"✈":/apply/i.test(label)?"↗":/download|notification/i.test(label)?"⬇":/official|website/i.test(label)?"🌐":"🔗";
 
-    const samplePremiumPost={title:"Rajasthan PTET Admit Card 2026",slug:"sample-premium-post",category:"Admit Card",shortInfo:"Rajasthan PTET परीक्षा 2026 का एडमिट कार्ड जारी कर दिया गया है। उम्मीदवार नीचे दिए गए लिंक से अपना एडमिट कार्ड डाउनलोड कर सकते हैं।",importantDates:[{label:"Form Start Date",value:"05 March 2026"},{label:"Last Date to Apply",value:"07 April 2026"},{label:"Admit Card Release",value:"08 June 2026"},{label:"Exam Date",value:"14 June 2026"},{label:"Result Date",value:"July 2026 (Expected)"}],applicationFee:[{category:"General / OBC",fee:"₹1000"},{category:"SC / ST / PwD",fee:"₹500"}],paymentMode:"Debit Card, Credit Card, Net Banking, UPI",ageLimit:{minimumAge:"17 Years",maximumAge:"No Limit",ageRelaxation:"As per notification"},overview:{organization:"Vardhman Mahaveer Open University, Kota",examName:"Rajasthan PTET 2026",course:"2 Year B.Ed / 4 Year BA-B.Ed / B.Sc-B.Ed",examMode:"Offline"},eligibility:[{label:"2 Year B.Ed",value:"किसी मान्यता प्राप्त यूनिवर्सिटी से Graduation 50% अंकों से पास."},{label:"4 Year BA-B.Ed / B.Sc-B.Ed",value:"12वीं पास उम्मीदवार आवेदन कर सकते हैं."}],vacancyDetails:{note:"Approx. 55,000+ seats"},selectionProcess:["PTET Exam","Merit List","Counselling","Document Verification","Final Admission"],examPattern:[{subject:"Mental Ability",questions:"50",marks:"150"},{subject:"Teaching Attitude",questions:"50",marks:"150"},{subject:"General Awareness",questions:"50",marks:"150"},{subject:"Language Proficiency",questions:"50",marks:"150"}],documentsRequired:["Application Form","Admit Card","Photo & Signature","ID Proof","10th & 12th Marksheet","Graduation Marksheet"],howToApply:["Official website open करें.","Admit card link पर click करें.","Application number और date of birth भरें.","Submit करके admit card download करें.","Print निकाल लें."],importantLinks:[{label:"Download Admit Card",url:"https://example.com"},{label:"Official Website",url:"https://example.com"},{label:"Join WhatsApp",url:"https://example.com"},{label:"Join Telegram",url:"https://example.com"}],faqs:[{question:"Rajasthan PTET Admit Card 2026 कब जारी हुआ?",answer:"08 June 2026 को जारी हुआ."}],updatedAt:Date.now(),views:"12,345"};
+    const samplePremiumPost={title:"Rajasthan PTET Admit Card 2026",slug:"sample-premium-post",category:"Admit Card",shortInfo:"Rajasthan PTET परीक्षा 2026 का एडमिट कार्ड जारी कर दिया गया है। उम्मीदवार नीचे दिए गए लिंक से अपना एडमिट कार्ड डाउनलोड कर सकते हैं।",importantDates:[{label:"Form Start Date",value:"05 March 2026"},{label:"Last Date to Apply",value:"07 April 2026"},{label:"Admit Card Release",value:"08 June 2026"},{label:"Exam Date",value:"14 June 2026"},{label:"Result Date",value:"July 2026 (Expected)"}],applicationFee:[{category:"General / OBC",fee:"₹1000"},{category:"SC / ST / PwD",fee:"₹500"}],paymentMode:"Debit Card, Credit Card, Net Banking, UPI",ageLimit:{minimumAge:"17 Years",maximumAge:"No Limit",ageRelaxation:"As per notification"},overview:{organization:"Vardhman Mahaveer Open University, Kota",examName:"Rajasthan PTET 2026",course:"2 Year B.Ed / 4 Year BA-B.Ed / B.Sc-B.Ed",examMode:"Offline"},eligibility:[{label:"2 Year B.Ed",value:"किसी मान्यता प्राप्त यूनिवर्सिटी से Graduation 50% अंकों से पास."},{label:"4 Year BA-B.Ed / B.Sc-B.Ed",value:"12वीं पास उम्मीदवार आवेदन कर सकते हैं."}],vacancyDetails:{note:"Approx. 55,000+ seats"},selectionProcess:["PTET Exam","Merit List","Counselling","Document Verification","Final Admission"],examPattern:[{subject:"Mental Ability",questions:"50",marks:"150"},{subject:"Teaching Attitude",questions:"50",marks:"150"},{subject:"General Awareness",questions:"50",marks:"150"},{subject:"Language Proficiency",questions:"50",marks:"150"}],documentsRequired:["Application Form","Admit Card","Photo & Signature","ID Proof","10th & 12th Marksheet","Graduation Marksheet"],howToApply:["Official website open करें.","Admit card link पर click करें.","Application number और date of birth भरें.","Submit करके admit card download करें.","Print निकाल लें."],importantLinks:[{label:"Download Admit Card",url:"https://example.com"},{label:"Official Website",url:"https://example.com"},{label:"Join WhatsApp",url:"https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q"},{label:"Join Telegram",url:"https://t.me/emitrawalaonline"}],faqs:[{question:"Rajasthan PTET Admit Card 2026 कब जारी हुआ?",answer:"08 June 2026 को जारी हुआ."}],updatedAt:Date.now(),views:"12,345"};
 
     function normalizeLinks(data){
       const links=[];
@@ -387,8 +418,8 @@
         ["Download Notification",data.notificationUrl||data.notification||data.notificationLink],
         ["Official Website",data.officialWebsite],
         ["Sarkari Result Source",data.sourceUrl],
-        ["Join WhatsApp",data.whatsappLink||data.whatsapp],
-        ["Join Telegram",data.telegramLink||data.telegram]
+        ["Join WhatsApp",data.whatsappLink||data.whatsapp||"https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q"],
+        ["Join Telegram",data.telegramLink||data.telegram||"https://t.me/emitrawalaonline"]
       ];
       extras.forEach(([label,url])=>{if(url)links.push({label,url})});
       const seen=new Set();
@@ -450,42 +481,43 @@
       const keys=["importantDates","applicationFee","ageLimit","vacancyDetails","selectionProcess","howToCheckResult","howToApply","importantLinks","regionWiseResultLinks","faqs"];
       return `<div class="summary-grid">${keys.filter(k=>hasRenderableSection(data,k)).slice(0,8).map(k=>{const def=SECTION_DEFS.find(d=>d[0]===k)||[k,toTitle(k)];return `<a class="summary-card" href="#section-${k}"><span class="summary-icon">${iconFor(k)}</span><span><strong>${escapeHTML(def[1])}</strong><span>${escapeHTML(summaryText(k,getSection(data,k),data))}</span></span></a>`}).join("")}</div>`;
     }
-    function renderTable(rows,preferred=[]){
+    function renderTable(rows,preferred=[],basePath=[]){
       rows=arrayify(rows);
       if(!rows.length)return"";
-      if(rows.every(r=>!isPlainObject(r)))return `<ul class="clean-list">${rows.map(r=>`<li>${valueHTML(r)}</li>`).join("")}</ul>`;
+      if(rows.every(r=>!isPlainObject(r)))return `<ul class="clean-list">${rows.map((r,i)=>`<li>${valueHTML(r,basePath.length?[...basePath,i]:null)}</li>`).join("")}</ul>`;
       const colSet=[];
       preferred.forEach(c=>{if(rows.some(r=>isFilled(r[c])))colSet.push(c)});
-      rows.forEach(r=>Object.keys(r||{}).forEach(k=>{if(!colSet.includes(k)&&k!=="label"&&k!=="value")colSet.push(k)}));
+      rows.forEach(r=>Object.keys(r||{}).forEach(k=>{if(!colSet.includes(k)&&k!=="label"&&k!=="value"&&!String(k).startsWith("__"))colSet.push(k)}));
       if(!colSet.length)colSet.push("label","value");
-      return `<div class="table-wrap"><table class="premium-table"><thead><tr>${colSet.map(c=>`<th>${escapeHTML(toTitle(c))}</th>`).join("")}</tr></thead><tbody>${rows.map(r=>`<tr>${colSet.map(c=>`<td>${valueHTML(r[c]??(c==="label"?r.label:undefined))}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+      return `<div class="table-wrap"><table class="premium-table"><thead><tr>${colSet.map(c=>`<th>${escapeHTML(toTitle(c))}</th>`).join("")}</tr></thead><tbody>${rows.map((r,rowIndex)=>`<tr>${colSet.map(c=>{const path=r.__paths?.[c]||(basePath.length?[...basePath,rowIndex,c]:null);return `<td>${valueHTML(r[c]??(c==="label"?r.label:undefined),path)}</td>`}).join("")}</tr>`).join("")}</tbody></table></div>`;
     }
     function renderImportantDates(value){
-      const rows=arrayify(value).map(r=>isPlainObject(r)?{label:r.label||r.title||r.name||r.event||toTitle(r.key||"Date"),value:r.value||r.date||r.detail||r.time||r.description}:r);
-      return renderTable(rows,["label","value"]);
+      const source=arrayify(value);
+      const rows=source.map((r,i)=>isPlainObject(r)?{label:r.label||r.title||r.name||r.event||toTitle(r.key||"Date"),value:r.value||r.date||r.detail||r.time||r.description,__paths:{label:["importantDates",i,"label"],value:["importantDates",i,"value"]}}:r);
+      return renderTable(rows,["label","value"],["importantDates"]);
     }
     function renderFee(data){
-      const rows=arrayify(getSection(data,"applicationFee"));
-      const table=renderTable(rows,["category","fee","paperOne","bothPapers","amount"]);
-      const payment=data.paymentMode?`<div class="fee-note"><b>Payment Mode:</b> ${valueHTML(data.paymentMode)}</div>`:"";
+      const rows=arrayify(getSection(data,"applicationFee")).map((r,i)=>isPlainObject(r)?{...r,__paths:Object.fromEntries(Object.keys(r).filter(k=>!String(k).startsWith("__")).map(k=>[k,["applicationFee",i,k]]))}:r);
+      const table=renderTable(rows,["category","fee","paperOne","bothPapers","amount"],["applicationFee"]);
+      const payment=data.paymentMode?`<div class="fee-note"><b>Payment Mode:</b> ${valueHTML(data.paymentMode,["paymentMode"])}</div>`:"";
       return table+payment;
     }
     function renderAgeLimit(value){
-      if(!isPlainObject(value))return renderTable(value,["label","value"]);
+      if(!isPlainObject(value))return renderTable(value,["label","value"],["ageLimit"]);
       const rows=[];
-      if(value.minimumAge)rows.push({label:"Minimum Age",value:value.minimumAge});
-      if(value.maximumAge)rows.push({label:"Maximum Age",value:value.maximumAge});
-      if(value.asOn)rows.push({label:"As On",value:value.asOn});
-      if(value.ageRelaxation||value.relaxation)rows.push({label:"Age Relaxation",value:value.ageRelaxation||value.relaxation});
-      Object.entries(value).forEach(([k,v])=>{if(!["minimumAge","maximumAge","asOn","ageRelaxation","relaxation","details"].includes(k)&&isFilled(v))rows.push({label:toTitle(k),value:v})});
+      if(value.minimumAge)rows.push({label:"Minimum Age",value:value.minimumAge,__paths:{value:["ageLimit","minimumAge"]}});
+      if(value.maximumAge)rows.push({label:"Maximum Age",value:value.maximumAge,__paths:{value:["ageLimit","maximumAge"]}});
+      if(value.asOn)rows.push({label:"As On",value:value.asOn,__paths:{value:["ageLimit","asOn"]}});
+      if(value.ageRelaxation||value.relaxation)rows.push({label:"Age Relaxation",value:value.ageRelaxation||value.relaxation,__paths:{value:["ageLimit",value.ageRelaxation?"ageRelaxation":"relaxation"]}});
+      Object.entries(value).forEach(([k,v])=>{if(!["minimumAge","maximumAge","asOn","ageRelaxation","relaxation","details"].includes(k)&&isFilled(v))rows.push({label:toTitle(k),value:v,__paths:{value:["ageLimit",k]}})});
       let html=renderTable(rows,["label","value"]);
-      if(isFilled(value.details))html+=`<div style="margin-top:12px">${renderTable(value.details,["academy","age","bornBetween","details"])} </div>`;
+      if(isFilled(value.details))html+=`<div style="margin-top:12px">${renderTable(value.details,["academy","age","bornBetween","details"],["ageLimit","details"])} </div>`;
       return html;
     }
     function renderOverview(data){
       const rows=overviewRows(data);
       if(!rows.length)return "";
-      return `<div class="overview-list compact-overview">${rows.map(({label,value})=>`<div class="overview-row"><b>${escapeHTML(label)}</b><span>${valueHTML(value)}</span></div>`).join("")}</div>`;
+      return `<div class="overview-list compact-overview">${rows.map(({label,value},i)=>`<div class="overview-row"><b>${escapeHTML(label)}</b><span>${valueHTML(value,["overview",label.replace(/\s+/g,"").replace(/^./,m=>m.toLowerCase())]||["overview",i])}</span></div>`).join("")}</div>`;
     }
     function renderEligibility(value){
       const rows=arrayify(value).map(item=>{
@@ -493,11 +525,11 @@
         const parts=String(item).split(":");
         return parts.length>1?{title:parts.shift(),details:parts.join(":").trim()}:{title:"Eligibility",details:item};
       });
-      return `<ul class="check-list">${rows.map(r=>`<li><b>${escapeHTML(r.title)}</b><br>${valueHTML(r.details)}</li>`).join("")}</ul>`;
+      return `<ul class="check-list">${rows.map((r,i)=>`<li><b>${escapeHTML(r.title)}</b><br>${valueHTML(r.details,["eligibility",i,"value"])}</li>`).join("")}</ul>`;
     }
-    function renderSelection(value){const arr=arrayify(value);return `<div class="timeline">${arr.map((step,i)=>`<div class="timeline-step"><b>${i+1}</b><div>${valueHTML(step)}</div></div>`).join("")}</div>`;}
-    function renderDocuments(value){const arr=arrayify(value);return `<ul class="check-list">${arr.map(item=>`<li>${valueHTML(item)}</li>`).join("")}</ul>`;}
-    function renderSteps(value){const arr=arrayify(value);return `<ol class="steps">${arr.map(item=>`<li>${valueHTML(item)}</li>`).join("")}</ol>`;}
+    function renderSelection(value){const arr=arrayify(value);return `<div class="timeline">${arr.map((step,i)=>`<div class="timeline-step"><b>${i+1}</b><div>${valueHTML(step,["selectionProcess",i])}</div></div>`).join("")}</div>`;}
+    function renderDocuments(value){const arr=arrayify(value);return `<ul class="check-list">${arr.map((item,i)=>`<li>${valueHTML(item,["documentsRequired",i])}</li>`).join("")}</ul>`;}
+    function renderSteps(value,pathKey="howToApply"){const arr=arrayify(value);return `<ol class="steps">${arr.map((item,i)=>`<li>${valueHTML(item,[pathKey,i])}</li>`).join("")}</ol>`;}
     function renderLinks(value,data){
       const links=normalizeLinks({...data,importantLinks:value});
       return `<div class="link-grid">${links.map(l=>`<a class="link-card" href="${escapeHTML(l.url)}" target="_blank" rel="noopener noreferrer"><strong>${linkIcon(l.label)} ${escapeHTML(l.label)}</strong><span>यहाँ से direct link open करें</span></a>`).join("")}</div>`;
@@ -532,14 +564,14 @@
       if(key==="importantDates")return renderImportantDates(value);
       if(key==="applicationFee")return renderFee(data);
       if(key==="ageLimit")return renderAgeLimit(value);
-      if(key==="vacancyDetails")return renderTable(value,["postName","area","totalPost","totalPosts","course","eligibility","note"]);
+      if(key==="vacancyDetails")return renderTable(value,["postName","area","totalPost","totalPosts","course","eligibility","note"],["vacancyDetails"]);
       if(key==="selectionProcess")return renderSelection(value);
-      if(key==="howToCheckResult")return renderSteps(value);
-      if(key==="howToApply")return renderSteps(value);
+      if(key==="howToCheckResult")return renderSteps(value,"howToCheckResult");
+      if(key==="howToApply")return renderSteps(value,"howToApply");
       if(key==="importantLinks")return renderLinks(value,data);
       if(key==="regionWiseResultLinks")return renderRegionWiseLinks(value);
       if(key==="faqs")return renderFaq(value);
-      return renderTable(value);
+      return renderTable(value,[],[key]);
     }
     function schemaDate(value){
       if(!value)return undefined;
@@ -587,14 +619,21 @@
       const mini=["importantDates","applicationFee","ageLimit","vacancyDetails","importantLinks","regionWiseResultLinks"].filter(k=>hasRenderableSection(data,k));
       return `<aside class="premium-aside"><div class="aside-phone"><div class="aside-screen"><div class="aside-top"><span>E-MITRA WALA</span><span>☰</span></div><div class="aside-body"><div class="breadcrumb"><a href="index.html">Home</a> › Premium Post</div>${renderMedia(data,true)}<span class="pill">Verified Update</span><h2>${escapeHTML(data.title||"Premium Update")}</h2>${data.shortInfo?`<p>${escapeHTML(data.shortInfo)}</p>`:""}<div class="aside-mini-list"><div class="aside-mini">✓ Verified Update</div><div class="aside-mini">✓ Official Update</div></div>${renderActionButtons(links,4)}<div class="summary-grid">${mini.map(k=>{const def=SECTION_DEFS.find(d=>d[0]===k)||[k,toTitle(k)];return `<a class="summary-card" href="#section-${k}"><span class="summary-icon">${iconFor(k)}</span><span><strong>${escapeHTML(def[1])}</strong><span>${escapeHTML(summaryText(k,getSection(data,k),data))}</span></span></a>`}).join("")}</div></div></div></div></aside>`;
     }
+    function renderAdminEditor(){
+      if(!adminAllowed)return"";
+      return `<div class="premium-admin-editor" role="region" aria-label="Admin live editor"><div><strong>Admin Live Edit</strong><small>${adminEditMode?"Yellow fields edit karein, phir Save Changes dabayein.":"Edit Live dabakar isi page par post update karein."}</small><div class="premium-admin-status" id="premiumAdminStatus"></div></div><div class="premium-admin-actions"><button type="button" onclick="enablePremiumLiveEdit()" ${adminEditMode?"disabled":""}>Edit Live</button><button type="button" class="save" onclick="savePremiumLiveEdit()" ${adminEditMode?"":"disabled"}>Save Changes</button><button type="button" class="cancel" onclick="cancelPremiumLiveEdit()" ${adminEditMode?"":"disabled"}>Cancel</button><a class="action-btn website" href="premium-admin.html" target="_blank" rel="noopener noreferrer" style="min-height:auto;padding:10px 13px;font-size:13px">Admin Panel</a></div></div>`;
+    }
     function renderPremiumPost(data){
       data={...data};
+      currentPostData=cloneJson(data);
+      currentPostSlug=data.slug||requestedSlug||currentPostSlug;
       hasRenderedPost=true;
       if(timeoutId)clearTimeout(timeoutId);
       setSeo(data);
       const links=quickLinks(data),views=data.views||"12,345";
-      const hero=`<div class="breadcrumb"><a href="index.html">Home</a> › <span>Premium Post</span> › <strong>${escapeHTML(data.title||"Update")}</strong></div><section class="premium-hero">${renderMedia(data)}<div class="hero-copy"><span class="pill">Verified Update</span><h1>${escapeHTML(data.title||"Premium Update")}</h1>${data.shortInfo?`<p class="hero-short">${escapeHTML(data.shortInfo)}</p>`:""}<div class="status-row"><span class="status-chip">✅ Verified Update</span><span class="status-chip">✅ Official Update</span></div></div></section>${renderActionButtons(links,4)}<div class="verified-strip"><span>✅ E-MITRA WALA VERIFIED UPDATE ✅</span><span>👁 Views: ${escapeHTML(views)}</span></div>${renderSummaryCards(data)}`;
+      const hero=`${renderAdminEditor()}<div class="breadcrumb"><a href="index.html">Home</a> › <span>Premium Post</span> › <strong>${escapeHTML(data.title||"Update")}</strong></div><section class="premium-hero">${renderMedia(data)}<div class="hero-copy"><span class="pill">Verified Update</span><h1>${valueHTML(data.title||"Premium Update",["title"])}</h1>${data.shortInfo?`<p class="hero-short">${valueHTML(data.shortInfo,["shortInfo"])}</p>`:""}<div class="status-row"><span class="status-chip">✅ Verified Update</span><span class="status-chip">✅ Official Update</span></div></div></section>${renderActionButtons(links,4)}<div class="verified-strip"><span>✅ E-MITRA WALA VERIFIED UPDATE ✅</span><span>👁 Views: ${escapeHTML(views)}</span></div>${renderSummaryCards(data)}`;
       const sections=`<div class="section-grid">${SECTION_DEFS.map(([key,title,accent,span])=>renderCard(key,title,renderSection(data,key),accent,span)).join("")}</div>`;
+      root.classList.toggle("premium-admin-editing",adminEditMode);
       root.innerHTML=`<div class="premium-layout"><div class="premium-main">${hero}${sections}</div>${renderSidebar(data,links)}</div>`;
       const sticky=links.filter(l=>/(apply|download|notification)/i.test(l.label)).slice(0,2);
       mobileSticky.innerHTML=sticky.map(l=>`<a class="action-btn ${linkClass(l.label)}" href="${escapeHTML(l.url)}" target="_blank" rel="noopener noreferrer">${linkIcon(l.label)} ${escapeHTML(l.label)}</a>`).join("");
@@ -636,6 +675,88 @@
       if(hasRenderedPost)return;
       root.setAttribute("data-slow-render","1");
     }
+    const firstFilled=(...values)=>values.find(isFilled);
+    const normalizePostTarget=(value="")=>{const key=String(value||"").toLowerCase().replace(/[^a-z0-9]/g,"");const map={latestjob:"latestJob",jobs:"latestJob",job:"latestJob",notification:"notification",admitcard:"admitCard",result:"result",syllabus:"syllabus",answerkey:"answerKey",admission:"admission"};return map[key]||"latestJob"};
+    const pickLink=(links,pattern)=>normalizeLinks({importantLinks:links}).find((link)=>pattern.test(link.label))?.url||"";
+    function pickOverviewValue(overview,...keys){
+      if(!overview||typeof overview!=="object"||Array.isArray(overview))return"";
+      const wanted=keys.map((key)=>String(key).toLowerCase());
+      for(const [key,value] of Object.entries(overview)){if(wanted.includes(String(key).toLowerCase())&&isFilled(value))return value}
+      return"";
+    }
+    function publicPremiumUrl(slug){return `/post/${encodeURIComponent(slug)}/`}
+    function premiumPostToLatestJob(post){
+      const status=String(post.status||"published").toLowerCase()==="draft"?"draft":"published";
+      const latestJobId=`premium-${post.slug}`;
+      const applyLink=firstFilled(post.applyLink,pickLink(post.importantLinks,/apply/i),pickLink(post.importantLinks,/official|website/i),"#");
+      const lastDate=firstFilled(post.lastDate,post.lastApplyDate,post.importantDates?.lastDate,post.importantDates?.applicationLastDate,post.importantDates?.feeLastDate,"Update Soon");
+      return {id:latestJobId,data:{title:post.title,type:post.category||"Online Form",category:post.category||"Online Form",shortInfo:post.shortInfo||"",startDate:firstFilled(post.startDate,post.importantDates?.applicationStart,post.importantDates?.startDate,"Update Soon"),lastDate,lastApplyDate:lastDate,qualification:firstFilled(post.qualification,post.eligibility,"Update Soon"),location:firstFilled(post.location,pickOverviewValue(post.overview,"location","state"),"All India"),applyLink,detailLink:publicPremiumUrl(post.slug),premiumPostSlug:post.slug,isPremiumPost:true,postStatus:status,postTarget:normalizePostTarget(post.postTarget),slug:post.slug,displayOrder:post.displayOrder||"1",createdAt:post.createdAt,updatedAt:post.updatedAt}};
+    }
+    function setAdminStatus(message,type="info"){
+      const el=document.getElementById("premiumAdminStatus");
+      if(!el)return;
+      el.textContent=message||"";
+      el.style.color=type==="error"?"#b91c1c":type==="success"?"#0b9444":"#075dcc";
+    }
+    function collectLiveEdits(){
+      const draft=cloneJson(editorDraft||currentPostData||{});
+      root.querySelectorAll("[data-edit-path]").forEach((el)=>{
+        const path=decodeEditPath(el.getAttribute("data-edit-path"));
+        if(!path.length)return;
+        setByPath(draft,path,el.innerText.replace(/\u00a0/g," ").trim());
+      });
+      return draft;
+    }
+    async function triggerPremiumStaticPublish(slug,reason="premium-live-edit"){
+      try{
+        const token=await auth.currentUser?.getIdToken();
+        if(!token)return {ok:false,error:"Admin token missing"};
+        const response=await fetch("/admin/seo/normalize",{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${token}`},body:JSON.stringify({jobId:`premium-${slug}`,publishStatic:true,reason})});
+        return await response.json().catch(()=>({ok:response.ok}));
+      }catch(error){return {ok:false,error:error.message}}
+    }
+    window.enablePremiumLiveEdit=()=>{
+      if(!adminAllowed){alert("Admin login required.");return}
+      adminEditMode=true;
+      editorDraft=cloneJson(currentPostData||{});
+      renderPremiumPost(editorDraft);
+      setAdminStatus("Edit mode ON. Yellow fields me direct typing karein.");
+    };
+    window.cancelPremiumLiveEdit=()=>{
+      adminEditMode=false;
+      editorDraft=null;
+      renderPremiumPost(currentPostData||{});
+      setAdminStatus("");
+    };
+    window.savePremiumLiveEdit=async()=>{
+      if(!adminAllowed){alert("Admin login required.");return}
+      if(!adminEditMode)return;
+      try{
+        setAdminStatus("Saving live changes...");
+        const now=Date.now();
+        const draft={...collectLiveEdits(),slug:currentPostSlug||requestedSlug,updatedAt:now};
+        if(!draft.createdAt)draft.createdAt=now;
+        if(!draft.status)draft.status="published";
+        const mirror=premiumPostToLatestJob(draft);
+        await update(ref(db),{[`premiumPosts/${draft.slug}`]:draft,[`LatestJobs/${mirror.id}`]:mirror.data});
+        writeCachedPost(draft.slug,draft);
+        const publish=await triggerPremiumStaticPublish(draft.slug,"premium-live-edit");
+        adminEditMode=false;
+        editorDraft=null;
+        currentPostData=cloneJson(draft);
+        renderPremiumPost(draft);
+        setAdminStatus(publish.ok?"Saved. Static post update trigger ho gaya.":"Saved. Static trigger pending: "+(publish.error||"server check karein"),publish.ok?"success":"error");
+      }catch(error){
+        setAdminStatus("Save error: "+error.message,"error");
+      }
+    };
+    onAuthStateChanged(auth,(user)=>{
+      const allowed=!!(user&&String(user.email||"").toLowerCase()===adminEmail.toLowerCase());
+      if(adminAllowed===allowed)return;
+      adminAllowed=allowed;
+      if(!adminAllowed)adminEditMode=false;
+      if(currentPostData&&isFilled(currentPostData))renderPremiumPost(currentPostData);
+    });
     async function loadWithCache(){
       const staticPost=window.__EMITRA_STATIC_PREMIUM_POST__;
       if(staticPost&&isFilled(staticPost)){

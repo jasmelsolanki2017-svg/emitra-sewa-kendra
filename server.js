@@ -100,6 +100,7 @@ const PDF_VERIFICATION_LOCAL_DIR = path.join(__dirname, ".uploads", "pdf-verific
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "jasmelsolanki@gmail.com";
 const SITE_BASE_URL = extractUrl(process.env.SITE_BASE_URL, "https://emitrawala.online");
 const WHATSAPP_CHANNEL_URL = extractHttpUrl(process.env.WHATSAPP_CHANNEL_URL, "https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q");
+const TELEGRAM_CHANNEL_URL = extractHttpUrl(process.env.TELEGRAM_CHANNEL_URL, "https://t.me/emitrawalaonline");
 const TELEGRAM_BOT_TOKEN = String(process.env.TELEGRAM_BOT_TOKEN || "").trim();
 const TELEGRAM_CHAT_ID = String(process.env.TELEGRAM_CHAT_ID || "").trim();
 const WHATSAPP_ACCESS_TOKEN = String(process.env.WHATSAPP_ACCESS_TOKEN || "").trim();
@@ -1544,7 +1545,8 @@ const buildTelegramPostText = (id = "", job = {}) => {
     "🔗 पूरी जानकारी देखें:",
     detailsLink,
     "",
-    "✅ ऐसे ही अपडेट के लिए चैनल से जुड़े रहें।"
+    "✅ ऐसे ही अपडेट के लिए चैनल से जुड़े रहें:",
+    TELEGRAM_CHANNEL_URL
   ];
   return lines.join("\n");
 };
