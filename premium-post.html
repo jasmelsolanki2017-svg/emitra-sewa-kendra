@@ -723,6 +723,10 @@
       if(!adminAllowed)adminEditMode=false;
       if(currentPostData&&isFilled(currentPostData))renderPremiumPost(currentPostData);
     });
+    function renderEmptyPremiumState(message="No premium post selected."){
+      root.innerHTML=`<div class="message">${escapeHTML(message)}</div>`;
+      mobileSticky.innerHTML="";
+    }
     async function loadWithCache(){
       const staticPost=window.__EMITRA_STATIC_PREMIUM_POST__;
       if(staticPost&&isFilled(staticPost)){
@@ -730,7 +734,7 @@
         return;
       }
       if(!requestedSlug||requestedSlug===samplePremiumPost.slug){
-        renderPremiumPost(samplePremiumPost);
+        renderEmptyPremiumState("No premium post selected. Admin panel se sahi post choose karein.");
         return;
       }
       const cached=readCachedPost(requestedSlug);
