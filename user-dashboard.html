@@ -226,9 +226,12 @@
     .pdf-verify-form button:hover,.pdf-verify-actions button:hover{background:var(--yellow);color:var(--blue-dark);}
     .pdf-verify-list{display:grid;gap:8px;}
     .pdf-verify-folder{background:#fff;border:1px solid var(--line);border-radius:8px;overflow:hidden;}
-    .pdf-verify-folder-title{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#eef5ff;color:var(--blue-dark);font-weight:900;padding:9px 11px;font-size:13px;}
+    .pdf-verify-folder-title{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;background:#eef5ff;color:var(--blue-dark);font-weight:900;padding:9px 11px;font-size:13px;border:0;cursor:pointer;text-align:left;}
     .pdf-verify-folder-title span:last-child{color:var(--muted);font-size:11px;}
-    .pdf-verify-folder-body{display:grid;gap:8px;padding:9px;}
+    .pdf-verify-folder-title i.fa-chevron-down{transition:transform .18s ease;}
+    .pdf-verify-folder.open .pdf-verify-folder-title i.fa-chevron-down{transform:rotate(180deg);}
+    .pdf-verify-folder-body{display:none;gap:8px;padding:9px;}
+    .pdf-verify-folder.open .pdf-verify-folder-body{display:grid;}
     .pdf-verify-row{background:#f9fbff;border:1px solid var(--line);border-left:4px solid var(--blue);border-radius:7px;padding:10px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;}
     .pdf-verify-row.verified{border-left-color:#138a36;background:#f2fbf5;}
     .pdf-verify-row small{display:block;color:var(--muted);font-size:11px;font-weight:700;overflow-wrap:anywhere;}
@@ -2452,15 +2455,23 @@ body.dark-mode .nav-logo img {
       if(!groups.has(folder)){ groups.set(folder, []); }
       groups.get(folder).push(item);
     });
-    list.innerHTML = Array.from(groups.entries()).map(([folder, items]) => `
-      <section class="pdf-verify-folder">
-        <div class="pdf-verify-folder-title">
-          <span><i class="fa-solid fa-folder-open"></i> ${escapeHTML(folder)}</span>
-          <span>${items.length} PDF</span>
-        </div>
+    list.innerHTML = Array.from(groups.entries()).map(([folder, items], index) => `
+      <section class="pdf-verify-folder" id="dashboard-pdf-folder-${index}">
+        <button type="button" class="pdf-verify-folder-title" onclick="toggleDashboardPdfFolder('dashboard-pdf-folder-${index}')" aria-expanded="false">
+          <span><i class="fa-solid fa-folder"></i> ${escapeHTML(folder)}</span>
+          <span>${items.length} PDF <i class="fa-solid fa-chevron-down"></i></span>
+        </button>
         <div class="pdf-verify-folder-body">${items.map(renderPdfCard).join("")}</div>
       </section>
     `).join("");
+  };
+
+  window.toggleDashboardPdfFolder = (id) => {
+    const folder = document.getElementById(id);
+    if(!folder){ return; }
+    const open = !folder.classList.contains("open");
+    folder.classList.toggle("open", open);
+    folder.querySelector(".pdf-verify-folder-title")?.setAttribute("aria-expanded", open ? "true" : "false");
   };
 
   const mergePdfVerificationRequests = () => {
