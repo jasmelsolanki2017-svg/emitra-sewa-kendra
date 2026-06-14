@@ -4312,16 +4312,88 @@ const postTime = getPostTime(item);
 return Boolean(postTime && Date.now() - postTime <= NEW_BADGE_DAYS * 24 * 60 * 60 * 1000);
 };
 const renderNewBadge = (item = {}) => isNewPost(item) ? '<span class="new-badge">New</span>' : "";
+const rowTextValue = (row = {}) => {
+if(!row || typeof row !== "object"){ return String(row || "").trim(); }
+return String(row.value || row.date || row.text || row.answer || "").trim();
+};
+const rowLabelValue = (row = {}) => {
+if(!row || typeof row !== "object"){ return ""; }
+return String(row.label || row.event || row.title || row.name || row.key || "").trim();
+};
+const findImportantDateValue = (dates, patterns = []) => {
+if(!dates){ return ""; }
+if(Array.isArray(dates)){
+for(const row of dates){
+const label = rowLabelValue(row);
+if(patterns.some((pattern)=>pattern.test(label))){
+const value = rowTextValue(row);
+if(value){ return value; }
+}
+}
+return "";
+}
+if(typeof dates === "object"){
+for(const [key, value] of Object.entries(dates)){
+const label = String(key || "").replace(/[_-]+/g, " ");
+if(patterns.some((pattern)=>pattern.test(label))){
+const text = typeof value === "object" ? rowTextValue(value) : String(value || "").trim();
+if(text){ return text; }
+}
+}
+return "";
+}
+return "";
+};
+const findManualImportantDateValue = (value = "", patterns = []) => {
+const lines = String(value || "").split(/\r?\n/);
+for(const line of lines){
+const parts = line.split(/[:：-]\s*/);
+if(parts.length < 2){ continue; }
+const label = parts.shift();
+if(patterns.some((pattern)=>pattern.test(label))){
+const text = parts.join("-").trim();
+if(text){ return text; }
+}
+}
+return "";
+};
+const getApplyStartDateValue = (job = {}) => {
+const patterns = [/application\s*start/i,/apply\s*(online\s*)?(from|start)/i,/online\s*(apply\s*)?(from|start)/i,/form\s*start/i,/start\s*date/i,/application_start/i,/applicationStart/i];
+return findImportantDateValue(job.importantDates, patterns)
+|| findImportantDateValue(job.important_dates, patterns)
+|| findImportantDateValue(job.dates, patterns)
+|| findManualImportantDateValue(job.importantDatesManual, patterns)
+|| job.applicationStartDate
+|| job.startDate
+|| "";
+};
 const getPostDateValue = (item = {}) => item.postDate || item.resultDate || item.admitCardDate || item.answerKeyDate || item.createdAt || "";
-const formatPostDate = (item = {}) => {
-const value = getPostDateValue(item);
+const parseDisplayDate = (value = "") => {
+if(typeof value === "number"){ return new Date(value); }
+const text = String(value || "").trim();
+const monthMap = {jan:0,january:0,feb:1,february:1,mar:2,march:2,apr:3,april:3,may:4,jun:5,june:5,jul:6,july:6,aug:7,august:7,sep:8,sept:8,september:8,oct:9,october:9,nov:10,november:10,dec:11,december:11};
+let match = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+if(match){ return new Date(Number(match[1]), Number(match[2])-1, Number(match[3])); }
+match = text.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/);
+if(match){ return new Date(Number(match[3]), Number(match[2])-1, Number(match[1])); }
+match = text.match(/^(\d{1,2})\s+([A-Za-z]{3,9})\s+(\d{4})$/);
+if(match && monthMap[match[2].toLowerCase()] !== undefined){ return new Date(Number(match[3]), monthMap[match[2].toLowerCase()], Number(match[1])); }
+return new Date(text);
+};
+const formatDateValue = (value = "") => {
 if(!value){ return ""; }
-const date = typeof value === "number" ? new Date(value) : new Date(String(value).replace(/-/g, " "));
+const dateText = String(value).match(/\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4}|\d{4}-\d{1,2}-\d{1,2}|\d{1,2}[\/.-]\d{1,2}[\/.-]\d{4}/)?.[0] || String(value);
+const date = parseDisplayDate(typeof value === "number" ? value : dateText);
 if(Number.isNaN(date.getTime())){ return ""; }
 return date.toLocaleDateString("en-GB", { day:"numeric", month:"short", year:"numeric" }).replace(/ /g, " ");
 };
+const formatPostDate = (item = {}) => formatDateValue(getPostDateValue(item));
 const renderPostDate = (item = {}) => {
 const text = formatPostDate(item);
+return text ? `<span class="post-date">${escapeHTML(text)}</span>` : "";
+};
+const renderApplyStartDate = (job = {}) => {
+const text = formatDateValue(getApplyStartDateValue(job)) || formatPostDate(job);
 return text ? `<span class="post-date">${escapeHTML(text)}</span>` : "";
 };
 
@@ -4394,7 +4466,7 @@ if(uniqueJobs.length && portalJobList){
 portalJobList.innerHTML = uniqueJobs.slice(0,20).map(({ id, job })=>`
   <li class="home-portal-job-card">
     <span class="badge">${escapeHTML(job.type || "Online Form")}</span>
-    <h3>${renderPostDate(job)}<span class="post-title-line"><a href="${jobDetailHref(id, job)}" target="_blank" rel="noopener noreferrer">${escapeHTML(job.title || job.text || "Job Update")}</a>${renderNewBadge(job)}</span></h3>
+    <h3>${renderApplyStartDate(job)}<span class="post-title-line"><a href="${jobDetailHref(id, job)}" target="_blank" rel="noopener noreferrer">${escapeHTML(job.title || job.text || "Job Update")}</a>${renderNewBadge(job)}</span></h3>
     <p>Start: ${escapeHTML(job.startDate || "Update Soon")} | Last: <span class="last-date">${escapeHTML(job.lastDate || job.lastApplyDate || "Update Soon")}</span></p>
     <p>Qualification: ${escapeHTML(job.qualification || "Update Soon")}</p>
     <p>Location: ${escapeHTML(job.location || "All India")}</p>

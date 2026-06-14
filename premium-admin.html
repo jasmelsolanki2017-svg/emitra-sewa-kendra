@@ -218,7 +218,11 @@
     onValue(ref(db,"premiumPosts"),(snapshot)=>{premiumRows=[];premiumCache={};if(snapshot.exists()){snapshot.forEach((child)=>{const data=child.val()||{};const slug=String(data.slug||child.key||"").trim();if(!slug)return;const post={...data,slug,postTarget:normalizePostTarget(data.postTarget)};premiumCache[slug]=post;premiumRows.push({slug,data:post})});sortPremiumRows(premiumRows)}renderPremiumPosts()},(error)=>{premiumPostsList.innerHTML=`<div class="empty">Premium posts load nahi hui: ${escapeHTML(error.message)}</div>`});
     onAuthStateChanged(auth,(user)=>{if(user&&user.email===adminEmail){adminAllowed=true;accessTitle.innerText="Admin Access Verified";adminEmailText.innerText=user.email}else{location.replace("index.html")}});
     window.logoutUser=async()=>{adminAllowed=false;localStorage.removeItem("loginTime");try{await signOut(auth)}catch(error){console.warn("Admin logout failed",error)}location.replace("index.html")};
-    loadSamplePremiumPost();
+    jsonInput.value="";
+    previewBox.innerHTML='<div class="message">Preview yahan show hoga.</div>';
+    publicLink.hidden=true;
+    setPremiumPostTarget("latestJob");
+    setStatus("Blank JSON ready hai. Sample chahiye to Load Sample button dabayein.");
   </script>
 <script src="/site-theme.js" defer></script>
 </body>
