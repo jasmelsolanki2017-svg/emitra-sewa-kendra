@@ -68,9 +68,9 @@
         setStatus("Server PDF list load nahi hui: "+error.message);
       }
     };
-    const getUserKey=(data={})=>data.userUid||data.userEmail||data.userName||"unknown-user";
+    const getUserKey=(data={})=>String(data.userEmail||"").trim().toLowerCase()||String(data.userFolderName||"").trim().toLowerCase()||data.userUid||data.userName||"unknown-user";
     const getUserLabel=(data={})=>data.userName||data.userEmail||data.userUid||"User";
-    const getGroupedUsers=()=>{const map=new Map();requests.forEach(({data})=>{const key=getUserKey(data),label=getUserLabel(data);const row=map.get(key)||{key,label,email:data.userEmail||"",count:0,pending:0,latest:0};row.count+=1;if(String(data.status||"Pending").toLowerCase()!=="verified")row.pending+=1;row.latest=Math.max(row.latest,Number(data.createdAt||0));map.set(key,row)});return [...map.values()].sort((a,b)=>b.pending-a.pending||b.latest-a.latest||a.label.localeCompare(b.label))};
+    const getGroupedUsers=()=>{const map=new Map();requests.forEach(({data})=>{const key=getUserKey(data);const row=map.get(key)||{key,label:"",email:"",count:0,pending:0,latest:0};row.label=row.label||getUserLabel(data);row.email=row.email||data.userEmail||"";row.count+=1;if(String(data.status||"Pending").toLowerCase()!=="verified")row.pending+=1;row.latest=Math.max(row.latest,Number(data.createdAt||0));map.set(key,row)});return [...map.values()].sort((a,b)=>b.pending-a.pending||b.latest-a.latest||a.label.localeCompare(b.label))};
     window.selectPdfUser=(key="")=>{selectedUserKey=key;render()};
     window.showPdfUserList=()=>{selectedUserKey="";render()};
     const render=()=>{
