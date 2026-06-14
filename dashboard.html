@@ -778,7 +778,14 @@ Cook | 1426 |"></textarea>
 
   const getAdminServerUrl = () => {
     const saved = String(localStorage.getItem(adminServerStorageKey) || "").trim().replace(/\/+$/, "");
-    if(saved){ return saved; }
+    const isStaticHost = (url = "") => {
+      try{
+        return /^emitrawala\.online$|github\.io$/i.test(new URL(url, location.origin).hostname);
+      }catch(_error){
+        return false;
+      }
+    };
+    if(saved && !isStaticHost(saved)){ return saved; }
     if(location.protocol === "file:" || /^emitrawala\.online$|github\.io$/i.test(location.hostname)){
       return defaultAdminServerUrl;
     }
@@ -1252,6 +1259,7 @@ Cook | 1426 |"></textarea>
       document.querySelector(".admin-info h3").innerText = "Admin Access Verified";
       document.getElementById("adminEmailText").innerText = user.email;
       refreshSeoAfterSave("");
+      setTimeout(() => refreshPdfPendingFromServer(), 0);
 
     } else {
       adminAllowed = false;
@@ -1285,6 +1293,7 @@ Cook | 1426 |"></textarea>
   const userPdfRequestsRef = ref(db, "userPdfVerificationRequests");
   let topPdfRequestRows = [];
   let userPdfRequestRows = [];
+  let serverPdfRequestRows = [];
   let topPdfRequestsLoaded = false;
   let userPdfRequestsLoaded = false;
   let pdfPendingBootstrapped = false;
@@ -1303,11 +1312,16 @@ Cook | 1426 |"></textarea>
     return count;
   };
 
-  const isPendingPdfRequest = (data = {}) => String(data.status || "Pending").toLowerCase() !== "verified";
+  const isPendingPdfRequest = (data = {}) => {
+    const status = String(data.status || "Pending").trim().toLowerCase();
+    if(status === "verified" || data.verifiedPath || data.verifiedDownloadUrl){ return false; }
+    if(status === "deleted" || data.deletedAt){ return false; }
+    return true;
+  };
 
   const updatePdfPendingCount = () => {
     const byId = new Map();
-    [...topPdfRequestRows, ...userPdfRequestRows].forEach((item) => {
+    [...topPdfRequestRows, ...userPdfRequestRows, ...serverPdfRequestRows].forEach((item) => {
       if(!item?.id){ return; }
       byId.set(item.id, { ...(byId.get(item.id) || {}), ...(item.data || {}) });
     });
@@ -1322,6 +1336,25 @@ Cook | 1426 |"></textarea>
     }
     previousPdfPendingCount = pendingCount;
     pdfPendingBootstrapped = true;
+  };
+
+  const refreshPdfPendingFromServer = async () => {
+    if(!adminAllowed){ return; }
+    try{
+      const result = await callAdminApi("/admin/pdf-verification/requests", {});
+      serverPdfRequestRows = Array.isArray(result.requests)
+        ? result.requests.map((item) => ({ id:item.id, data:item.data || {} }))
+        : [];
+      topPdfRequestsLoaded = true;
+      userPdfRequestsLoaded = true;
+      updatePdfPendingCount();
+    }catch(error){
+      console.warn("PDF pending server count failed", error);
+    }
+  };
+  const schedulePdfPendingServerRefresh = () => {
+    clearTimeout(window.__pdfPendingRefreshTimer);
+    window.__pdfPendingRefreshTimer = setTimeout(() => refreshPdfPendingFromServer(), 500);
   };
 
   window.hidePdfRequestToast = () => {
@@ -1345,6 +1378,7 @@ Cook | 1426 |"></textarea>
     }
     topPdfRequestsLoaded = true;
     updatePdfPendingCount();
+    schedulePdfPendingServerRefresh();
   });
 
   onValue(userPdfRequestsRef, (snapshot) => {
@@ -1356,6 +1390,7 @@ Cook | 1426 |"></textarea>
     }
     userPdfRequestsLoaded = true;
     updatePdfPendingCount();
+    schedulePdfPendingServerRefresh();
   });
 
   onValue(membersRef, (snapshot) => {
