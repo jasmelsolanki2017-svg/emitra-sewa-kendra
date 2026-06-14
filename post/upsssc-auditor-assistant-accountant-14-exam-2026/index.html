@@ -455,35 +455,24 @@
     let timeoutId=window.__premiumSlowTimer||null;
 
     const SECTION_DEFS=[
-<<<<<<< HEAD
       ["summary","Summary","accent-blue","full-span"],
-=======
->>>>>>> 3ba6d7f4409f2b6b818fcda0ef752e90c466f019
       ["importantDates","Important Dates","accent-green"],
       ["applicationFee","Application Fee","accent-red"],
       ["ageLimit","Age Limit","accent-blue"],
       ["vacancyDetails","Vacancy / Seats","accent-orange","full-span"],
-<<<<<<< HEAD
       ["eligibility","Eligibility","accent-teal","full-span"],
       ["selectionProcess","Selection Process","accent-teal"],
       ["examPattern","Exam Pattern","accent-purple","full-span"],
       ["groupWiseSyllabus","Syllabus / Group Wise Syllabus","accent-green","full-span"],
       ["participatingInstitutes","Participating Institutes","accent-blue","full-span"],
       ["documentsRequired","Documents Required","accent-orange","full-span"],
-=======
-      ["selectionProcess","Selection Process","accent-teal"],
->>>>>>> 3ba6d7f4409f2b6b818fcda0ef752e90c466f019
       ["howToCheckResult","How To Check Result","accent-blue","full-span"],
       ["howToApply","How To Apply / Download","accent-red","full-span"],
       ["importantLinks","Important Links","accent-purple","full-span"],
       ["regionWiseResultLinks","Region Wise Result Links","accent-green","full-span"],
       ["faqs","Frequently Asked Questions (FAQ)","accent-blue","full-span"]
     ];
-<<<<<<< HEAD
     const aliases={summary:["summary","overview","short_summary","shortSummary"],faqs:["faqs","faq"],importantDates:["importantDates","important_dates","dates"],applicationFee:["applicationFee","application_fee","applicationFees","application_fees","fees","fee"],ageLimit:["ageLimit","age_limit"],vacancyDetails:["vacancyDetails","vacancy_details","vacancy","vacancies","seats"],eligibility:["eligibility","qualification","qualifications","educationQualification","education_qualification"],selectionProcess:["selectionProcess","selection_process"],examPattern:["examPattern","exam_pattern"],groupWiseSyllabus:["groupWiseSyllabus","group_wise_syllabus","syllabus"],participatingInstitutes:["participatingInstitutes","participating_institutes","institutes"],documentsRequired:["documentsRequired","documents_required","requiredDocuments","required_documents"],howToApply:["howToApply","how_to_apply"],importantLinks:["importantLinks","important_links"],howToCheckResult:["howToCheckResult","howToCheck","checkResult"],regionWiseResultLinks:["regionWiseResultLinks","regionWiseLinks","regionLinks","resultLinksByRegion"]};
-=======
-    const aliases={faqs:["faqs","faq"],vacancyDetails:["vacancyDetails","vacancy","vacancies","seats"],importantLinks:["importantLinks","links"],howToCheckResult:["howToCheckResult","howToCheck","checkResult"],regionWiseResultLinks:["regionWiseResultLinks","regionWiseLinks","regionLinks","resultLinksByRegion"]};
->>>>>>> 3ba6d7f4409f2b6b818fcda0ef752e90c466f019
     const escapeHTML=(v="")=>String(v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
     const toTitle=(key="")=>String(key).replace(/([a-z])([A-Z])/g,"$1 $2").replace(/[-_]+/g," ").replace(/\b\w/g,m=>m.toUpperCase());
     const isFilled=v=>{
@@ -543,11 +532,7 @@
       return `<span class="premium-editable" data-edit-path="${editPathAttr(path)}" data-style-key="${escapeHTML(key)}" contenteditable="${adminEditMode?'true':'false'}" spellcheck="false"${styleAttrForKey(key)}>${html}</span>`;
     };
     const valueHTML=(value,path=null)=>editableHTML(value,path);
-<<<<<<< HEAD
     const iconFor=key=>({summary:"ℹ",importantDates:"📅",applicationFee:"💰",ageLimit:"👤",vacancyDetails:"👥",eligibility:"🎓",selectionProcess:"🔢",examPattern:"📝",groupWiseSyllabus:"📚",participatingInstitutes:"🏛",documentsRequired:"📄",howToCheckResult:"✅",howToApply:"⬇",importantLinks:"🔗",regionWiseResultLinks:"📄",faqs:"❓"}[key]||"✓");
-=======
-    const iconFor=key=>({importantDates:"📅",applicationFee:"💰",ageLimit:"👤",vacancyDetails:"👥",selectionProcess:"🔢",howToCheckResult:"✅",howToApply:"⬇",importantLinks:"🔗",regionWiseResultLinks:"📄",faqs:"❓"}[key]||"✓");
->>>>>>> 3ba6d7f4409f2b6b818fcda0ef752e90c466f019
     const linkClass=label=>/whatsapp/i.test(label)?"whatsapp":/telegram/i.test(label)?"telegram":/apply/i.test(label)?"apply":/download|notification/i.test(label)?"download":/official|website/i.test(label)?"website":/source/i.test(label)?"source":"default";
     const linkIcon=label=>/whatsapp/i.test(label)?"🟢":/telegram/i.test(label)?"✈":/apply/i.test(label)?"↗":/download|notification/i.test(label)?"⬇":/official|website/i.test(label)?"🌐":"🔗";
 
@@ -570,7 +555,6 @@
       const seen=new Set();
       return links.map(item=>({label:linkLabel(item),url:safeUrl(linkUrl(item))})).filter(item=>item.url&&!seen.has(item.url+item.label)&&seen.add(item.url+item.label));
     }
-<<<<<<< HEAD
     function normalizeJsonImportantLinks(data){
       const links=[];
       const raw=getSection(data,"importantLinks");
@@ -580,8 +564,6 @@
       return links.map(item=>({label:linkLabel(item),url:safeUrl(linkUrl(item))}))
         .filter(item=>item.url&&!/whatsapp|telegram/i.test(item.label)&&!seen.has(item.url+item.label)&&seen.add(item.url+item.label));
     }
-=======
->>>>>>> 3ba6d7f4409f2b6b818fcda0ef752e90c466f019
     function quickLinks(data){return normalizeLinks(data).filter(l=>/(apply|download|official|website|whatsapp|telegram)/i.test(l.label));}
     function imageUrl(data){return safeUrl(data.imageUrl||data.featuredImage||data.heroImage||data.thumbnail||data.banner||data.poster||"");}
     function fallbackWords(title){return String(title||"Premium Update").split(/\s+/).filter(Boolean).slice(0,5).join(" ")||"Premium Update";}
@@ -630,20 +612,12 @@
     function hasRenderableSection(data,key){
       if(key==="overview")return overviewRows(data).length>0;
       if(key==="applicationFee")return isFilled(getSection(data,key))||isFilled(data.paymentMode);
-<<<<<<< HEAD
       if(key==="importantLinks")return normalizeJsonImportantLinks(data).length>0;
-=======
-      if(key==="importantLinks")return normalizeLinks(data).length>0;
->>>>>>> 3ba6d7f4409f2b6b818fcda0ef752e90c466f019
       return isFilled(getSection(data,key));
     }
     function summaryText(key,value,data){const arr=arrayify(value);if(key==="overview")return `${overviewRows(data||{}).length} details`;if(key==="importantDates")return `${arr.length} important events`;if(key==="applicationFee")return "Exam fee details";if(key==="ageLimit")return "Age criteria";if(key==="vacancyDetails")return "Vacancy / seats";if(key==="faqs")return `${arr.length} questions`;return Array.isArray(value)?`${arr.length} items`:isPlainObject(value)?`${Object.keys(value).length} details`:"View details";}
     function renderSummaryCards(data){
-<<<<<<< HEAD
       const keys=SECTION_DEFS.map(([key])=>key);
-=======
-      const keys=["importantDates","applicationFee","ageLimit","vacancyDetails","selectionProcess","howToCheckResult","howToApply","importantLinks","regionWiseResultLinks","faqs"];
->>>>>>> 3ba6d7f4409f2b6b818fcda0ef752e90c466f019
       return `<div class="summary-grid">${keys.filter(k=>hasRenderableSection(data,k)).slice(0,8).map(k=>{const def=SECTION_DEFS.find(d=>d[0]===k)||[k,toTitle(k)];return `<a class="summary-card" href="#section-${k}"><span class="summary-icon">${iconFor(k)}</span><span><strong>${escapeHTML(def[1])}</strong><span>${escapeHTML(summaryText(k,getSection(data,k),data))}</span></span></a>`}).join("")}</div>`;
     }
     function renderTable(rows,preferred=[],basePath=[]){
@@ -696,11 +670,7 @@
     function renderDocuments(value){const arr=arrayify(value);return `<ul class="check-list">${arr.map((item,i)=>`<li>${valueHTML(item,["documentsRequired",i])}</li>`).join("")}</ul>`;}
     function renderSteps(value,pathKey="howToApply"){const arr=arrayify(value);return `<ol class="steps">${arr.map((item,i)=>`<li>${valueHTML(item,[pathKey,i])}</li>`).join("")}</ol>`;}
     function renderLinks(value,data){
-<<<<<<< HEAD
       const links=normalizeJsonImportantLinks({...data,importantLinks:value});
-=======
-      const links=normalizeLinks({...data,importantLinks:value});
->>>>>>> 3ba6d7f4409f2b6b818fcda0ef752e90c466f019
       return `<div class="link-grid">${links.map(l=>`<a class="link-card" href="${escapeHTML(l.url)}" target="_blank" rel="noopener noreferrer"><strong>${linkIcon(l.label)} ${escapeHTML(l.label)}</strong><span>यहाँ से direct link open करें</span></a>`).join("")}</div>`;
     }
     function renderRegionWiseLinks(value){
@@ -730,24 +700,17 @@
     function renderSection(data,key){
       const value=getSection(data,key);
       if(!isFilled(value)&&key!=="overview"&&key!=="applicationFee"&&key!=="importantLinks")return"";
-<<<<<<< HEAD
       if(key==="summary")return renderTable(value,["label","value"],["summary"]);
-=======
->>>>>>> 3ba6d7f4409f2b6b818fcda0ef752e90c466f019
       if(key==="importantDates")return renderImportantDates(value);
       if(key==="applicationFee")return renderFee(data);
       if(key==="ageLimit")return renderAgeLimit(value);
       if(key==="vacancyDetails")return renderTable(value,["postName","area","totalPost","totalPosts","course","eligibility","note"],["vacancyDetails"]);
-<<<<<<< HEAD
       if(key==="eligibility")return renderEligibility(value);
       if(key==="selectionProcess")return renderSelection(value);
       if(key==="examPattern")return renderTable(value,["subject","questions","marks","duration","examMode","questionType"],["examPattern"]);
       if(key==="groupWiseSyllabus")return renderTable(value,["group_code","group_name","domain_subject","language","skill_test"],["groupWiseSyllabus"]);
       if(key==="participatingInstitutes")return renderTable(value,["label","value","name","total","note"],["participatingInstitutes"]);
       if(key==="documentsRequired")return renderDocuments(value);
-=======
-      if(key==="selectionProcess")return renderSelection(value);
->>>>>>> 3ba6d7f4409f2b6b818fcda0ef752e90c466f019
       if(key==="howToCheckResult")return renderSteps(value,"howToCheckResult");
       if(key==="howToApply")return renderSteps(value,"howToApply");
       if(key==="importantLinks")return renderLinks(value,data);
@@ -817,11 +780,7 @@
       });
     }
     function renderSidebar(data,links){
-<<<<<<< HEAD
       const mini=SECTION_DEFS.map(([key])=>key).filter(k=>hasRenderableSection(data,k)).slice(0,10);
-=======
-      const mini=["importantDates","applicationFee","ageLimit","vacancyDetails","importantLinks","regionWiseResultLinks"].filter(k=>hasRenderableSection(data,k));
->>>>>>> 3ba6d7f4409f2b6b818fcda0ef752e90c466f019
       return `<aside class="premium-aside"><div class="aside-phone"><div class="aside-screen"><div class="aside-top"><span>E-MITRA WALA</span><span>☰</span></div><div class="aside-body">${renderMedia(data,true)}<span class="pill">Verified Update</span><h2>${escapeHTML(data.title||"Premium Update")}</h2>${data.shortInfo?`<p>${escapeHTML(data.shortInfo)}</p>`:""}<div class="aside-mini-list"><div class="aside-mini">✓ Verified Update</div><div class="aside-mini">✓ Official Update</div></div>${renderActionButtons(links,4)}<div class="summary-grid">${mini.map(k=>{const def=SECTION_DEFS.find(d=>d[0]===k)||[k,toTitle(k)];return `<a class="summary-card" href="#section-${k}"><span class="summary-icon">${iconFor(k)}</span><span><strong>${escapeHTML(def[1])}</strong><span>${escapeHTML(summaryText(k,getSection(data,k),data))}</span></span></a>`}).join("")}</div></div></div></div></aside>`;
     }
     function renderAdminEditor(){

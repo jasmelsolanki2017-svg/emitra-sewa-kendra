@@ -56,8 +56,15 @@ const textValue = (value = "", lang = "hi") => {
   return String(translated || "").replace(/\s+/g, " ").trim();
 };
 
-const resolveMergeConflictMarkers = (value = "") => String(value || "")
-  .replace(/^<<<<<<<[^\n]*\n([\s\S]*?)^=======\n[\s\S]*?^>>>>>>>[^\n]*(?:\n|$)/gm, "$1");
+const resolveMergeConflictMarkers = (value = "") => {
+  let output = String(value || "");
+  const conflictPattern = /^<<<<<<<[^\r\n]*(?:\r?\n)([\s\S]*?)^=======(?:\r?\n)[\s\S]*?^>>>>>>>[^\r\n]*(?:\r?\n|$)/gm;
+  for (let index = 0; index < 5 && conflictPattern.test(output); index += 1) {
+    output = output.replace(conflictPattern, "$1");
+    conflictPattern.lastIndex = 0;
+  }
+  return output;
+};
 
 const cleanSlug = (value = "") => String(value || "")
   .normalize("NFKD")
