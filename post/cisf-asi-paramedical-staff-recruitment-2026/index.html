@@ -99,6 +99,9 @@
     .hero-short{font-size:18px;line-height:1.45;color:#20314d;font-weight:800;margin:14px 0 16px}
     .status-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
     .status-chip{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-size:13px;font-weight:900;box-shadow:0 2px 10px rgba(9,38,93,.04)}
+    .syllabus-layout .pill{background:#075dcc}
+    .syllabus-layout .syllabus-hero .media-box .poster-fallback{background:radial-gradient(circle at 75% 25%,rgba(255,255,255,.16),transparent 35%),linear-gradient(145deg,#061d4b 0%,#075dcc 56%,#0b9444 100%)}
+    .syllabus-layout .status-chip{border-color:#b9d6ff;background:#f6fbff;color:#061d4b}
     .quick-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:16px 0 14px}
     .action-btn{display:flex;align-items:center;justify-content:center;gap:8px;text-align:center;min-height:48px;padding:12px 12px;border-radius:7px;color:#fff;font-weight:900;font-size:15px;border:0;box-shadow:0 6px 14px rgba(0,0,0,.08)}
     .action-btn.apply{background:#0b9444}.action-btn.download{background:#07944d}.action-btn.website{background:#0764cf}.action-btn.whatsapp{background:#f57d11}.action-btn.telegram{background:#13a0dd}.action-btn.source{background:#6735b8}.action-btn.default{background:#0d8f99}
@@ -440,6 +443,7 @@
       ["regionWiseResultLinks","Region Wise Result Links","accent-green","full-span"],
       ["faqs","Frequently Asked Questions (FAQ)","accent-blue","full-span"]
     ];
+    const SYLLABUS_SECTION_ORDER=["summary","groupWiseSyllabus","examPattern","selectionProcess","importantDates","applicationFee","ageLimit","eligibility","vacancyDetails","documentsRequired","howToApply","importantLinks","faqs"];
     const aliases={summary:["summary","overview","short_summary","shortSummary"],faqs:["faqs","faq"],importantDates:["importantDates","important_dates","dates"],applicationFee:["applicationFee","application_fee","applicationFees","application_fees","fees","fee"],ageLimit:["ageLimit","age_limit"],vacancyDetails:["vacancyDetails","vacancy_details","vacancy","vacancies","seats"],eligibility:["eligibility","qualification","qualifications","educationQualification","education_qualification"],selectionProcess:["selectionProcess","selection_process"],examPattern:["examPattern","exam_pattern"],groupWiseSyllabus:["groupWiseSyllabus","group_wise_syllabus","syllabus"],participatingInstitutes:["participatingInstitutes","participating_institutes","institutes"],documentsRequired:["documentsRequired","documents_required","requiredDocuments","required_documents"],howToApply:["howToApply","how_to_apply"],importantLinks:["importantLinks","important_links"],howToCheckResult:["howToCheckResult","howToCheck","checkResult"],regionWiseResultLinks:["regionWiseResultLinks","regionWiseLinks","regionLinks","resultLinksByRegion"]};
     const escapeHTML=(v="")=>String(v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
     const toTitle=(key="")=>String(key).replace(/([a-z])([A-Z])/g,"$1 $2").replace(/[-_]+/g," ").replace(/\b\w/g,m=>m.toUpperCase());
@@ -583,10 +587,22 @@
       if(key==="importantLinks")return normalizeJsonImportantLinks(data).length>0;
       return isFilled(getSection(data,key));
     }
+    const isSyllabusPost=data=>{
+      const text=[data?.postTarget,data?.category,data?.postType,data?.type,data?.title,data?.slug].filter(Boolean).join(" ").toLowerCase();
+      return /\bsyllabus\b|slaybas|saylabas/.test(text);
+    };
+    const sectionDefsFor=data=>{
+      if(!isSyllabusPost(data))return SECTION_DEFS;
+      const byKey=new Map(SECTION_DEFS.map(def=>[def[0],def]));
+      const ordered=SYLLABUS_SECTION_ORDER.map(key=>byKey.get(key)).filter(Boolean);
+      SECTION_DEFS.forEach(def=>{if(!SYLLABUS_SECTION_ORDER.includes(def[0]))ordered.push(def)});
+      return ordered;
+    };
     function summaryText(key,value,data){const arr=arrayify(value);if(key==="overview")return `${overviewRows(data||{}).length} details`;if(key==="importantDates")return `${arr.length} important events`;if(key==="applicationFee")return "Exam fee details";if(key==="ageLimit")return "Age criteria";if(key==="vacancyDetails")return "Vacancy / seats";if(key==="faqs")return `${arr.length} questions`;return Array.isArray(value)?`${arr.length} items`:isPlainObject(value)?`${Object.keys(value).length} details`:"View details";}
     function renderSummaryCards(data){
-      const keys=SECTION_DEFS.map(([key])=>key);
-      return `<div class="summary-grid">${keys.filter(k=>hasRenderableSection(data,k)).slice(0,8).map(k=>{const def=SECTION_DEFS.find(d=>d[0]===k)||[k,toTitle(k)];return `<a class="summary-card" href="#section-${k}"><span class="summary-icon">${iconFor(k)}</span><span><strong>${escapeHTML(def[1])}</strong><span>${escapeHTML(summaryText(k,getSection(data,k),data))}</span></span></a>`}).join("")}</div>`;
+      const defs=sectionDefsFor(data);
+      const keys=defs.map(([key])=>key);
+      return `<div class="summary-grid">${keys.filter(k=>hasRenderableSection(data,k)).slice(0,8).map(k=>{const def=defs.find(d=>d[0]===k)||[k,toTitle(k)];return `<a class="summary-card" href="#section-${k}"><span class="summary-icon">${iconFor(k)}</span><span><strong>${escapeHTML(def[1])}</strong><span>${escapeHTML(summaryText(k,getSection(data,k),data))}</span></span></a>`}).join("")}</div>`;
     }
     function renderTable(rows,preferred=[],basePath=[]){
       rows=arrayify(rows);
@@ -748,8 +764,10 @@
       });
     }
     function renderSidebar(data,links){
-      const mini=SECTION_DEFS.map(([key])=>key).filter(k=>hasRenderableSection(data,k)).slice(0,10);
-      return `<aside class="premium-aside"><div class="aside-phone"><div class="aside-screen"><div class="aside-top"><span>E-MITRA WALA</span><span>☰</span></div><div class="aside-body">${renderMedia(data,true)}<span class="pill">Verified Update</span><h2>${escapeHTML(data.title||"Premium Update")}</h2>${data.shortInfo?`<p>${escapeHTML(data.shortInfo)}</p>`:""}<div class="aside-mini-list"><div class="aside-mini">✓ Verified Update</div><div class="aside-mini">✓ Official Update</div></div>${renderActionButtons(links,4)}<div class="summary-grid">${mini.map(k=>{const def=SECTION_DEFS.find(d=>d[0]===k)||[k,toTitle(k)];return `<a class="summary-card" href="#section-${k}"><span class="summary-icon">${iconFor(k)}</span><span><strong>${escapeHTML(def[1])}</strong><span>${escapeHTML(summaryText(k,getSection(data,k),data))}</span></span></a>`}).join("")}</div></div></div></div></aside>`;
+      const defs=sectionDefsFor(data);
+      const mini=defs.map(([key])=>key).filter(k=>hasRenderableSection(data,k)).slice(0,10);
+      const syllabus=isSyllabusPost(data);
+      return `<aside class="premium-aside"><div class="aside-phone"><div class="aside-screen"><div class="aside-top"><span>E-MITRA WALA</span><span>☰</span></div><div class="aside-body">${renderMedia(data,true)}<span class="pill">${syllabus?"Syllabus":"Verified Update"}</span><h2>${escapeHTML(data.title||"Premium Update")}</h2>${data.shortInfo?`<p>${escapeHTML(data.shortInfo)}</p>`:""}<div class="aside-mini-list"><div class="aside-mini">✓ ${syllabus?"Subject Wise Syllabus":"Verified Update"}</div><div class="aside-mini">✓ ${syllabus?"Exam Pattern":"Official Update"}</div></div>${renderActionButtons(links,4)}<div class="summary-grid">${mini.map(k=>{const def=defs.find(d=>d[0]===k)||[k,toTitle(k)];return `<a class="summary-card" href="#section-${k}"><span class="summary-icon">${iconFor(k)}</span><span><strong>${escapeHTML(def[1])}</strong><span>${escapeHTML(summaryText(k,getSection(data,k),data))}</span></span></a>`}).join("")}</div></div></div></div></aside>`;
     }
     function renderAdminEditor(){
       if(!adminAllowed)return"";
@@ -764,10 +782,12 @@
       setSeo(data);
       updatePremiumHeaderActive(data);
       const links=quickLinks(data);
-      const hero=`${renderAdminEditor()}<section class="premium-hero">${renderMedia(data)}<div class="hero-copy"><span class="pill">Verified Update</span><h1>${valueHTML(data.title||"Premium Update",["title"])}</h1>${data.shortInfo?`<p class="hero-short">${valueHTML(data.shortInfo,["shortInfo"])}</p>`:""}<div class="status-row"><span class="status-chip">✅ Verified Update</span><span class="status-chip">✅ Official Update</span></div></div></section>${renderActionButtons(links,4)}<div class="verified-strip"><span>✅ E-MITRA WALA VERIFIED UPDATE ✅</span></div>${renderSummaryCards(data)}`;
-      const sections=`<div class="section-grid">${SECTION_DEFS.map(([key,title,accent,span])=>renderCard(key,title,renderSection(data,key),accent,span)).join("")}</div>`;
+      const syllabus=isSyllabusPost(data);
+      const defs=sectionDefsFor(data);
+      const hero=`${renderAdminEditor()}<section class="premium-hero ${syllabus?"syllabus-hero":""}">${renderMedia(data)}<div class="hero-copy"><span class="pill">${syllabus?"Syllabus":"Verified Update"}</span><h1>${valueHTML(data.title||"Premium Update",["title"])}</h1>${data.shortInfo?`<p class="hero-short">${valueHTML(data.shortInfo,["shortInfo"])}</p>`:""}<div class="status-row"><span class="status-chip">✓ ${syllabus?"Subject Wise Syllabus":"Verified Update"}</span><span class="status-chip">✓ ${syllabus?"Exam Pattern":"Official Update"}</span></div></div></section>${renderActionButtons(links,4)}<div class="verified-strip"><span>${syllabus?"E-MITRA WALA SYLLABUS UPDATE":"E-MITRA WALA VERIFIED UPDATE"}</span></div>${renderSummaryCards(data)}`;
+      const sections=`<div class="section-grid">${defs.map(([key,title,accent,span])=>renderCard(key,title,renderSection(data,key),accent,span)).join("")}</div>`;
       root.classList.toggle("premium-admin-editing",adminEditMode);
-      root.innerHTML=`<div class="premium-layout"><div class="premium-main">${hero}${sections}</div>${renderSidebar(data,links)}</div>`;
+      root.innerHTML=`<div class="premium-layout ${syllabus?"syllabus-layout":""}"><div class="premium-main">${hero}${sections}</div>${renderSidebar(data,links)}</div>`;
       const sticky=links.filter(l=>/(apply|download|notification)/i.test(l.label)).slice(0,2);
       mobileSticky.innerHTML=sticky.map(l=>`<a class="action-btn ${linkClass(l.label)}" href="${escapeHTML(l.url)}" target="_blank" rel="noopener noreferrer">${linkIcon(l.label)} ${escapeHTML(l.label)}</a>`).join("");
       attachPremiumDesignPicker();
