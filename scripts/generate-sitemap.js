@@ -881,7 +881,7 @@ const visibleText = (value = "") => String(value || "")
 
 const wordCount = (value = "") => visibleText(value).split(/\s+/).filter((word) => word.length > 1).length;
 
-const lowValuePattern = /\b(?:dummy|sample|test|testing|demo|empty|untitled|lorem|fgf|asdf|qwerty)\b|^job-\d+$/i;
+const lowValuePattern = /\b(?:dummy|sample|demo|empty|untitled|lorem|fgf|asdf|qwerty)\b|^(?:test|testing|job-\d+)$/i;
 
 const qualityValueText = (value = "") => {
   if (Array.isArray(value)) return value.map(qualityValueText).join(" ");
@@ -903,20 +903,30 @@ const postQualityText = (job = {}) => [
   job.ageLimitManual,
   job.vacancyDetailsManual,
   job.vacancyDetails,
+  job.vacancy_details,
   job.vacancy,
   job.eligibilityManual,
   job.eligibility,
   job.overview,
   job.applicationFee,
+  job.application_fee,
   job.ageLimit,
+  job.age_limit,
   job.selectionProcess,
+  job.selection_process,
   job.examPattern,
+  job.exam_details,
+  job.important_dates,
   job.documentsRequired,
+  job.documents_required,
   job.howToApply,
+  job.how_to_apply,
   job.importantLinks,
+  job.important_links,
   job.pageContent,
   job.contentText,
   job.faqs,
+  job.faq,
   job.sections,
   job.intro,
   job.mcqs
@@ -932,10 +942,10 @@ const getPostQuality = (id = "", job = {}) => {
   const hasRealTitle = title.length >= 8 && !lowValuePattern.test(title) && !lowValuePattern.test(slug);
   const hasUsefulJobStructure = [
     job.shortInfo || job.metaDescription,
-    job.lastApplyDate || job.lastDate || job.importantDatesManual || job.importantDates,
-    job.qualification || job.eligibilityManual || job.eligibility,
-    job.applyLink || job.detailLink || job.officialWebsite || job.importantLinks,
-    job.overview || job.vacancyDetails || job.vacancy,
+    job.lastApplyDate || job.lastDate || job.importantDatesManual || job.importantDates || job.important_dates,
+    job.qualification || job.eligibilityManual || job.eligibility || job.courses || job.exam_details,
+    job.applyLink || job.detailLink || job.officialWebsite || job.importantLinks || job.important_links,
+    job.overview || job.summary || job.vacancyDetails || job.vacancy_details || job.vacancy || job.result,
     job.faq || job.faqs
   ].filter((value) => {
     if (Array.isArray(value)) return value.length > 0;
