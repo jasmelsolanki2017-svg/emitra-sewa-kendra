@@ -94,7 +94,7 @@ const render = () => {
   }
   list.innerHTML = `<ul>${filtered.map((item) => {
     const date = config.source === "jobs" ? getLastDateText(item) : "";
-    return `<li><a href="${safeUrl(itemHref(item))}" target="_blank" rel="noopener noreferrer">${escapeHTML((item.title || "Update") + date)}</a></li>`;
+    return `<li><a href="${safeUrl(itemHref(item))}" target="_blank" rel="noopener noreferrer">${escapeHTML(item.title || "Update")}</a>${date ? `<span class="last-date-text">${escapeHTML(date)}</span>` : ""}</li>`;
   }).join("")}</ul>`;
 };
 

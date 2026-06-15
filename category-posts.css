@@ -10,6 +10,7 @@ main{width:min(878px,calc(100% - 24px));min-height:690px;margin:0 auto 24px;padd
 .post-list li{margin:14px 0 26px;font-size:16px;line-height:1.25}
 .post-list a{color:#00e;text-decoration:underline}
 .post-list a:visited{color:#551a8b}
+.last-date-text{color:#000;text-decoration:none}
 .empty{padding:24px 28px;color:#555;font-size:16px}
 @media(max-width:640px){
   header,main{width:calc(100% - 16px)}
