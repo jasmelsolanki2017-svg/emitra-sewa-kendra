@@ -1,11 +1,11 @@
 const CATEGORY_CONFIG = {
-  notification: { title: "Notification", source: "portal", key: "notification" },
-  result: { title: "Result", source: "portal", key: "result" },
-  "admit-card": { title: "Admit Card", source: "portal", key: "admitCard" },
-  "answer-key": { title: "Answer Key", source: "portal", key: "answerKey" },
-  syllabus: { title: "Syllabus", source: "portal", key: "syllabus" },
-  admission: { title: "Admission Form", source: "portal", key: "admission" },
-  "top-online-form": { title: "Top Online Form", source: "jobs", key: "latestJob" }
+  notification: { title: "All Notification - Sarkari Result", source: "portal", key: "notification" },
+  result: { title: "All Result - Sarkari Result", source: "portal", key: "result" },
+  "admit-card": { title: "All Admit Card - Sarkari Result", source: "portal", key: "admitCard" },
+  "answer-key": { title: "All Answer Key - Sarkari Result", source: "portal", key: "answerKey" },
+  syllabus: { title: "All Syllabus - Sarkari Result", source: "portal", key: "syllabus" },
+  admission: { title: "All Admission Form - Sarkari Result", source: "portal", key: "admission" },
+  "top-online-form": { title: "All Latest Jobs - Sarkari Result", source: "jobs", key: "latestJob" }
 };
 
 const firebaseDbBaseUrl = "https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app";
@@ -76,32 +76,31 @@ const formatDate = (item = {}) => {
   return date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }).replace(/ /g, " ");
 };
 
+const getLastDateText = (item = {}) => {
+  const value = item.lastDate || item.lastApplyDate || item.applicationLastDate || item.formLastDate || "";
+  const text = String(value || "").trim();
+  return text ? ` | Last Date : ${text}` : "";
+};
+
 let allItems = [];
 
 const render = () => {
   const query = String(search?.value || "").trim().toLowerCase();
   const filtered = allItems.filter((item) => !query || [item.title, item.text, item.type, item.location].join(" ").toLowerCase().includes(query));
-  count.innerText = `${filtered.length} Posts`;
+  if(count){ count.innerText = `${filtered.length} Posts`; }
   if(!filtered.length){
     list.innerHTML = '<div class="empty">Is category me abhi koi post nahi mili.</div>';
     return;
   }
-  list.innerHTML = filtered.map((item) => {
-    const date = formatDate(item);
-    return `<article class="post-row">
-      <div>
-        ${date ? `<span class="post-date">${escapeHTML(date)}</span>` : ""}
-        <h2><a href="${safeUrl(itemHref(item))}" target="_blank" rel="noopener noreferrer">${escapeHTML(item.title || "Update")}</a></h2>
-        <p>${escapeHTML(item.shortInfo || item.description || item.type || "Full details ke liye post open karein.")}</p>
-      </div>
-      <a class="details" href="${safeUrl(itemHref(item))}" target="_blank" rel="noopener noreferrer">Open</a>
-    </article>`;
-  }).join("");
+  list.innerHTML = `<ul>${filtered.map((item) => {
+    const date = config.source === "jobs" ? getLastDateText(item) : "";
+    return `<li><a href="${safeUrl(itemHref(item))}" target="_blank" rel="noopener noreferrer">${escapeHTML((item.title || "Update") + date)}</a></li>`;
+  }).join("")}</ul>`;
 };
 
 const load = async () => {
   title.innerText = config.title;
-  desc.innerText = `${config.title} se related all posts yahan milengi.`;
+  desc.innerText = "";
   document.title = `${config.title} | E-MITRA WALA`;
   try{
     if(config.source === "portal"){
