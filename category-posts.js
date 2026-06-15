@@ -1,11 +1,11 @@
 const CATEGORY_CONFIG = {
-  notification: { title: "All Notification - Sarkari Result", source: "portal", key: "notification" },
-  result: { title: "All Result - Sarkari Result", source: "portal", key: "result" },
-  "admit-card": { title: "All Admit Card - Sarkari Result", source: "portal", key: "admitCard" },
-  "answer-key": { title: "All Answer Key - Sarkari Result", source: "portal", key: "answerKey" },
-  syllabus: { title: "All Syllabus - Sarkari Result", source: "portal", key: "syllabus" },
-  admission: { title: "All Admission Form - Sarkari Result", source: "portal", key: "admission" },
-  "top-online-form": { title: "All Latest Jobs - Sarkari Result", source: "jobs", key: "latestJob" }
+  notification: { title: "All Notification", source: "portal", key: "notification" },
+  result: { title: "All Result", source: "portal", key: "result" },
+  "admit-card": { title: "All Admit Card", source: "portal", key: "admitCard" },
+  "answer-key": { title: "All Answer Key", source: "portal", key: "answerKey" },
+  syllabus: { title: "All Syllabus", source: "portal", key: "syllabus" },
+  admission: { title: "All Admission Form", source: "portal", key: "admission" },
+  "top-online-form": { title: "All Latest Jobs", source: "jobs", key: "latestJob" }
 };
 
 const firebaseDbBaseUrl = "https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app";
