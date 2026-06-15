@@ -59,6 +59,11 @@
     .member-head h3{color:#0057a8;font-size:15px;line-height:1.25;overflow-wrap:anywhere;}
     .member-toggle{color:#ff7a00;font-size:12px;font-weight:900;}
     .member-body{padding:0 11px 11px;}
+    .member-profile{display:flex;align-items:center;gap:10px;margin:2px 0 9px;padding:8px;background:#f7fbff;border:1px solid #d8e6f5;border-radius:7px;}
+    .member-avatar{width:58px;height:58px;min-width:58px;border-radius:50%;border:2px solid #ff7a00;background:#eaf4ff;color:#0057a8;display:flex;align-items:center;justify-content:center;overflow:hidden;font-size:18px;font-weight:900;text-transform:uppercase;}
+    .member-avatar img{width:100%;height:100%;object-fit:cover;display:block;}
+    .member-profile h4{color:#03224d;font-size:14px;line-height:1.25;overflow-wrap:anywhere;}
+    .member-profile small{display:block;margin-top:2px;color:#55657a;font-size:11px;overflow-wrap:anywhere;}
     .badge{display:inline-block;padding:3px 7px;border-radius:999px;background:#138a36;color:white;font-size:10px;font-weight:800;}
     .badge.deleted{background:#d90000;}
     .detail{font-size:12px;color:#47566b;margin:4px 0;overflow-wrap:anywhere;}
@@ -343,6 +348,28 @@
       return data?.publicUrl || "";
     };
 
+    const getProfilePhotoUrl = (member = {}) => {
+      return member.profilePhotoUrl
+        || member.photoUrl
+        || member.photoURL
+        || member.avatar
+        || (member.profilePhotoPath ? getSupabasePublicUrl(member.profilePhotoPath, member.profilePhotoBucket || supabaseBucket) : "");
+    };
+
+    const getMemberInitials = (member = {}) => {
+      const text = String(member.name || member.email || "U").trim();
+      const parts = text.split(/\s+/).filter(Boolean);
+      return (parts.length > 1 ? parts[0][0] + parts[1][0] : text.slice(0, 2)).toUpperCase();
+    };
+
+    const renderMemberAvatar = (member = {}) => {
+      const photoUrl = safeUrl(getProfilePhotoUrl(member));
+      if(photoUrl && photoUrl !== "#"){
+        return `<div class="member-avatar"><img src="${photoUrl}" alt="${escapeHTML(member.name || "Member")} profile photo" loading="lazy" referrerpolicy="no-referrer"></div>`;
+      }
+      return `<div class="member-avatar">${escapeHTML(getMemberInitials(member))}</div>`;
+    };
+
     const getFileBucket = (file = {}) => {
       return !file.bucket || file.bucket === "user-uploads" ? supabaseBucket : file.bucket;
     };
@@ -536,6 +563,13 @@
             </button>
             ${isOpen ? `
             <div class="member-body">
+            <div class="member-profile">
+              ${renderMemberAvatar(member)}
+              <div>
+                <h4>${escapeHTML(member.name || "Member")}</h4>
+                <small>${escapeHTML(member.profileEmail || member.email || "")}</small>
+              </div>
+            </div>
             <p class="detail"><strong>Email:</strong> ${escapeHTML(member.email || "")}</p>
             <p class="detail"><strong>Profile Email:</strong> ${escapeHTML(member.profileEmail || member.email || "")}</p>
             <p class="detail"><strong>Mobile:</strong> ${escapeHTML(member.mobile || "Not added")}</p>
