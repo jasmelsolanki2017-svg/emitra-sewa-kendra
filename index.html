@@ -1010,8 +1010,8 @@ border:1px solid rgba(0,0,0,.12);
 display:grid;
 grid-template-columns:repeat(3,1fr);
 gap:12px;
-align-items:start;
-grid-auto-rows:auto;
+align-items:stretch;
+grid-auto-rows:1fr;
 }
 
 .home-portal-box{
@@ -1020,7 +1020,8 @@ border:3px double #b30000;
 outline:3px solid #0057a8;
 outline-offset:3px;
 box-shadow:0 0 0 6px #ffffff,0 8px 22px rgba(0,87,168,.18);
-min-height:0;
+min-height:270px;
+height:100%;
 display:flex;
 flex-direction:column;
 }
@@ -1112,10 +1113,6 @@ font-size:14px;
 font-weight:800;
 padding:7px 12px;
 margin:0 14px 12px 0;
-}
-
-.home-portal-view-all.is-visible{
-display:inline-flex;
 }
 
 .home-portal-view-all:hover{
@@ -2205,7 +2202,7 @@ display:none;
 
 .home-portal-box{
 border:1px solid #b30000;
-min-height:0;
+min-height:360px;
 }
 
 #homePortalNotification{order:1;}
@@ -2249,7 +2246,12 @@ font-family:Arial,sans-serif;
 font-weight:700;
 }
 
+.home-portal-list li:nth-child(n+7){
+display:none;
+}
+
 .home-portal-view-all{
+display:inline-flex;
 font-size:13px;
 padding:7px 10px;
 margin:0 12px 10px 0;
@@ -2833,49 +2835,49 @@ Important Links
         <div class="home-portal-box" id="homePortalNotification">
           <h3 class="home-portal-title"><span class="desktop-title">Notification</span><span class="mobile-title">New Updates</span></h3>
           <ul class="home-portal-list" id="homePortalNotificationList"><li class="home-portal-message">Loading...</li></ul>
-          <a class="home-portal-view-all" href="/#homePortalNotification">View More »</a>
+          <a class="home-portal-view-all" href="/#homePortalNotification">View All »</a>
         </div>
 
         <div class="home-portal-box" id="homePortalAdmitCard">
           <h3 class="home-portal-title">Admit Card</h3>
           <ul class="home-portal-list" id="homePortalAdmitCardList"><li class="home-portal-message">Loading...</li></ul>
-          <a class="home-portal-view-all" href="/#homePortalAdmitCard">View More »</a>
+          <a class="home-portal-view-all" href="/#homePortalAdmitCard">View All »</a>
         </div>
 
         <div class="home-portal-box" id="homePortalResults">
           <h3 class="home-portal-title"><span class="desktop-title">Result</span><span class="mobile-title">Exam Result</span></h3>
           <ul class="home-portal-list" id="homePortalResultList"><li class="home-portal-message">Loading...</li></ul>
-          <a class="home-portal-view-all" href="/#homePortalResults">View More »</a>
+          <a class="home-portal-view-all" href="/#homePortalResults">View All »</a>
         </div>
 
         <div class="home-portal-box" id="homePortalLatestJobs">
           <h3 class="home-portal-title">Top Online Form</h3>
           <ul class="home-portal-list" id="homePortalJobList"><li class="home-portal-message">Latest jobs ready ho rahe hain...</li></ul>
-          <a class="home-portal-view-all" href="/#homePortalLatestJobs">View More »</a>
+          <a class="home-portal-view-all" href="/#homePortalLatestJobs">View All »</a>
         </div>
 
         <div class="home-portal-box" id="homePortalAnswerKey">
           <h3 class="home-portal-title">Answer Keys</h3>
           <ul class="home-portal-list" id="homePortalAnswerKeyList"><li class="home-portal-message">Loading...</li></ul>
-          <a class="home-portal-view-all" href="/#homePortalLatestJobs#answerKey">View More »</a>
+          <a class="home-portal-view-all" href="/#homePortalLatestJobs#answerKey">View All »</a>
         </div>
 
         <div class="home-portal-box" id="homePortalSyllabus">
           <h3 class="home-portal-title">Syllabus</h3>
           <ul class="home-portal-list" id="homePortalSyllabusList"><li class="home-portal-message">Loading...</li></ul>
-          <a class="home-portal-view-all" href="/#homePortalLatestJobs#syllabus">View More »</a>
+          <a class="home-portal-view-all" href="/#homePortalLatestJobs#syllabus">View All »</a>
         </div>
 
         <div class="home-portal-box" id="homePortalAdmission">
           <h3 class="home-portal-title">Admission Form</h3>
           <ul class="home-portal-list" id="homePortalAdmissionList"><li class="home-portal-message">Loading...</li></ul>
-          <a class="home-portal-view-all" href="/#homePortalLatestJobs#admission">View More »</a>
+          <a class="home-portal-view-all" href="/#homePortalLatestJobs#admission">View All »</a>
         </div>
 
         <div class="home-portal-box" id="homePortalCurrentAffairs">
           <h3 class="home-portal-title">Current Affairs</h3>
           <ul class="home-portal-list" id="homePortalCurrentAffairsList"><li class="home-portal-message">Loading...</li></ul>
-          <a class="home-portal-view-all" href="current-affairs.html">View More »</a>
+          <a class="home-portal-view-all" href="current-affairs.html">View All »</a>
         </div>
       </div>
       <p class="home-portal-message" id="homePortalNoResult" style="display:none;">कोई matching update नहीं मिली</p>
@@ -4226,14 +4228,6 @@ answerKey:"homePortalAnswerKeyList",
 syllabus:"homePortalSyllabusList",
 admission:"homePortalAdmissionList"
 };
-const HOME_PORTAL_VISIBLE_LIMIT = 12;
-const updateHomePortalViewMore = (list, totalItems = 0) => {
-const box = list ? list.closest(".home-portal-box") : null;
-const viewMore = box ? box.querySelector(".home-portal-view-all") : null;
-if(viewMore){
-viewMore.classList.toggle("is-visible", totalItems > HOME_PORTAL_VISIBLE_LIMIT);
-}
-};
 const filterHomePortalJobs = () => {
 const input = document.getElementById("homePortalJobSearch");
 const noResult = document.getElementById("homePortalNoResult");
@@ -4282,14 +4276,12 @@ return;
 
 if(!items.length){
 list.innerHTML = '<li class="home-portal-message">Abhi koi update nahi hai.</li>';
-updateHomePortalViewMore(list, 0);
 return;
 }
 
-list.innerHTML = items.slice(0, HOME_PORTAL_VISIBLE_LIMIT).map((item)=>`
+list.innerHTML = items.map((item)=>`
   <li>${renderPostDate(item)}<span class="post-title-line"><a href="${portalItemHref(item, category)}" target="_blank" rel="noopener noreferrer">${escapeHTML(item.title || "Update")}</a>${renderNewBadge(item)}</span></li>
 `).join("");
-updateHomePortalViewMore(list, items.length);
 };
 
 const buildCanonicalSlug = (id, job = {}) => {
@@ -4464,7 +4456,6 @@ sortJobRows(uniqueCurrentAffairs);
 if(uniqueJobs.length === 0){
 if(portalJobList){
 portalJobList.innerHTML = '<li class="home-portal-message">अभी कोई job available नहीं है।</li>';
-updateHomePortalViewMore(portalJobList, 0);
 }
 if(box){
 box.innerHTML = '<p class="home-job-message">अभी कोई latest job available नहीं है।</p>';
@@ -4472,7 +4463,7 @@ box.innerHTML = '<p class="home-job-message">अभी कोई latest job avai
 }
 
 if(uniqueJobs.length && portalJobList){
-portalJobList.innerHTML = uniqueJobs.slice(0, HOME_PORTAL_VISIBLE_LIMIT).map(({ id, job })=>`
+portalJobList.innerHTML = uniqueJobs.slice(0,20).map(({ id, job })=>`
   <li class="home-portal-job-card">
     <span class="badge">${escapeHTML(job.type || "Online Form")}</span>
     <h3>${renderApplyStartDate(job)}<span class="post-title-line"><a href="${jobDetailHref(id, job)}" target="_blank" rel="noopener noreferrer">${escapeHTML(job.title || job.text || "Job Update")}</a>${renderNewBadge(job)}</span></h3>
@@ -4485,7 +4476,6 @@ portalJobList.innerHTML = uniqueJobs.slice(0, HOME_PORTAL_VISIBLE_LIMIT).map(({ 
     </div>
   </li>
 `).join("");
-updateHomePortalViewMore(portalJobList, uniqueJobs.length);
 filterHomePortalJobs();
 }
 
@@ -4502,9 +4492,8 @@ box.innerHTML = uniqueJobs.slice(0,8).map(({ id, job })=>`
 }
 if(currentAffairsList){
 currentAffairsList.innerHTML = uniqueCurrentAffairs.length
-? uniqueCurrentAffairs.slice(0, HOME_PORTAL_VISIBLE_LIMIT).map(({ id, job })=>`<li>${renderPostDate(job)}<span class="post-title-line"><a href="${jobDetailHref(id, job)}" target="_blank" rel="noopener noreferrer">${escapeHTML(job.title || "Current Affairs Update")}</a>${renderNewBadge(job)}</span></li>`).join("")
+? uniqueCurrentAffairs.slice(0,10).map(({ id, job })=>`<li>${renderPostDate(job)}<span class="post-title-line"><a href="${jobDetailHref(id, job)}" target="_blank" rel="noopener noreferrer">${escapeHTML(job.title || "Current Affairs Update")}</a>${renderNewBadge(job)}</span></li>`).join("")
 : '<li class="home-portal-message">Abhi koi current affairs post nahi hai.</li>';
-updateHomePortalViewMore(currentAffairsList, uniqueCurrentAffairs.length);
 }
 filterHomePortalJobs();
 }).catch((error)=>{
