@@ -56,6 +56,9 @@
     .member-card.open{grid-column:span 2;}
     .member-head{width:100%;display:flex;justify-content:space-between;gap:8px;align-items:center;padding:10px 11px;border:0;background:white;cursor:pointer;text-align:left;}
     .member-head:hover{background:#f1f7ff;}
+    .member-head-main{display:flex;align-items:center;gap:8px;min-width:0;flex:1;}
+    .member-head-avatar{width:34px;height:34px;min-width:34px;border-radius:50%;border:2px solid #ff7a00;background:#eaf4ff;color:#0057a8;display:flex;align-items:center;justify-content:center;overflow:hidden;font-size:12px;font-weight:900;text-transform:uppercase;}
+    .member-head-avatar img{width:100%;height:100%;object-fit:cover;display:block;}
     .member-head h3{color:#0057a8;font-size:15px;line-height:1.25;overflow-wrap:anywhere;}
     .member-toggle{color:#ff7a00;font-size:12px;font-weight:900;}
     .member-body{padding:0 11px 11px;}
@@ -370,6 +373,14 @@
       return `<div class="member-avatar">${escapeHTML(getMemberInitials(member))}</div>`;
     };
 
+    const renderMemberHeadAvatar = (member = {}) => {
+      const photoUrl = safeUrl(getProfilePhotoUrl(member));
+      if(photoUrl && photoUrl !== "#"){
+        return `<span class="member-head-avatar"><img src="${photoUrl}" alt="${escapeHTML(member.name || "Member")} profile photo" loading="lazy" referrerpolicy="no-referrer"></span>`;
+      }
+      return `<span class="member-head-avatar">${escapeHTML(getMemberInitials(member))}</span>`;
+    };
+
     const getFileBucket = (file = {}) => {
       return !file.bucket || file.bucket === "user-uploads" ? supabaseBucket : file.bucket;
     };
@@ -557,7 +568,10 @@
         return `
           <article class="member-card ${deleted ? "deleted" : ""} ${blocked ? "blocked" : ""} ${isOpen ? "open" : ""}">
             <button class="member-head" type="button" onclick="toggleMemberDetails('${escapeHTML(uid)}')">
-              <h3>${escapeHTML(member.name || "Member")}</h3>
+              <span class="member-head-main">
+                ${renderMemberHeadAvatar(member)}
+                <h3>${escapeHTML(member.name || "Member")}</h3>
+              </span>
               <span class="badge ${deleted || blocked ? "deleted" : ""}">${escapeHTML(status)}</span>
               <span class="member-toggle">${isOpen ? "Close" : "Open"}</span>
             </button>
