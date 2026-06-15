@@ -442,12 +442,15 @@
     let timeoutId=window.__premiumSlowTimer||null;
 
     const SECTION_DEFS=[
+      ["postDetails","Post Details","accent-blue","full-span"],
       ["summary","Summary","accent-blue","full-span"],
       ["importantDates","Important Dates","accent-green"],
       ["applicationFee","Application Fee","accent-red"],
       ["ageLimit","Age Limit","accent-blue"],
       ["vacancyDetails","Vacancy / Seats","accent-orange","full-span"],
       ["eligibility","Eligibility","accent-teal","full-span"],
+      ["departmentWisePosts","Department Wise Posts","accent-orange","full-span"],
+      ["categoryWiseVacancy","Category Wise Vacancy","accent-orange","full-span"],
       ["selectionProcess","Selection Process","accent-teal"],
       ["examPattern","Exam Pattern","accent-purple","full-span"],
       ["groupWiseSyllabus","Syllabus / Group Wise Syllabus","accent-green","full-span"],
@@ -460,7 +463,7 @@
       ["faqs","Frequently Asked Questions (FAQ)","accent-blue","full-span"]
     ];
     const SYLLABUS_SECTION_ORDER=["summary","groupWiseSyllabus","examPattern","selectionProcess","importantDates","applicationFee","ageLimit","eligibility","vacancyDetails","documentsRequired","howToApply","importantLinks","faqs"];
-    const aliases={summary:["summary","overview","short_summary","shortSummary"],faqs:["faqs","faq"],importantDates:["importantDates","important_dates","dates"],applicationFee:["applicationFee","application_fee","applicationFees","application_fees","fees","fee"],ageLimit:["ageLimit","age_limit"],vacancyDetails:["vacancyDetails","vacancy_details","vacancy","vacancies","seats"],eligibility:["eligibility","qualification","qualifications","educationQualification","education_qualification"],selectionProcess:["selectionProcess","selection_process"],examPattern:["examPattern","exam_pattern"],groupWiseSyllabus:["groupWiseSyllabus","group_wise_syllabus","syllabus"],participatingInstitutes:["participatingInstitutes","participating_institutes","institutes"],documentsRequired:["documentsRequired","documents_required","requiredDocuments","required_documents"],howToApply:["howToApply","how_to_apply"],importantLinks:["importantLinks","important_links"],howToCheckResult:["howToCheckResult","howToCheck","checkResult"],regionWiseResultLinks:["regionWiseResultLinks","regionWiseLinks","regionLinks","resultLinksByRegion"]};
+    const aliases={postDetails:["postDetails","post_details"],title:["title","postTitle","post_title"],postName:["postName","post_name","examName","exam_name","recruitmentName","recruitment_name"],organization:["organization","organisation","department","departmentName","department_name","board","company"],shortInformation:["shortInformation","short_information","shortInfo","short_info","notificationSummary","description"],summary:["summary","overview","short_summary","shortSummary","long_summary","longSummary"],faqs:["faqs","faq"],importantDates:["importantDates","important_dates","dates"],applicationFee:["applicationFee","application_fee","applicationFees","application_fees","fees","fee"],ageLimit:["ageLimit","age_limit"],vacancyDetails:["vacancyDetails","vacancy_details","vacancy","vacancies","seats"],eligibility:["eligibility","qualification","qualifications","educationQualification","education_qualification"],departmentWisePosts:["departmentWisePosts","department_wise_posts","departmentWiseVacancy","department_wise_vacancy","departmentWise","department_wise"],categoryWiseVacancy:["categoryWiseVacancy","category_wise_vacancy","categoryWise","category_wise","category_wise_total","categoryWiseTotal"],selectionProcess:["selectionProcess","selection_process"],examPattern:["examPattern","exam_pattern"],groupWiseSyllabus:["groupWiseSyllabus","group_wise_syllabus","syllabus"],participatingInstitutes:["participatingInstitutes","participating_institutes","institutes"],documentsRequired:["documentsRequired","documents_required","requiredDocuments","required_documents"],howToApply:["howToApply","how_to_apply"],importantLinks:["importantLinks","important_links"],howToCheckResult:["howToCheckResult","howToCheck","checkResult"],regionWiseResultLinks:["regionWiseResultLinks","regionWiseLinks","regionLinks","resultLinksByRegion"]};
     const escapeHTML=(v="")=>String(v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
     const toTitle=(key="")=>String(key).replace(/([a-z])([A-Z])/g,"$1 $2").replace(/[-_]+/g," ").replace(/\b\w/g,m=>m.toUpperCase());
     const isFilled=v=>{
@@ -598,6 +601,7 @@
       return rows;
     }
     function hasRenderableSection(data,key){
+      if(key==="postDetails")return renderPostDetails(data)!=="";
       if(key==="overview")return overviewRows(data).length>0;
       if(key==="applicationFee")return isFilled(getSection(data,key))||isFilled(data.paymentMode);
       if(key==="importantLinks")return normalizeJsonImportantLinks(data).length>0;
@@ -629,6 +633,15 @@
       rows.forEach(r=>Object.keys(r||{}).forEach(k=>{if(!colSet.includes(k)&&k!=="label"&&k!=="value"&&!String(k).startsWith("__"))colSet.push(k)}));
       if(!colSet.length)colSet.push("label","value");
       return `<div class="table-wrap"><table class="premium-table"><thead><tr>${colSet.map(c=>`<th>${escapeHTML(toTitle(c))}</th>`).join("")}</tr></thead><tbody>${rows.map((r,rowIndex)=>`<tr>${colSet.map(c=>{const path=r.__paths?.[c]||(basePath.length?[...basePath,rowIndex,c]:null);return `<td>${valueHTML(r[c]??(c==="label"?r.label:undefined),path)}</td>`}).join("")}</tr>`).join("")}</tbody></table></div>`;
+    }
+    function renderPostDetails(data){
+      const rows=[
+        {label:"Title",value:getSection(data,"title")||data.title},
+        {label:"Post Name",value:getSection(data,"postName")||data.postName},
+        {label:"Organisation",value:getSection(data,"organization")},
+        {label:"Short Information",value:getSection(data,"shortInformation")}
+      ].filter(row=>isFilled(row.value));
+      return rows.length?renderTable(rows,["label","value"],["postDetails"]):"";
     }
     function renderImportantDates(value){
       const source=arrayify(value);
@@ -699,13 +712,16 @@
     }
     function renderSection(data,key){
       const value=getSection(data,key);
-      if(!isFilled(value)&&key!=="overview"&&key!=="applicationFee"&&key!=="importantLinks")return"";
+      if(!isFilled(value)&&key!=="postDetails"&&key!=="overview"&&key!=="applicationFee"&&key!=="importantLinks")return"";
+      if(key==="postDetails")return renderPostDetails(data);
       if(key==="summary")return renderTable(value,["label","value"],["summary"]);
       if(key==="importantDates")return renderImportantDates(value);
       if(key==="applicationFee")return renderFee(data);
       if(key==="ageLimit")return renderAgeLimit(value);
       if(key==="vacancyDetails")return renderTable(value,["postName","area","totalPost","totalPosts","course","eligibility","note"],["vacancyDetails"]);
       if(key==="eligibility")return renderEligibility(value);
+      if(key==="departmentWisePosts")return renderTable(value,["department","postName","post","category","totalPosts","total","vacancy","payScale","qualification"],["departmentWisePosts"]);
+      if(key==="categoryWiseVacancy")return renderTable(value,["category","ur","general","obc","ews","sc","st","total","totalPosts","vacancy"],["categoryWiseVacancy"]);
       if(key==="selectionProcess")return renderSelection(value);
       if(key==="examPattern")return renderTable(value,["subject","questions","marks","duration","examMode","questionType"],["examPattern"]);
       if(key==="groupWiseSyllabus")return renderTable(value,["group_code","group_name","domain_subject","language","skill_test"],["groupWiseSyllabus"]);
