@@ -15,6 +15,13 @@ const POST_ROOT = path.join(__dirname, "..", "post");
 const LEGAL_SITEMAP_URLS = [
   "about.html",
   "contact.html",
+  "top-online-form.html",
+  "notification.html",
+  "result.html",
+  "admit-card.html",
+  "answer-key.html",
+  "syllabus.html",
+  "admission.html",
   "privacy-policy.html",
   "terms-and-conditions.html",
   "disclaimer.html",
