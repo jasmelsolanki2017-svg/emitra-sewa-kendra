@@ -272,6 +272,14 @@
       color:white;
       font-size:22px;
       margin-bottom:9px;
+      overflow:hidden;
+    }
+
+    .account-avatar img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
     }
 
     .account-side h3{color:var(--blue);font-size:16px;margin-bottom:3px;}
@@ -358,6 +366,50 @@
 
     .profile-form .wide{
       grid-column:span 2;
+    }
+
+    .profile-photo-box{
+      grid-column:1/-1;
+      display:grid;
+      grid-template-columns:auto minmax(0,1fr);
+      gap:10px;
+      align-items:center;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:9px;
+      padding:10px;
+    }
+
+    .profile-photo-preview{
+      width:70px;
+      height:70px;
+      border-radius:12px;
+      background:var(--blue);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      font-size:26px;
+      flex:0 0 auto;
+    }
+
+    .profile-photo-preview img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .profile-photo-actions{
+      display:grid;
+      gap:6px;
+    }
+
+    .profile-photo-actions small{
+      color:var(--muted);
+      font-weight:800;
+      font-size:11px;
     }
 
     .profile-form button{
@@ -1209,6 +1261,7 @@
       .stats-grid{grid-template-columns:1fr;}
       .account-layout{grid-template-columns:1fr;}
       .account-side{position:static;}
+      .profile-photo-box{grid-template-columns:1fr;}
       .profile-summary{grid-template-columns:1fr;}
       .profile-form,.password-form{grid-template-columns:minmax(0,1fr);}
       .profile-form .wide{grid-column:1/-1;}
@@ -1351,6 +1404,7 @@ body.dark-mode .special-card,
 body.dark-mode .account-side,
 body.dark-mode .account-main,
 body.dark-mode .account-tab,
+body.dark-mode .profile-photo-box,
 body.dark-mode .action-strip,
 body.dark-mode .action-tile,
 body.dark-mode .service-request-panel,
@@ -1507,7 +1561,7 @@ body.dark-mode .nav-logo img {
 
     <div class="account-layout">
       <aside class="account-side">
-        <div class="account-avatar"><i class="fa-solid fa-user"></i></div>
+        <div class="account-avatar" id="accountAvatar"><i class="fa-solid fa-user"></i></div>
         <h3>Profile Section</h3>
         <p>Account details aur password settings yahan se manage karein.</p>
         <div class="profile-summary">
@@ -1539,6 +1593,16 @@ body.dark-mode .nav-logo img {
           <h3>Profile Details</h3>
           <p>Name, mobile, profile email aur resume ke liye required details update karein.</p>
           <div class="profile-form">
+            <div class="profile-photo-box">
+              <div class="profile-photo-preview" id="profilePhotoPreview"><i class="fa-solid fa-user"></i></div>
+              <div class="profile-photo-actions">
+                <label>Profile Photo
+                  <input type="file" id="profilePhotoInput" accept="image/png,image/jpeg,image/webp">
+                </label>
+                <small>JPG, PNG ya WebP photo upload karein. Max 2 MB.</small>
+                <button type="button" onclick="uploadProfilePhoto()">Upload Photo</button>
+              </div>
+            </div>
             <label>Name
               <input type="text" id="profileName" placeholder="Your name">
             </label>
@@ -2276,6 +2340,26 @@ body.dark-mode .nav-logo img {
     });
   }
 
+  const profilePhotoInput = document.getElementById("profilePhotoInput");
+  if(profilePhotoInput){
+    profilePhotoInput.addEventListener("change", () => {
+      const file = profilePhotoInput.files && profilePhotoInput.files[0];
+      const status = document.getElementById("profileStatus");
+      if(!file){ return; }
+      if(!/^image\/(png|jpe?g|webp)$/i.test(file.type || "")){
+        profilePhotoInput.value = "";
+        if(status){ status.innerText = "Profile photo ke liye JPG, PNG ya WebP image select karein."; }
+        return;
+      }
+      if(Number(file.size || 0) > 2 * 1024 * 1024){
+        profilePhotoInput.value = "";
+        if(status){ status.innerText = "Profile photo 2 MB se chhoti honi chahiye."; }
+        return;
+      }
+      renderProfilePhoto(URL.createObjectURL(file));
+    });
+  }
+
   const formatBytes = (bytes = 0) => {
     const size = Number(bytes || 0);
     if(size >= 1024 * 1024){
@@ -2303,6 +2387,22 @@ body.dark-mode .nav-logo img {
     if(!path){ return ""; }
     const { data } = supabase.storage.from(supabaseBucket).getPublicUrl(path);
     return data?.publicUrl || "";
+  };
+
+  const renderProfilePhoto = (url = "") => {
+    const rawUrl = String(url || "").trim();
+    const safePhotoUrl = rawUrl.startsWith("blob:") ? rawUrl : safeUrl(rawUrl);
+    const html = safePhotoUrl && safePhotoUrl !== "#"
+      ? `<img src="${safePhotoUrl}" alt="Profile photo">`
+      : '<i class="fa-solid fa-user"></i>';
+    const preview = document.getElementById("profilePhotoPreview");
+    const avatar = document.getElementById("accountAvatar");
+    if(preview){ preview.innerHTML = html; }
+    if(avatar){ avatar.innerHTML = html; }
+  };
+
+  const getProfilePhotoUrl = (member = {}) => {
+    return member.profilePhotoUrl || member.photoUrl || (member.profilePhotoPath ? getSupabasePublicUrl(member.profilePhotoPath) : "");
   };
 
   const getFileBucket = (file = {}) => {
@@ -2519,6 +2619,7 @@ body.dark-mode .nav-logo img {
     const nationality = currentMember.nationality || "Indian";
     const address = currentMember.address || currentMember.fullAddress || currentMember.location || "";
     const uploadStatus = currentMember.uploadApproved === true ? "Approved" : "Pending";
+    renderProfilePhoto(getProfilePhotoUrl(currentMember));
 
     document.getElementById("profileName").value = name;
     document.getElementById("profileFatherName").value = fatherName;
@@ -2702,6 +2803,69 @@ body.dark-mode .nav-logo img {
       window.location.href = "index.html";
     }
   });
+
+  window.uploadProfilePhoto = async () => {
+    if(!currentUser){
+      alert("Login required.");
+      return;
+    }
+
+    const input = document.getElementById("profilePhotoInput");
+    const status = document.getElementById("profileStatus");
+    const file = input?.files?.[0];
+
+    if(!file){
+      status.innerText = "Profile photo select karein.";
+      return;
+    }
+
+    if(!/^image\/(png|jpe?g|webp)$/i.test(file.type || "")){
+      status.innerText = "Sirf JPG, PNG ya WebP image upload karein.";
+      return;
+    }
+
+    if(Number(file.size || 0) > 2 * 1024 * 1024){
+      status.innerText = "Profile photo 2 MB se chhoti honi chahiye.";
+      return;
+    }
+
+    try{
+      status.innerText = "Profile photo Supabase par upload ho rahi hai...";
+      const extension = (file.name.match(/\.[a-zA-Z0-9]+$/)?.[0] || ".jpg").toLowerCase();
+      const safeName = cleanFileName(file.name).replace(/\.[a-zA-Z0-9]+$/,"") || "profile-photo";
+      const path = `${currentUser.uid}/profile/${Date.now()}-${safeName}${extension}`;
+      const { error } = await supabase.storage.from(supabaseBucket).upload(path, file, {
+        cacheControl:"3600",
+        contentType:file.type || "image/jpeg",
+        upsert:false
+      });
+      if(error){ throw error; }
+
+      const publicUrl = getSupabasePublicUrl(path);
+      await update(ref(db, "members/" + currentUser.uid), {
+        profilePhotoUrl:publicUrl,
+        profilePhotoPath:path,
+        profilePhotoBucket:supabaseBucket,
+        profilePhotoProvider:"supabase",
+        profilePhotoUpdatedAt:Date.now(),
+        updatedAt:Date.now()
+      });
+
+      currentMember = {
+        ...currentMember,
+        profilePhotoUrl:publicUrl,
+        profilePhotoPath:path,
+        profilePhotoBucket:supabaseBucket,
+        profilePhotoProvider:"supabase"
+      };
+      renderProfilePhoto(publicUrl);
+      input.value = "";
+      status.innerText = "Profile photo upload ho gayi.";
+    }catch(error){
+      status.innerText = "Profile photo upload nahi hui: " + error.message;
+      renderProfilePhoto(getProfilePhotoUrl(currentMember));
+    }
+  };
 
   window.saveUserProfile = () => {
     if(!currentUser){
