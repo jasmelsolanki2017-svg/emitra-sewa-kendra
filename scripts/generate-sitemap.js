@@ -122,6 +122,58 @@ const sitemapDate = (value = "") => {
   return Number.isNaN(date.getTime()) ? new Date().toISOString().slice(0, 10) : date.toISOString().slice(0, 10);
 };
 
+const parseCurrentAffairsDate = (value = "") => {
+  if (typeof value === "number") return new Date(value);
+  const text = String(value || "").trim();
+  if (!text) return null;
+  const monthMap = {
+    jan: 0, january: 0, feb: 1, february: 1, mar: 2, march: 2, apr: 3, april: 3,
+    may: 4, jun: 5, june: 5, jul: 6, july: 6, aug: 7, august: 7, sep: 8,
+    sept: 8, september: 8, oct: 9, october: 9, nov: 10, november: 10, dec: 11,
+    december: 11
+  };
+  let match = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (match) return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  match = text.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/);
+  if (match) return new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1]));
+  match = text.match(/^(\d{1,2})\s+([A-Za-z]{3,9})\s+(\d{4})$/);
+  if (match && monthMap[match[2].toLowerCase()] !== undefined) {
+    return new Date(Number(match[3]), monthMap[match[2].toLowerCase()], Number(match[1]));
+  }
+  const parsed = new Date(text);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+};
+
+const currentAffairsDateText = (job = {}) => String(
+  job.postDate
+  || job.date
+  || job.content?.date
+  || job.currentAffairsData?.date
+  || job.currentAffairsData?.["तारीख"]
+  || ""
+).trim();
+
+const currentAffairsDateKey = (job = {}) => {
+  const date = parseCurrentAffairsDate(currentAffairsDateText(job));
+  return date && !Number.isNaN(date.getTime())
+    ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`
+    : "";
+};
+
+const dateToCurrentAffairsKey = (date = null) => date && !Number.isNaN(date.getTime())
+  ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`
+  : "";
+
+const formatCurrentAffairsDate = (date = null, fallback = "") => {
+  if (!date || Number.isNaN(date.getTime())) return String(fallback || "Current Affairs").trim();
+  return date.toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" });
+};
+
+const currentAffairsMonthTitle = (date = null) => {
+  if (!date || Number.isNaN(date.getTime())) return "CURRENT AFFAIRS";
+  return date.toLocaleDateString("en-US", { month: "long", year: "numeric" }).toUpperCase();
+};
+
 const fetchJson = (url) => new Promise((resolve, reject) => {
   https.get(url, (res) => {
     let body = "";
@@ -651,7 +703,42 @@ const currentAffairsPdfUrl = (job = {}) => {
   return match ? String(match.url || match.href || match.link || "").trim() : "";
 };
 
-const renderCurrentAffairsPremiumHtml = ({ id = "", job = {}, seo = {}, canonicalUrl = "" }) => {
+const buildCurrentAffairsMonthRows = ({ id = "", job = {}, allRows = [] } = {}) => {
+  const currentKey = currentAffairsDateKey(job);
+  const currentDate = parseCurrentAffairsDate(currentAffairsDateText(job));
+  const sameMonthRows = allRows
+    .filter((row) => row && row.job && isCurrentAffairsPost(row.job) && isPublishedJob(row.job))
+    .map((row) => {
+      const date = parseCurrentAffairsDate(currentAffairsDateText(row.job));
+      return {
+        ...row,
+        date,
+        dateKey: dateToCurrentAffairsKey(date)
+      };
+    })
+    .filter((row) => row.dateKey && (!currentDate || (row.date.getFullYear() === currentDate.getFullYear() && row.date.getMonth() === currentDate.getMonth())))
+    .sort((a, b) => b.date.getTime() - a.date.getTime());
+  const seen = new Set();
+  const rows = [];
+  const currentRow = currentKey ? sameMonthRows.find((row) => row.dateKey === currentKey) : null;
+  [currentRow, ...sameMonthRows].filter(Boolean).forEach((row) => {
+    if (rows.length >= 5 || seen.has(row.dateKey)) return;
+    seen.add(row.dateKey);
+    rows.push({
+      label: formatCurrentAffairsDate(row.date, currentAffairsDateText(row.job)),
+      href: `../../post/${encodeURIComponent(buildSeoFields(row.job, row.id || id).slug)}/`
+    });
+  });
+  if (!rows.length) {
+    rows.push({
+      label: formatCurrentAffairsDate(currentDate, currentAffairsDateText(job) || "Today"),
+      href: `../../post/${encodeURIComponent(buildSeoFields(job, id).slug)}/`
+    });
+  }
+  return rows;
+};
+
+const renderCurrentAffairsPremiumHtml = ({ id = "", job = {}, seo = {}, canonicalUrl = "", allRows = [] }) => {
   const title = seo.title || textValue(job.title, "hi") || "Today Current Affairs";
   const description = seo.metaDescription || "Daily current affairs questions, answers and explanations.";
   const dateText = String(job.postDate || job.date || job.content?.date || job.currentAffairsData?.date || job.currentAffairsData?.["तारीख"] || "").trim();
@@ -691,7 +778,9 @@ const renderCurrentAffairsPremiumHtml = ({ id = "", job = {}, seo = {}, canonica
       <div class="ca-thumb ca-thumb-${colorClass}">${item.image ? `<img src="${htmlEscape(item.image)}" alt="" loading="lazy">` : `<div class="ca-thumb-placeholder"><i class="${categoryIcon(category)}"></i><span>${htmlEscape(category)}</span></div>`}</div>
     </article>`;
   }).join("");
-  const monthRows = [dateText || "Today", "11 June 2026", "10 June 2026", "09 June 2026", "08 June 2026"];
+  const currentDate = parseCurrentAffairsDate(dateText);
+  const monthTitle = currentAffairsMonthTitle(currentDate);
+  const monthRows = buildCurrentAffairsMonthRows({ id, job, allRows });
   const schema = JSON.stringify(buildSchemaGraph({ id, job, canonicalUrl }), null, 2);
   return `<!DOCTYPE html>
 <html lang="hi">
@@ -745,10 +834,10 @@ a{text-decoration:none;color:inherit}
 </head>
 <body class="current-affairs-static">
 <header class="ca-top"><div class="ca-top-inner"><div><div class="ca-logo">EMITRAWALA.<span>ONLINE</span></div><div class="ca-tagline">SARKARI RESULT, ADMIT CARD, JOBS & MORE</div></div><form class="ca-search" action="../../index.html"><input type="search" placeholder="Search for Jobs, Results, Admit Card...."><button>Search</button></form><a class="ca-telegram" href="https://t.me/emitrawalaonline" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-telegram"></i><span>Join Telegram<small>Stay Updated</small></span></a></div><nav class="ca-menu"><ul><li><a href="../../index.html">HOME</a></li><li><a href="../../#homePortalLatestJobs">LATEST JOBS</a></li><li><a href="../../#homePortalLatestJobs">ADMIT CARD</a></li><li><a href="../../#homePortalLatestJobs">RESULT</a></li><li><a href="../../#homePortalLatestJobs">ANSWER KEY</a></li><li class="active"><a href="../../current-affairs.html">CURRENT AFFAIRS</a></li><li><a href="../../#homePortalLatestJobs">SYLLABUS</a></li><li><a href="../../contact.html">CONTACT US</a></li></ul></nav></header>
-<main class="ca-wrap"><div class="ca-grid"><section><div class="ca-hero"><h1>TODAY'S CURRENT AFFAIRS <span class="date">${htmlEscape(displayDate || "DAILY UPDATE")}</span></h1><p>Stay Updated with Daily Current Affairs for All Competitive Exams</p></div><form class="ca-content-search"><input type="search" placeholder="Search in Current Affairs..."><button>Search</button></form><div class="ca-tabs">${categories.map((cat) => `<span>${htmlEscape(cat)}</span>`).join("")}</div><div class="ca-question-list">${questionCards || `<div class="ca-question-card"><div class="ca-qnum">Q1</div><div class="ca-question-body"><div class="ca-card-head"><h2>${htmlEscape(title)}</h2></div><p class="ca-explain">${htmlEscape(description)}</p></div></div>`}</div><div class="ca-more"><a class="ca-blue-btn" href="../../current-affairs.html">View More Current Affairs <i class="fa-solid fa-chevron-down"></i></a></div></section><aside class="ca-side"><div class="ca-side-box"><h3>DAILY CURRENT AFFAIRS QUIZ</h3><div class="quiz-body"><div class="quiz-icon"><i class="fa-regular fa-clipboard"></i></div><div class="quiz-meta"><p><span>Questions</span><b>: ${questions.length || 0}</b></p><p><span>Marks</span><b>: ${questions.length || 0}</b></p><p><span>Time</span><b>: 15 Min</b></p></div></div><div class="quiz-action"><a class="ca-yellow-btn" href="#quiz">START QUIZ <i class="fa-solid fa-chevron-right"></i></a></div></div><div class="ca-side-box"><h3>DAILY CURRENT AFFAIRS PDF</h3><div class="pdf-body"><div class="pdf-icon"><i class="fa-solid fa-file-pdf"></i></div><strong>${htmlEscape(displayDate || "Daily")}<br>Current Affairs PDF</strong>${pdfButton}</div></div><div class="ca-side-box"><h3>CURRENT AFFAIRS BY MONTH</h3><div class="month-title">JUNE 2026</div><div class="month-list">${monthRows.map((row) => `<a href="../../current-affairs.html"><i class="fa-regular fa-calendar-days"></i>${htmlEscape(row)} <span style="margin-left:auto">›</span></a>`).join("")}</div><div class="view-all"><a class="ca-yellow-btn" href="../../current-affairs.html">VIEW ALL</a></div></div><div class="ca-side-box"><h3>IMPORTANT LINKS</h3><div class="important-list"><a href="../../#homePortalLatestJobs"><i class="fa-solid fa-briefcase"></i>Latest Jobs</a><a href="../../#homePortalLatestJobs"><i class="fa-regular fa-id-card"></i>Admit Card</a><a href="../../#homePortalLatestJobs"><i class="fa-solid fa-chart-simple"></i>Results</a><a href="../../#homePortalLatestJobs"><i class="fa-solid fa-key"></i>Answer Key</a><a href="../../#homePortalLatestJobs"><i class="fa-solid fa-book-open"></i>Syllabus</a><a href="../../tools.html"><i class="fa-solid fa-screwdriver-wrench"></i>Important Tools</a><a href="https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp"></i>WhatsApp Channel</a><a href="../../contact.html"><i class="fa-solid fa-phone"></i>Contact Us</a></div></div></aside></div><section class="features"><div class="feature"><i class="fa-solid fa-circle-question"></i><div><h4>DAILY QUIZ</h4><p>Participate in Daily Quiz and Test Your Knowledge</p></div></div><div class="feature"><i class="fa-regular fa-file-pdf"></i><div><h4>MONTHLY PDF</h4><p>Download Monthly Current Affairs PDF</p></div></div><a class="feature" href="../../tools.html"><i class="fa-solid fa-screwdriver-wrench"></i><div><h4>IMPORTANT TOOLS</h4><p>Use free tools for forms, photos and PDFs</p></div></a><a class="feature" href="https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp"></i><div><h4>WHATSAPP CHANNEL</h4><p>Join for daily updates and alerts</p></div></a></section></main><footer class="ca-footer"><div class="footer-grid"><div><h2>EMITRAWALA.<span>ONLINE</span></h2><p>Your Trusted Source for Sarkari Result, Admit Card, Jobs & More.</p></div><div><h3>QUICK LINKS</h3><a href="../../index.html">Home</a><a href="../../about.html">About Us</a><a href="../../privacy-policy.html">Privacy Policy</a><a href="../../terms-and-conditions.html">Terms & Conditions</a></div><div><h3>USEFUL LINKS</h3><a href="../../#homePortalLatestJobs">Latest Jobs</a><a href="../../#homePortalLatestJobs">Admit Card</a><a href="../../#homePortalLatestJobs">Results</a><a href="../../current-affairs.html">Current Affairs</a><a href="../../tools.html">Important Tools</a></div><div><h3>FOLLOW US</h3><p>Join our WhatsApp Channel for Latest Updates</p><a class="telegram-btn" href="https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp"></i> Join WhatsApp</a></div></div><div class="copyright">© 2026 Emitrawala.online | All Rights Reserved.</div></footer><script>(function(){const tabs=[...document.querySelectorAll(".ca-tabs span")],cards=[...document.querySelectorAll(".ca-question-card")],form=document.querySelector(".ca-content-search"),input=document.querySelector(".ca-content-search input");let active="all";function apply(){const q=(input&&input.value||"").toLowerCase().trim();cards.forEach(card=>{const cat=(card.dataset.category||"").toLowerCase();const text=card.innerText.toLowerCase();const okCat=active==="all"||cat===active;const okText=!q||text.includes(q);card.style.display=okCat&&okText?"":"none"})}tabs.forEach((tab,index)=>{if(index===0)tab.classList.add("active");tab.addEventListener("click",()=>{tabs.forEach(t=>t.classList.remove("active"));tab.classList.add("active");active=tab.innerText.toLowerCase().trim();apply()})});if(form)form.addEventListener("submit",event=>{event.preventDefault();apply()});if(input)input.addEventListener("input",apply);})();</script></body></html>`;
+<main class="ca-wrap"><div class="ca-grid"><section><div class="ca-hero"><h1>TODAY'S CURRENT AFFAIRS <span class="date">${htmlEscape(displayDate || "DAILY UPDATE")}</span></h1><p>Stay Updated with Daily Current Affairs for All Competitive Exams</p></div><form class="ca-content-search"><input type="search" placeholder="Search in Current Affairs..."><button>Search</button></form><div class="ca-tabs">${categories.map((cat) => `<span>${htmlEscape(cat)}</span>`).join("")}</div><div class="ca-question-list">${questionCards || `<div class="ca-question-card"><div class="ca-qnum">Q1</div><div class="ca-question-body"><div class="ca-card-head"><h2>${htmlEscape(title)}</h2></div><p class="ca-explain">${htmlEscape(description)}</p></div></div>`}</div><div class="ca-more"><a class="ca-blue-btn" href="../../current-affairs.html">View More Current Affairs <i class="fa-solid fa-chevron-down"></i></a></div></section><aside class="ca-side"><div class="ca-side-box"><h3>DAILY CURRENT AFFAIRS QUIZ</h3><div class="quiz-body"><div class="quiz-icon"><i class="fa-regular fa-clipboard"></i></div><div class="quiz-meta"><p><span>Questions</span><b>: ${questions.length || 0}</b></p><p><span>Marks</span><b>: ${questions.length || 0}</b></p><p><span>Time</span><b>: 15 Min</b></p></div></div><div class="quiz-action"><a class="ca-yellow-btn" href="#quiz">START QUIZ <i class="fa-solid fa-chevron-right"></i></a></div></div><div class="ca-side-box"><h3>DAILY CURRENT AFFAIRS PDF</h3><div class="pdf-body"><div class="pdf-icon"><i class="fa-solid fa-file-pdf"></i></div><strong>${htmlEscape(displayDate || "Daily")}<br>Current Affairs PDF</strong>${pdfButton}</div></div><div class="ca-side-box"><h3>CURRENT AFFAIRS BY MONTH</h3><div class="month-title">${htmlEscape(monthTitle)}</div><div class="month-list">${monthRows.map((row) => `<a href="${htmlEscape(row.href)}"><i class="fa-regular fa-calendar-days"></i>${htmlEscape(row.label)} <span style="margin-left:auto">›</span></a>`).join("")}</div><div class="view-all"><a class="ca-yellow-btn" href="../../current-affairs.html">VIEW ALL</a></div></div><div class="ca-side-box"><h3>IMPORTANT LINKS</h3><div class="important-list"><a href="../../#homePortalLatestJobs"><i class="fa-solid fa-briefcase"></i>Latest Jobs</a><a href="../../#homePortalLatestJobs"><i class="fa-regular fa-id-card"></i>Admit Card</a><a href="../../#homePortalLatestJobs"><i class="fa-solid fa-chart-simple"></i>Results</a><a href="../../#homePortalLatestJobs"><i class="fa-solid fa-key"></i>Answer Key</a><a href="../../#homePortalLatestJobs"><i class="fa-solid fa-book-open"></i>Syllabus</a><a href="../../tools.html"><i class="fa-solid fa-screwdriver-wrench"></i>Important Tools</a><a href="https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp"></i>WhatsApp Channel</a><a href="../../contact.html"><i class="fa-solid fa-phone"></i>Contact Us</a></div></div></aside></div><section class="features"><div class="feature"><i class="fa-solid fa-circle-question"></i><div><h4>DAILY QUIZ</h4><p>Participate in Daily Quiz and Test Your Knowledge</p></div></div><div class="feature"><i class="fa-regular fa-file-pdf"></i><div><h4>MONTHLY PDF</h4><p>Download Monthly Current Affairs PDF</p></div></div><a class="feature" href="../../tools.html"><i class="fa-solid fa-screwdriver-wrench"></i><div><h4>IMPORTANT TOOLS</h4><p>Use free tools for forms, photos and PDFs</p></div></a><a class="feature" href="https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp"></i><div><h4>WHATSAPP CHANNEL</h4><p>Join for daily updates and alerts</p></div></a></section></main><footer class="ca-footer"><div class="footer-grid"><div><h2>EMITRAWALA.<span>ONLINE</span></h2><p>Your Trusted Source for Sarkari Result, Admit Card, Jobs & More.</p></div><div><h3>QUICK LINKS</h3><a href="../../index.html">Home</a><a href="../../about.html">About Us</a><a href="../../privacy-policy.html">Privacy Policy</a><a href="../../terms-and-conditions.html">Terms & Conditions</a></div><div><h3>USEFUL LINKS</h3><a href="../../#homePortalLatestJobs">Latest Jobs</a><a href="../../#homePortalLatestJobs">Admit Card</a><a href="../../#homePortalLatestJobs">Results</a><a href="../../current-affairs.html">Current Affairs</a><a href="../../tools.html">Important Tools</a></div><div><h3>FOLLOW US</h3><p>Join our WhatsApp Channel for Latest Updates</p><a class="telegram-btn" href="https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp"></i> Join WhatsApp</a></div></div><div class="copyright">© 2026 Emitrawala.online | All Rights Reserved.</div></footer><script>(function(){const tabs=[...document.querySelectorAll(".ca-tabs span")],cards=[...document.querySelectorAll(".ca-question-card")],form=document.querySelector(".ca-content-search"),input=document.querySelector(".ca-content-search input");let active="all";function apply(){const q=(input&&input.value||"").toLowerCase().trim();cards.forEach(card=>{const cat=(card.dataset.category||"").toLowerCase();const text=card.innerText.toLowerCase();const okCat=active==="all"||cat===active;const okText=!q||text.includes(q);card.style.display=okCat&&okText?"":"none"})}tabs.forEach((tab,index)=>{if(index===0)tab.classList.add("active");tab.addEventListener("click",()=>{tabs.forEach(t=>t.classList.remove("active"));tab.classList.add("active");active=tab.innerText.toLowerCase().trim();apply()})});if(form)form.addEventListener("submit",event=>{event.preventDefault();apply()});if(input)input.addEventListener("input",apply);})();</script></body></html>`;
 };
 
-const renderStaticPostHtml = (id = "", job = {}) => {
+const renderStaticPostHtml = (id = "", job = {}, allRows = []) => {
   const seo = buildSeoFields(job, id);
   const canonicalUrl = seo.canonicalUrl || jobUrl(id, { ...job, slug: seo.slug });
   if (isPremiumPost(job)) {
@@ -756,7 +845,7 @@ const renderStaticPostHtml = (id = "", job = {}) => {
   }
   const currentAffairs = isCurrentAffairsPost(job);
   if (currentAffairs) {
-    return resolveMergeConflictMarkers(renderCurrentAffairsPremiumHtml({ id, job: { ...job, slug: seo.slug, canonicalUrl }, seo, canonicalUrl }));
+    return resolveMergeConflictMarkers(renderCurrentAffairsPremiumHtml({ id, job: { ...job, slug: seo.slug, canonicalUrl }, seo, canonicalUrl, allRows }));
   }
   const admissionPost = isAdmissionPost(job);
   const summaryRows = [
@@ -1130,7 +1219,7 @@ const updateStaticPostPages = (rows = []) => {
     const seo = buildSeoFields(job, id);
     const dir = path.join(POST_ROOT, seo.slug);
     fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(path.join(dir, "index.html"), renderStaticPostHtml(id, { ...job, slug: seo.slug }), "utf8");
+    fs.writeFileSync(path.join(dir, "index.html"), renderStaticPostHtml(id, { ...job, slug: seo.slug }, rows), "utf8");
   });
 };
 
