@@ -102,21 +102,6 @@
     applyDarkMode(localStorage.getItem(darkKey) || "light");
   }
 
-  const loadSocialBarAd = () => {
-    const path = String(location.pathname || "").toLowerCase();
-    if (/\/(?:admin|dashboard|premium-admin|user-dashboard)/.test(path)) return;
-    if (document.querySelector('script[src*="47cb73cdfe5463a9b7a06c2c7e821654.js"]')) return;
-    const script = document.createElement("script");
-    script.src = "https://pl29750813.effectivecpmnetwork.com/47/cb/73/47cb73cdfe5463a9b7a06c2c7e821654.js";
-    document.body.appendChild(script);
-  };
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", loadSocialBarAd);
-  } else {
-    loadSocialBarAd();
-  }
-
   fetch(apiUrl(), { cache:"no-store" })
     .then((response) => response.ok ? response.json() : null)
     .then((data) => applySiteTheme(data && data.settings ? data.settings.siteTheme : "premium"))
