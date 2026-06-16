@@ -1,6 +1,19 @@
 (function(){
   const defaultServer = "https://emitra-sewa-kendra.onrender.com";
   const darkKey = "emitraTheme";
+  const cleanupLegacyServiceWorkers = () => {
+    if(!("serviceWorker" in navigator)){ return; }
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.getRegistrations()
+        .then((registrations) => Promise.allSettled(registrations.map((registration) => registration.unregister())))
+        .catch(() => {});
+      if("caches" in window){
+        caches.keys()
+          .then((keys) => Promise.allSettled(keys.map((key) => caches.delete(key))))
+          .catch(() => {});
+      }
+    }, { once:true });
+  };
   const normalizeTheme = (value) => String(value || "premium").toLowerCase() === "classic" ? "classic" : "premium";
   const apiUrl = () => {
     if(location.protocol === "file:" || /^emitrawala\.online$|github\.io$/i.test(location.hostname)){
@@ -16,6 +29,7 @@
   };
   window.applyEmitraSiteTheme = applySiteTheme;
   applySiteTheme(localStorage.getItem("emitraSiteTheme") || "premium");
+  cleanupLegacyServiceWorkers();
 
   const forceHomePortalDark = (isDark) => {
     document.querySelectorAll(".home-portal-box,.home-portal-masthead,.home-portal-search,.home-portal-ticker").forEach((el) => {
