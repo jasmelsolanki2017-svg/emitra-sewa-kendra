@@ -515,8 +515,9 @@ body.site-theme-premium .admin-tool-panel{
 }
 
 body.site-theme-premium .home-portal-box{
-  border:3px double #b30000!important;
-  box-shadow:0 0 0 6px #fff,0 8px 22px rgba(0,87,168,.18)!important;
+  border:2px solid #c40000!important;
+  box-shadow:none!important;
+  outline:none!important;
 }
 
 body.site-theme-premium .panel h2,
