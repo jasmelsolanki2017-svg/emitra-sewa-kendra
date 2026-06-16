@@ -4076,6 +4076,7 @@ answerKey:"homePortalAnswerKeyList",
 syllabus:"homePortalSyllabusList",
 admission:"homePortalAdmissionList"
 };
+const hiddenPortalItemIds = new Set(["-OsighmwGoJQYwWYYftQ"]);
 const HOME_PORTAL_BOX_LIMIT = 12;
 const setHomePortalMoreState = (list, hasMore) => {
 const box = list ? list.closest(".home-portal-box") : null;
@@ -4260,6 +4261,7 @@ const items = [];
 
 Object.entries(categoryItems).forEach(([id, item])=>{
 item = item || {};
+if(hiddenPortalItemIds.has(id)){ return; }
 if(isJobVisible(item) && item.title){
 items.push({ ...item, id });
 }
