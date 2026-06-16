@@ -4580,10 +4580,13 @@ section.style.display = "block";
 
 box.innerHTML = ads.map((ad)=>{
 const cleanPhotoName = cleanAdPhotoName(ad.photoName || "");
-const imageHtml = cleanPhotoName
+const uploadedImageUrl = safeUrl(ad.imageUrl);
+const imageHtml = uploadedImageUrl !== "#" && (ad.storageProvider === "supabase" || ad.imagePath)
+? `<img src="${uploadedImageUrl}" width="260" height="220" loading="lazy" decoding="async" alt="${escapeHTML(ad.title || "Advertisement")}">`
+: cleanPhotoName
 ? `<img src="${adPhotoSrc(cleanPhotoName)}" width="260" height="220" loading="lazy" decoding="async" data-photo-name="${escapeHTML(cleanPhotoName)}" data-ext-index="0" onerror="loadNextAdPhoto(this)" alt="${escapeHTML(ad.title || "Advertisement")}">`
-: safeUrl(ad.imageUrl) !== "#"
-? `<img src="${safeUrl(ad.imageUrl)}" width="260" height="220" loading="lazy" decoding="async" alt="${escapeHTML(ad.title || "Advertisement")}">`
+: uploadedImageUrl !== "#"
+? `<img src="${uploadedImageUrl}" width="260" height="220" loading="lazy" decoding="async" alt="${escapeHTML(ad.title || "Advertisement")}">`
 : `<i class="fa-solid fa-rectangle-ad ad-placeholder"></i>`;
 
 const linkHtml = safeUrl(ad.linkUrl) !== "#"
