@@ -583,6 +583,20 @@ grid-template-columns:260px 1fr;
 min-height:220px;
 }
 
+.ad-detail-card{
+display:grid;
+grid-template-columns:260px 1fr;
+color:inherit;
+text-decoration:none;
+min-height:220px;
+grid-column:1/-1;
+}
+
+.ad-detail-card:hover h1{
+color:#0057a8;
+text-decoration:underline;
+}
+
 .ad-media{
 background:#fbfdff;
 min-height:220px;
@@ -614,6 +628,17 @@ display:flex;
 flex-direction:column;
 justify-content:center;
 gap:10px;
+}
+
+.ad-open-note{
+color:#0057a8;
+font-size:13px;
+font-weight:800;
+}
+
+.ad-actions{
+grid-column:1/-1;
+padding:0 26px 22px;
 }
 
 .ad-label{
@@ -2123,6 +2148,10 @@ border-left:0;
 border-top:5px solid #ff7a00;
 }
 
+.ad-detail-card{
+grid-template-columns:1fr;
+}
+
 .ad-media{
 min-height:170px;
 height:170px;
@@ -2132,6 +2161,10 @@ border-bottom:1px solid #d8e0f0;
 
 .ad-content{
 padding:18px;
+}
+
+.ad-actions{
+padding:0 18px 18px;
 }
 
 .ad-content h1{
@@ -4581,6 +4614,7 @@ section.style.display = "block";
 box.innerHTML = ads.map((ad)=>{
 const cleanPhotoName = cleanAdPhotoName(ad.photoName || "");
 const uploadedImageUrl = safeUrl(ad.imageUrl);
+const detailUrl = `advertisement-detail.html?id=${encodeURIComponent(ad.id || "")}`;
 const imageHtml = uploadedImageUrl !== "#" && (ad.storageProvider === "supabase" || ad.imagePath)
 ? `<img src="${uploadedImageUrl}" width="260" height="220" loading="lazy" decoding="async" alt="${escapeHTML(ad.title || "Advertisement")}">`
 : cleanPhotoName
@@ -4595,14 +4629,19 @@ const linkHtml = safeUrl(ad.linkUrl) !== "#"
 
 return `
 <article class="ad-box">
-  <div class="ad-media">
-    ${imageHtml}
-  </div>
+  <a class="ad-detail-card" href="${escapeHTML(detailUrl)}" aria-label="${escapeHTML(ad.title || "Advertisement")} detail page">
+    <div class="ad-media">
+      ${imageHtml}
+    </div>
 
-  <div class="ad-content">
-    <span class="ad-label">विज्ञापन</span>
-    <h1>${escapeHTML(ad.title || "Advertisement")}</h1>
-    <p>${escapeHTML(ad.description || "More details coming soon.")}</p>
+    <div class="ad-content">
+      <span class="ad-label">विज्ञापन</span>
+      <h1>${escapeHTML(ad.title || "Advertisement")}</h1>
+      <p>${escapeHTML(ad.description || "More details coming soon.")}</p>
+      <span class="ad-open-note">Photo bada dekhne ke liye click karein</span>
+    </div>
+  </a>
+  <div class="ad-actions">
     ${linkHtml}
   </div>
 </article>

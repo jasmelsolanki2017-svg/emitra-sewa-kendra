@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="index,follow">
+  <meta name="description" content="E-MITRA WALA advertisement detail page with large photo and readable text.">
+  <title>Advertisement Detail | E-MITRA WALA</title>
+  <link rel="icon" type="image/png" sizes="512x512" href="favicon.png">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="shortcut icon" href="favicon.ico">
+  <link rel="apple-touch-icon" href="favicon.png">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Noto+Sans+Devanagari:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/site-theme.css">
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;background:#eaf4ff;color:#061b3f;font-family:'Poppins','Noto Sans Devanagari',sans-serif}
+    header{background:#03224d;color:white;text-align:center;padding:18px 4%;border-bottom:4px solid #ff7a00}
+    header h1{margin:0;color:#ff7a00;font-size:clamp(28px,5vw,48px);font-weight:900}
+    header p{margin:6px 0 0;font-size:clamp(16px,2.4vw,22px);font-weight:800}
+    main{max-width:1180px;margin:auto;padding:28px 4% 46px}
+    .back-link{display:inline-flex;align-items:center;gap:8px;background:#0057a8;color:white;text-decoration:none;border-radius:7px;padding:11px 16px;font-size:17px;font-weight:900;margin-bottom:18px}
+    .ad-detail{background:white;border:1px solid #c8d9ee;border-left:8px solid #ff7a00;border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,.11);overflow:hidden}
+    .photo-wrap{background:#f8fbff;border-bottom:1px solid #d8e6f5;padding:18px;display:grid;place-items:center}
+    .photo-wrap img{width:100%;max-width:980px;max-height:78vh;object-fit:contain;border-radius:8px;background:white}
+    .photo-wrap .placeholder{font-size:120px;color:#0057a8;padding:60px 0}
+    .content{padding:26px clamp(18px,4vw,42px) 34px}
+    .label{display:inline-block;background:#ff7a00;color:#03224d;border-radius:8px;padding:8px 14px;font-size:18px;font-weight:900;margin-bottom:14px}
+    h2{font-size:clamp(30px,5.2vw,56px);line-height:1.2;margin:0 0 16px;color:#001f55;font-weight:900}
+    .description{font-size:clamp(20px,2.8vw,31px);line-height:1.65;font-weight:700;color:#10284f;white-space:pre-wrap}
+    .action{display:inline-flex;margin-top:24px;background:#0057a8;color:white;text-decoration:none;border-radius:8px;padding:14px 20px;font-size:20px;font-weight:900}
+    .status{background:white;border-radius:9px;border:1px solid #c8d9ee;padding:24px;font-size:22px;font-weight:900;text-align:center;color:#0057a8}
+    @media(max-width:720px){main{padding:18px 3% 32px}.photo-wrap{padding:10px}.content{padding:18px}.description{font-size:20px;line-height:1.55}.action{width:100%;justify-content:center}}
+  </style>
+  <link rel="canonical" href="https://emitrawala.online/advertisement-detail.html">
+</head>
+<body>
+  <header>
+    <h1>Advertisement Detail</h1>
+    <p>Photo aur jankari bade size me dekhein</p>
+  </header>
+  <main>
+    <a class="back-link" href="index.html">← Home par wapas</a>
+    <div id="adDetailRoot" class="status">Advertisement load ho raha hai...</div>
+  </main>
+  <script>
+    const firebaseConfig = {
+      databaseURL:"https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app/"
+    };
+    const firebaseDbBaseUrl = firebaseConfig.databaseURL.replace(/\/+$/,"");
+    const firebaseRestGet = async (path) => {
+      const response = await fetch(`${firebaseDbBaseUrl}/${String(path).replace(/^\/+/,"")}.json`);
+      if(!response.ok) throw new Error(`Firebase read failed: ${response.status}`);
+      return response.json();
+    };
+    const escapeHTML=(v="")=>String(v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+    const safeUrl=(v="#")=>/^https?:\/\//i.test(String(v||"").trim())?String(v).trim():"#";
+    const adPhotoExtensions=["jpeg","jpg","png","webp"];
+    const cleanAdPhotoName=(value="")=>String(value).trim().replace(/\.[a-zA-Z0-9]+$/,"").replace(/[^a-zA-Z0-9_-]/g,"");
+    const adPhotoSrc=(photoName="",index=0)=>{const cleanName=cleanAdPhotoName(photoName);return cleanName?`${cleanName}.${adPhotoExtensions[index]||"jpeg"}`:"#"};
+    window.loadNextAdPhoto=(img)=>{const currentIndex=Number(img.dataset.extIndex||0)+1;const photoName=img.dataset.photoName||"";if(currentIndex>=adPhotoExtensions.length){img.replaceWith(document.createRange().createContextualFragment('<div class="placeholder">▣</div>'));return}img.dataset.extIndex=String(currentIndex);img.src=adPhotoSrc(photoName,currentIndex)};
+    function renderAd(ad){
+      const root=document.getElementById("adDetailRoot");
+      const uploadedImageUrl=safeUrl(ad.imageUrl);
+      const cleanPhotoName=cleanAdPhotoName(ad.photoName||"");
+      const imageHtml=uploadedImageUrl!=="#"&&(ad.storageProvider==="supabase"||ad.imagePath)
+        ? `<img src="${uploadedImageUrl}" alt="${escapeHTML(ad.title||"Advertisement")}">`
+        : cleanPhotoName
+        ? `<img src="${adPhotoSrc(cleanPhotoName)}" data-photo-name="${escapeHTML(cleanPhotoName)}" data-ext-index="0" onerror="loadNextAdPhoto(this)" alt="${escapeHTML(ad.title||"Advertisement")}">`
+        : uploadedImageUrl!=="#"
+        ? `<img src="${uploadedImageUrl}" alt="${escapeHTML(ad.title||"Advertisement")}">`
+        : '<div class="placeholder">▣</div>';
+      const action=safeUrl(ad.linkUrl)!=="#"?`<a class="action" href="${safeUrl(ad.linkUrl)}" target="_blank" rel="noopener noreferrer">Open Link</a>`:"";
+      document.title=`${ad.title||"Advertisement"} | E-MITRA WALA`;
+      root.className="ad-detail";
+      root.innerHTML=`<div class="photo-wrap">${imageHtml}</div><div class="content"><span class="label">विज्ञापन</span><h2>${escapeHTML(ad.title||"Advertisement")}</h2><div class="description">${escapeHTML(ad.description||"More details coming soon.")}</div>${action}</div>`;
+    }
+    (async()=>{
+      const id=new URLSearchParams(location.search).get("id");
+      const root=document.getElementById("adDetailRoot");
+      if(!id){root.textContent="Advertisement ID nahi mila.";return}
+      try{
+        const ad=await firebaseRestGet(`advertisements/${id}`);
+        if(!ad){root.textContent="Advertisement nahi mila.";return}
+        renderAd(ad);
+      }catch(error){
+        root.textContent="Advertisement load nahi hua: "+error.message;
+      }
+    })();
+  </script>
+  <script src="/site-theme.js" defer></script>
+</body>
+</html>
