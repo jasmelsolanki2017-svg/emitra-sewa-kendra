@@ -624,7 +624,7 @@ body.dark-mode .job-tool-btn:hover{background:#ffb15c!important;border-color:#ff
 <script>window.__EMITRA_STATIC_POST__={"id":"portal-admitCard--OsqeMAaxH6hWPlXcpIs","job":{"createdAt":1779033535576,"title":"Uttar Pradesh Subordinate Services Selection Commission (UPSSSC) UPSSSC Lekhpal Admit Card 2026 UPSSSC Lekhpal Advt No 02 Exam 2025","updatedAt":1779033535576,"url":"https://upsssc.gov.in/upssscadmitcard/admitCard.aspx?ID=MAIN","slug":"uttar-pradesh-subordinate-services-selection-commission-upsssc-upsssc-lekhpal-admit-card-2-lxcpis","postTarget":"admitCard","type":"Admit Card","postStatus":"published","detailLink":"https://upsssc.gov.in/upssscadmitcard/admitCard.aspx?ID=MAIN","sourceLink":"https://upsssc.gov.in/upssscadmitcard/admitCard.aspx?ID=MAIN","shortInfo":"Uttar Pradesh Subordinate Services Selection Commission (UPSSSC) UPSSSC Lekhpal Admit Card 2026 UPSSSC Lekhpal Advt No 02 Exam 2025 Admit Card details.","metaDescription":"Uttar Pradesh Subordinate Services Selection Commission (UPSSSC) UPSSSC Lekhpal Admit Card 2026 UPSSSC Lekhpal Advt No 02 Exam 2025 Admit Card details, link and latest information.","canonicalUrl":"https://emitrawala.online/post/uttar-pradesh-subordinate-services-selection-commission-upsssc-upsssc-lekhpal-admit-card-2-lxcpis/"}};</script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",
@@ -3730,7 +3730,7 @@ if(!id && !pathSlug){
   message.textContent = "Please open this page from Latest Jobs.";
   message.style.display = "block";
 }else if(id){
-  onValue(ref(db, "LatestJobs/" + id), (snapshot) => {
+  get(ref(db, "LatestJobs/" + id)).then((snapshot) => {
     if(!snapshot.exists()){
       message.textContent = "Job detail nahi mili ya delete ho chuki hai.";
       message.style.display = "block";
@@ -3738,12 +3738,12 @@ if(!id && !pathSlug){
       return;
     }
     renderJobDetail(id, snapshot.val());
-  }, (error) => {
+  }).catch((error) => {
     message.textContent = "Job details load nahi ho payi: " + error.message;
     message.style.display = "block";
   });
 }else{
-  onValue(ref(db, "LatestJobs"), (snapshot) => {
+  get(ref(db, "LatestJobs")).then((snapshot) => {
     let match = null;
     const allJobs = [];
     if(snapshot.exists()){
@@ -3767,7 +3767,7 @@ if(!id && !pathSlug){
       return;
     }
     renderJobDetail(match.id, match.job, allJobs);
-  }, (error) => {
+  }).catch((error) => {
     message.textContent = "Job details load nahi ho payi: " + error.message;
     message.style.display = "block";
   });

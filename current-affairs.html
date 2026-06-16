@@ -70,7 +70,7 @@ footer{background:#0057a8;color:#fff;text-align:center;padding:22px 6%;margin-to
 </footer>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
 const firebaseConfig = { apiKey:"AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8", authDomain:"my-website-73785.firebaseapp.com", databaseURL:"https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app/", projectId:"my-website-73785", storageBucket:"my-website-73785.firebasestorage.app", messagingSenderId:"854088341990", appId:"1:854088341990:web:3211d4ef9fe4b78d025e27" };
 const app = initializeApp(firebaseConfig);
@@ -116,7 +116,7 @@ const render = () => {
 };
 
 searchInput.addEventListener("input", render);
-onValue(ref(db, "LatestJobs"), (snapshot) => {
+get(ref(db, "LatestJobs")).then((snapshot) => {
   rows = [];
   if(snapshot.exists()){
     snapshot.forEach((child) => {
@@ -128,7 +128,7 @@ onValue(ref(db, "LatestJobs"), (snapshot) => {
   }
   rows.sort((a,b) => displayOrder(a.job) - displayOrder(b.job) || Number(b.job.createdAt || 0) - Number(a.job.createdAt || 0));
   render();
-}, (error) => {
+}).catch((error) => {
   list.innerHTML = `<div class="message">Current affairs load nahi ho paya: ${escapeHTML(error.message)}</div>`;
 });
 </script>

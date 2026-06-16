@@ -624,7 +624,7 @@ body.dark-mode .job-tool-btn:hover{background:#ffb15c!important;border-color:#ff
 <script>window.__EMITRA_STATIC_POST__={"id":"portal-admitCard--Ot328Nnsq7_9iJXzu1R","job":{"createdAt":1779258136574,"title":"IMU Common Entrance Test CET 2026","updatedAt":1779258136573,"url":"https://imu.cbexams.com/IMU_CET_Admiittccard/login?imucetadmitcard2026","slug":"imu-common-entrance-test-cet-2026-jxzu1r","postTarget":"admitCard","type":"Admit Card","postStatus":"published","detailLink":"https://imu.cbexams.com/IMU_CET_Admiittccard/login?imucetadmitcard2026","sourceLink":"https://imu.cbexams.com/IMU_CET_Admiittccard/login?imucetadmitcard2026","shortInfo":"IMU Common Entrance Test CET 2026 Admit Card details.","metaDescription":"IMU Common Entrance Test CET 2026 Admit Card details, link and latest information.","canonicalUrl":"https://emitrawala.online/post/imu-common-entrance-test-cet-2026-jxzu1r/"}};</script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",
@@ -3730,7 +3730,7 @@ if(!id && !pathSlug){
   message.textContent = "Please open this page from Latest Jobs.";
   message.style.display = "block";
 }else if(id){
-  onValue(ref(db, "LatestJobs/" + id), (snapshot) => {
+  get(ref(db, "LatestJobs/" + id)).then((snapshot) => {
     if(!snapshot.exists()){
       message.textContent = "Job detail nahi mili ya delete ho chuki hai.";
       message.style.display = "block";
@@ -3738,12 +3738,12 @@ if(!id && !pathSlug){
       return;
     }
     renderJobDetail(id, snapshot.val());
-  }, (error) => {
+  }).catch((error) => {
     message.textContent = "Job details load nahi ho payi: " + error.message;
     message.style.display = "block";
   });
 }else{
-  onValue(ref(db, "LatestJobs"), (snapshot) => {
+  get(ref(db, "LatestJobs")).then((snapshot) => {
     let match = null;
     const allJobs = [];
     if(snapshot.exists()){
@@ -3767,7 +3767,7 @@ if(!id && !pathSlug){
       return;
     }
     renderJobDetail(match.id, match.job, allJobs);
-  }, (error) => {
+  }).catch((error) => {
     message.textContent = "Job details load nahi ho payi: " + error.message;
     message.style.display = "block";
   });
