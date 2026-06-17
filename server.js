@@ -535,6 +535,7 @@ const AUTO_JOB_DEFAULT_PER_SOURCE_LIMIT = 4;
 const AUTO_JOB_MAX_DRAFT_LIMIT = 120;
 const AUTO_JOB_MAX_PAGE_LIMIT = 80;
 const AUTO_JOB_MAX_PER_SOURCE_LIMIT = 40;
+const AUTO_JOB_MIN_NOTICE_DATE_ISO = String(process.env.AUTO_JOB_MIN_NOTICE_DATE || "2026-06-10").trim();
 const CRAWLER_REQUIRED_FIELDS = ["title", "department", "totalPosts", "importantDates", "qualification", "applicationFee", "officialNotification", "officialWebsite"];
 const BILINGUAL_PUBLIC_FIELDS = [
   "title",
@@ -730,6 +731,88 @@ const extractDatesBlock = (text = "") => {
   const hasDate = /\b\d{1,2}[-./\s](?:\d{1,2}|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[-./\s]\d{2,4}\b/i;
   return lines.filter((line) => dateLine.test(line) || hasDate.test(line)).slice(0, 8).join("\n");
 };
+
+const monthNumberFromText = (value = "") => {
+  const key = String(value || "").trim().toLowerCase().slice(0, 3);
+  return {
+    jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6,
+    jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12
+  }[key] || 0;
+};
+
+const normalizeTwoDigitYear = (year = "") => {
+  const num = Number(year);
+  if (!Number.isFinite(num)) return 0;
+  return num < 100 ? 2000 + num : num;
+};
+
+const makeDateOnlyMs = (year, month, day) => {
+  const y = normalizeTwoDigitYear(year);
+  const m = Number(month);
+  const d = Number(day);
+  if (!y || !m || !d || m < 1 || m > 12 || d < 1 || d > 31) return 0;
+  const date = new Date(Date.UTC(y, m - 1, d));
+  if (date.getUTCFullYear() !== y || date.getUTCMonth() !== m - 1 || date.getUTCDate() !== d) return 0;
+  return date.getTime();
+};
+
+const autoJobCutoffMs = () => {
+  const match = AUTO_JOB_MIN_NOTICE_DATE_ISO.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  return match ? makeDateOnlyMs(match[1], match[2], match[3]) : makeDateOnlyMs(2026, 6, 10);
+};
+
+const extractNoticeDateMs = (value = "") => {
+  const text = String(value || "");
+  const dates = [];
+  let match;
+  const numeric = /\b(\d{1,2})[./-](\d{1,2})[./-](\d{2,4})\b/g;
+  while ((match = numeric.exec(text))) {
+    const ms = makeDateOnlyMs(match[3], match[2], match[1]);
+    if (ms) dates.push(ms);
+  }
+  const iso = /\b(\d{4})[./-](\d{1,2})[./-](\d{1,2})\b/g;
+  while ((match = iso.exec(text))) {
+    const ms = makeDateOnlyMs(match[1], match[2], match[3]);
+    if (ms) dates.push(ms);
+  }
+  const named = /\b(\d{1,2})\s+(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s+(\d{2,4})\b/gi;
+  while ((match = named.exec(text))) {
+    const ms = makeDateOnlyMs(match[3], monthNumberFromText(match[2]), match[1]);
+    if (ms) dates.push(ms);
+  }
+  const parsed = Date.parse(text);
+  if (Number.isFinite(parsed)) {
+    const date = new Date(parsed);
+    dates.push(makeDateOnlyMs(date.getUTCFullYear(), date.getUTCMonth() + 1, date.getUTCDate()));
+  }
+  return dates.length ? Math.max(...dates) : 0;
+};
+
+const noticeDateText = (notice = {}) => [
+  notice.dateText,
+  notice.pubDate,
+  notice.publishedAt,
+  notice.updatedAt,
+  notice.title,
+  notice.link
+].filter(Boolean).join(" ");
+
+const isNoticeAfterAutoJobCutoff = (notice = {}, allowPageContent = false) => {
+  const text = `${noticeDateText(notice)} ${allowPageContent ? notice.pageContent || "" : ""}`;
+  const dateMs = extractNoticeDateMs(text);
+  return Boolean(dateMs && dateMs >= autoJobCutoffMs());
+};
+
+const isAutoJobDraftAfterCutoff = (draft = {}) => isNoticeAfterAutoJobCutoff({
+  title: draft.title || draft.noticeTitle || draft.text,
+  link: draft.sourceLink || draft.detailLink || draft.officialNotification || draft.officialWebsite,
+  dateText: [draft.postDate, draft.createdDate, draft.noticeDate, draft.importantDates].filter(Boolean).join(" "),
+  pageContent: draft.rawText || draft.pageContent || draft.generatedJson
+}, true);
+
+const filterAutoJobDraftsAfterCutoff = (drafts = {}) => Object.fromEntries(
+  Object.entries(drafts || {}).filter(([, draft]) => isAutoJobDraftAfterCutoff(draft || {}))
+);
 
 const extractTotalPosts = (text = "") => {
   const match = String(text || "").match(/(?:total\s*(?:post|posts|vacancy|vacancies)|कुल\s*(?:पद|रिक्ति))\D{0,20}(\d{1,6})/i)
@@ -3003,7 +3086,7 @@ const extractXmlNotices = (xml = "", baseUrl = "", keywords = [], options = {}) 
   const limit = readPositiveInt(options.limit, 80, 200);
   const rows = [];
   const seen = new Set();
-  const addRow = (title = "", link = "") => {
+  const addRow = (title = "", link = "", dateText = "") => {
     const cleanLink = decodeHtml(link).trim();
     if (!cleanLink || /^(javascript:|mailto:|tel:|#)/i.test(cleanLink)) return;
     let resolved = "";
@@ -3017,7 +3100,7 @@ const extractXmlNotices = (xml = "", baseUrl = "", keywords = [], options = {}) 
     const key = resolved.toLowerCase();
     if (seen.has(key)) return;
     seen.add(key);
-    rows.push({ title: cleanTitle || resolved, link: resolved });
+    rows.push({ title: cleanTitle || resolved, link: resolved, dateText: toText(dateText) });
   };
 
   const itemRegex = /<item\b[^>]*>([\s\S]*?)<\/item>/gi;
@@ -3028,7 +3111,8 @@ const extractXmlNotices = (xml = "", baseUrl = "", keywords = [], options = {}) 
     const link = item.match(/<link[^>]*>([\s\S]*?)<\/link>/i)?.[1]
       || item.match(/<guid[^>]*>(https?:\/\/[\s\S]*?)<\/guid>/i)?.[1]
       || "";
-    addRow(title, link);
+    const dateText = item.match(/<(?:pubDate|published|updated|dc:date)[^>]*>([\s\S]*?)<\/(?:pubDate|published|updated|dc:date)>/i)?.[1] || "";
+    addRow(title, link, dateText);
   }
 
   const entryRegex = /<entry\b[^>]*>([\s\S]*?)<\/entry>/gi;
@@ -3038,14 +3122,16 @@ const extractXmlNotices = (xml = "", baseUrl = "", keywords = [], options = {}) 
     const link = entry.match(/<link[^>]*href=["']([^"']+)["'][^>]*>/i)?.[1]
       || entry.match(/<link[^>]*>([\s\S]*?)<\/link>/i)?.[1]
       || "";
-    addRow(title, link);
+    const dateText = entry.match(/<(?:published|updated|dc:date)[^>]*>([\s\S]*?)<\/(?:published|updated|dc:date)>/i)?.[1] || "";
+    addRow(title, link, dateText);
   }
 
   const locRegex = /<loc[^>]*>([\s\S]*?)<\/loc>/gi;
   while ((match = locRegex.exec(xml)) && rows.length < limit) {
     const link = match[1] || "";
     const urlTitle = link.split("/").filter(Boolean).pop()?.replace(/[-_]+/g, " ") || link;
-    addRow(urlTitle, link);
+    const lastmod = text.slice(Math.max(0, match.index - 220), Math.min(text.length, match.index + match[0].length + 220)).match(/<lastmod[^>]*>([\s\S]*?)<\/lastmod>/i)?.[1] || "";
+    addRow(urlTitle, link, lastmod);
   }
 
   return rows.slice(0, limit);
@@ -3056,7 +3142,7 @@ const extractLinks = (html = "", baseUrl = "", keywords = [], options = {}) => {
   const limit = readPositiveInt(options.limit, 80, 200);
   const rows = [];
   const seen = new Set();
-  const addLink = (href = "", label = "") => {
+  const addLink = (href = "", label = "", dateText = "") => {
     const rawHref = String(href || "").trim();
     if (!rawHref || /^(javascript:|mailto:|tel:|#)/i.test(rawHref)) return;
     let link = "";
@@ -3070,7 +3156,7 @@ const extractLinks = (html = "", baseUrl = "", keywords = [], options = {}) => {
     const key = link.toLowerCase();
     if (seen.has(key)) return;
     seen.add(key);
-    rows.push({ title: title || link, link });
+    rows.push({ title: title || link, link, dateText: toText(dateText) });
   };
 
   if (cheerio) {
@@ -3078,14 +3164,14 @@ const extractLinks = (html = "", baseUrl = "", keywords = [], options = {}) => {
     $("a[href]").each((_, element) => {
       if (rows.length >= limit) return false;
       const node = $(element);
+      const contextText = toText([node.closest("tr").text(), node.closest("li").text(), node.parent().text()].filter(Boolean).join(" "));
       const title = [
         node.text(),
         node.attr("title"),
         node.attr("aria-label"),
-        node.closest("tr").text(),
-        node.closest("li").text()
+        contextText
       ].map(toText).find(Boolean);
-      addLink(node.attr("href"), title);
+      addLink(node.attr("href"), title, contextText);
       return undefined;
     });
     return rows.slice(0, limit);
@@ -3094,7 +3180,7 @@ const extractLinks = (html = "", baseUrl = "", keywords = [], options = {}) => {
   const linkRegex = /<a\b[^>]*href\s*=\s*["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
   let match;
   while ((match = linkRegex.exec(html))) {
-    addLink(match[1], match[2]);
+    addLink(match[1], match[2], match[2]);
     if (rows.length >= limit) break;
   }
   return rows;
@@ -3528,6 +3614,7 @@ async function checkOneAutoJobSource(db, source, limits = {}) {
   let found = 0;
   let newDrafts = 0;
   let skippedDuplicates = 0;
+  let skippedOldNotices = 0;
   let pageFetches = 0;
   let targetErrors = 0;
   const errorMessages = [];
@@ -3578,6 +3665,10 @@ async function checkOneAutoJobSource(db, source, limits = {}) {
       for (const rawNotice of notices) {
         if (newDrafts >= perSourceLimit || (limits.remainingDrafts || 0) <= 0) break;
         const notice = await fetchAggregatorNoticeDetails(source, rawNotice, limits);
+        if (!isNoticeAfterAutoJobCutoff(notice, true)) {
+          skippedOldNotices++;
+          continue;
+        }
         const normalizedLink = normalizeProcessedUrl(notice.link);
         if (!normalizedLink || seenThisSource.has(normalizedLink)) continue;
         seenThisSource.add(normalizedLink);
@@ -3661,6 +3752,7 @@ async function checkOneAutoJobSource(db, source, limits = {}) {
       lastFoundCount: found,
       lastNewCount: newDrafts,
       lastSkippedDuplicates: skippedDuplicates,
+      lastSkippedOldNotices: skippedOldNotices,
       lastPageFetches: pageFetches,
       lastTargetErrors: targetErrors,
       lastErrorHelp: errorMessages.slice(0, 2).join(" | "),
@@ -3674,9 +3766,9 @@ async function checkOneAutoJobSource(db, source, limits = {}) {
       url: source.url,
       status: targetErrors ? "warning" : "success",
       error: errorMessages.slice(0, 2).join(" | "),
-      message: `${source.name}: ${pageFetches} pages/feeds, ${found} links, ${newDrafts} drafts, ${skippedDuplicates} duplicate skipped${targetErrors ? `, ${targetErrors} target skipped` : ""}`
+      message: `${source.name}: ${pageFetches} pages/feeds, ${found} links, ${newDrafts} drafts, ${skippedDuplicates} duplicate skipped, ${skippedOldNotices} old skipped${targetErrors ? `, ${targetErrors} target skipped` : ""}`
     });
-    return { sourceId: source.id, found, newDrafts, skippedDuplicates, pageFetches, targetErrors, ok: true };
+    return { sourceId: source.id, found, newDrafts, skippedDuplicates, skippedOldNotices, pageFetches, targetErrors, ok: true };
   } catch (err) {
     const friendly = explainFetchError(err);
     await db.ref(`autoJobSources/${source.id}`).update({
@@ -3697,7 +3789,7 @@ async function checkOneAutoJobSource(db, source, limits = {}) {
       error: friendly.message,
       message: `${source.name}: ${friendly.message}`
     });
-    return { sourceId: source.id, found, newDrafts, skippedDuplicates, pageFetches, ok: false, error: err.message, errorHelp: friendly.message, errorCode: friendly.code, startedAt };
+    return { sourceId: source.id, found, newDrafts, skippedDuplicates, skippedOldNotices, pageFetches, ok: false, error: err.message, errorHelp: friendly.message, errorCode: friendly.code, startedAt };
   }
 }
 
@@ -3745,6 +3837,7 @@ async function runAutoJobChecker(options = {}) {
       foundCount: results.reduce((sum, item) => sum + Number(item.found || 0), 0),
       newDraftCount: results.reduce((sum, item) => sum + Number(item.newDrafts || 0), 0),
       skippedDuplicateCount: results.reduce((sum, item) => sum + Number(item.skippedDuplicates || 0), 0),
+      skippedOldNoticeCount: results.reduce((sum, item) => sum + Number(item.skippedOldNotices || 0), 0),
       pageFetchCount: results.reduce((sum, item) => sum + Number(item.pageFetches || 0), 0),
       limits: {
         draftLimit: readPositiveInt(options.limit || options.fetchLimit || process.env.AUTO_JOB_FETCH_LIMIT, AUTO_JOB_DEFAULT_DRAFT_LIMIT, AUTO_JOB_MAX_DRAFT_LIMIT),
@@ -3756,7 +3849,7 @@ async function runAutoJobChecker(options = {}) {
     await db.ref("autoJobCheckerStatus").set(summary);
     await logAutoJob(db, {
       level: summary.errorCount ? "warning" : "success",
-      message: `Checker finished: ${summary.checkedCount} sources, ${summary.pageFetchCount} pages, ${summary.newDraftCount} new drafts, ${summary.skippedDuplicateCount} duplicates skipped`
+      message: `Checker finished: ${summary.checkedCount} sources, ${summary.pageFetchCount} pages, ${summary.newDraftCount} new drafts, ${summary.skippedDuplicateCount} duplicates skipped, ${summary.skippedOldNoticeCount} old skipped`
     });
     return { ...summary, results };
   } finally {
@@ -5197,6 +5290,7 @@ app.post("/api/quick-post/fetch-links", async (req, res) => {
     const limit = readPositiveInt(req.body?.limit, 25, 80);
     const page = await fetchText(url, 22000);
     const notices = extractNotices(page.text, url, autoJobKeywords, { limit: Math.max(limit, 10) })
+      .filter((notice) => isNoticeAfterAutoJobCutoff(notice, false))
       .slice(0, limit)
       .map((notice) => ({ title: notice.title, url: notice.link }));
     return res.json({ ok: true, url, count: notices.length, links: notices });
@@ -5308,7 +5402,10 @@ app.post("/api/quick-post/batch-start", async (req, res) => {
     let links = Array.isArray(req.body?.links) ? req.body.links : [];
     if (!links.length && req.body?.url) {
       const page = await fetchText(extractHttpUrl(req.body.url), 22000);
-      links = extractNotices(page.text, req.body.url, autoJobKeywords, { limit: maxPosts }).map((notice) => ({ title: notice.title, url: notice.link }));
+      links = extractNotices(page.text, req.body.url, autoJobKeywords, { limit: Math.max(maxPosts, 10) })
+        .filter((notice) => isNoticeAfterAutoJobCutoff(notice, false))
+        .slice(0, maxPosts)
+        .map((notice) => ({ title: notice.title, url: notice.link }));
     }
     const normalized = links
       .map((item) => ({ title: toText(item.title || item.url), url: extractHttpUrl(item.url || item.link || "") }))
@@ -5704,7 +5801,7 @@ app.post("/admin/auto-job-checker/state", async (req, res) => {
     return res.json({
       ok: true,
       sources: snapshotValue(sources),
-      drafts: snapshotValue(drafts),
+      drafts: filterAutoJobDraftsAfterCutoff(snapshotValue(drafts)),
       logs: snapshotValue(logs),
       checkerStatus: snapshotValue(status)
     });

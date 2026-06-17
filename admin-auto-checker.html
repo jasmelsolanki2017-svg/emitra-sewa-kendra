@@ -1260,14 +1260,14 @@
           ...getAiRequestOptions()
         });
         await loadServerState().catch(()=>{});
-        $("checkerStatus").innerText=result.skipped?result.message:`Done: ${result.checkedCount||0} sources, ${result.pageFetchCount||0} pages, ${result.newDraftCount||0} new drafts, ${result.skippedDuplicateCount||0} duplicates skipped, ${result.errorCount||0} errors.`;
+        $("checkerStatus").innerText=result.skipped?result.message:`Done: ${result.checkedCount||0} sources, ${result.pageFetchCount||0} pages, ${result.newDraftCount||0} new drafts, ${result.skippedDuplicateCount||0} duplicates skipped, ${result.skippedOldNoticeCount||0} old skipped, ${result.errorCount||0} errors.`;
       }catch(error){
         $("checkerStatus").innerText="Checker error: "+error.message;
       }
     };
 
     const sourceKind=(data={})=>String(data.sourceKind||data.kind||"official").toLowerCase()==="aggregator"?"aggregator":"official";
-    const sourceRowHtml=([id,data])=>`<div class="row ${data.lastStatus==="error"||data.lastTestStatus==="error"?"error":data.lastStatus==="success"?"success":""}"><div><strong>${escapeHTML(data.name||"Official Source")}</strong><small>${escapeHTML(data.url||"")}</small><small>Type: ${sourceKind(data)==="aggregator"?"Scraped Job Portal":"Official Source"} | Categories: ${escapeHTML((data.categories||categoryKeys).join(", "))} | Max/source: ${escapeHTML(data.maxFetch||8)}</small><small>Last checked: ${formatTime(data.lastCheckedAt)} | Status: ${escapeHTML(data.lastStatus||"new")} | Pages: ${escapeHTML(data.lastPageFetches||0)} | New: ${escapeHTML(data.lastNewCount||0)} | Found: ${escapeHTML(data.lastFoundCount||0)} | Duplicate: ${escapeHTML(data.lastSkippedDuplicates||0)}</small>${friendlyErrorText(data)?`<small style="color:#d90000;">${escapeHTML(friendlyErrorText(data))}</small>`:""}${data.lastTestedAt?`<small>Last test: ${shortTime(data.lastTestedAt)} | ${escapeHTML(data.lastTestMessage||"")}</small>`:""}<span class="badge">${data.enabled===false?"Disabled":"Enabled"}</span></div><div class="actions"><button class="mini-btn" onclick="testSource('${id}')">Test URL</button><button class="mini-btn" onclick="editSource('${id}')">Edit</button><button class="delete mini-btn" onclick="deleteSource('${id}')">Delete</button></div></div>`;
+    const sourceRowHtml=([id,data])=>`<div class="row ${data.lastStatus==="error"||data.lastTestStatus==="error"?"error":data.lastStatus==="success"?"success":""}"><div><strong>${escapeHTML(data.name||"Official Source")}</strong><small>${escapeHTML(data.url||"")}</small><small>Type: ${sourceKind(data)==="aggregator"?"Scraped Job Portal":"Official Source"} | Categories: ${escapeHTML((data.categories||categoryKeys).join(", "))} | Max/source: ${escapeHTML(data.maxFetch||8)}</small><small>Last checked: ${formatTime(data.lastCheckedAt)} | Status: ${escapeHTML(data.lastStatus||"new")} | Pages: ${escapeHTML(data.lastPageFetches||0)} | New: ${escapeHTML(data.lastNewCount||0)} | Found: ${escapeHTML(data.lastFoundCount||0)} | Duplicate: ${escapeHTML(data.lastSkippedDuplicates||0)} | Old skipped: ${escapeHTML(data.lastSkippedOldNotices||0)}</small>${friendlyErrorText(data)?`<small style="color:#d90000;">${escapeHTML(friendlyErrorText(data))}</small>`:""}${data.lastTestedAt?`<small>Last test: ${shortTime(data.lastTestedAt)} | ${escapeHTML(data.lastTestMessage||"")}</small>`:""}<span class="badge">${data.enabled===false?"Disabled":"Enabled"}</span></div><div class="actions"><button class="mini-btn" onclick="testSource('${id}')">Test URL</button><button class="mini-btn" onclick="editSource('${id}')">Edit</button><button class="delete mini-btn" onclick="deleteSource('${id}')">Delete</button></div></div>`;
     const renderSourceGroup=(target,rows,emptyText)=>{
       target.innerHTML=rows.length?rows.map(sourceRowHtml).join(""):`<div class="empty">${emptyText}</div>`;
     };
@@ -1308,10 +1308,38 @@
       return reason?`<small style="color:#d90000;font-weight:900;">${escapeHTML(reason)}</small>`:"";
     };
     const draftSourceUrl=(data={},source={})=>String(data.sourceLink||data.detailLink||data.officialWebsite||data.officialLink||source.url||"").trim();
+    const autoJobMinNoticeDateMs=Date.UTC(2026,5,10);
+    const monthNumberFromText=(value="")=>({jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12}[String(value||"").trim().toLowerCase().slice(0,3)]||0);
+    const makeDateOnlyMs=(year,month,day)=>{
+      let y=Number(year),m=Number(month),d=Number(day);
+      if(y>0&&y<100)y+=2000;
+      if(!y||!m||!d||m<1||m>12||d<1||d>31)return 0;
+      const date=new Date(Date.UTC(y,m-1,d));
+      return date.getUTCFullYear()===y&&date.getUTCMonth()===m-1&&date.getUTCDate()===d?date.getTime():0;
+    };
+    const extractNoticeDateMs=(value="")=>{
+      const text=String(value||"");
+      const dates=[];
+      let match;
+      const numeric=/\b(\d{1,2})[./-](\d{1,2})[./-](\d{2,4})\b/g;
+      while((match=numeric.exec(text))){const ms=makeDateOnlyMs(match[3],match[2],match[1]);if(ms)dates.push(ms)}
+      const iso=/\b(\d{4})[./-](\d{1,2})[./-](\d{1,2})\b/g;
+      while((match=iso.exec(text))){const ms=makeDateOnlyMs(match[1],match[2],match[3]);if(ms)dates.push(ms)}
+      const named=/\b(\d{1,2})\s+(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s+(\d{2,4})\b/gi;
+      while((match=named.exec(text))){const ms=makeDateOnlyMs(match[3],monthNumberFromText(match[2]),match[1]);if(ms)dates.push(ms)}
+      const parsed=Date.parse(text);
+      if(Number.isFinite(parsed)){const date=new Date(parsed);dates.push(makeDateOnlyMs(date.getUTCFullYear(),date.getUTCMonth()+1,date.getUTCDate()))}
+      return dates.length?Math.max(...dates):0;
+    };
+    const isDraftAfterCutoff=(data={})=>{
+      const text=[data.postDate,data.createdDate,data.noticeDate,data.importantDates,data.title,data.noticeTitle,data.sourceLink,data.detailLink,data.officialNotification,data.rawText,data.pageContent,data.generatedJson].filter(Boolean).join(" ");
+      const ms=extractNoticeDateMs(text);
+      return Boolean(ms&&ms>=autoJobMinNoticeDateMs);
+    };
 
     const renderDrafts=()=>{
       const rows=Object.entries(draftsCache).sort((a,b)=>Number(b[1].updatedAt||b[1].createdAt||0)-Number(a[1].updatedAt||a[1].createdAt||0));
-      const draftRows=rows.filter(([,data])=>!["published","ignored"].includes(String(data.checkerStatus||"draft")));
+      const draftRows=rows.filter(([,data])=>!["published","ignored"].includes(String(data.checkerStatus||"draft"))&&isDraftAfterCutoff(data));
       $("draftCount").innerText=draftRows.length;
       if(!draftRows.length){draftList.innerHTML='<div class="empty">Pending draft nahi hai.</div>';updateBulkSelectedCount();return}
       const sourceGroups=new Map();
