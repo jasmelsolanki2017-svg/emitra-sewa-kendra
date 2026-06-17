@@ -130,6 +130,7 @@ const DEEPSEEK_MODEL = String(process.env.DEEPSEEK_MODEL || "deepseek-chat").tri
 const GITHUB_TOKEN = String(process.env.GITHUB_TOKEN || process.env.SEO_GITHUB_TOKEN || "").trim();
 const GITHUB_REPOSITORY = String(process.env.GITHUB_REPOSITORY || process.env.SEO_GITHUB_REPOSITORY || "jasmelsolanki2017-svg/emitra-sewa-kendra").trim();
 const GITHUB_DISPATCH_EVENT = String(process.env.SEO_GITHUB_DISPATCH_EVENT || "seo-posts-update").trim();
+const DAILY_CURRENT_AFFAIRS_AUTO_ENABLED = false;
 const DEFAULT_MEMBER_PASSWORD = "User@123";
 const CHECKER_INTERVAL_MS = Number(process.env.AUTO_JOB_CHECKER_INTERVAL_MS || 30 * 60 * 1000);
 const CHECKER_CRON = String(process.env.AUTO_JOB_CHECKER_CRON || "*/30 * * * *").trim();
@@ -6272,37 +6273,19 @@ app.post("/admin/git-safety", async (req, res) => {
 });
 
 app.post("/admin/current-affairs/generate-today", async (req, res) => {
-  try {
-    const { db } = await requireAdmin(req);
-    const result = await upsertDailyCurrentAffairs(db, {
-      dateKey: toText(req.body?.dateKey) || dailyCurrentAffairsDate(),
-      aiProvider: req.body?.aiProvider,
-      aiModel: req.body?.aiModel
-    });
-    return res.json(result);
-  } catch (err) {
-    const message = err.code === "AI_NOT_CONFIGURED"
-      ? `${err.message}. Render/server env me GEMINI_API_KEY/OPENROUTER_API_KEY/OPENAI_API_KEY aur model configure karein.`
-      : err.message;
-    return res.status(err.statusCode || (err.code === "AI_NOT_CONFIGURED" ? 503 : 500)).json({ ok: false, error: message });
-  }
+  return res.status(410).json({
+    ok: false,
+    disabled: true,
+    error: "Daily AI Current Affairs generation disabled hai. Current Affairs manual JSON se update karein."
+  });
 });
 
 const runCronDailyCurrentAffairs = async (req, res) => {
-  try {
-    requireCronSecret(req);
-    const db = getAdminDb();
-    if (!db) {
-      return res.status(503).json({ ok: false, error: "Firebase Admin SDK is not configured" });
-    }
-    const result = await upsertDailyCurrentAffairs(db, { dateKey: toText(req.query?.date || req.body?.dateKey) || dailyCurrentAffairsDate() });
-    return res.json({ ...result, scheduled: true });
-  } catch (err) {
-    const message = err.code === "AI_NOT_CONFIGURED"
-      ? `${err.message}. AI/API key missing hai. Server env me AI key aur model configure karein.`
-      : err.message;
-    return res.status(err.statusCode || (err.code === "AI_NOT_CONFIGURED" ? 503 : 500)).json({ ok: false, error: message });
-  }
+  return res.status(410).json({
+    ok: false,
+    disabled: true,
+    error: "Daily AI Current Affairs cron disabled hai. Manual Current Affairs update use karein."
+  });
 };
 
 const runCronAutoJobChecker = async (req, res) => {
@@ -6322,7 +6305,7 @@ app.post("/cron/auto-job-checker", runCronAutoJobChecker);
 
 let lastDailyCurrentAffairsRunDate = "";
 const maybeRunDailyCurrentAffairsSchedule = async () => {
-  const enabled = String(process.env.DAILY_CURRENT_AFFAIRS_AUTO || "true").toLowerCase() !== "false";
+  const enabled = DAILY_CURRENT_AFFAIRS_AUTO_ENABLED && String(process.env.DAILY_CURRENT_AFFAIRS_AUTO || "false").toLowerCase() === "true";
   if (!enabled || !isAdminSdkConfigured()) return;
   const dateKey = dailyCurrentAffairsDate();
   const { hour, minute } = getIstClock();
@@ -6350,12 +6333,16 @@ app.use((err, _req, res, _next) => {
 
 app.listen(PORT, () => {
   console.log(`Admin API running on port ${PORT}`);
-  setInterval(() => {
-    maybeRunDailyCurrentAffairsSchedule().catch((err) => {
-      console.error("Daily current affairs scheduler failed:", err.message);
-    });
-  }, 60 * 1000);
-  maybeRunDailyCurrentAffairsSchedule().catch(() => {});
+  if (DAILY_CURRENT_AFFAIRS_AUTO_ENABLED) {
+    setInterval(() => {
+      maybeRunDailyCurrentAffairsSchedule().catch((err) => {
+        console.error("Daily current affairs scheduler failed:", err.message);
+      });
+    }, 60 * 1000);
+    maybeRunDailyCurrentAffairsSchedule().catch(() => {});
+  } else {
+    console.log("Daily AI current affairs scheduler disabled; manual updates enabled.");
+  }
   if (cron && CHECKER_CRON) {
     cron.schedule(CHECKER_CRON, () => {
       runAutoJobChecker({ scheduled: true }).catch((err) => {
