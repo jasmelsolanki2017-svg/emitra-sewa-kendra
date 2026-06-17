@@ -12,9 +12,7 @@ const JOB_DETAIL_PATH = path.join(__dirname, "..", "job-detail.html");
 const PREMIUM_POST_PATH = path.join(__dirname, "..", "premium-post.html");
 const NOT_FOUND_PATH = path.join(__dirname, "..", "404.html");
 const POST_ROOT = path.join(__dirname, "..", "post");
-const EXCLUDED_POST_SLUGS = new Set([
-  "today-current-affairs-4zoeww"
-]);
+const EXCLUDED_POST_SLUGS = new Set([]);
 const LEGAL_SITEMAP_URLS = [
   "about.html",
   "contact.html",

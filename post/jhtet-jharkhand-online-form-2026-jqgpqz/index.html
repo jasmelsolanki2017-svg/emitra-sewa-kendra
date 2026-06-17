@@ -967,6 +967,32 @@ const collectJobSlugs = (job = {}, fallbackId = "") => {
   ].map(normalizeSlugValue).filter(Boolean);
 };
 
+const currentAffairsSlugDateText = (job = {}) => String(
+  job.postDate
+  || job.date
+  || job.content?.date
+  || job.currentAffairsData?.date
+  || job.currentAffairsData?.["तारीख"]
+  || ""
+).trim();
+
+const currentAffairsSlugDateKey = (job = {}) => {
+  const text = currentAffairsSlugDateText(job);
+  const months = { jan:0, january:0, feb:1, february:1, mar:2, march:2, apr:3, april:3, may:4, jun:5, june:5, jul:6, july:6, aug:7, august:7, sep:8, sept:8, september:8, oct:9, october:9, nov:10, november:10, dec:11, december:11 };
+  let match = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  let date = null;
+  if(match){ date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3])); }
+  match = !date && text.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/);
+  if(match){ date = new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1])); }
+  match = !date && text.match(/^(\d{1,2})\s+([A-Za-z]{3,9})\s+(\d{4})$/);
+  if(match && months[match[2].toLowerCase()] !== undefined){ date = new Date(Number(match[3]), months[match[2].toLowerCase()], Number(match[1])); }
+  if(!date){
+    const parsed = new Date(text);
+    date = Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+  return date && !Number.isNaN(date.getTime()) ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}` : "";
+};
+
 const isMatchingJobSlug = (requestedSlug = "", job = {}, fallbackId = "") => {
   const requested = normalizeSlugValue(requestedSlug);
   if(!requested){ return false; }
@@ -975,9 +1001,23 @@ const isMatchingJobSlug = (requestedSlug = "", job = {}, fallbackId = "") => {
     "rrb-alp-online-form-2026-11-127-posts-kfcxav": "rrb-alp-online-form-2026-11-127-posts"
   };
   const aliasTarget = legacySlugAliases[requested] || "";
-  return collectJobSlugs(job, fallbackId).some((slug) => (
+  const jobSlugs = collectJobSlugs(job, fallbackId);
+  if(jobSlugs.some((slug) => (
     slug === requested || slug === aliasTarget || slug.indexOf(requested + "-") === 0 || requested.indexOf(slug + "-") === 0
-  ));
+  ))){ return true; }
+  if(isCurrentAffairsPost(job) && /^today-current-affairs(?:-|$)/.test(requested)){
+    const requestedDate = requested.match(/today-current-affairs-(\d{1,2})-([a-z]+)-(\d{4})/);
+    const jobDate = currentAffairsSlugDateText(job).toLowerCase().replace(/[,]/g, " ");
+    if(requestedDate && currentAffairsSlugDateKey(job)){
+      const monthMap = { jan:"01", january:"01", feb:"02", february:"02", mar:"03", march:"03", apr:"04", april:"04", may:"05", jun:"06", june:"06", jul:"07", july:"07", aug:"08", august:"08", sep:"09", sept:"09", september:"09", oct:"10", october:"10", nov:"11", november:"11", dec:"12", december:"12" };
+      const requestedKey = `${requestedDate[3]}-${monthMap[requestedDate[2]] || ""}-${String(requestedDate[1]).padStart(2, "0")}`;
+      if(requestedKey === currentAffairsSlugDateKey(job)){ return true; }
+    }
+    const latestStyleSlug = jobSlugs.find((slug) => /^today-current-affairs(?:-|$)/.test(slug));
+    if(latestStyleSlug && !requestedDate){ return true; }
+    if(!latestStyleSlug && /today\s+current\s+affairs/i.test(`${job.title || ""} ${jobDate}`)){ return true; }
+  }
+  return false;
 };
 
 const canonicalJobHref = (id = "", job = {}) => `post/${encodeURIComponent(buildCanonicalSlug(job, id))}/`;
@@ -3385,7 +3425,16 @@ const renderPageContent = (content, title, options = {}) => {
 const id = new URLSearchParams(window.location.search).get("id");
 const slugParam = new URLSearchParams(window.location.search).get("slug");
 const postParam = new URLSearchParams(window.location.search).get("post");
-const pathSlug = decodeURIComponent((location.pathname.match(/^\/post\/([^/?#]+)/) || [])[1] || postParam || slugParam || "").trim();
+const storagePostSlug = (() => {
+  try{
+    const value = sessionStorage.getItem("postFallbackSlug") || "";
+    if(value){ sessionStorage.removeItem("postFallbackSlug"); }
+    return value;
+  }catch(_error){
+    return "";
+  }
+})();
+const pathSlug = decodeURIComponent((location.pathname.match(/^\/post\/([^/?#]+)/) || [])[1] || postParam || slugParam || storagePostSlug || "").trim();
 const message = document.getElementById("jobMessage");
 const wrap = document.getElementById("jobDetailWrap");
 const staticPost = window.__EMITRA_STATIC_POST__ && typeof window.__EMITRA_STATIC_POST__ === "object" ? window.__EMITRA_STATIC_POST__ : null;
