@@ -79,6 +79,7 @@
     .source-section-title{display:flex;justify-content:space-between;gap:8px;align-items:center;margin:10px 0 6px;color:#0057a8;font-size:13px;font-weight:900}
     .source-section-title small{color:#56677c;font-size:11px;font-weight:800}
     .draft-check{width:auto;margin-top:3px;flex-shrink:0}
+    .draft-source-link{display:block;color:#0057a8;font-size:13px;font-weight:900;line-height:1.35;overflow-wrap:anywhere;text-decoration:underline;text-underline-offset:2px}
     .result-box{margin-top:8px;border:1px dashed #bdd0e5;border-radius:7px;background:#fbfdff;padding:8px;font-size:12px;font-weight:700;white-space:pre-wrap;overflow-wrap:anywhere;color:#172033}
     .mini-btn{padding:6px 8px;font-size:11px}
     .hidden{display:none!important}
@@ -1306,6 +1307,7 @@
       const reason=String(data.reviewReason||"").trim();
       return reason?`<small style="color:#d90000;font-weight:900;">${escapeHTML(reason)}</small>`:"";
     };
+    const draftSourceUrl=(data={},source={})=>String(data.sourceLink||data.detailLink||data.officialWebsite||data.officialLink||source.url||"").trim();
 
     const renderDrafts=()=>{
       const rows=Object.entries(draftsCache).sort((a,b)=>Number(b[1].updatedAt||b[1].createdAt||0)-Number(a[1].updatedAt||a[1].createdAt||0));
@@ -1348,7 +1350,12 @@
           ].filter((type)=>group.types[type.key].length).map((type)=>`
             <details class="draft-type-section">
               <summary class="draft-type-head"><span>${type.label}</span><small>${group.types[type.key].length} draft${group.types[type.key].length>1?"s":""}</small></summary>
-            ${group.types[type.key].map(([id,data])=>`<div class="row ${activeDraftId===id?"success":""}"><input class="draft-check draft-select" type="checkbox" value="${escapeHTML(id)}" onchange="updateBulkSelectedCount()"><div><strong>${escapeHTML(data.title||"Untitled Draft")}</strong><small>${escapeHTML(data.department||"Department not set")} | ${escapeHTML(data.postTarget||"latestJob")} | ${formatTime(data.createdAt)}</small><small>${data.lightweightDraft?"Light draft":"Full draft"} | PDF text: ${data.pdfTextExtracted?"Yes":"No"}</small><small>${escapeHTML(data.sourceLink||data.detailLink||"")}</small>${draftReviewReasonHtml(data)}${draftStatusBadge(data)}${data.sourceKind==="aggregator"?'<span class="badge">Scraped Portal</span>':""}</div><div class="actions"><button class="mini-btn" onclick="selectDraft('${id}');previewDraft()">Preview</button><button class="mini-btn" onclick="selectDraft('${id}')">Edit</button><button class="publish mini-btn" onclick="quickPublishDraft('${id}','${escapeHTML(data.postTarget||"latestJob")}')">Approve</button><button class="publish mini-btn" onclick="quickPublishDraft('${id}','latestJob')">Job</button><button class="publish mini-btn" onclick="quickPublishDraft('${id}','admitCard')">Admit</button><button class="publish mini-btn" onclick="quickPublishDraft('${id}','result')">Result</button><button class="publish mini-btn" onclick="quickPublishDraft('${id}','syllabus')">Syllabus</button><button class="publish mini-btn" onclick="quickPublishDraft('${id}','currentAffairs')">Current</button><button class="delete mini-btn" onclick="ignoreDraft('${id}')">Reject</button></div></div>`).join("")}
+            ${group.types[type.key].map(([id,data])=>{
+              const source=sourcesCache[data.sourceId]||{};
+              const url=draftSourceUrl(data,source);
+              const safeUrl=escapeHTML(url||"#");
+              return `<div class="row ${activeDraftId===id?"success":""}"><input class="draft-check draft-select" type="checkbox" value="${escapeHTML(id)}" onchange="updateBulkSelectedCount()"><div>${url?`<a class="draft-source-link" href="${safeUrl}" target="_blank" rel="noopener noreferrer">${safeUrl}</a>`:`<span class="draft-source-link">Link not available</span>`}</div><div class="actions"><button class="mini-btn" onclick="selectDraft('${id}')">Edit</button><button class="delete mini-btn" onclick="ignoreDraft('${id}')">Reject</button></div></div>`;
+            }).join("")}
             </details>
           `).join("")}
         </div>
