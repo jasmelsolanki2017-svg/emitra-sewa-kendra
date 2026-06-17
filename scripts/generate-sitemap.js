@@ -12,6 +12,9 @@ const JOB_DETAIL_PATH = path.join(__dirname, "..", "job-detail.html");
 const PREMIUM_POST_PATH = path.join(__dirname, "..", "premium-post.html");
 const NOT_FOUND_PATH = path.join(__dirname, "..", "404.html");
 const POST_ROOT = path.join(__dirname, "..", "post");
+const EXCLUDED_POST_SLUGS = new Set([
+  "today-current-affairs-4zoeww"
+]);
 const LEGAL_SITEMAP_URLS = [
   "about.html",
   "contact.html",
@@ -1063,6 +1066,18 @@ const getPostQuality = (id = "", job = {}) => {
 };
 
 const isUsefulPublishedPost = ({ id = "", job = {} } = {}) => getPostQuality(id, job).useful;
+const isExcludedPostRow = ({ id = "", job = {} } = {}) => {
+  const slug = buildSeoFields(job, id).slug.toLowerCase();
+  return EXCLUDED_POST_SLUGS.has(slug);
+};
+const removeExcludedStaticPostDirs = () => {
+  EXCLUDED_POST_SLUGS.forEach((slug) => {
+    const target = path.resolve(POST_ROOT, slug);
+    if (target.startsWith(path.resolve(POST_ROOT) + path.sep) && fs.existsSync(target)) {
+      fs.rmSync(target, { recursive: true, force: true });
+    }
+  });
+};
 
 const displayOrder = (job = {}) => {
   const number = Number(job.displayOrder || 0);
@@ -1222,8 +1237,10 @@ const updateIndexFallback = (rows = []) => {
 
 const updateStaticPostPages = (rows = []) => {
   fs.mkdirSync(POST_ROOT, { recursive: true });
+  removeExcludedStaticPostDirs();
   rows.filter(isUsefulPublishedPost).forEach(({ id, job }) => {
     const seo = buildSeoFields(job, id);
+    if (EXCLUDED_POST_SLUGS.has(seo.slug.toLowerCase())) return;
     const dir = path.join(POST_ROOT, seo.slug);
     fs.mkdirSync(dir, { recursive: true });
     fs.writeFileSync(path.join(dir, "index.html"), renderStaticPostHtml(id, { ...job, slug: seo.slug }, rows), "utf8");
@@ -1235,6 +1252,7 @@ const readExistingStaticPostRows = (rows = []) => {
   const knownSlugs = new Set(rows.map(({ id, job }) => buildSeoFields(job, id).slug.toLowerCase()));
   return fs.readdirSync(POST_ROOT, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
+    .filter((entry) => !EXCLUDED_POST_SLUGS.has(entry.name.toLowerCase()))
     .map((entry) => {
       const slug = entry.name;
       if (knownSlugs.has(slug.toLowerCase())) return null;
@@ -1334,9 +1352,11 @@ async function main() {
   const latestRows = Object.entries(jobs || {})
     .map(([id, value]) => ({ id, job: normalizeJob(value) }))
     .map((row) => enrichPremiumRows([row], premiumPosts)[0])
-    .filter((row) => isPublishedJob(row.job) && isUsefulPublishedPost(row));
-  const rows = buildAllStaticRows(latestRows, portalData);
-  const sitemapRows = [...rows, ...readExistingStaticPostRows(rows)].filter(isUsefulPublishedPost);
+    .filter((row) => isPublishedJob(row.job) && isUsefulPublishedPost(row) && !isExcludedPostRow(row));
+  const rows = buildAllStaticRows(latestRows, portalData).filter((row) => !isExcludedPostRow(row));
+  const sitemapRows = [...rows, ...readExistingStaticPostRows(rows)]
+    .filter(isUsefulPublishedPost)
+    .filter((row) => !isExcludedPostRow(row));
   const entries = sitemapRows
     .map(({ id, job }) => sitemapEntry({
       loc: jobUrl(id, job),
