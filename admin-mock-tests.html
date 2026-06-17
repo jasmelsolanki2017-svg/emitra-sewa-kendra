@@ -40,6 +40,11 @@ button.orange{background:var(--orange);color:var(--deep)}
 button.red{background:var(--red)}
 button.secondary{background:#eaf4ff;color:var(--blue);border:1px solid #bdd0e5}
 .status{margin-top:10px;color:var(--blue);font-weight:900;font-size:13px}
+.status.success{color:var(--green)}
+.status.error{color:var(--red)}
+.file-load-bar{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:end;background:#f8fbff;border:1px solid var(--line);border-radius:8px;padding:10px}
+.file-load-bar label{margin:0}
+.file-load-bar button{white-space:nowrap}
 .example{background:#0f172a;color:#e2e8f0;border-radius:8px;padding:12px;overflow:auto;font-size:12px;line-height:1.5}
 .tests-list{display:grid;gap:10px}
 .date-group{border:1px solid var(--line);border-radius:8px;background:#fff;overflow:hidden}
@@ -61,7 +66,7 @@ button.secondary{background:#eaf4ff;color:var(--blue);border:1px solid #bdd0e5}
 .public-link{display:block;color:var(--blue);font-weight:900;font-size:12px;margin-top:5px;overflow-wrap:anywhere;text-decoration:underline}
 .pill{display:inline-flex;background:var(--soft);border:1px solid #d8e6f5;color:var(--blue);border-radius:999px;padding:3px 8px;margin-top:6px;font-size:11px;font-weight:900}
 .empty{padding:18px;text-align:center;color:var(--muted);font-weight:800}
-@media(max-width:800px){nav{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap}nav a,nav button{white-space:nowrap}.form-grid,.admin-list-controls{grid-template-columns:1fr}.test-card{grid-template-columns:auto minmax(0,1fr)}.test-actions{grid-column:1/-1;justify-content:flex-start}textarea{min-height:260px}}
+@media(max-width:800px){nav{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap}nav a,nav button{white-space:nowrap}.form-grid,.admin-list-controls,.file-load-bar{grid-template-columns:1fr}.test-card{grid-template-columns:auto minmax(0,1fr)}.test-actions{grid-column:1/-1;justify-content:flex-start}textarea{min-height:260px}}
 </style>
 <link rel="stylesheet" href="/site-theme.css">
 <link rel="canonical" href="https://emitrawala.online/admin-mock-tests.html">
@@ -115,6 +120,13 @@ button.secondary{background:#eaf4ff;color:var(--blue);border:1px solid #bdd0e5}
           <option value="yes">Yes - allow duplicates</option>
         </select>
       </label>
+      <div class="file-load-bar">
+        <label>Upload JSON File
+          <input id="jsonFileInput" type="file" accept=".json,application/json">
+        </label>
+        <button type="button" class="secondary" onclick="loadJsonFileToEditor()"><i class="fa-solid fa-file-import"></i> Load JSON File</button>
+        <div id="jsonFileStatus" class="status wide"></div>
+      </div>
       <label class="wide">JSON Data
         <textarea id="jsonInput" spellcheck="false" placeholder='{"title":"Daily Mock Test - Rajasthan GK","category":"Rajasthan GK","timeLimit":20,"totalQuestions":25,"status":"active","date":"2026-05-24","questions":[{"question":"राजस्थान की राजधानी क्या है?","options":["जयपुर","जोधपुर","उदयपुर","कोटा"],"correctAnswer":"जयपुर","explanation":"राजस्थान की राजधानी जयपुर है।"}]}'></textarea>
       </label>
@@ -339,6 +351,42 @@ const parseJson = () => {
     }
     throw new Error("JSON valid nahi hai: " + error.message);
   }
+};
+
+const setJsonFileStatus = (message = "", type = "") => {
+  const status = $("jsonFileStatus");
+  if(!status){ return; }
+  status.className = `status ${type || ""}`.trim();
+  status.innerText = message;
+};
+
+window.loadJsonFileToEditor = () => {
+  const input = $("jsonFileInput");
+  const file = input && input.files ? input.files[0] : null;
+  if(!file){
+    setJsonFileStatus("Pehle .json file select karein.", "error");
+    return;
+  }
+  if(!/\.json$/i.test(file.name) && file.type && file.type !== "application/json"){
+    setJsonFileStatus("Sirf valid .json file select karein.", "error");
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = () => {
+    try{
+      const parsed = JSON.parse(String(reader.result || ""));
+      $("jsonInput").value = JSON.stringify(parsed, null, 2);
+      setJsonFileStatus(`Valid JSON loaded: ${file.name}`, "success");
+      $("jsonInput").focus();
+    }catch(error){
+      setJsonFileStatus("Invalid JSON: " + error.message, "error");
+    }
+  };
+  reader.onerror = () => {
+    setJsonFileStatus("File read nahi ho payi. Dobara try karein.", "error");
+  };
+  setJsonFileStatus("JSON file read ho rahi hai...", "");
+  reader.readAsText(file);
 };
 
 const normalizeQuestionItem = (item = {}) => {
@@ -902,6 +950,8 @@ window.saveAllCategorySamples = async () => {
 window.clearEditor = () => {
   $("testIdInput").value = "";
   $("jsonInput").value = "";
+  $("jsonFileInput").value = "";
+  setJsonFileStatus("");
   $("saveStatus").innerText = "";
 };
 
