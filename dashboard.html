@@ -412,7 +412,6 @@ body.dark-mode .nav-logo img {
       <small>Site Theme</small>
       <select id="siteThemeSelect">
         <option value="premium">Premium Colorful</option>
-        <option value="classic">Classic Blue</option>
       </select>
       <button type="button" id="saveSiteThemeBtn">Save Theme</button>
       <em id="siteThemeStatus">Loading</em>
@@ -838,7 +837,7 @@ Cook | 1426 |"></textarea>
     return settings;
   };
 
-  const normalizeSiteTheme = (value) => String(value || "premium").toLowerCase() === "classic" ? "classic" : "premium";
+  const normalizeSiteTheme = () => "premium";
   const applyDashboardSiteTheme = (theme) => {
     const active = normalizeSiteTheme(theme);
     document.body.classList.toggle("site-theme-premium", active === "premium");
@@ -859,7 +858,7 @@ Cook | 1426 |"></textarea>
       const current = normalizeSiteTheme(settings.siteTheme || localStorage.getItem(siteThemeStorageKey));
       select.value = current;
       applyDashboardSiteTheme(current);
-      if(status){ status.innerText = current === "premium" ? "Premium active" : "Classic active"; }
+      if(status){ status.innerText = "Premium active"; }
     }catch(e){
       const current = normalizeSiteTheme(localStorage.getItem(siteThemeStorageKey));
       select.value = current;

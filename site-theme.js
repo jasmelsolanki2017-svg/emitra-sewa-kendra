@@ -14,7 +14,7 @@
       }
     }, { once:true });
   };
-  const normalizeTheme = (value) => String(value || "premium").toLowerCase() === "classic" ? "classic" : "premium";
+  const normalizeTheme = () => "premium";
   const apiUrl = () => {
     if(location.protocol === "file:" || /^emitrawala\.online$|github\.io$/i.test(location.hostname)){
       return defaultServer + "/api/settings";

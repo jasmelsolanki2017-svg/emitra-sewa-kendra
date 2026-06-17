@@ -5186,7 +5186,7 @@ app.post("/api/settings", async (req, res) => {
       incoming.openRouterModel = model || "";
     }
     if (Object.prototype.hasOwnProperty.call(incoming, "siteTheme")) {
-      incoming.siteTheme = String(incoming.siteTheme || "premium").toLowerCase() === "classic" ? "classic" : "premium";
+      incoming.siteTheme = "premium";
     }
     if (Object.prototype.hasOwnProperty.call(incoming, "toolVisibility")) {
       const visibility = incoming.toolVisibility && typeof incoming.toolVisibility === "object" && !Array.isArray(incoming.toolVisibility)
