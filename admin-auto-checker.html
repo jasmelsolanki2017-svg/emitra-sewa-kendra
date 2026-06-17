@@ -1354,7 +1354,8 @@
               const source=sourcesCache[data.sourceId]||{};
               const url=draftSourceUrl(data,source);
               const safeUrl=escapeHTML(url||"#");
-              return `<div class="row ${activeDraftId===id?"success":""}"><input class="draft-check draft-select" type="checkbox" value="${escapeHTML(id)}" onchange="updateBulkSelectedCount()"><div>${url?`<a class="draft-source-link" href="${safeUrl}" target="_blank" rel="noopener noreferrer">${safeUrl}</a>`:`<span class="draft-source-link">Link not available</span>`}</div><div class="actions"><button class="mini-btn" onclick="selectDraft('${id}')">Edit</button><button class="delete mini-btn" onclick="ignoreDraft('${id}')">Reject</button></div></div>`;
+              const linkText=String(data.title||data.noticeTitle||data.linkText||data.text||url||"Link not available").trim();
+              return `<div class="row ${activeDraftId===id?"success":""}"><input class="draft-check draft-select" type="checkbox" value="${escapeHTML(id)}" onchange="updateBulkSelectedCount()"><div>${url?`<a class="draft-source-link" href="${safeUrl}" target="_blank" rel="noopener noreferrer">${escapeHTML(linkText)}</a>`:`<span class="draft-source-link">${escapeHTML(linkText)}</span>`}</div><div class="actions"><button class="mini-btn" onclick="selectDraft('${id}')">Edit</button><button class="delete mini-btn" onclick="ignoreDraft('${id}')">Reject</button></div></div>`;
             }).join("")}
             </details>
           `).join("")}
