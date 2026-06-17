@@ -398,7 +398,7 @@ body.site-theme-premium .brand img{
 }
 
 body.site-theme-premium nav ul{
-  gap:2px!important;
+  gap:8px!important;
   align-items:center!important;
 }
 
@@ -410,11 +410,11 @@ body.site-theme-premium .navbar a{
   border-radius:2px!important;
   box-shadow:none!important;
   color:#fff!important;
-  font-size:13px!important;
+  font-size:15px!important;
   font-weight:900!important;
-  line-height:1!important;
-  min-height:38px!important;
-  padding:12px 10px!important;
+  line-height:1.1!important;
+  min-height:46px!important;
+  padding:14px 14px!important;
   text-transform:uppercase!important;
 }
 
