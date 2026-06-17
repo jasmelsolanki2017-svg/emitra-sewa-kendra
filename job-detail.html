@@ -211,7 +211,12 @@ main{max-width:1180px;margin:auto;padding:26px 3% 42px;}
 .ca-sidebar-actions .btn.pdf{background:#ffc400;color:#061b3a;}
 .ca-sidebar-actions .btn.whatsapp{background:#128c3c;}
 .ca-sidebar-actions .btn.dark{background:#06285d;color:#fff;}
+.ca-pdf-brand{display:none;}
 .ca-pdf-rendering .ca-quiz-summary .btn{display:none!important;}
+.ca-pdf-rendering .ca-pdf-brand{display:flex;align-items:center;gap:10px;border-bottom:2px solid #06285d;margin-bottom:10px;padding-bottom:8px;}
+.ca-pdf-rendering .ca-pdf-brand img{width:48px;height:48px;object-fit:contain;}
+.ca-pdf-rendering .ca-pdf-brand strong{display:block;color:#06285d;font-size:18px;line-height:1;}
+.ca-pdf-rendering .ca-pdf-brand span{display:block;color:#b00000;font-size:11px;font-weight:800;margin-top:3px;}
 .content-table{width:100%;border-collapse:collapse;font-size:14px;margin:10px 0 2px;}
 .content-table th,.content-table td{border:1px solid #d8e5f3;padding:9px 10px;text-align:left;vertical-align:middle;color:#1f2937;}
 .content-table th{font-weight:900;background:#f1f7ff;color:var(--deep);}
@@ -1150,6 +1155,9 @@ window.downloadCurrentAffairsPdf = async (fileName = "daily-current-affairs.pdf"
     const source = document.querySelector(".detail-sheet");
     if(!source || !window.html2pdf){ throw new Error("PDF generator load nahi hua"); }
     pdfSource = source;
+    if(!source.querySelector(".ca-pdf-brand")){
+      source.insertAdjacentHTML("afterbegin", '<div class="ca-pdf-brand"><img src="site-logo.png" alt="E-MITRA WALA"><div><strong>E-MITRA WALA</strong><span>emitrawala.online | Current Affairs PDF</span></div></div>');
+    }
     if(document.fonts?.ready){ await document.fonts.ready; }
     await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
     source.classList.add("ca-pdf-rendering");
@@ -2547,7 +2555,7 @@ const renderCurrentAffairsLinks = ({ currentId = "", currentJob = {}, allJobs = 
     <div class="sidebar-card">
       <h3>Mock Test</h3>
       <div class="ca-sidebar-actions">
-        <a class="btn dark" href="mock-test.html"><i class="fa-solid fa-clipboard-check"></i> Mock Test</a>
+        <a class="btn dark" href="mock-test.html"><i class="fa-solid fa-clipboard-check"></i> Daily Quiz / Mock Test</a>
       </div>
     </div>`;
   sidebar.style.display = "";
