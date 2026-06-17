@@ -1,4 +1,6 @@
 (function(){
+  if (window.__emitraSiteThemeLoaded) { return; }
+  window.__emitraSiteThemeLoaded = true;
   const defaultServer = "https://emitra-sewa-kendra.onrender.com";
   const darkKey = "emitraTheme";
   const cleanupLegacyServiceWorkers = () => {
@@ -15,6 +17,12 @@
     }, { once:true });
   };
   const normalizeTheme = () => "premium";
+  const removeLegacyThemeBits = () => {
+    document.querySelectorAll('style#emitra-theme-css').forEach((style) => style.remove());
+    document.querySelectorAll('script#emitra-theme-js').forEach((script) => {
+      if (script !== document.currentScript) script.remove();
+    });
+  };
   const apiUrl = () => {
     if(location.protocol === "file:" || /^emitrawala\.online$|github\.io$/i.test(location.hostname)){
       return defaultServer + "/api/settings";
@@ -73,6 +81,7 @@
   const applyDarkMode = (theme) => {
     const isDark = String(theme || "").toLowerCase() === "dark";
     document.body.classList.toggle("dark-mode", isDark);
+    document.documentElement.dataset.colorTheme = isDark ? "dark" : "light";
     forceHomePortalDark(isDark);
     const icon = document.querySelector(".theme-symbol");
     if (icon) {
@@ -86,8 +95,30 @@
     setTimeout(() => forceHomePortalDark(isDark), 1200);
   };
 
+  const wireThemeToggle = () => {
+    document.querySelectorAll(".theme-toggle").forEach((button, index) => {
+      if (index > 0) {
+        button.remove();
+        return;
+      }
+      if (button.dataset.emitraThemeWired === "1") return;
+      button.dataset.emitraThemeWired = "1";
+      button.removeAttribute("onclick");
+      button.addEventListener("click", (event) => {
+        event.preventDefault();
+        const nextTheme = document.body.classList.contains("dark-mode") ? "light" : "dark";
+        localStorage.setItem(darkKey, nextTheme);
+        applyDarkMode(nextTheme);
+      });
+    });
+  };
+
   const ensureThemeToggle = () => {
-    if (document.querySelector(".theme-toggle")) return;
+    const existing = document.querySelector(".theme-toggle");
+    if (existing) {
+      wireThemeToggle();
+      return;
+    }
     const button = document.createElement("button");
     button.className = "theme-toggle";
     button.type = "button";
@@ -98,20 +129,24 @@
       applyDarkMode(nextTheme);
     });
     document.body.appendChild(button);
+    wireThemeToggle();
   };
 
-  window.toggleDarkMode = window.toggleDarkMode || function(){
+  window.toggleDarkMode = function(){
     const nextTheme = document.body.classList.contains("dark-mode") ? "light" : "dark";
     localStorage.setItem(darkKey, nextTheme);
     applyDarkMode(nextTheme);
   };
 
+  removeLegacyThemeBits();
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", () => {
+      removeLegacyThemeBits();
       ensureThemeToggle();
       applyDarkMode(localStorage.getItem(darkKey) || "light");
     });
   } else {
+    removeLegacyThemeBits();
     ensureThemeToggle();
     applyDarkMode(localStorage.getItem(darkKey) || "light");
   }
