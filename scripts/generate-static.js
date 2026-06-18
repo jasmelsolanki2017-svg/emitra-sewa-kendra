@@ -45,6 +45,34 @@ const stripHomepageFirebase = () => {
   fs.writeFileSync(file, html, "utf8");
 };
 
+const injectHomepageLists = (jobs, portal) => {
+  const file = path.join(root, "index.html");
+  let html = fs.readFileSync(file, "utf8");
+  const configs = [
+    ["homePortalNotificationList","notification"],
+    ["homePortalAdmitCardList","admitCard"],
+    ["homePortalResultList","result"],
+    ["homePortalJobList","latestJob"],
+    ["homePortalAnswerKeyList","answerKey"],
+    ["homePortalSyllabusList","syllabus"],
+    ["homePortalAdmissionList","admission"],
+    ["homePortalCurrentAffairsList","currentAffairs"]
+  ];
+  configs.forEach(([listId,target]) => {
+    const sourceRows = target === "latestJob"
+      ? jobs.filter((item) => !item.postTarget || item.postTarget === "latestJob")
+      : target === "currentAffairs"
+        ? jobs.filter((item) => String(item.postTarget || item.advancedArticleData?.postTarget || "").toLowerCase().replace(/[^a-z]/g,"") === "currentaffairs")
+        : rowsFrom(portal[target] || {}).concat(jobs.filter((item) => item.postTarget === target));
+    const rows = [...new Map(sortRows(sourceRows).map((item) => [slug(item.sourceJobId || item.id,item),item])).values()].slice(0,10);
+    const listHtml = rows.length
+      ? rows.map((item) => `<li><span class="post-title-line"><a href="${href(item)}">${esc(item.title)}</a></span></li>`).join("")
+      : `<li class="home-portal-message">Abhi koi update nahi hai.</li>`;
+    html = html.replace(new RegExp(`(<ul class="home-portal-list" id="${listId}">)[\\s\\S]*?(<\\/ul>)`), `$1${listHtml}$2`);
+  });
+  fs.writeFileSync(file, html, "utf8");
+};
+
 async function main() {
   execFileSync(process.execPath, [path.join(__dirname, "generate-sitemap.js")], { cwd: root, stdio: "inherit" });
   const [jobsData, portalData, linksData] = await Promise.all([fetchJson("LatestJobs"), fetchJson("portalItems").catch(()=>({})), fetchJson("importantLinks").catch(()=>({}))]);
@@ -66,6 +94,7 @@ async function main() {
       `<section class="post-list" id="categoryPostList"><ul>${importantRows.map((item)=>`<li data-search="${esc(item.title.toLowerCase())}"><a href="${esc(item.url)}" target="_blank" rel="noopener noreferrer">${esc(item.title)}</a></li>`).join("")}</ul></section>`);
   fs.writeFileSync(path.join(root, "important-links.html"), linksHtml, "utf8");
   stripHomepageFirebase();
+  injectHomepageLists(jobs, portal);
   execFileSync(process.execPath, [path.join(__dirname, "sync-constitution-data.js")], { cwd: root, stdio: "inherit" });
   console.log("Static public pages generated.");
 }
