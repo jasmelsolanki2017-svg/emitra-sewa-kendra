@@ -954,12 +954,57 @@ const renderPremiumStaticPostHtml = (id = "", job = {}) => {
   };
   const staticPayload = `<script>window.__EMITRA_STATIC_PREMIUM_POST__=${JSON.stringify(payload).replace(/</g, "\\u003c")};</script>`;
   const schema = `<script type="application/ld+json" data-schema="premium-static">\n${JSON.stringify(buildPremiumSchemaGraph({ id, job: payload, canonicalUrl }), null, 2)}\n</script>`;
-  return resolveMergeConflictMarkers(fs.readFileSync(PREMIUM_POST_PATH, "utf8")
+  const staticValue = (value) => {
+    if (Array.isArray(value)) {
+      if (!value.length) return "";
+      return `<ul>${value.map((item) => `<li>${staticValue(item)}</li>`).join("")}</ul>`;
+    }
+    if (value && typeof value === "object") {
+      const rows = Object.entries(value).filter(([, item]) => item !== undefined && item !== null && String(item).trim() !== "");
+      if (!rows.length) return "";
+      return `<div class="post-info-grid">${rows.map(([key, item]) => `<div class="post-info-row"><strong>${htmlEscape(key.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/[_-]+/g, " "))}</strong><div>${staticValue(item)}</div></div>`).join("")}</div>`;
+    }
+    const text = String(value ?? "").trim();
+    if (!text || /^(?:update soon|n\/a|na|#)$/i.test(text)) return "";
+    if (/^https?:\/\//i.test(text)) return `<a href="${htmlEscape(text)}" target="_blank" rel="noopener noreferrer">Open Link</a>`;
+    return `<p>${htmlEscape(text).replace(/\n/g, "<br>")}</p>`;
+  };
+  const staticSections = [
+    ["Overview", payload.overview || payload.shortInformation || payload.shortInfo],
+    ["Important Dates", payload.importantDates],
+    ["Application Fee", payload.applicationFee || payload.applicationFees || payload.applicationFeeManual],
+    ["Age Limit", payload.ageLimit || payload.ageLimitManual],
+    ["Vacancy Details", payload.vacancyDetails || payload.categoryWiseVacancy || payload.totalPosts],
+    ["Eligibility", payload.eligibility || payload.qualification],
+    ["Selection Process", payload.selectionProcess],
+    ["How to Apply", payload.howToApply],
+    ["Important Links", payload.importantLinks],
+    ["FAQ", payload.faq || payload.faqs]
+  ].map(([title, value]) => {
+    const body = staticValue(value);
+    return body ? `<section class="premium-card full-span"><h2>${htmlEscape(title)}</h2><div class="card-body">${body}</div></section>` : "";
+  }).filter(Boolean).join("");
+  const staticMain = `<div class="premium-layout job-post post-content"><div class="premium-main"><section class="premium-hero"><div class="hero-copy"><span class="pill">${htmlEscape(payload.category || payload.postType || "Verified Update")}</span><h1>${htmlEscape(payload.title || seo.title)}</h1>${payload.shortInfo || payload.shortInformation ? `<p class="hero-short">${htmlEscape(payload.shortInfo || payload.shortInformation)}</p>` : ""}</div></section><div class="section-grid">${staticSections}</div></div></div>`;
+  let html = resolveMergeConflictMarkers(fs.readFileSync(PREMIUM_POST_PATH, "utf8")
     .replace(/<head>/i, "<head>\n<base href=\"../../\">")
     .replace(/<title>[\s\S]*?<\/title>/i, `<title>${htmlEscape(seo.seoTitle)}</title>`)
     .replace(/<meta name="description" content="[^"]*">/i, `<meta name="description" content="${htmlEscape(seo.metaDescription)}">`)
     .replace(/<link rel="canonical" href="[^"]*">/i, `<link rel="canonical" href="${htmlEscape(canonicalUrl)}">`)
+    .replace(/(<main class="premium-shell" id="premiumRoot">)[\s\S]*?(<\/main>)/i, `$1${staticMain}$2`)
     .replace(/<script type="module">/i, `${schema}\n${staticPayload}\n<script type="module">`));
+  html = html
+    .replace(/\s*<link rel="preconnect" href="https:\/\/my-website-73785-default-rtdb[^>]+>\s*/i, "\n")
+    .replace(/\s*import \{ initializeApp \} from "https:\/\/www\.gstatic\.com\/firebasejs\/[^"]+";\s*/i, "\n")
+    .replace(/\s*import \{ getAuth,onAuthStateChanged \} from "https:\/\/www\.gstatic\.com\/firebasejs\/[^"]+";\s*/i, "\n")
+    .replace(/\s*import \{ getDatabase,ref,get,query,orderByChild,equalTo,update \} from "https:\/\/www\.gstatic\.com\/firebasejs\/[^"]+";\s*/i, "\n")
+    .replace(/\s*const firebaseConfig=\{[\s\S]*?const app=initializeApp\(firebaseConfig\),auth=getAuth\(app\),db=getDatabase\(app\),root=/, "\n    const root=")
+    .replace(/    async function loadPremiumPostBySlug\(slug\)\{[\s\S]*?    function showSlowFallback\(\)\{/,
+      `    async function loadPremiumPostBySlug(){ throw new Error("Static post data unavailable."); }\n    async function fetchFreshPost(){ throw new Error("Static post data unavailable."); }\n    function showSlowFallback(){`)
+    .replace(/    async function triggerPremiumStaticPublish\(slug,reason="premium-live-edit"\)\{[\s\S]*?    function renderEmptyPremiumState\(/,
+      `    function renderEmptyPremiumState(`)
+    .replace(/    onAuthStateChanged\(auth,\(user\)=>\{[\s\S]*?    \}\);\s*    function renderEmptyPremiumState\(/,
+      `    function renderEmptyPremiumState(`);
+  return html;
 };
 
 const removeDynamicJobEntries = (xml = "") => String(xml || "")
@@ -1288,6 +1333,10 @@ const readExistingStaticPostRows = (rows = []) => {
       const filePath = path.join(POST_ROOT, slug, "index.html");
       if (!fs.existsSync(filePath)) return null;
       const html = fs.readFileSync(filePath, "utf8");
+      if (/firebasejs|firebaseio|firebasedatabase|firebasestorage/i.test(html)
+        || /\bgetDatabase\s*\(|\bget\s*\(\s*ref\s*\(/.test(html)) {
+        return null;
+      }
       const title = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i)?.[1]
         || html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]
         || slug.replace(/-/g, " ");

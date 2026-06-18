@@ -38,13 +38,16 @@ jobs:
           fi
 
       - name: Generate canonical post pages and sitemaps
-        run: npm run sitemap
+        run: npm run generate
 
       - name: SEO smoke test
         run: npm run seo:smoke
+
+      - name: Verify public pages do not read Firebase
+        run: npm run verify:firebase-public
 
       - name: Commit generated SEO files
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Update generated SEO post pages"
-          file_pattern: "404.html sitemap.xml sitemap-jobs.xml index.html post/**"
+          file_pattern: "404.html sitemap.xml sitemap-jobs.xml index.html latest-jobs.html admit-card.html result.html answer-key.html syllabus.html notification.html admission.html top-online-form.html important-links.html current-affairs.html constitution.html category-posts.js post/**"
