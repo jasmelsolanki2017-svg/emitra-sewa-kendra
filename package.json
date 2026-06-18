@@ -8,6 +8,7 @@
     "dev": "node server.js",
     "safety": "node scripts/check-git-safety.js",
     "backup": "node scripts/backup-firebase.js",
+    "constitution:sync": "node scripts/sync-constitution-data.js",
     "sitemap": "node scripts/generate-sitemap.js",
     "seo:smoke": "node scripts/seo-smoke-test.js"
   },

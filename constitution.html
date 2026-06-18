@@ -70,6 +70,7 @@ footer{background:var(--blue);color:#fff;text-align:center;padding:22px 6%;margi
     <a id="officialPdf" class="pdf-btn" href="#" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-file-pdf"></i> Official PDF</a>
   </div>
   <section id="articleList" class="grid" aria-live="polite"></section>
+  <noscript><div class="message">Constitution articles dekhne ke liye browser me JavaScript enable karein.</div></noscript>
 </main>
 <footer>
   <p>© 2026 E-MITRA WALA | भारतीय संविधान</p>
@@ -83,6 +84,7 @@ const searchInput = document.getElementById("searchInput");
 const partFilter = document.getElementById("partFilter");
 const officialPdf = document.getElementById("officialPdf");
 let constitutionArticles = [];
+let searchTimer = 0;
 
 const escapeHTML = (value = "") => String(value).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
 const toArray = (value) => Array.isArray(value) ? value : String(value || "").split(",").map((item) => item.trim()).filter(Boolean);
@@ -156,7 +158,10 @@ const setSummary = (data = {}) => {
   }
 };
 
-searchInput.addEventListener("input", renderArticles);
+searchInput.addEventListener("input", () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(renderArticles, 80);
+});
 partFilter.addEventListener("change", renderArticles);
 
 const applyConstitutionData = (data = {}) => {
