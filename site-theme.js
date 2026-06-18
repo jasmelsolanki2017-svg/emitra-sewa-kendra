@@ -81,6 +81,7 @@
   const applyDarkMode = (theme) => {
     const isDark = String(theme || "").toLowerCase() === "dark";
     document.body.classList.toggle("dark-mode", isDark);
+    document.documentElement.classList.toggle("dark-mode", isDark);
     document.documentElement.dataset.colorTheme = isDark ? "dark" : "light";
     forceHomePortalDark(isDark);
     const icon = document.querySelector(".theme-symbol");

@@ -1,10 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-site-theme="premium">
 
 <head>
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+document.documentElement.classList.add("site-theme-ready");
+try{
+  if(localStorage.getItem("emitraTheme")==="dark"){
+    document.documentElement.classList.add("dark-mode");
+  }
+}catch(error){}
+</script>
 
 <title>E-MITRA WALA | Rajasthan Jobs, Forms, Tools and E-Mitra Services</title>
 <meta name="description" content="E-MITRA WALA provides Rajasthan job updates, online forms, admit card, results, useful document guides and free browser-based tools.">
@@ -2492,7 +2500,7 @@ body.dark-mode #importantLinksMenuList a:hover {
 <link rel="stylesheet" href="/site-theme.css">
 </head>
 
-<body>
+<body class="site-theme-premium">
 
 <!-- TOP BAR -->
 
@@ -3454,68 +3462,6 @@ renderDocumentChecklist();
 
 <!-- PUBLIC_STATIC_DATA: Firebase runtime disabled; content generated at build time. -->
 <button class="theme-toggle" type="button" aria-label="Toggle dark mode" title="Dark mode" onclick="toggleDarkMode()"><span class="theme-symbol" aria-hidden="true">☾</span></button>
-<script id="emitra-theme-js">
-(function(){
-  const key = "emitraTheme";
-  const forceHomePortalDark = (isDark) => {
-    document.querySelectorAll(".home-portal-box,.home-portal-masthead,.home-portal-search,.home-portal-ticker").forEach((el) => {
-      if(isDark){
-        el.style.setProperty("background", "#101b2d", "important");
-        el.style.setProperty("border-color", "#24405f", "important");
-        el.style.setProperty("color", "#e8f1ff", "important");
-      }else{
-        el.style.removeProperty("background");
-        el.style.removeProperty("border-color");
-        el.style.removeProperty("color");
-      }
-    });
-    document.querySelectorAll(".home-portal-list,.home-portal-list li").forEach((el) => {
-      if(isDark){
-        el.style.setProperty("background", "transparent", "important");
-        el.style.setProperty("color", "#cbd8ea", "important");
-      }else{
-        el.style.removeProperty("background");
-        el.style.removeProperty("color");
-      }
-    });
-    document.querySelectorAll(".home-portal-list a,.home-portal-job-card h3 a").forEach((el) => {
-      if(isDark){
-        el.style.setProperty("color", "#8ec5ff", "important");
-      }else{
-        el.style.removeProperty("color");
-      }
-    });
-    document.querySelectorAll(".home-portal-title").forEach((el) => {
-      if(isDark){
-        el.style.setProperty("background", "#b30000", "important");
-        el.style.setProperty("color", "#ffffff", "important");
-      }else{
-        el.style.removeProperty("background");
-        el.style.removeProperty("color");
-      }
-    });
-  };
-  const applyTheme = (theme) => {
-    const isDark = theme === "dark";
-    document.body.classList.toggle("dark-mode", isDark);
-    forceHomePortalDark(isDark);
-    const icon = document.querySelector(".theme-symbol");
-    if(icon){
-      icon.textContent = isDark ? "☀" : "☾";
-    }
-  };
-
-  window.toggleDarkMode = function(){
-    const nextTheme = document.body.classList.contains("dark-mode") ? "light" : "dark";
-    localStorage.setItem(key, nextTheme);
-    applyTheme(nextTheme);
-  };
-
-  applyTheme(localStorage.getItem(key) || "light");
-  window.addEventListener("load", () => forceHomePortalDark(document.body.classList.contains("dark-mode")));
-  setTimeout(() => forceHomePortalDark(document.body.classList.contains("dark-mode")), 1200);
-})();
-</script>
 <script src="/site-theme.js" defer></script>
 </body>
 
