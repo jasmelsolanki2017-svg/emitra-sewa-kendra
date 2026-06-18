@@ -37,14 +37,6 @@ const currentAffairsHtml = (rows) => {
     .replace(/<script type="module">[\s\S]*?<\/script>/, `<script>(function(){const input=document.getElementById("searchInput"),cards=[...document.querySelectorAll("#postList .card")];if(!input)return;input.addEventListener("input",()=>{const q=input.value.trim().toLowerCase();cards.forEach(card=>card.hidden=!!q&&!card.dataset.search.includes(q));});})();</script>`);
 };
 
-const stripHomepageFirebase = () => {
-  const file = path.join(root, "index.html");
-  let html = fs.readFileSync(file, "utf8");
-  html = html.replace(/\s*<link rel="preconnect" href="https:\/\/my-website-73785-default-rtdb[^>]+>\s*/i, "\n");
-  html = html.replace(/<!-- FIREBASE -->[\s\S]*?<button class="theme-toggle"/, `<!-- PUBLIC_STATIC_DATA: Firebase runtime disabled; content generated at build time. -->\n<button class="theme-toggle"`);
-  fs.writeFileSync(file, html, "utf8");
-};
-
 const injectHomepageLists = (jobs, portal) => {
   const file = path.join(root, "index.html");
   let html = fs.readFileSync(file, "utf8");
@@ -113,7 +105,6 @@ async function main() {
     .replace(/<section class="post-list" id="categoryPostList">[\s\S]*?<\/section>/,
       `<section class="post-list" id="categoryPostList"><ul>${importantRows.map((item)=>`<li data-search="${esc(item.title.toLowerCase())}"><a href="${esc(item.url)}" target="_blank" rel="noopener noreferrer">${esc(item.title)}</a></li>`).join("")}</ul></section>`);
   fs.writeFileSync(path.join(root, "important-links.html"), linksHtml, "utf8");
-  stripHomepageFirebase();
   injectHomepageLists(jobs, portal);
   injectHomepageNews(jobs);
   execFileSync(process.execPath, [path.join(__dirname, "sync-constitution-data.js")], { cwd: root, stdio: "inherit" });

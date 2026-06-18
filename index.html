@@ -3456,7 +3456,137 @@ renderDocumentChecklist();
 
 </script>
 
-<!-- PUBLIC_STATIC_DATA: Firebase runtime disabled; content generated at build time. -->
+<!-- Public content is static, but Firebase Auth remains enabled for user/admin login. -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+import {
+  browserLocalPersistence,
+  createUserWithEmailAndPassword,
+  deleteUser,
+  getAuth,
+  sendEmailVerification,
+  setPersistence,
+  signInWithEmailAndPassword,
+  signOut
+} from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+import { getDatabase, get, ref, set, update } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",
+  authDomain: "my-website-73785.firebaseapp.com",
+  databaseURL: "https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app/",
+  projectId: "my-website-73785",
+  storageBucket: "my-website-73785.firebasestorage.app",
+  messagingSenderId: "854088341990",
+  appId: "1:854088341990:web:3211d4ef9fe4b78d025e27"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+const adminEmail = "jasmelsolanki@gmail.com";
+let currentLoginMode = "user";
+
+setPersistence(auth, browserLocalPersistence).catch(() => {});
+
+const validEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || "").trim());
+const redirectByRole = (email) => {
+  location.href = String(email || "").toLowerCase() === adminEmail ? "dashboard.html" : "user-dashboard.html";
+};
+
+const showAuthError = (error, prefix = "Login nahi hua") => {
+  const code = String(error?.code || "");
+  const messages = {
+    "auth/invalid-credential": "Email ID ya password galat hai.",
+    "auth/invalid-email": "Valid email ID likhein.",
+    "auth/too-many-requests": "Bahut login attempts hue hain. Thodi der baad try karein.",
+    "auth/network-request-failed": "Internet connection check karke dobara try karein.",
+    "auth/email-already-in-use": "Is email ID se account pehle se bana hua hai.",
+    "auth/weak-password": "Password kam se kam 6 character ka rakhein."
+  };
+  alert(messages[code] || `${prefix}: ${error?.message || "Unknown error"}`);
+};
+
+window.openLogin = (mode = "user") => {
+  currentLoginMode = mode === "admin" ? "admin" : "user";
+  window.setAuthView("login", currentLoginMode === "admin");
+  document.getElementById("loginModal").style.display = "flex";
+};
+
+window.signUpUser = async (email, password) => {
+  email = String(email || "").trim().toLowerCase();
+  password = String(password || "").trim();
+  if(!validEmail(email)){ alert("Account create ke liye valid email ID likhein."); return; }
+  if(password.length < 6){ alert("Password kam se kam 6 character ka hona chahiye."); return; }
+  if(email === adminEmail){ alert("Admin account ke liye Admin Login use karein."); return; }
+
+  let createdUser = null;
+  try{
+    const credential = await createUserWithEmailAndPassword(auth, email, password);
+    createdUser = credential.user;
+    await sendEmailVerification(createdUser);
+    const now = Date.now();
+    await set(ref(db, `members/${createdUser.uid}`), {
+      uid: createdUser.uid,
+      email: createdUser.email || email,
+      profileEmail: createdUser.email || email,
+      name: (createdUser.email || email).split("@")[0],
+      role: "member",
+      status: "Active",
+      emailVerified: false,
+      verificationMethod: "email",
+      uploadApproved: false,
+      freeStorageLimitMb: 50,
+      storageLimitBytes: 50 * 1024 * 1024,
+      storageUsedBytes: 0,
+      createdAt: now,
+      lastLoginAt: now
+    }).catch(() => {});
+    await signOut(auth);
+    alert("Account create ho gaya. Email verification link verify karne ke baad login karein.");
+  }catch(error){
+    if(createdUser){ await deleteUser(createdUser).catch(() => {}); await signOut(auth).catch(() => {}); }
+    showAuthError(error, "Account create nahi hua");
+  }
+};
+
+window.loginUser = async (email, password) => {
+  email = String(email || "").trim().toLowerCase();
+  password = String(password || "").trim();
+  if(!validEmail(email) || !password){ alert("Valid email ID aur password enter karein."); return; }
+  const isAdmin = email === adminEmail;
+  if(currentLoginMode === "admin" && !isAdmin){ alert("Yeh Admin Login hai. User Login button use karein."); return; }
+  if(currentLoginMode === "user" && isAdmin){ alert("Admin login ke liye Admin Login button use karein."); return; }
+
+  try{
+    const credential = await signInWithEmailAndPassword(auth, email, password);
+    const user = credential.user;
+    if(!isAdmin){
+      const memberRef = ref(db, `members/${user.uid}`);
+      const snapshot = await get(memberRef).catch(() => null);
+      const member = snapshot?.exists() ? (snapshot.val() || {}) : {};
+      if(["Deleted", "Blocked"].includes(member.status)){
+        await signOut(auth);
+        alert("Aapka account blocked/deleted hai. Admin se contact karein.");
+        return;
+      }
+      if(!user.emailVerified && member.emailVerified !== true){
+        sendEmailVerification(user).catch(() => {});
+        await signOut(auth);
+        alert("Email verification pending hai. Verification link check karein.");
+        return;
+      }
+      localStorage.setItem("loginTime", String(Date.now()));
+      update(memberRef, { email: user.email || email, emailVerified: true, lastLoginAt: Date.now() }).catch(() => {});
+    }
+    sessionStorage.removeItem("adminLoggedOut");
+    localStorage.removeItem("adminLoggedOut");
+    redirectByRole(user.email || email);
+  }catch(error){
+    showAuthError(error);
+  }
+};
+</script>
 <button class="theme-toggle" type="button" aria-label="Toggle dark mode" title="Dark mode" onclick="toggleDarkMode()"><span class="theme-symbol" aria-hidden="true">☾</span></button>
 <script src="/site-theme.js" defer></script>
 </body>
