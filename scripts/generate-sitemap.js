@@ -848,13 +848,22 @@ a{text-decoration:none;color:inherit}
 const renderStaticPostHtml = (id = "", job = {}, allRows = []) => {
   const seo = buildSeoFields(job, id);
   const canonicalUrl = seo.canonicalUrl || jobUrl(id, { ...job, slug: seo.slug });
-  if (isPremiumPost(job)) {
-    return renderPremiumStaticPostHtml(id, { ...job, slug: seo.slug, canonicalUrl });
-  }
   const currentAffairs = isCurrentAffairsPost(job);
   if (currentAffairs) {
     return resolveMergeConflictMarkers(renderCurrentAffairsPremiumHtml({ id, job: { ...job, slug: seo.slug, canonicalUrl }, seo, canonicalUrl, allRows }));
   }
+  // Every regular public post must use the established premium post shell.
+  // Older/newer LatestJobs records do not always carry isPremiumPost or
+  // premiumPostSlug, but they still need an independent /post/<slug>/ page
+  // with the same premium layout.
+  return renderPremiumStaticPostHtml(id, {
+    ...job,
+    slug: seo.slug,
+    canonicalUrl,
+    isPremiumPost: true,
+    premiumPostSlug: job.premiumPostSlug || seo.slug
+  });
+  /*
   const admissionPost = isAdmissionPost(job);
   const summaryRows = [
     ["Department", job.department],
@@ -927,6 +936,7 @@ const renderStaticPostHtml = (id = "", job = {}, allRows = []) => {
     </aside>`);
   }
   return resolveMergeConflictMarkers(html);
+  */
 };
 
 const renderPremiumStaticPostHtml = (id = "", job = {}) => {
