@@ -1255,6 +1255,27 @@ const updateStaticPostPages = (rows = []) => {
   });
 };
 
+const upgradeLegacyStaticPostPages = (rows = []) => {
+  rows.forEach(({ id, job }) => {
+    const seo = buildSeoFields(job, id);
+    const filePath = path.join(POST_ROOT, seo.slug, "index.html");
+    if (!fs.existsSync(filePath)) return;
+    const html = fs.readFileSync(filePath, "utf8");
+    const isCurrentAffairsLayout = /<body[^>]+class=["'][^"']*current-affairs-static/i.test(html);
+    const isPremiumLayout = /window\.__EMITRA_STATIC_PREMIUM_POST__=/.test(html)
+      && /<main[^>]+class=["'][^"']*premium-shell/i.test(html);
+    if (isCurrentAffairsLayout || isPremiumLayout) return;
+    const upgradedHtml = renderPremiumStaticPostHtml(id, {
+      ...job,
+      slug: seo.slug,
+      canonicalUrl: jobUrl(id, { ...job, slug: seo.slug }),
+      isPremiumPost: true,
+      premiumPostSlug: seo.slug
+    });
+    fs.writeFileSync(filePath, `${upgradedHtml.trimEnd()}\n`, "utf8");
+  });
+};
+
 const readExistingStaticPostRows = (rows = []) => {
   if (!fs.existsSync(POST_ROOT)) return [];
   const knownSlugs = new Set(rows.map(({ id, job }) => buildSeoFields(job, id).slug.toLowerCase()));
@@ -1384,6 +1405,7 @@ ${entries.join("\n")}
   fs.writeFileSync(LEGAL_SITEMAP_PATH, buildLegalSitemapXml(), "utf8");
   updateIndexFallback(rows);
   updateStaticPostPages(rows);
+  upgradeLegacyStaticPostPages(sitemapRows);
   const noindexedCount = noindexExcludedStaticPages(sitemapRows);
   update404PostRedirects(sitemapRows);
   patch404SlugMatching();

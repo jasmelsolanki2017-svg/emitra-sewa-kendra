@@ -43,28 +43,48 @@ if (jobLocs.some((loc) => /[?&](id|slug|post)=/i.test(loc))) {
 }
 ok("sitemaps contain canonical /post URLs only");
 
-const firstPostUrl = postLocs[0];
-const firstSlug = decodeURIComponent(new URL(firstPostUrl).pathname.replace(/^\/post\//, "").replace(/\/$/, ""));
-const firstPostFile = path.join(root, "post", firstSlug, "index.html");
-if (!fs.existsSync(firstPostFile)) {
-  fail(`/post/${firstSlug}/index.html missing`);
+const duplicatePostLocs = postLocs.filter((loc, index) => postLocs.indexOf(loc) !== index);
+if (duplicatePostLocs.length) {
+  fail(`duplicate post URLs found in sitemap.xml: ${[...new Set(duplicatePostLocs)].join(", ")}`);
 }
-const firstPostHtml = fs.readFileSync(firstPostFile, "utf8");
-if (extractCanonical(firstPostHtml) !== firstPostUrl) {
-  fail(`canonical mismatch for ${firstSlug}`);
+const sitemapPostSet = new Set(postLocs);
+const missingJobLocs = jobLocs.filter((loc) => loc.startsWith(`${SITE_BASE_URL}/post/`) && !sitemapPostSet.has(loc));
+if (missingJobLocs.length) {
+  fail(`sitemap-jobs.xml URLs missing from sitemap.xml: ${missingJobLocs.join(", ")}`);
 }
-const jsonLdBlocks = extractJsonLdBlocks(firstPostHtml);
-if (!jsonLdBlocks.length) {
-  fail(`JSON-LD missing for ${firstSlug}`);
-}
-jsonLdBlocks.forEach((block, index) => {
-  try {
-    JSON.parse(block);
-  } catch (error) {
-    fail(`JSON-LD block ${index + 1} invalid for ${firstSlug}: ${error.message}`);
+
+postLocs.forEach((postUrl) => {
+  const slug = decodeURIComponent(new URL(postUrl).pathname.replace(/^\/post\//, "").replace(/\/$/, ""));
+  if (!slug || slug.includes("/") || slug.includes("\\") || slug.includes("..")) {
+    fail(`unsafe or invalid post slug in sitemap: ${slug}`);
   }
+  const postFile = path.join(root, "post", slug, "index.html");
+  if (!fs.existsSync(postFile)) {
+    fail(`/post/${slug}/index.html missing`);
+  }
+  const html = fs.readFileSync(postFile, "utf8");
+  if (extractCanonical(html) !== postUrl) {
+    fail(`canonical mismatch for ${slug}`);
+  }
+  const currentAffairsLayout = /<body[^>]+class=["'][^"']*current-affairs-static/i.test(html);
+  const premiumLayout = /window\.__EMITRA_STATIC_PREMIUM_POST__=/.test(html)
+    && /<main[^>]+class=["'][^"']*premium-shell/i.test(html);
+  if (!currentAffairsLayout && !premiumLayout) {
+    fail(`premium static layout missing for ${slug}`);
+  }
+  const blocks = extractJsonLdBlocks(html);
+  if (!blocks.length) {
+    fail(`JSON-LD missing for ${slug}`);
+  }
+  blocks.forEach((block, index) => {
+    try {
+      JSON.parse(block);
+    } catch (error) {
+      fail(`JSON-LD block ${index + 1} invalid for ${slug}: ${error.message}`);
+    }
+  });
 });
-ok(`/post/${firstSlug} static page, canonical, and JSON-LD valid`);
+ok(`${postLocs.length} sitemap post pages exist with canonical, premium layout, and valid JSON-LD`);
 
 const indexHtml = read("index.html");
 if (!/<h1[^>]*id=["']homeMainHeading["'][^>]*>[\s\S]+<\/h1>/i.test(indexHtml)) {
