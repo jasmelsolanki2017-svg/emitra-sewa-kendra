@@ -1022,6 +1022,13 @@ background:#b30000;
 display:inline-flex;
 }
 
+.portal-list-modal{position:fixed;inset:0;z-index:1200;display:none;align-items:center;justify-content:center;background:rgba(2,18,45,.72);padding:18px}
+.portal-list-modal.open{display:flex}
+.portal-list-dialog{width:min(720px,100%);max-height:88vh;overflow:auto;background:#fff;border-radius:12px;border-top:5px solid #c90000;box-shadow:0 22px 60px rgba(0,0,0,.35)}
+.portal-list-head{position:sticky;top:0;display:flex;align-items:center;justify-content:space-between;gap:12px;background:#c90000;color:#fff;padding:13px 16px;z-index:2}
+.portal-list-head h2{margin:0;font-size:21px}.portal-list-close{border:0;border-radius:50%;width:34px;height:34px;background:#fff;color:#a90000;font-size:23px;font-weight:900;cursor:pointer}
+.portal-list-content{padding:13px 18px 18px}.portal-list-content ul{margin:0;padding-left:22px}.portal-list-content li{padding:8px 0;border-bottom:1px solid #e4edf7}.portal-list-content li:last-child{border-bottom:0}.portal-list-content a{color:#0057a8;text-decoration:none;font-weight:800}.portal-list-content a:hover{color:#c90000}
+
 #homePortalResults{order:1;}
 #homePortalAdmitCard{order:2;}
 #homePortalLatestJobs{order:3;}
@@ -2638,6 +2645,13 @@ Create Account
   </section>
 </div>
 
+<div class="portal-list-modal" id="portalListModal" role="dialog" aria-modal="true" aria-labelledby="portalListModalTitle">
+  <section class="portal-list-dialog">
+    <div class="portal-list-head"><h2 id="portalListModalTitle">Latest Updates</h2><button class="portal-list-close" type="button" aria-label="Close" onclick="closePortalListPopup()">×</button></div>
+    <div class="portal-list-content" id="portalListModalContent"></div>
+  </section>
+</div>
+
 <section class="important-links">
 
 <div class="important-links-title">
@@ -3346,6 +3360,32 @@ document.getElementById("ageDays").innerText = "0";
 document.getElementById("ageStatus").innerText = "";
 document.getElementById("ageDobText").focus();
 }
+
+function setupPortalViewMore(){
+document.querySelectorAll(".home-portal-box").forEach((box)=>{
+const list=box.querySelector(".home-portal-list");
+const button=box.querySelector(".home-portal-view-all");
+if(!list||!button)return;
+box.classList.add("has-more");
+button.addEventListener("click",(event)=>{
+event.preventDefault();
+const title=box.querySelector(".home-portal-title")?.innerText?.trim()||"Latest Updates";
+document.getElementById("portalListModalTitle").innerText=title;
+document.getElementById("portalListModalContent").innerHTML=`<ul>${list.innerHTML}</ul><a class="home-portal-view-all" style="display:inline-flex;margin-top:14px" href="${button.getAttribute("href")}">Open Full Page »</a>`;
+document.getElementById("portalListModal").classList.add("open");
+});
+});
+}
+
+function closePortalListPopup(){
+document.getElementById("portalListModal").classList.remove("open");
+}
+
+document.getElementById("portalListModal").addEventListener("click",(event)=>{
+if(event.target.id==="portalListModal")closePortalListPopup();
+});
+document.addEventListener("keydown",(event)=>{if(event.key==="Escape")closePortalListPopup()});
+setupPortalViewMore();
 
 function formatDateTyping(input){
 let value = input.replace(/\D/g,"").slice(0,8);
