@@ -11,7 +11,6 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="shortcut icon" href="favicon.ico">
 <link rel="apple-touch-icon" href="favicon.png">
-<link rel="preload" href="data/constitution.json" as="fetch" type="application/json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -80,9 +79,8 @@ footer{background:var(--blue);color:#fff;text-align:center;padding:22px 6%;margi
   <p>© 2026 E-MITRA WALA | भारतीय संविधान</p>
   <p><a href="privacy-policy.html">Privacy Policy</a><a href="about.html">About</a><a href="current-affairs.html">Current Affairs</a><a href="/#homePortalLatestJobs">Latest Jobs</a><a href="contact.html">Contact</a></p>
 </footer>
-<script id="constitutionData" type="application/json">{"title":"भारतीय संविधान","totalArticles":6,"totalParts":25,"totalSchedules":12,"officialPdf":"https://www.legislative.gov.in/documents/constitution-of-india/constitution-of-india-AjN2EjMtQWa?pageTitle=Constitution-of-India","lastUpdated":"12 June 2026","articles":[{"number":"1","hindiTitle":"संघ का नाम और राज्य क्षेत्र","englishTitle":"Name and territory of the Union","part":"भाग I - संघ और उसका राज्य क्षेत्र","effectiveDate":"26 January 1950","status":"In Force","importantForExam":true,"summary":"भारत को राज्यों का संघ बताया गया है और भारत, राज्यों तथा संघ राज्य क्षेत्रों के क्षेत्र का आधार तय करता है.","keywords":["Union of India","territory","states","भारत","राज्य क्षेत्र"]},{"number":"14","hindiTitle":"विधि के समक्ष समता","englishTitle":"Equality before law","part":"भाग III - मौलिक अधिकार","effectiveDate":"26 January 1950","status":"In Force","importantForExam":true,"summary":"राज्य भारत के क्षेत्र में किसी व्यक्ति को विधि के समक्ष समता या विधियों के समान संरक्षण से वंचित नहीं करेगा.","keywords":["equality","fundamental rights","Article 14","समता","समान संरक्षण"]},{"number":"19","hindiTitle":"कुछ अधिकारों का संरक्षण","englishTitle":"Protection of certain rights regarding freedom of speech, etc.","part":"भाग III - मौलिक अधिकार","effectiveDate":"26 January 1950","status":"In Force","importantForExam":true,"summary":"नागरिकों को अभिव्यक्ति, सभा, संघ, संचरण, निवास और व्यवसाय से जुड़े प्रमुख स्वतंत्रता अधिकार देता है.","keywords":["freedom","speech","assembly","movement","स्वतंत्रता"]},{"number":"21","hindiTitle":"प्राण और दैहिक स्वतंत्रता का संरक्षण","englishTitle":"Protection of life and personal liberty","part":"भाग III - मौलिक अधिकार","effectiveDate":"26 January 1950","status":"In Force","importantForExam":true,"summary":"किसी व्यक्ति को विधि द्वारा स्थापित प्रक्रिया के अनुसार ही जीवन या व्यक्तिगत स्वतंत्रता से वंचित किया जा सकता है.","keywords":["life","personal liberty","due process","जीवन","स्वतंत्रता"]},{"number":"32","hindiTitle":"संवैधानिक उपचारों का अधिकार","englishTitle":"Remedies for enforcement of rights","part":"भाग III - मौलिक अधिकार","effectiveDate":"26 January 1950","status":"In Force","importantForExam":true,"summary":"मौलिक अधिकारों के प्रवर्तन के लिए सीधे सर्वोच्च न्यायालय जाने और writ remedies का अधिकार देता है.","keywords":["constitutional remedies","Supreme Court","writ","मौलिक अधिकार"]},{"number":"51A","hindiTitle":"मूल कर्तव्य","englishTitle":"Fundamental duties","part":"भाग IVA - मूल कर्तव्य","effectiveDate":"3 January 1977","status":"In Force","importantForExam":true,"summary":"नागरिकों के मूल कर्तव्यों को सूचीबद्ध करता है, जैसे संविधान का पालन, राष्ट्रीय ध्वज का सम्मान और वैज्ञानिक दृष्टिकोण.","keywords":["fundamental duties","citizen duties","कर्तव्य","51A"]}]}</script>
 <script>
-const DATA_URL = "data/constitution.json";
+const DATA_URL = "https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app/constitutionArticles.json";
 const articleList = document.getElementById("articleList");
 const searchInput = document.getElementById("searchInput");
 const partFilter = document.getElementById("partFilter");
@@ -93,17 +91,20 @@ let searchTimer = 0;
 
 const escapeHTML = (value = "") => String(value).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
 const toArray = (value) => Array.isArray(value) ? value : String(value || "").split(",").map((item) => item.trim()).filter(Boolean);
-const articleNumber = (article = {}) => article.number || article.articleNumber || article.article || "";
-const articlePart = (article = {}) => article.part || article.category || article.partName || "Other";
+const articleNumber = (article = {}) => article.articleNo || article.number || article.articleNumber || article.article || "";
+const articlePart = (article = {}) => article.partNameHi || article.partHi || article.part || article.category || article.partName || "Other";
 
 // Search index me number, title, part, summary aur keywords sab include hain.
 const searchText = (article = {}) => [
   articleNumber(article),
   article.hindiTitle,
+  article.titleHi,
   article.englishTitle,
+  article.titleEn,
   article.title,
   articlePart(article),
   article.summary,
+  article.summaryHi,
   article.status,
   ...toArray(article.keywords)
 ].join(" ").toLowerCase();
@@ -130,8 +131,8 @@ const renderArticles = () => {
   }
   articleList.innerHTML = filtered.map((article) => {
     const number = articleNumber(article) || "N/A";
-    const hindiTitle = article.hindiTitle || article.title || "Article title";
-    const englishTitle = article.englishTitle || "";
+    const hindiTitle = article.titleHi || article.hindiTitle || article.titleHindi || article.title || "Article title";
+    const englishTitle = article.titleEn || article.englishTitle || article.titleEnglish || "";
     const keywords = toArray(article.keywords);
     const important = article.importantForExam !== false && String(article.important || "").toLowerCase() !== "false";
     return `<article class="card">
@@ -146,7 +147,7 @@ const renderArticles = () => {
         ${article.effectiveDate ? `<span>${escapeHTML(article.effectiveDate)}</span>` : ""}
         ${article.status ? `<span>${escapeHTML(article.status)}</span>` : ""}
       </div>
-      <p>${escapeHTML(article.summary || "Summary update hona baki hai.")}</p>
+      <p>${escapeHTML(article.summaryHi || article.summary || article.description || "Summary update hona baki hai.")}</p>
       ${keywords.length ? `<div class="keywords">${keywords.map((keyword) => `<span>${escapeHTML(keyword)}</span>`).join("")}</div>` : ""}
     </article>`;
   }).join("");
@@ -175,9 +176,15 @@ searchInput.addEventListener("input", () => {
 partFilter.addEventListener("change", renderArticles);
 
 const applyConstitutionData = (data = {}) => {
-  if(!data || !Array.isArray(data.articles)){ throw new Error("Articles data missing ya invalid hai."); }
-    constitutionArticles = Array.isArray(data.articles) ? data.articles : [];
-    setSummary(data);
+    constitutionArticles = Object.values(data || {})
+      .filter((article) => article && typeof article === "object" && String(article.status || "published").toLowerCase() === "published")
+      .sort((a,b) => String(articleNumber(a)).localeCompare(String(articleNumber(b)), undefined, { numeric:true }));
+    setSummary({
+      totalParts:new Set(constitutionArticles.map(articlePart).filter(Boolean)).size,
+      totalSchedules:12,
+      officialPdf:"https://www.legislative.gov.in/documents/constitution-of-india/constitution-of-india-AjN2EjMtQWa?pageTitle=Constitution-of-India",
+      lastUpdated:constitutionArticles[0]?.updatedAt ? new Date(Math.max(...constitutionArticles.map((item) => new Date(item.updatedAt || 0).getTime() || 0))).toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"}) : "Update Soon"
+    });
     renderParts();
     renderArticles();
 };
@@ -189,22 +196,11 @@ const showLoadError = (error) => {
 
 const loadConstitutionData = async () => {
   try{
-    const inlineNode = document.getElementById("constitutionData");
-    if(inlineNode?.textContent.trim()){
-      applyConstitutionData(JSON.parse(inlineNode.textContent));
-      return;
-    }
-    const response = await fetch(DATA_URL, { cache:"force-cache" });
+    const response = await fetch(DATA_URL, { cache:"no-store" });
     if(!response.ok){ throw new Error(`HTTP ${response.status}`); }
     applyConstitutionData(await response.json());
-  }catch(inlineError){
-    try{
-      const response = await fetch(DATA_URL, { cache:"reload" });
-      if(!response.ok){ throw new Error(`HTTP ${response.status}`); }
-      applyConstitutionData(await response.json());
-    }catch(fetchError){
-      showLoadError(fetchError);
-    }
+  }catch(error){
+    showLoadError(error);
   }
 };
 
