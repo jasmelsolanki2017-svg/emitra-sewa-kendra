@@ -9,7 +9,6 @@ const privatePages = new Set([
   "admin-links.html",
   "admin-updates.html",
   "admin-ads.html",
-  "admin-jobs.html",
   "premium-admin.html",
   "admin-mock-tests.html",
   "admin-auto-checker.html",

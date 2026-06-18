@@ -5,7 +5,6 @@ Disallow: /dashboard.html
 Disallow: /admin-links.html
 Disallow: /admin-updates.html
 Disallow: /admin-ads.html
-Disallow: /admin-jobs.html
 Disallow: /premium-admin.html
 Disallow: /admin-mock-tests.html
 Disallow: /admin-auto-checker.html
