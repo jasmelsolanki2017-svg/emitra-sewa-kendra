@@ -118,20 +118,31 @@ const sitemapEntry = (article) => `  <url><loc>${xml(`${siteUrl}/constitution/${
 const stripEntries = (value) => String(value).replace(/\s*<url>\s*<loc>https?:\/\/[^<]+\/constitution\/[^<]*<\/loc>[\s\S]*?<\/url>/g, "");
 
 async function loadData() {
+  if (!process.env.CONSTITUTION_JSON) {
+    try {
+      console.log("constitution source: Firebase");
+      return await fetchJson(`${firebaseUrl}/constitutionArticles.json`);
+    } catch (error) {
+      console.warn(`Firebase constitution fetch failed, using local fallback: ${error.message}`);
+    }
+  }
   for (const candidate of localCandidates) {
     if (fs.existsSync(candidate)) {
       console.log(`constitution source: ${candidate}`);
       return JSON.parse(fs.readFileSync(candidate, "utf8"));
     }
   }
-  console.log("constitution source: Firebase");
-  return fetchJson(`${firebaseUrl}/constitutionArticles.json`);
+  throw new Error("Constitution data source unavailable.");
 }
 
 async function main() {
   const articles = normalize(await loadData());
   if (!articles.length) throw new Error("No published constitution articles found.");
   fs.mkdirSync(outputRoot, { recursive: true });
+  const expectedSlugs = new Set(articles.map(slugOf));
+  fs.readdirSync(outputRoot, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && !expectedSlugs.has(entry.name))
+    .forEach((entry) => fs.rmSync(path.join(outputRoot, entry.name), { recursive: true, force: true }));
   articles.forEach((article, index) => {
     const directory = path.join(outputRoot, slugOf(article));
     fs.mkdirSync(directory, { recursive: true });

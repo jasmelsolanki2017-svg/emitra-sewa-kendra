@@ -5553,6 +5553,31 @@ app.post("/admin/seo/normalize", async (req, res) => {
   }
 });
 
+app.post("/admin/constitution/publish", async (req, res) => {
+  try {
+    const { db } = await requireAdmin(req);
+    const generated = await execFileAsync(process.execPath, ["scripts/sync-constitution-data.js"], {
+      cwd: __dirname,
+      timeout: 120000,
+      env: process.env
+    }).then((result) => ({ ok: true, stdout: result.stdout }))
+      .catch((error) => ({ ok: false, error: error.message, stdout: error.stdout || "", stderr: error.stderr || "" }));
+    const publish = await triggerSeoPostsWorkflow({ db, reason: "constitution-static-pages" })
+      .catch((error) => ({ ok: false, error: error.message }));
+    if (!generated.ok && !publish.ok) {
+      return res.status(500).json({ ok: false, error: generated.error || publish.error, generated, publish });
+    }
+    return res.json({
+      ok: true,
+      message: "Constitution static pages and sitemap publish triggered.",
+      generated,
+      publish
+    });
+  } catch (err) {
+    return res.status(err.statusCode || 500).json({ ok: false, error: err.message });
+  }
+});
+
 app.post("/admin/jobs/delete", async (req, res) => {
   try {
     const { db } = await requireAdmin(req);
