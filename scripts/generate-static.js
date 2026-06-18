@@ -73,6 +73,26 @@ const injectHomepageLists = (jobs, portal) => {
   fs.writeFileSync(file, html, "utf8");
 };
 
+const injectHomepageNews = (jobs) => {
+  const file = path.join(root, "index.html");
+  let html = fs.readFileSync(file, "utf8");
+  const rows = sortRows([...jobs]).slice(0,9);
+  const groups = [rows.slice(0,3), rows.slice(3,6), rows.slice(6,9)];
+  const tickerHtml = groups.map((group) => {
+    const items = group.length ? group : rows.slice(0,3);
+    return `<div class="news-line"><span class="news-track">${items.map((item)=>`<a href="${href(item)}">${esc(item.title)}</a>`).join('<span aria-hidden="true"> • </span>')}</span></div>`;
+  }).join("");
+  const modalHtml = rows.length
+    ? rows.map((item)=>`<a class="news-item" href="${href(item)}">${esc(item.title)}</a>`).join("")
+    : `<p>Abhi koi latest update available nahi hai.</p>`;
+  html = html
+    .replace(/(<div class="news-ticker-rows" id="newsTickerRows">)[\s\S]*?(<\/div>\s*<\/div>\s*<\/section>)/,
+      `$1${tickerHtml}$2`)
+    .replace(/(<div id="newsModalList">)[\s\S]*?(<\/div>\s*<\/section>\s*<\/div>)/,
+      `$1${modalHtml}$2`);
+  fs.writeFileSync(file, html, "utf8");
+};
+
 async function main() {
   execFileSync(process.execPath, [path.join(__dirname, "generate-sitemap.js")], { cwd: root, stdio: "inherit" });
   const [jobsData, portalData, linksData] = await Promise.all([fetchJson("LatestJobs"), fetchJson("portalItems").catch(()=>({})), fetchJson("importantLinks").catch(()=>({}))]);
@@ -95,6 +115,7 @@ async function main() {
   fs.writeFileSync(path.join(root, "important-links.html"), linksHtml, "utf8");
   stripHomepageFirebase();
   injectHomepageLists(jobs, portal);
+  injectHomepageNews(jobs);
   execFileSync(process.execPath, [path.join(__dirname, "sync-constitution-data.js")], { cwd: root, stdio: "inherit" });
   console.log("Static public pages generated.");
 }
