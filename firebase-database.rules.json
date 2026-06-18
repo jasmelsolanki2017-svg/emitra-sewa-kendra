@@ -65,6 +65,12 @@
       ".write": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'"
     },
 
+    "constitutionArticles": {
+      ".read": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'",
+      ".write": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'",
+      ".indexOn": ["articleNo", "status", "updatedAt"]
+    },
+
     "mockTests": {
       ".read": true,
       ".write": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'",
