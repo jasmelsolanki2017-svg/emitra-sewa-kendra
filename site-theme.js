@@ -32,6 +32,7 @@
   const applySiteTheme = (theme) => {
     const active = normalizeTheme(theme);
     document.body.classList.toggle("site-theme-premium", active === "premium");
+    document.documentElement.classList.toggle("site-theme-premium", active === "premium");
     document.documentElement.dataset.siteTheme = active;
     localStorage.setItem("emitraSiteTheme", active);
   };

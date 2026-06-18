@@ -89,7 +89,7 @@ const buildPage = (article, previous, next) => {
   } : null;
   const source = article.source && typeof article.source === "object" ? article.source : {};
   return `<!DOCTYPE html>
-<html lang="hi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="hi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><script src="/site-theme-init.js"></script>
 <title>Article ${esc(number)}: ${esc(hi)} | भारतीय संविधान</title>
 <meta name="description" content="${esc(description)}"><meta name="robots" content="index,follow,max-image-preview:large">
 <link rel="canonical" href="${esc(canonical)}"><link rel="icon" href="../../favicon.png">

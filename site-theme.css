@@ -4,367 +4,367 @@ html{
 html.dark-mode{
   background:#07111f;
 }
-html.dark-mode body.site-theme-premium{
+html.dark-mode.site-theme-premium body{
   background:#07111f!important;
 }
-body.site-theme-premium{
+html.site-theme-premium body{
   background:#eef5ff!important;
   color:#122036;
 }
-body.site-theme-premium .topbar,
-body.site-theme-premium nav,
-body.site-theme-premium footer{
+html.site-theme-premium body .topbar,
+html.site-theme-premium body nav,
+html.site-theme-premium body footer{
   background:linear-gradient(135deg,#063b78,#061a3a)!important;
   color:#fff!important;
 }
-body.site-theme-premium header,
-body.site-theme-premium .hero,
-body.site-theme-premium .news-head,
-body.site-theme-premium .masthead{
+html.site-theme-premium body header,
+html.site-theme-premium body .hero,
+html.site-theme-premium body .news-head,
+html.site-theme-premium body .masthead{
   background:linear-gradient(135deg,#0057a8 0%,#07356f 55%,#ff7a00 130%)!important;
   color:#fff!important;
   border-bottom-color:#ff9f1c!important;
 }
-body.site-theme-premium main,
-body.site-theme-premium .section,
-body.site-theme-premium .section.white,
-body.site-theme-premium .features,
-body.site-theme-premium .services,
-body.site-theme-premium .about,
-body.site-theme-premium .contact,
-body.site-theme-premium .latest-section,
-body.site-theme-premium .document-help,
-body.site-theme-premium .useful-pages,
-body.site-theme-premium .home-job-portal{
+html.site-theme-premium body main,
+html.site-theme-premium body .section,
+html.site-theme-premium body .section.white,
+html.site-theme-premium body .features,
+html.site-theme-premium body .services,
+html.site-theme-premium body .about,
+html.site-theme-premium body .contact,
+html.site-theme-premium body .latest-section,
+html.site-theme-premium body .document-help,
+html.site-theme-premium body .useful-pages,
+html.site-theme-premium body .home-job-portal{
   background:#eef5ff!important;
 }
-body.site-theme-premium .panel,
-body.site-theme-premium .card,
-body.site-theme-premium .feature-box,
-body.site-theme-premium .service-card,
-body.site-theme-premium .doc-panel,
-body.site-theme-premium .enquiry-panel,
-body.site-theme-premium .doc-list,
-body.site-theme-premium .counter-box,
-body.site-theme-premium .ad-box,
-body.site-theme-premium .latest-box,
-body.site-theme-premium .news-line,
-body.site-theme-premium .news-item,
-body.site-theme-premium .login-box,
-body.site-theme-premium .story-text,
-body.site-theme-premium .contact-panel,
-body.site-theme-premium .contact-info,
-body.site-theme-premium .search-panel,
-body.site-theme-premium .table-card,
-body.site-theme-premium .user-box,
-body.site-theme-premium .manager,
-body.site-theme-premium .row,
-body.site-theme-premium .job-card,
-body.site-theme-premium .notice,
-body.site-theme-premium .portal-box,
-body.site-theme-premium .contact-box,
-body.site-theme-premium .special-card,
-body.site-theme-premium .search,
-body.site-theme-premium .detail-sheet,
-body.site-theme-premium .detail-sidebar,
-body.site-theme-premium .sidebar-card,
-body.site-theme-premium .content-box,
-body.site-theme-premium .message{
+html.site-theme-premium body .panel,
+html.site-theme-premium body .card,
+html.site-theme-premium body .feature-box,
+html.site-theme-premium body .service-card,
+html.site-theme-premium body .doc-panel,
+html.site-theme-premium body .enquiry-panel,
+html.site-theme-premium body .doc-list,
+html.site-theme-premium body .counter-box,
+html.site-theme-premium body .ad-box,
+html.site-theme-premium body .latest-box,
+html.site-theme-premium body .news-line,
+html.site-theme-premium body .news-item,
+html.site-theme-premium body .login-box,
+html.site-theme-premium body .story-text,
+html.site-theme-premium body .contact-panel,
+html.site-theme-premium body .contact-info,
+html.site-theme-premium body .search-panel,
+html.site-theme-premium body .table-card,
+html.site-theme-premium body .user-box,
+html.site-theme-premium body .manager,
+html.site-theme-premium body .row,
+html.site-theme-premium body .job-card,
+html.site-theme-premium body .notice,
+html.site-theme-premium body .portal-box,
+html.site-theme-premium body .contact-box,
+html.site-theme-premium body .special-card,
+html.site-theme-premium body .search,
+html.site-theme-premium body .detail-sheet,
+html.site-theme-premium body .detail-sidebar,
+html.site-theme-premium body .sidebar-card,
+html.site-theme-premium body .content-box,
+html.site-theme-premium body .message{
   background:#ffffff!important;
   border-color:#cfe0f5!important;
   box-shadow:0 10px 24px rgba(0,87,168,.12)!important;
 }
-body.site-theme-premium .panel,
-body.site-theme-premium .card,
-body.site-theme-premium .manager,
-body.site-theme-premium .stat-card,
-body.site-theme-premium .job-card,
-body.site-theme-premium .detail-sheet,
-body.site-theme-premium .sidebar-card{
+html.site-theme-premium body .panel,
+html.site-theme-premium body .card,
+html.site-theme-premium body .manager,
+html.site-theme-premium body .stat-card,
+html.site-theme-premium body .job-card,
+html.site-theme-premium body .detail-sheet,
+html.site-theme-premium body .sidebar-card{
   border-top-color:#ff7a00!important;
 }
-body.site-theme-premium h1,
-body.site-theme-premium h2,
-body.site-theme-premium h3,
-body.site-theme-premium strong,
-body.site-theme-premium .section-title h2,
-body.site-theme-premium .panel h2,
-body.site-theme-premium .panel h3,
-body.site-theme-premium .card strong,
-body.site-theme-premium .feature-box h3,
-body.site-theme-premium .service-card h3,
-body.site-theme-premium .doc-list h3,
-body.site-theme-premium .contact-box h2,
-body.site-theme-premium .user-box h2{
+html.site-theme-premium body h1,
+html.site-theme-premium body h2,
+html.site-theme-premium body h3,
+html.site-theme-premium body strong,
+html.site-theme-premium body .section-title h2,
+html.site-theme-premium body .panel h2,
+html.site-theme-premium body .panel h3,
+html.site-theme-premium body .card strong,
+html.site-theme-premium body .feature-box h3,
+html.site-theme-premium body .service-card h3,
+html.site-theme-premium body .doc-list h3,
+html.site-theme-premium body .contact-box h2,
+html.site-theme-premium body .user-box h2{
   color:#0057a8!important;
 }
-body.site-theme-premium header h1,
-body.site-theme-premium .hero h1,
-body.site-theme-premium .logo,
-body.site-theme-premium .logo span{
+html.site-theme-premium body header h1,
+html.site-theme-premium body .hero h1,
+html.site-theme-premium body .logo,
+html.site-theme-premium body .logo span{
   color:#ffb15c!important;
 }
-body.site-theme-premium .home-portal-quick a,
-body.site-theme-premium .quick-grid a,
-body.site-theme-premium .home-portal-title,
-body.site-theme-premium .box-title,
-body.site-theme-premium .source-special-head,
-body.site-theme-premium .source-special-grid .box-title{
+html.site-theme-premium body .home-portal-quick a,
+html.site-theme-premium body .quick-grid a,
+html.site-theme-premium body .home-portal-title,
+html.site-theme-premium body .box-title,
+html.site-theme-premium body .source-special-head,
+html.site-theme-premium body .source-special-grid .box-title{
   color:#fff!important;
 }
-body.site-theme-premium .panel h2,
-body.site-theme-premium .sarkari-section-title,
-body.site-theme-premium .detail-table th,
-body.site-theme-premium .content-table th,
-body.site-theme-premium .article-head{
+html.site-theme-premium body .panel h2,
+html.site-theme-premium body .sarkari-section-title,
+html.site-theme-premium body .detail-table th,
+html.site-theme-premium body .content-table th,
+html.site-theme-premium body .article-head{
   background:#e7f4ff!important;
   border-color:#ff9f1c!important;
   color:#07356f!important;
 }
-body.site-theme-premium a,
-body.site-theme-premium .auto-link,
-body.site-theme-premium .row a{
+html.site-theme-premium body a,
+html.site-theme-premium body .auto-link,
+html.site-theme-premium body .row a{
   color:#0057a8;
 }
-body.site-theme-premium nav a,
-body.site-theme-premium nav button,
-body.site-theme-premium .btn,
-body.site-theme-premium .cta,
-body.site-theme-premium .primary-btn,
-body.site-theme-premium .signup-btn,
-body.site-theme-premium .card a,
-body.site-theme-premium .action-btn,
-body.site-theme-premium button{
+html.site-theme-premium body nav a,
+html.site-theme-premium body nav button,
+html.site-theme-premium body .btn,
+html.site-theme-premium body .cta,
+html.site-theme-premium body .primary-btn,
+html.site-theme-premium body .signup-btn,
+html.site-theme-premium body .card a,
+html.site-theme-premium body .action-btn,
+html.site-theme-premium body button{
   background:#0057a8;
   color:#fff;
 }
-body.site-theme-premium nav a:hover,
-body.site-theme-premium nav button:hover,
-body.site-theme-premium .btn:hover,
-body.site-theme-premium .cta:hover,
-body.site-theme-premium .primary-btn:hover,
-body.site-theme-premium .signup-btn:hover,
-body.site-theme-premium .card a:hover,
-body.site-theme-premium .action-btn:hover,
-body.site-theme-premium button:hover{
+html.site-theme-premium body nav a:hover,
+html.site-theme-premium body nav button:hover,
+html.site-theme-premium body .btn:hover,
+html.site-theme-premium body .cta:hover,
+html.site-theme-premium body .primary-btn:hover,
+html.site-theme-premium body .signup-btn:hover,
+html.site-theme-premium body .card a:hover,
+html.site-theme-premium body .action-btn:hover,
+html.site-theme-premium body button:hover{
   background:#ff7a00;
   color:#03224d;
 }
-body.site-theme-premium .edit-btn,
-body.site-theme-premium .edit,
-body.site-theme-premium .helper-btn,
-body.site-theme-premium .status-badge,
-body.site-theme-premium .theme-toggle{
+html.site-theme-premium body .edit-btn,
+html.site-theme-premium body .edit,
+html.site-theme-premium body .helper-btn,
+html.site-theme-premium body .status-badge,
+html.site-theme-premium body .theme-toggle{
   background:#ff7a00!important;
   color:#03224d!important;
 }
-body.site-theme-premium input,
-body.site-theme-premium select,
-body.site-theme-premium textarea{
+html.site-theme-premium body input,
+html.site-theme-premium body select,
+html.site-theme-premium body textarea{
   background:#fff!important;
   color:#122036!important;
   border-color:#b9d2ee!important;
 }
-body.site-theme-premium .message,
-body.site-theme-premium .panel,
-body.site-theme-premium .card,
-body.site-theme-premium .row,
-body.site-theme-premium .job-card,
-body.site-theme-premium .summary-card,
-body.site-theme-premium .status-chip,
-body.site-theme-premium .aside-mini,
-body.site-theme-premium .link-card,
-body.site-theme-premium .related-card,
-body.site-theme-premium .region-card{
+html.site-theme-premium body .message,
+html.site-theme-premium body .panel,
+html.site-theme-premium body .card,
+html.site-theme-premium body .row,
+html.site-theme-premium body .job-card,
+html.site-theme-premium body .summary-card,
+html.site-theme-premium body .status-chip,
+html.site-theme-premium body .aside-mini,
+html.site-theme-premium body .link-card,
+html.site-theme-premium body .related-card,
+html.site-theme-premium body .region-card{
   color:#071b3f!important;
 }
-body.site-theme-premium .message strong,
-body.site-theme-premium .panel strong,
-body.site-theme-premium .card strong,
-body.site-theme-premium .row strong,
-body.site-theme-premium .job-card strong,
-body.site-theme-premium .summary-card strong,
-body.site-theme-premium .status-chip,
-body.site-theme-premium .aside-mini,
-body.site-theme-premium .link-card strong,
-body.site-theme-premium .related-card strong,
-body.site-theme-premium .region-card h4{
+html.site-theme-premium body .message strong,
+html.site-theme-premium body .panel strong,
+html.site-theme-premium body .card strong,
+html.site-theme-premium body .row strong,
+html.site-theme-premium body .job-card strong,
+html.site-theme-premium body .summary-card strong,
+html.site-theme-premium body .status-chip,
+html.site-theme-premium body .aside-mini,
+html.site-theme-premium body .link-card strong,
+html.site-theme-premium body .related-card strong,
+html.site-theme-premium body .region-card h4{
   color:#071b3f!important;
 }
-body.site-theme-premium .poster-fallback,
-body.site-theme-premium .media-box .poster-fallback,
-body.site-theme-premium .poster-fallback strong{
+html.site-theme-premium body .poster-fallback,
+html.site-theme-premium body .media-box .poster-fallback,
+html.site-theme-premium body .poster-fallback strong{
   color:#fff!important;
 }
-body.site-theme-premium .poster-fallback span{
+html.site-theme-premium body .poster-fallback span{
   color:#ffdf4c!important;
 }
-body.site-theme-premium .poster-fallback small{
+html.site-theme-premium body .poster-fallback small{
   background:#fff!important;
   color:#0647a6!important;
   border:1px solid rgba(6,71,166,.18)!important;
 }
-body.site-theme-premium.dark-mode{
+html.site-theme-premium body.dark-mode{
   background:#07111f!important;
 }
 
 /* Global contrast guard: keep text readable on dark/colored headers, tiles and buttons. */
-body.site-theme-premium .home-portal-quick a,
-body.site-theme-premium .home-portal-quick a:visited,
-body.site-theme-premium .quick-grid a,
-body.site-theme-premium .quick-grid a:visited,
-body.site-theme-premium .home-portal-quick a *,
-body.site-theme-premium .quick-grid a *,
-body.site-theme-premium .box-title,
-body.site-theme-premium .source-special-head,
-body.site-theme-premium .source-special-grid .box-title,
-body.site-theme-premium .premium-card h2,
-body.site-theme-premium .premium-card[class*="accent-"] h2,
-body.site-theme-premium .sidebar-card h3,
-body.site-theme-premium .aside-top,
-body.site-theme-premium .sarkari-blue-heading,
-body.site-theme-premium .news-head,
-body.site-theme-premium .section-heading,
-body.site-theme-premium .card-header,
-body.site-theme-premium .table-card h2,
-body.site-theme-premium .form-section h3{
+html.site-theme-premium body .home-portal-quick a,
+html.site-theme-premium body .home-portal-quick a:visited,
+html.site-theme-premium body .quick-grid a,
+html.site-theme-premium body .quick-grid a:visited,
+html.site-theme-premium body .home-portal-quick a *,
+html.site-theme-premium body .quick-grid a *,
+html.site-theme-premium body .box-title,
+html.site-theme-premium body .source-special-head,
+html.site-theme-premium body .source-special-grid .box-title,
+html.site-theme-premium body .premium-card h2,
+html.site-theme-premium body .premium-card[class*="accent-"] h2,
+html.site-theme-premium body .sidebar-card h3,
+html.site-theme-premium body .aside-top,
+html.site-theme-premium body .sarkari-blue-heading,
+html.site-theme-premium body .news-head,
+html.site-theme-premium body .section-heading,
+html.site-theme-premium body .card-header,
+html.site-theme-premium body .table-card h2,
+html.site-theme-premium body .form-section h3{
   color:#fff!important;
 }
 
-body.site-theme-premium .btn,
-body.site-theme-premium .btn:visited,
-body.site-theme-premium .btn:hover,
-body.site-theme-premium .btn:active,
-body.site-theme-premium .btn:focus,
-body.site-theme-premium .action-btn,
-body.site-theme-premium .action-btn:visited,
-body.site-theme-premium .action-btn:hover,
-body.site-theme-premium .action-btn:active,
-body.site-theme-premium .action-btn:focus,
-body.site-theme-premium .cta,
-body.site-theme-premium .cta:visited,
-body.site-theme-premium .cta:hover,
-body.site-theme-premium .cta:active,
-body.site-theme-premium .cta:focus,
-body.site-theme-premium .primary-btn,
-body.site-theme-premium .primary-btn:visited,
-body.site-theme-premium .primary-btn:hover,
-body.site-theme-premium .primary-btn:active,
-body.site-theme-premium .primary-btn:focus,
-body.site-theme-premium .signup-btn,
-body.site-theme-premium .signup-btn:visited,
-body.site-theme-premium .signup-btn:hover,
-body.site-theme-premium .signup-btn:active,
-body.site-theme-premium .signup-btn:focus,
-body.site-theme-premium .login-btn,
-body.site-theme-premium .login-btn:visited,
-body.site-theme-premium .login-btn:hover,
-body.site-theme-premium .login-btn:active,
-body.site-theme-premium .login-btn:focus,
-body.site-theme-premium .download-btn,
-body.site-theme-premium .download-btn:visited,
-body.site-theme-premium .download-btn:hover,
-body.site-theme-premium .download-btn:active,
-body.site-theme-premium .download-btn:focus,
-body.site-theme-premium .sidebar-links .btn,
-body.site-theme-premium .sidebar-links .btn:visited,
-body.site-theme-premium .post-apply-links .btn,
-body.site-theme-premium .post-apply-links .btn:visited,
-body.site-theme-premium nav a,
-body.site-theme-premium nav a:visited,
-body.site-theme-premium nav a:hover,
-body.site-theme-premium nav a:active,
-body.site-theme-premium nav a:focus,
-body.site-theme-premium nav button,
-body.site-theme-premium nav button:hover,
-body.site-theme-premium nav button:active,
-body.site-theme-premium nav button:focus,
-body.site-theme-premium button:not(.theme-toggle),
-body.site-theme-premium button:not(.theme-toggle):hover,
-body.site-theme-premium button:not(.theme-toggle):active,
-body.site-theme-premium button:not(.theme-toggle):focus{
+html.site-theme-premium body .btn,
+html.site-theme-premium body .btn:visited,
+html.site-theme-premium body .btn:hover,
+html.site-theme-premium body .btn:active,
+html.site-theme-premium body .btn:focus,
+html.site-theme-premium body .action-btn,
+html.site-theme-premium body .action-btn:visited,
+html.site-theme-premium body .action-btn:hover,
+html.site-theme-premium body .action-btn:active,
+html.site-theme-premium body .action-btn:focus,
+html.site-theme-premium body .cta,
+html.site-theme-premium body .cta:visited,
+html.site-theme-premium body .cta:hover,
+html.site-theme-premium body .cta:active,
+html.site-theme-premium body .cta:focus,
+html.site-theme-premium body .primary-btn,
+html.site-theme-premium body .primary-btn:visited,
+html.site-theme-premium body .primary-btn:hover,
+html.site-theme-premium body .primary-btn:active,
+html.site-theme-premium body .primary-btn:focus,
+html.site-theme-premium body .signup-btn,
+html.site-theme-premium body .signup-btn:visited,
+html.site-theme-premium body .signup-btn:hover,
+html.site-theme-premium body .signup-btn:active,
+html.site-theme-premium body .signup-btn:focus,
+html.site-theme-premium body .login-btn,
+html.site-theme-premium body .login-btn:visited,
+html.site-theme-premium body .login-btn:hover,
+html.site-theme-premium body .login-btn:active,
+html.site-theme-premium body .login-btn:focus,
+html.site-theme-premium body .download-btn,
+html.site-theme-premium body .download-btn:visited,
+html.site-theme-premium body .download-btn:hover,
+html.site-theme-premium body .download-btn:active,
+html.site-theme-premium body .download-btn:focus,
+html.site-theme-premium body .sidebar-links .btn,
+html.site-theme-premium body .sidebar-links .btn:visited,
+html.site-theme-premium body .post-apply-links .btn,
+html.site-theme-premium body .post-apply-links .btn:visited,
+html.site-theme-premium body nav a,
+html.site-theme-premium body nav a:visited,
+html.site-theme-premium body nav a:hover,
+html.site-theme-premium body nav a:active,
+html.site-theme-premium body nav a:focus,
+html.site-theme-premium body nav button,
+html.site-theme-premium body nav button:hover,
+html.site-theme-premium body nav button:active,
+html.site-theme-premium body nav button:focus,
+html.site-theme-premium body button:not(.theme-toggle),
+html.site-theme-premium body button:not(.theme-toggle):hover,
+html.site-theme-premium body button:not(.theme-toggle):active,
+html.site-theme-premium body button:not(.theme-toggle):focus{
   color:#fff!important;
   text-decoration:none;
 }
 
-body.site-theme-premium .job-tool-btn.primary,
-body.site-theme-premium .job-tool-btn.primary:visited,
-body.site-theme-premium .job-tool-btn.primary:hover,
-body.site-theme-premium .job-tool-btn.primary:active,
-body.site-theme-premium .job-tool-btn.primary:focus,
-body.site-theme-premium .edit,
-body.site-theme-premium .edit:hover,
-body.site-theme-premium .edit:active,
-body.site-theme-premium .edit:focus,
-body.site-theme-premium .edit-btn,
-body.site-theme-premium .edit-btn:hover,
-body.site-theme-premium .edit-btn:active,
-body.site-theme-premium .edit-btn:focus,
-body.site-theme-premium .helper-btn,
-body.site-theme-premium .helper-btn:hover,
-body.site-theme-premium .helper-btn:active,
-body.site-theme-premium .helper-btn:focus,
-body.site-theme-premium .sample,
-body.site-theme-premium .sample:hover,
-body.site-theme-premium .sample:active,
-body.site-theme-premium .sample:focus,
-body.site-theme-premium .orange,
-body.site-theme-premium .orange:hover,
-body.site-theme-premium .orange:active,
-body.site-theme-premium .orange:focus,
-body.site-theme-premium .job-tab.active,
-body.site-theme-premium .post-target span:hover,
-body.site-theme-premium .repeat-link-add,
-body.site-theme-premium .quick-post-fab,
-body.site-theme-premium .ca-yellow-btn,
-body.site-theme-premium .ca-yellow-btn:visited,
-body.site-theme-premium .ca-yellow-btn:hover,
-body.site-theme-premium .ca-yellow-btn:active,
-body.site-theme-premium .ca-yellow-btn:focus,
-body.site-theme-premium .ca-menu .active a,
-body.site-theme-premium .ca-menu .active a:visited,
-body.site-theme-premium .ca-search button,
-body.site-theme-premium .tag,
-body.site-theme-premium .tag:visited,
-body.site-theme-premium .pill,
-body.site-theme-premium .pill:visited,
-body.site-theme-premium .badge,
-body.site-theme-premium .badge:visited{
+html.site-theme-premium body .job-tool-btn.primary,
+html.site-theme-premium body .job-tool-btn.primary:visited,
+html.site-theme-premium body .job-tool-btn.primary:hover,
+html.site-theme-premium body .job-tool-btn.primary:active,
+html.site-theme-premium body .job-tool-btn.primary:focus,
+html.site-theme-premium body .edit,
+html.site-theme-premium body .edit:hover,
+html.site-theme-premium body .edit:active,
+html.site-theme-premium body .edit:focus,
+html.site-theme-premium body .edit-btn,
+html.site-theme-premium body .edit-btn:hover,
+html.site-theme-premium body .edit-btn:active,
+html.site-theme-premium body .edit-btn:focus,
+html.site-theme-premium body .helper-btn,
+html.site-theme-premium body .helper-btn:hover,
+html.site-theme-premium body .helper-btn:active,
+html.site-theme-premium body .helper-btn:focus,
+html.site-theme-premium body .sample,
+html.site-theme-premium body .sample:hover,
+html.site-theme-premium body .sample:active,
+html.site-theme-premium body .sample:focus,
+html.site-theme-premium body .orange,
+html.site-theme-premium body .orange:hover,
+html.site-theme-premium body .orange:active,
+html.site-theme-premium body .orange:focus,
+html.site-theme-premium body .job-tab.active,
+html.site-theme-premium body .post-target span:hover,
+html.site-theme-premium body .repeat-link-add,
+html.site-theme-premium body .quick-post-fab,
+html.site-theme-premium body .ca-yellow-btn,
+html.site-theme-premium body .ca-yellow-btn:visited,
+html.site-theme-premium body .ca-yellow-btn:hover,
+html.site-theme-premium body .ca-yellow-btn:active,
+html.site-theme-premium body .ca-yellow-btn:focus,
+html.site-theme-premium body .ca-menu .active a,
+html.site-theme-premium body .ca-menu .active a:visited,
+html.site-theme-premium body .ca-search button,
+html.site-theme-premium body .tag,
+html.site-theme-premium body .tag:visited,
+html.site-theme-premium body .pill,
+html.site-theme-premium body .pill:visited,
+html.site-theme-premium body .badge,
+html.site-theme-premium body .badge:visited{
   color:#fff!important;
 }
 
-body.site-theme-premium .sarkari-blue-heading{
+html.site-theme-premium body .sarkari-blue-heading{
   background:#0057a8!important;
   border-color:#0057a8!important;
 }
 
-body.site-theme-premium .panel h2,
-body.site-theme-premium .sarkari-section-title{
+html.site-theme-premium body .panel h2,
+html.site-theme-premium body .sarkari-section-title{
   background:#0057a8!important;
   border-left-color:#ff9f1c!important;
   color:#fff!important;
 }
 
-body.site-theme-premium .lang-switch button.active{
+html.site-theme-premium body .lang-switch button.active{
   background:#fff!important;
   color:#0057a8!important;
 }
 
-body.site-theme-premium .home-portal-quick a,
-body.site-theme-premium .home-portal-quick a:visited,
-body.site-theme-premium .home-portal-quick a:hover,
-body.site-theme-premium .home-portal-quick a:active,
-body.site-theme-premium .home-portal-quick a:focus,
-body.site-theme-premium .quick-grid a,
-body.site-theme-premium .quick-grid a:visited,
-body.site-theme-premium .quick-grid a:hover,
-body.site-theme-premium .quick-grid a:active,
-body.site-theme-premium .quick-grid a:focus{
+html.site-theme-premium body .home-portal-quick a,
+html.site-theme-premium body .home-portal-quick a:visited,
+html.site-theme-premium body .home-portal-quick a:hover,
+html.site-theme-premium body .home-portal-quick a:active,
+html.site-theme-premium body .home-portal-quick a:focus,
+html.site-theme-premium body .quick-grid a,
+html.site-theme-premium body .quick-grid a:visited,
+html.site-theme-premium body .quick-grid a:hover,
+html.site-theme-premium body .quick-grid a:active,
+html.site-theme-premium body .quick-grid a:focus{
   color:#fff!important;
 }
 
 /* Premium job page visual system, applied across public/admin pages without changing layout. */
-body.site-theme-premium{
+html.site-theme-premium body{
   --premium-navy:#061d4b;
   --premium-navy-2:#082a66;
   --premium-blue:#075dcc;
@@ -380,25 +380,25 @@ body.site-theme-premium{
   font-weight:500;
 }
 
-body.site-theme-premium .topbar,
-body.site-theme-premium nav,
-body.site-theme-premium .navbar,
-body.site-theme-premium footer,
-body.site-theme-premium .premium-header{
+html.site-theme-premium body .topbar,
+html.site-theme-premium body nav,
+html.site-theme-premium body .navbar,
+html.site-theme-premium body footer,
+html.site-theme-premium body .premium-header{
   background:var(--premium-navy)!important;
   border-bottom:3px solid var(--premium-green)!important;
   box-shadow:0 2px 14px rgba(0,0,0,.16)!important;
 }
 
-body.site-theme-premium nav{
+html.site-theme-premium body nav{
   padding-top:8px!important;
   padding-bottom:8px!important;
   gap:16px!important;
 }
 
-body.site-theme-premium .logo img,
-body.site-theme-premium .nav-logo img,
-body.site-theme-premium .brand img{
+html.site-theme-premium body .logo img,
+html.site-theme-premium body .nav-logo img,
+html.site-theme-premium body .brand img{
   max-height:54px!important;
   object-fit:contain!important;
   background:#fff!important;
@@ -406,14 +406,14 @@ body.site-theme-premium .brand img{
   padding:2px!important;
 }
 
-body.site-theme-premium nav ul{
+html.site-theme-premium body nav ul{
   gap:8px!important;
   align-items:center!important;
 }
 
-body.site-theme-premium nav a,
-body.site-theme-premium nav button,
-body.site-theme-premium .navbar a{
+html.site-theme-premium body nav a,
+html.site-theme-premium body nav button,
+html.site-theme-premium body .navbar a{
   background:transparent!important;
   border:0!important;
   border-radius:2px!important;
@@ -427,116 +427,116 @@ body.site-theme-premium .navbar a{
   text-transform:uppercase!important;
 }
 
-body.site-theme-premium nav a:hover,
-body.site-theme-premium nav a.active,
-body.site-theme-premium nav button:hover,
-body.site-theme-premium .navbar a:hover{
+html.site-theme-premium body nav a:hover,
+html.site-theme-premium body nav a.active,
+html.site-theme-premium body nav button:hover,
+html.site-theme-premium body .navbar a:hover{
   background:var(--premium-green)!important;
   color:#fff!important;
   transform:none!important;
 }
 
-body.site-theme-premium header,
-body.site-theme-premium .hero,
-body.site-theme-premium .masthead,
-body.site-theme-premium .news-head{
+html.site-theme-premium body header,
+html.site-theme-premium body .hero,
+html.site-theme-premium body .masthead,
+html.site-theme-premium body .news-head{
   background:transparent!important;
   color:var(--premium-text)!important;
   border-bottom:0!important;
   box-shadow:none!important;
 }
 
-body.site-theme-premium .hero h1,
-body.site-theme-premium header h1,
-body.site-theme-premium .masthead h1{
+html.site-theme-premium body .hero h1,
+html.site-theme-premium body header h1,
+html.site-theme-premium body .masthead h1{
   color:var(--premium-navy)!important;
   font-weight:900!important;
 }
 
-body.site-theme-premium .hero p,
-body.site-theme-premium header p,
-body.site-theme-premium .masthead p{
+html.site-theme-premium body .hero p,
+html.site-theme-premium body header p,
+html.site-theme-premium body .masthead p{
   color:#20314d!important;
   font-weight:800!important;
 }
 
-body.site-theme-premium main,
-body.site-theme-premium .section,
-body.site-theme-premium .section.white,
-body.site-theme-premium .features,
-body.site-theme-premium .services,
-body.site-theme-premium .about,
-body.site-theme-premium .contact,
-body.site-theme-premium .latest-section,
-body.site-theme-premium .document-help,
-body.site-theme-premium .useful-pages,
-body.site-theme-premium .home-portal,
-body.site-theme-premium .home-portal-main,
-body.site-theme-premium .business-strip,
-body.site-theme-premium .process-section{
+html.site-theme-premium body main,
+html.site-theme-premium body .section,
+html.site-theme-premium body .section.white,
+html.site-theme-premium body .features,
+html.site-theme-premium body .services,
+html.site-theme-premium body .about,
+html.site-theme-premium body .contact,
+html.site-theme-premium body .latest-section,
+html.site-theme-premium body .document-help,
+html.site-theme-premium body .useful-pages,
+html.site-theme-premium body .home-portal,
+html.site-theme-premium body .home-portal-main,
+html.site-theme-premium body .business-strip,
+html.site-theme-premium body .process-section{
   background:var(--premium-soft)!important;
 }
 
-body.site-theme-premium .panel,
-body.site-theme-premium .card,
-body.site-theme-premium .feature-box,
-body.site-theme-premium .service-card,
-body.site-theme-premium .home-job-card,
-body.site-theme-premium .home-portal-box,
-body.site-theme-premium .business-card,
-body.site-theme-premium .process-card,
-body.site-theme-premium .doc-panel,
-body.site-theme-premium .enquiry-panel,
-body.site-theme-premium .doc-list,
-body.site-theme-premium .counter-box,
-body.site-theme-premium .ad-box,
-body.site-theme-premium .latest-box,
-body.site-theme-premium .news-line,
-body.site-theme-premium .news-item,
-body.site-theme-premium .login-box,
-body.site-theme-premium .story-text,
-body.site-theme-premium .contact-panel,
-body.site-theme-premium .contact-info,
-body.site-theme-premium .search-panel,
-body.site-theme-premium .table-card,
-body.site-theme-premium .user-box,
-body.site-theme-premium .manager,
-body.site-theme-premium .row,
-body.site-theme-premium .job-card,
-body.site-theme-premium .notice,
-body.site-theme-premium .portal-box,
-body.site-theme-premium .contact-box,
-body.site-theme-premium .special-card,
-body.site-theme-premium .search,
-body.site-theme-premium .detail-sheet,
-body.site-theme-premium .detail-sidebar,
-body.site-theme-premium .sidebar-card,
-body.site-theme-premium .content-box,
-body.site-theme-premium .message,
-body.site-theme-premium .tool-card,
-body.site-theme-premium .tool-hub-card,
-body.site-theme-premium .tool-index,
-body.site-theme-premium .admin-tool-panel{
+html.site-theme-premium body .panel,
+html.site-theme-premium body .card,
+html.site-theme-premium body .feature-box,
+html.site-theme-premium body .service-card,
+html.site-theme-premium body .home-job-card,
+html.site-theme-premium body .home-portal-box,
+html.site-theme-premium body .business-card,
+html.site-theme-premium body .process-card,
+html.site-theme-premium body .doc-panel,
+html.site-theme-premium body .enquiry-panel,
+html.site-theme-premium body .doc-list,
+html.site-theme-premium body .counter-box,
+html.site-theme-premium body .ad-box,
+html.site-theme-premium body .latest-box,
+html.site-theme-premium body .news-line,
+html.site-theme-premium body .news-item,
+html.site-theme-premium body .login-box,
+html.site-theme-premium body .story-text,
+html.site-theme-premium body .contact-panel,
+html.site-theme-premium body .contact-info,
+html.site-theme-premium body .search-panel,
+html.site-theme-premium body .table-card,
+html.site-theme-premium body .user-box,
+html.site-theme-premium body .manager,
+html.site-theme-premium body .row,
+html.site-theme-premium body .job-card,
+html.site-theme-premium body .notice,
+html.site-theme-premium body .portal-box,
+html.site-theme-premium body .contact-box,
+html.site-theme-premium body .special-card,
+html.site-theme-premium body .search,
+html.site-theme-premium body .detail-sheet,
+html.site-theme-premium body .detail-sidebar,
+html.site-theme-premium body .sidebar-card,
+html.site-theme-premium body .content-box,
+html.site-theme-premium body .message,
+html.site-theme-premium body .tool-card,
+html.site-theme-premium body .tool-hub-card,
+html.site-theme-premium body .tool-index,
+html.site-theme-premium body .admin-tool-panel{
   background:#fff!important;
   border-color:var(--premium-border)!important;
   border-radius:9px!important;
   box-shadow:var(--premium-shadow)!important;
 }
 
-body.site-theme-premium .home-portal-box{
+html.site-theme-premium body .home-portal-box{
   border:2px solid #c40000!important;
   box-shadow:none!important;
   outline:none!important;
 }
 
-body.site-theme-premium .panel h2,
-body.site-theme-premium .sarkari-section-title,
-body.site-theme-premium .detail-table th,
-body.site-theme-premium .content-table th,
-body.site-theme-premium .article-head,
-body.site-theme-premium .tool-index h2,
-body.site-theme-premium .table-card h2,
-body.site-theme-premium .form-section h3{
+html.site-theme-premium body .panel h2,
+html.site-theme-premium body .sarkari-section-title,
+html.site-theme-premium body .detail-table th,
+html.site-theme-premium body .content-table th,
+html.site-theme-premium body .article-head,
+html.site-theme-premium body .tool-index h2,
+html.site-theme-premium body .table-card h2,
+html.site-theme-premium body .form-section h3{
   background:var(--premium-teal,#0d8f99)!important;
   border-color:var(--premium-border)!important;
   color:#fff!important;
@@ -544,31 +544,31 @@ body.site-theme-premium .form-section h3{
   text-transform:uppercase;
 }
 
-body.site-theme-premium h1,
-body.site-theme-premium h2,
-body.site-theme-premium h3,
-body.site-theme-premium strong,
-body.site-theme-premium .section-title h2,
-body.site-theme-premium .tool-head h2,
-body.site-theme-premium .card strong{
+html.site-theme-premium body h1,
+html.site-theme-premium body h2,
+html.site-theme-premium body h3,
+html.site-theme-premium body strong,
+html.site-theme-premium body .section-title h2,
+html.site-theme-premium body .tool-head h2,
+html.site-theme-premium body .card strong{
   color:var(--premium-navy)!important;
 }
 
-body.site-theme-premium p,
-body.site-theme-premium li,
-body.site-theme-premium small,
-body.site-theme-premium span,
-body.site-theme-premium .muted{
+html.site-theme-premium body p,
+html.site-theme-premium body li,
+html.site-theme-premium body small,
+html.site-theme-premium body span,
+html.site-theme-premium body .muted{
   color:inherit;
 }
 
-body.site-theme-premium .btn,
-body.site-theme-premium .cta,
-body.site-theme-premium .primary-btn,
-body.site-theme-premium .signup-btn,
-body.site-theme-premium .action-btn,
-body.site-theme-premium .download-btn,
-body.site-theme-premium button:not(.theme-toggle){
+html.site-theme-premium body .btn,
+html.site-theme-premium body .cta,
+html.site-theme-premium body .primary-btn,
+html.site-theme-premium body .signup-btn,
+html.site-theme-premium body .action-btn,
+html.site-theme-premium body .download-btn,
+html.site-theme-premium body button:not(.theme-toggle){
   background:var(--premium-blue)!important;
   border-radius:7px!important;
   box-shadow:0 6px 14px rgba(0,0,0,.08)!important;
@@ -576,33 +576,33 @@ body.site-theme-premium button:not(.theme-toggle){
   font-weight:900!important;
 }
 
-body.site-theme-premium .btn:hover,
-body.site-theme-premium .cta:hover,
-body.site-theme-premium .primary-btn:hover,
-body.site-theme-premium .signup-btn:hover,
-body.site-theme-premium .action-btn:hover,
-body.site-theme-premium .download-btn:hover,
-body.site-theme-premium button:not(.theme-toggle):hover{
+html.site-theme-premium body .btn:hover,
+html.site-theme-premium body .cta:hover,
+html.site-theme-premium body .primary-btn:hover,
+html.site-theme-premium body .signup-btn:hover,
+html.site-theme-premium body .action-btn:hover,
+html.site-theme-premium body .download-btn:hover,
+html.site-theme-premium body button:not(.theme-toggle):hover{
   background:var(--premium-green)!important;
   color:#fff!important;
 }
 
-body.site-theme-premium .tag,
-body.site-theme-premium .pill,
-body.site-theme-premium .badge,
-body.site-theme-premium .status-badge,
-body.site-theme-premium .edit-btn,
-body.site-theme-premium .edit,
-body.site-theme-premium .helper-btn,
-body.site-theme-premium .theme-toggle{
+html.site-theme-premium body .tag,
+html.site-theme-premium body .pill,
+html.site-theme-premium body .badge,
+html.site-theme-premium body .status-badge,
+html.site-theme-premium body .edit-btn,
+html.site-theme-premium body .edit,
+html.site-theme-premium body .helper-btn,
+html.site-theme-premium body .theme-toggle{
   background:var(--premium-green)!important;
   border-color:var(--premium-green)!important;
   color:#fff!important;
 }
 
-body.site-theme-premium input,
-body.site-theme-premium select,
-body.site-theme-premium textarea{
+html.site-theme-premium body input,
+html.site-theme-premium body select,
+html.site-theme-premium body textarea{
   background:#fff!important;
   border-color:#b9d2ee!important;
   color:var(--premium-text)!important;
@@ -637,17 +637,17 @@ body.site-theme-premium textarea{
   line-height:1;
 }
 
-body.site-theme-premium.dark-mode,
+html.site-theme-premium body.dark-mode,
 body.dark-mode{
   background:#07111f!important;
   color:#e8f1ff!important;
 }
 
-body.site-theme-premium.dark-mode nav,
-body.site-theme-premium.dark-mode .navbar,
-body.site-theme-premium.dark-mode .topbar,
-body.site-theme-premium.dark-mode footer,
-body.site-theme-premium.dark-mode .premium-header,
+html.site-theme-premium body.dark-mode nav,
+html.site-theme-premium body.dark-mode .navbar,
+html.site-theme-premium body.dark-mode .topbar,
+html.site-theme-premium body.dark-mode footer,
+html.site-theme-premium body.dark-mode .premium-header,
 body.dark-mode nav,
 body.dark-mode .navbar,
 body.dark-mode .topbar,
@@ -658,20 +658,20 @@ body.dark-mode .premium-header{
   color:#f4f8ff!important;
 }
 
-body.site-theme-premium.dark-mode main,
-body.site-theme-premium.dark-mode .section,
-body.site-theme-premium.dark-mode .section.white,
-body.site-theme-premium.dark-mode .features,
-body.site-theme-premium.dark-mode .services,
-body.site-theme-premium.dark-mode .about,
-body.site-theme-premium.dark-mode .contact,
-body.site-theme-premium.dark-mode .latest-section,
-body.site-theme-premium.dark-mode .document-help,
-body.site-theme-premium.dark-mode .useful-pages,
-body.site-theme-premium.dark-mode .home-portal,
-body.site-theme-premium.dark-mode .home-portal-main,
-body.site-theme-premium.dark-mode .business-strip,
-body.site-theme-premium.dark-mode .process-section,
+html.site-theme-premium body.dark-mode main,
+html.site-theme-premium body.dark-mode .section,
+html.site-theme-premium body.dark-mode .section.white,
+html.site-theme-premium body.dark-mode .features,
+html.site-theme-premium body.dark-mode .services,
+html.site-theme-premium body.dark-mode .about,
+html.site-theme-premium body.dark-mode .contact,
+html.site-theme-premium body.dark-mode .latest-section,
+html.site-theme-premium body.dark-mode .document-help,
+html.site-theme-premium body.dark-mode .useful-pages,
+html.site-theme-premium body.dark-mode .home-portal,
+html.site-theme-premium body.dark-mode .home-portal-main,
+html.site-theme-premium body.dark-mode .business-strip,
+html.site-theme-premium body.dark-mode .process-section,
 body.dark-mode main,
 body.dark-mode .section,
 body.dark-mode .section.white{
@@ -679,10 +679,10 @@ body.dark-mode .section.white{
   color:#e8f1ff!important;
 }
 
-body.site-theme-premium.dark-mode header,
-body.site-theme-premium.dark-mode .hero,
-body.site-theme-premium.dark-mode .masthead,
-body.site-theme-premium.dark-mode .news-head,
+html.site-theme-premium body.dark-mode header,
+html.site-theme-premium body.dark-mode .hero,
+html.site-theme-premium body.dark-mode .masthead,
+html.site-theme-premium body.dark-mode .news-head,
 body.dark-mode header,
 body.dark-mode .hero,
 body.dark-mode .masthead,
@@ -692,46 +692,46 @@ body.dark-mode .news-head{
   border-color:#24405f!important;
 }
 
-body.site-theme-premium.dark-mode .panel,
-body.site-theme-premium.dark-mode .card,
-body.site-theme-premium.dark-mode .feature-box,
-body.site-theme-premium.dark-mode .service-card,
-body.site-theme-premium.dark-mode .home-job-card,
-body.site-theme-premium.dark-mode .home-portal-box,
-body.site-theme-premium.dark-mode .business-card,
-body.site-theme-premium.dark-mode .process-card,
-body.site-theme-premium.dark-mode .doc-panel,
-body.site-theme-premium.dark-mode .enquiry-panel,
-body.site-theme-premium.dark-mode .doc-list,
-body.site-theme-premium.dark-mode .counter-box,
-body.site-theme-premium.dark-mode .ad-box,
-body.site-theme-premium.dark-mode .latest-box,
-body.site-theme-premium.dark-mode .news-line,
-body.site-theme-premium.dark-mode .news-item,
-body.site-theme-premium.dark-mode .login-box,
-body.site-theme-premium.dark-mode .story-text,
-body.site-theme-premium.dark-mode .contact-panel,
-body.site-theme-premium.dark-mode .contact-info,
-body.site-theme-premium.dark-mode .search-panel,
-body.site-theme-premium.dark-mode .table-card,
-body.site-theme-premium.dark-mode .user-box,
-body.site-theme-premium.dark-mode .manager,
-body.site-theme-premium.dark-mode .row,
-body.site-theme-premium.dark-mode .job-card,
-body.site-theme-premium.dark-mode .notice,
-body.site-theme-premium.dark-mode .portal-box,
-body.site-theme-premium.dark-mode .contact-box,
-body.site-theme-premium.dark-mode .special-card,
-body.site-theme-premium.dark-mode .search,
-body.site-theme-premium.dark-mode .detail-sheet,
-body.site-theme-premium.dark-mode .detail-sidebar,
-body.site-theme-premium.dark-mode .sidebar-card,
-body.site-theme-premium.dark-mode .content-box,
-body.site-theme-premium.dark-mode .message,
-body.site-theme-premium.dark-mode .tool-card,
-body.site-theme-premium.dark-mode .tool-hub-card,
-body.site-theme-premium.dark-mode .tool-index,
-body.site-theme-premium.dark-mode .admin-tool-panel,
+html.site-theme-premium body.dark-mode .panel,
+html.site-theme-premium body.dark-mode .card,
+html.site-theme-premium body.dark-mode .feature-box,
+html.site-theme-premium body.dark-mode .service-card,
+html.site-theme-premium body.dark-mode .home-job-card,
+html.site-theme-premium body.dark-mode .home-portal-box,
+html.site-theme-premium body.dark-mode .business-card,
+html.site-theme-premium body.dark-mode .process-card,
+html.site-theme-premium body.dark-mode .doc-panel,
+html.site-theme-premium body.dark-mode .enquiry-panel,
+html.site-theme-premium body.dark-mode .doc-list,
+html.site-theme-premium body.dark-mode .counter-box,
+html.site-theme-premium body.dark-mode .ad-box,
+html.site-theme-premium body.dark-mode .latest-box,
+html.site-theme-premium body.dark-mode .news-line,
+html.site-theme-premium body.dark-mode .news-item,
+html.site-theme-premium body.dark-mode .login-box,
+html.site-theme-premium body.dark-mode .story-text,
+html.site-theme-premium body.dark-mode .contact-panel,
+html.site-theme-premium body.dark-mode .contact-info,
+html.site-theme-premium body.dark-mode .search-panel,
+html.site-theme-premium body.dark-mode .table-card,
+html.site-theme-premium body.dark-mode .user-box,
+html.site-theme-premium body.dark-mode .manager,
+html.site-theme-premium body.dark-mode .row,
+html.site-theme-premium body.dark-mode .job-card,
+html.site-theme-premium body.dark-mode .notice,
+html.site-theme-premium body.dark-mode .portal-box,
+html.site-theme-premium body.dark-mode .contact-box,
+html.site-theme-premium body.dark-mode .special-card,
+html.site-theme-premium body.dark-mode .search,
+html.site-theme-premium body.dark-mode .detail-sheet,
+html.site-theme-premium body.dark-mode .detail-sidebar,
+html.site-theme-premium body.dark-mode .sidebar-card,
+html.site-theme-premium body.dark-mode .content-box,
+html.site-theme-premium body.dark-mode .message,
+html.site-theme-premium body.dark-mode .tool-card,
+html.site-theme-premium body.dark-mode .tool-hub-card,
+html.site-theme-premium body.dark-mode .tool-index,
+html.site-theme-premium body.dark-mode .admin-tool-panel,
 body.dark-mode .panel,
 body.dark-mode .card,
 body.dark-mode .content-box,
@@ -742,13 +742,13 @@ body.dark-mode .message{
   box-shadow:0 8px 24px rgba(0,0,0,.34)!important;
 }
 
-body.site-theme-premium.dark-mode h1,
-body.site-theme-premium.dark-mode h2,
-body.site-theme-premium.dark-mode h3,
-body.site-theme-premium.dark-mode strong,
-body.site-theme-premium.dark-mode .section-title h2,
-body.site-theme-premium.dark-mode .tool-head h2,
-body.site-theme-premium.dark-mode .card strong,
+html.site-theme-premium body.dark-mode h1,
+html.site-theme-premium body.dark-mode h2,
+html.site-theme-premium body.dark-mode h3,
+html.site-theme-premium body.dark-mode strong,
+html.site-theme-premium body.dark-mode .section-title h2,
+html.site-theme-premium body.dark-mode .tool-head h2,
+html.site-theme-premium body.dark-mode .card strong,
 body.dark-mode h1,
 body.dark-mode h2,
 body.dark-mode h3,
@@ -756,15 +756,15 @@ body.dark-mode strong{
   color:#ffb15c!important;
 }
 
-body.site-theme-premium.dark-mode p,
-body.site-theme-premium.dark-mode li,
-body.site-theme-premium.dark-mode small,
-body.site-theme-premium.dark-mode span,
-body.site-theme-premium.dark-mode .muted,
-body.site-theme-premium.dark-mode .card span,
-body.site-theme-premium.dark-mode .hero p,
-body.site-theme-premium.dark-mode header p,
-body.site-theme-premium.dark-mode .masthead p,
+html.site-theme-premium body.dark-mode p,
+html.site-theme-premium body.dark-mode li,
+html.site-theme-premium body.dark-mode small,
+html.site-theme-premium body.dark-mode span,
+html.site-theme-premium body.dark-mode .muted,
+html.site-theme-premium body.dark-mode .card span,
+html.site-theme-premium body.dark-mode .hero p,
+html.site-theme-premium body.dark-mode header p,
+html.site-theme-premium body.dark-mode .masthead p,
 body.dark-mode p,
 body.dark-mode li,
 body.dark-mode small,
@@ -773,27 +773,27 @@ body.dark-mode .muted{
   color:#cbd8ea!important;
 }
 
-body.site-theme-premium.dark-mode a:not(nav a):not(.btn):not(.cta):not(.action-btn):not(.download-btn),
+html.site-theme-premium body.dark-mode a:not(nav a):not(.btn):not(.cta):not(.action-btn):not(.download-btn),
 body.dark-mode a:not(nav a):not(.btn):not(.cta):not(.action-btn):not(.download-btn){
   color:#8ec5ff!important;
 }
 
-body.site-theme-premium.dark-mode .panel h2,
-body.site-theme-premium.dark-mode .sarkari-section-title,
-body.site-theme-premium.dark-mode .detail-table th,
-body.site-theme-premium.dark-mode .content-table th,
-body.site-theme-premium.dark-mode .article-head,
-body.site-theme-premium.dark-mode .tool-index h2,
-body.site-theme-premium.dark-mode .table-card h2,
-body.site-theme-premium.dark-mode .form-section h3{
+html.site-theme-premium body.dark-mode .panel h2,
+html.site-theme-premium body.dark-mode .sarkari-section-title,
+html.site-theme-premium body.dark-mode .detail-table th,
+html.site-theme-premium body.dark-mode .content-table th,
+html.site-theme-premium body.dark-mode .article-head,
+html.site-theme-premium body.dark-mode .tool-index h2,
+html.site-theme-premium body.dark-mode .table-card h2,
+html.site-theme-premium body.dark-mode .form-section h3{
   background:#0b2749!important;
   border-color:#24405f!important;
   color:#ffb15c!important;
 }
 
-body.site-theme-premium.dark-mode input,
-body.site-theme-premium.dark-mode select,
-body.site-theme-premium.dark-mode textarea,
+html.site-theme-premium body.dark-mode input,
+html.site-theme-premium body.dark-mode select,
+html.site-theme-premium body.dark-mode textarea,
 body.dark-mode input,
 body.dark-mode select,
 body.dark-mode textarea{
@@ -802,14 +802,14 @@ body.dark-mode textarea{
   color:#f5f8ff!important;
 }
 
-body.site-theme-premium.dark-mode input::placeholder,
-body.site-theme-premium.dark-mode textarea::placeholder,
+html.site-theme-premium body.dark-mode input::placeholder,
+html.site-theme-premium body.dark-mode textarea::placeholder,
 body.dark-mode input::placeholder,
 body.dark-mode textarea::placeholder{
   color:#8ea3bd!important;
 }
 
-body.site-theme-premium.dark-mode .theme-toggle,
+html.site-theme-premium body.dark-mode .theme-toggle,
 body.dark-mode .theme-toggle{
   background:#ffb15c!important;
   color:#06101f!important;
