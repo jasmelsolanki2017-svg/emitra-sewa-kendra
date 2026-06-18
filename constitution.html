@@ -107,6 +107,8 @@ const articleSummary = (article = {}) => {
   const text = String(article.articleTextHi || "").replace(/\s+/g, " ").trim();
   return text.length > 120 ? `${text.slice(0,120).trim()}…` : text;
 };
+const cleanArticleSlug = (value = "") => String(value).normalize("NFKD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,75);
+const articleDetailUrl = (article = {}) => `constitution/article-${cleanArticleSlug(articleNumber(article))}-${cleanArticleSlug(article.titleEn || article.englishTitle || article.titleEnglish) || "constitution-of-india"}/`;
 
 // Search index me number, title, part, summary aur keywords sab include hain.
 const searchText = (article = {}) => [
@@ -172,7 +174,7 @@ const renderArticles = (requestedPage = currentPageFromUrl(), updateHistory = fa
     const hindiTitle = article.titleHi || article.hindiTitle || article.titleHindi || article.title || "Article title";
     const englishTitle = article.titleEn || article.englishTitle || article.titleEnglish || "";
     const important = article.importantForExam !== false && String(article.important || "").toLowerCase() !== "false";
-    const detailUrl=`constitution-detail.html?article=${encodeURIComponent(number)}`;
+    const detailUrl=articleDetailUrl(article);
     return `<a class="card" href="${detailUrl}" aria-label="Article ${escapeHTML(number)} detail padhein">
       <div class="card-head">
         <span class="article-no"><i class="fa-solid fa-book-open"></i> Article ${escapeHTML(number)}</span>
