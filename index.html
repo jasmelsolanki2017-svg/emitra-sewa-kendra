@@ -4,7 +4,7 @@
 <head>
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0"><script src="/site-theme-init.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><script src="site-theme-init.js"></script>
 <script>
 document.documentElement.classList.add("site-theme-ready");
 try{
@@ -329,25 +329,24 @@ justify-content:flex-end;
 nav ul li a{
 color:white;
 text-decoration:none;
-font-size:14px;
-font-weight:700;
+font-size:15px;
+font-weight:900;
 display:inline-flex;
 align-items:center;
 justify-content:center;
-min-height:40px;
-padding:10px 14px;
-border:1px solid rgba(255,255,255,.32);
-border-radius:8px;
-background:rgba(255,255,255,.08);
-box-shadow:0 4px 12px rgba(0,0,0,.08);
-transition:background .25s ease,color .25s ease,border-color .25s ease,transform .25s ease;
+min-height:46px;
+padding:14px;
+border:0;
+border-radius:2px;
+background:transparent;
+box-shadow:none;
+text-transform:uppercase;
+transition:background .25s ease,color .25s ease;
 }
 
 nav ul li a:hover{
-background:#ff7a00;
-border-color:#ff7a00;
+background:#16803d;
 color:#fff;
-transform:translateY(-1px);
 }
 
 .lang-switch{display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.32);border-radius:8px;padding:4px 6px;color:#fff;font-size:13px;font-weight:900;}
@@ -795,7 +794,7 @@ padding:22px 14px 16px;
 
 .home-portal-masthead h1,
 .home-portal-masthead h2{
-color:#e65f00;
+color:#06285d;
 font-size:clamp(28px,5vw,45px);
 font-weight:900;
 line-height:1.15;
@@ -2270,7 +2269,7 @@ font-size:26px;
 })();
 </script>
 <link rel="stylesheet" href="mobile-responsive-fix.css">
-<link rel="stylesheet" href="/site-theme.css">
+<link rel="stylesheet" href="site-theme.css">
 </head>
 
 <body class="site-theme-premium">
@@ -3372,7 +3371,7 @@ window.loginUser = async (email, password) => {
 };
 </script>
 <button class="theme-toggle" type="button" aria-label="Toggle dark mode" title="Dark mode" onclick="toggleDarkMode()"><span class="theme-symbol" aria-hidden="true">☾</span></button>
-<script src="/site-theme.js" defer></script>
+<script src="site-theme.js" defer></script>
 </body>
 
 </html>
