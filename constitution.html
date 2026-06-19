@@ -176,25 +176,14 @@ const renderArticles = (requestedPage = currentPageFromUrl(), updateHistory = fa
   articleList.innerHTML = visibleArticles.map((article) => {
     const number = articleNumber(article) || "N/A";
     const hindiTitle = article.titleHi || article.hindiTitle || article.titleHindi || article.title || "Article title";
-    const englishTitle = article.titleEn || article.englishTitle || article.titleEnglish || "";
-    const important = article.importantForExam !== false && String(article.important || "").toLowerCase() !== "false";
     const isNew = isNewArticle(article);
     const detailUrl=articleDetailUrl(article);
     return `<a class="card" href="${detailUrl}" aria-label="Article ${escapeHTML(number)} detail padhein">
       <div class="card-head">
         <span class="article-no"><i class="fa-solid fa-book-open"></i> Article ${escapeHTML(number)}</span>
-        <span class="card-badges">
-          ${isNew ? `<span class="new-badge">NEW</span>` : ""}
-          ${important ? `<span class="exam-badge"><i class="fa-solid fa-star"></i> Important for Exam</span>` : ""}
-        </span>
+        ${isNew ? `<span class="new-badge">NEW</span>` : ""}
       </div>
       <h2>${escapeHTML(hindiTitle)}</h2>
-      ${englishTitle ? `<div class="english-title">${escapeHTML(englishTitle)}</div>` : ""}
-      <div class="meta">
-        ${article.partNo ? `<span>${escapeHTML(article.partNo)}</span>` : ""}
-        <span>${escapeHTML(articlePart(article))}</span>
-      </div>
-      ${articleSummary(article) ? `<p>${escapeHTML(articleSummary(article))}</p>` : ""}
       <span class="read-more">Read More <i class="fa-solid fa-arrow-right"></i></span>
     </a>`;
   }).join("");
