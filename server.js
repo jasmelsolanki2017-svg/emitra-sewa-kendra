@@ -980,7 +980,7 @@ const getPublishedJobById = async (id = "") => {
 
 const LEGACY_POST_SLUG_ALIASES = {
   "central-teacher-eligibility-test-ctet-september-2026-apply-online-form-tthxuz": "job-1779730227353",
-  "rrb-alp-online-form-2026-11-127-posts-kfcxav": "rrb-alp-online-form-2026-11-127-posts"
+  "rrb-alp-online-form-2026-11-127-posts-kfcxav": "rrb-alp-cen-01-2026-apply-online-11127-posts"
 };
 
 const normalizeSlugKey = (value = "") => toText(value)

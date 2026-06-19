@@ -18,6 +18,18 @@
       "SUPABASE_SETUP.md",
       "telegram-bot-setup.md"
     ],
+    "redirects": [
+      {
+        "source": "/post/rrb-alp-online-form-2026-11-127-posts-kfcxav",
+        "destination": "/post/rrb-alp-cen-01-2026-apply-online-11127-posts/",
+        "type": 301
+      },
+      {
+        "source": "/post/rrb-alp-online-form-2026-11-127-posts-kfcxav/",
+        "destination": "/post/rrb-alp-cen-01-2026-apply-online-11127-posts/",
+        "type": 301
+      }
+    ],
     "headers": [
       {
         "source": "**/*.html",
