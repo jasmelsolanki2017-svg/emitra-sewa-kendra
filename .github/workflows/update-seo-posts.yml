@@ -50,4 +50,4 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Update generated SEO post pages"
-          file_pattern: "404.html sitemap.xml sitemap-jobs.xml index.html latest-jobs.html admit-card.html result.html answer-key.html syllabus.html notification.html admission.html top-online-form.html important-links.html current-affairs.html constitution.html category-posts.js post/**"
+          file_pattern: "404.html sitemap.xml sitemap-jobs.xml sitemap-constitution.xml index.html latest-jobs.html admit-card.html result.html answer-key.html syllabus.html notification.html admission.html top-online-form.html important-links.html current-affairs.html constitution.html category-posts.js post/** constitution/**"
