@@ -2812,6 +2812,7 @@ const renderNotificationDetail = ({ jobId, job, title, description, canonicalUrl
   const vacancy = getFlexibleField(job, "vacancyDetails");
   const selection = asArray(getFlexibleField(job, "selectionProcess")).filter(isFilledFlexibleValue);
   const information = job.importantInformation || article.importantInformation || job.shortInfo || job.notificationSummary || job.intro;
+  const articleContent = job.articleContent || article.articleContent;
   const links = buildImportantLinks(job);
   const faqs = normalizeFaqItems(job.faq);
   const cards = [
@@ -2822,6 +2823,7 @@ const renderNotificationDetail = ({ jobId, job, title, description, canonicalUrl
     isFilledFlexibleValue(vacancy) ? `<section class="notification-card"><h2>Vacancy Details</h2><div class="notification-card-body">${renderNotificationTable(vacancy,"Post")}</div></section>` : "",
     selection.length ? `<section class="notification-card"><h2>Selection Process</h2><div class="notification-card-body notification-process-grid">${selection.map((item,index) => `<div class="notification-process-item"><b>${index+1}</b><span>${renderFlexibleCell(item)}</span></div>`).join("")}</div></section>` : "",
     isFilledFlexibleValue(information) ? `<section class="notification-card"><h2>Important Information</h2><div class="notification-card-body"><div class="notification-highlight">${renderFlexibleCell(information)}</div></div></section>` : "",
+    isFilledFlexibleValue(articleContent) ? `<section class="notification-card"><h2>Article Content</h2><div class="notification-card-body">${renderPageContent(articleContent,"Article Content")}</div></section>` : "",
     links.length ? `<section class="notification-card"><h2>Important Links</h2><div class="notification-card-body notification-link-grid">${links.map((item) => `<a class="btn ${/apply/i.test(item.label||"")?"apply":/official website/i.test(item.label||"")?"website":"notification"}" href="${safeUrl(item.url)}" target="_blank" rel="noopener noreferrer">${escapeHTML(item.label || "Important Link")}</a>`).join("")}</div></section>` : "",
     faqs.length ? `<section class="notification-card"><h2>FAQ</h2><div class="notification-card-body notification-faq">${faqs.map((item) => `<details><summary>${escapeHTML(item.question)}</summary><p>${renderFormattedText(item.answer)}</p></details>`).join("")}</div></section>` : ""
   ].filter(Boolean).join("");
