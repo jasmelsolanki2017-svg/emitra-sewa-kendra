@@ -15,7 +15,17 @@ const fetchJson = async (key) => {
 };
 const rowsFrom = (data = {}) => Object.entries(data || {}).map(([id, item]) => ({ id, ...(item || {}) })).filter((item) => item.title && visible(item));
 const href = (item) => `post/${encodeURIComponent(slug(item.sourceJobId || item.id, item))}/`;
-const sortRows = (rows) => rows.sort((a,b) => Number(a.displayOrder || 999999) - Number(b.displayOrder || 999999) || Number(b.createdAt || b.updatedAt || 0) - Number(a.createdAt || a.updatedAt || 0));
+const postTime = (item = {}) => {
+  const raw = item.createdAt || item.publishedAt || item.updatedAt || 0;
+  const numeric = Number(raw);
+  if (Number.isFinite(numeric) && numeric > 0) return numeric;
+  const parsed = new Date(raw).getTime();
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+const sortRows = (rows) => rows.sort((a,b) =>
+  postTime(b) - postTime(a)
+  || Number(a.displayOrder || 999999) - Number(b.displayOrder || 999999)
+);
 
 const categoryMeta = {
   latestJob:["latest-jobs.html","All Latest Jobs"],
