@@ -278,6 +278,34 @@ main{max-width:1180px;margin:auto;padding:26px 3% 42px;}
 .sidebar-links .btn{font-size:13px;min-height:38px;padding:8px 10px;box-shadow:none;}
 .related-list a{display:block;color:var(--deep);text-decoration:none;font-weight:800;font-size:13px;padding:8px 0;border-bottom:1px dashed #d8e5f3;}
 .related-list a:last-child{border-bottom:0;}
+.notification-detail-layout{display:grid;gap:16px;font-family:'Noto Sans Devanagari','Poppins',sans-serif}
+.notification-detail-hero{background:linear-gradient(135deg,#06285d,#075dcc);color:#fff;border-radius:12px;padding:20px;box-shadow:0 10px 28px rgba(6,40,93,.18)}
+.notification-detail-hero h2{font-size:clamp(24px,5vw,38px);line-height:1.25;margin:9px 0 12px;color:#fff}
+.notification-detail-badge{display:inline-flex;background:#ff7a00;color:#fff;border-radius:999px;padding:5px 11px;font-size:12px;font-weight:900}
+.notification-detail-meta{display:flex;gap:8px 16px;flex-wrap:wrap;font-size:13px;font-weight:800;color:#e9f3ff}
+.notification-card{background:#fff;border:1px solid #d8e5f3;border-radius:10px;overflow:hidden;box-shadow:0 7px 20px rgba(3,34,77,.07)}
+.notification-card>h2{margin:0;background:#075dcc;color:#fff;padding:12px 15px;font-size:19px}
+.notification-card-body{padding:14px}
+.notification-overview-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.notification-overview-item{border:1px solid #dce8f5;border-radius:7px;background:#f7fbff;padding:10px}
+.notification-overview-item span{display:block;color:#52657d;font-size:11px;font-weight:900;text-transform:uppercase;margin-bottom:3px}
+.notification-overview-item strong,.notification-overview-item a{color:#03224d;font-size:14px;font-weight:900;overflow-wrap:anywhere}
+.notification-responsive-table{width:100%;overflow-x:auto}
+.notification-responsive-table table{width:100%;min-width:520px;border-collapse:collapse}
+.notification-responsive-table th,.notification-responsive-table td{border:1px solid #d7e4f2;padding:10px;text-align:left;vertical-align:top}
+.notification-responsive-table th{background:#edf6ff;color:#03224d;font-weight:900}
+.notification-responsive-table tr:nth-child(even) td{background:#fbfdff}
+.notification-process-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:9px}
+.notification-process-item{display:flex;gap:9px;align-items:flex-start;border:1px solid #d9e7f5;border-radius:8px;padding:11px;background:#f8fbff;font-weight:800;color:#1f2937}
+.notification-process-item b{display:inline-flex;align-items:center;justify-content:center;width:25px;height:25px;flex:0 0 25px;border-radius:50%;background:#075dcc;color:#fff}
+.notification-highlight{border-left:5px solid #ff7a00;background:#fff8e8;color:#33250a;border-radius:7px;padding:14px;font-size:15px;line-height:1.75;font-weight:600}
+.notification-link-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}
+.notification-link-grid .btn{border-radius:7px;min-height:48px;font-size:14px;box-shadow:none}
+.notification-faq{display:grid;gap:8px}
+.notification-faq details{border:1px solid #d8e5f3;border-radius:8px;background:#fff;overflow:hidden}
+.notification-faq summary{cursor:pointer;padding:12px 14px;color:#03224d;font-weight:900;background:#f4f9ff}
+.notification-faq details p{padding:12px 14px;margin:0;color:#334155;line-height:1.7}
+@media(max-width:600px){.notification-detail-hero{padding:16px}.notification-overview-grid{grid-template-columns:1fr}.notification-card>h2{font-size:17px}.notification-card-body{padding:11px}}
 .message{text-align:center;background:white;border:1px solid var(--line);border-top:5px solid var(--orange);border-radius:8px;padding:28px;font-weight:800;color:var(--blue);box-shadow:0 8px 24px rgba(8,31,74,.08);}
 footer{background:var(--blue);color:#fff;text-align:center;padding:24px 6%;}
 footer a{color:var(--orange);text-decoration:none;font-weight:800;margin:0 7px;display:inline-block;}
@@ -2756,6 +2784,71 @@ const normalizeColumnDef = (column) => {
   return key ? { key, label:labelizeKey(key) } : null;
 };
 
+const notificationRows = (value, fallbackLabel = "Details") => {
+  const rows = flexibleRowsFromValue(value);
+  if(rows.length){ return rows; }
+  return isFilledFlexibleValue(value) ? [{ label:fallbackLabel, value }] : [];
+};
+
+const renderNotificationTable = (value, fallbackLabel = "Details") => {
+  const rows = notificationRows(value, fallbackLabel);
+  if(!rows.length){ return ""; }
+  return `<div class="notification-responsive-table"><table><tbody>${rows.map((row) => `<tr><th>${renderFormattedText(row.label || row.key || fallbackLabel)}</th><td>${renderFlexibleCell(row.value ?? row.text ?? row)}</td></tr>`).join("")}</tbody></table></div>`;
+};
+
+const renderNotificationDetail = ({ jobId, job, title, description, canonicalUrl, allJobs = [] }) => {
+  const article = job.advancedArticleData && typeof job.advancedArticleData === "object" ? job.advancedArticleData : {};
+  const officialWebsite = job.officialWebsite || article.officialWebsite;
+  const overviewItems = [
+    ["Organization", job.organization || job.department || article.organization || article.department],
+    ["Notification Name", job.notificationName || job.postName || article.notificationName || title],
+    ["Notification Number", job.notificationNo || job.advtNo || job.advertisementNo || article.notificationNo || article.advtNo],
+    ["Status", job.status || job.postStatus || article.status || "Published"],
+    ["Official Website", officialWebsite]
+  ].filter(([,value]) => isFilledFlexibleValue(value));
+  const dates = getFlexibleField(job, "importantDates");
+  const fees = getFlexibleField(job, "applicationFee");
+  const age = getFlexibleField(job, "ageLimit");
+  const vacancy = getFlexibleField(job, "vacancyDetails");
+  const selection = asArray(getFlexibleField(job, "selectionProcess")).filter(isFilledFlexibleValue);
+  const information = job.importantInformation || article.importantInformation || job.shortInfo || job.notificationSummary || job.intro;
+  const links = buildImportantLinks(job);
+  const faqs = normalizeFaqItems(job.faq);
+  const cards = [
+    overviewItems.length ? `<section class="notification-card"><h2>Notification Overview</h2><div class="notification-card-body notification-overview-grid">${overviewItems.map(([label,value]) => `<div class="notification-overview-item"><span>${escapeHTML(label)}</span>${label==="Official Website"?`<a href="${safeUrl(value)}" target="_blank" rel="noopener noreferrer">${escapeHTML(value)}</a>`:`<strong>${renderFormattedText(value)}</strong>`}</div>`).join("")}</div></section>` : "",
+    isFilledFlexibleValue(dates) ? `<section class="notification-card"><h2>Important Dates</h2><div class="notification-card-body">${renderNotificationTable(dates,"Date")}</div></section>` : "",
+    isFilledFlexibleValue(fees) ? `<section class="notification-card"><h2>Application Fee</h2><div class="notification-card-body">${renderNotificationTable(fees,"Category")}</div></section>` : "",
+    isFilledFlexibleValue(age) ? `<section class="notification-card"><h2>Age Limit</h2><div class="notification-card-body">${renderNotificationTable(age,"Age Details")}${job.ageRelaxation?`<div class="notification-highlight">${renderFormattedText(job.ageRelaxation)}</div>`:""}</div></section>` : "",
+    isFilledFlexibleValue(vacancy) ? `<section class="notification-card"><h2>Vacancy Details</h2><div class="notification-card-body">${renderNotificationTable(vacancy,"Post")}</div></section>` : "",
+    selection.length ? `<section class="notification-card"><h2>Selection Process</h2><div class="notification-card-body notification-process-grid">${selection.map((item,index) => `<div class="notification-process-item"><b>${index+1}</b><span>${renderFlexibleCell(item)}</span></div>`).join("")}</div></section>` : "",
+    isFilledFlexibleValue(information) ? `<section class="notification-card"><h2>Important Information</h2><div class="notification-card-body"><div class="notification-highlight">${renderFlexibleCell(information)}</div></div></section>` : "",
+    links.length ? `<section class="notification-card"><h2>Important Links</h2><div class="notification-card-body notification-link-grid">${links.map((item) => `<a class="btn ${/apply/i.test(item.label||"")?"apply":/official website/i.test(item.label||"")?"website":"notification"}" href="${safeUrl(item.url)}" target="_blank" rel="noopener noreferrer">${escapeHTML(item.label || "Important Link")}</a>`).join("")}</div></section>` : "",
+    faqs.length ? `<section class="notification-card"><h2>FAQ</h2><div class="notification-card-body notification-faq">${faqs.map((item) => `<details><summary>${escapeHTML(item.question)}</summary><p>${renderFormattedText(item.answer)}</p></details>`).join("")}</div></section>` : ""
+  ].filter(Boolean).join("");
+  const publishDate = job.postDate || job.date || job.createdAt;
+  const updatedDate = job.updatedAt || job.lastUpdated;
+  const contentBox = document.getElementById("pageContent");
+  const contentPanel = document.getElementById("pageContentPanel");
+  ["featurePanel","shortInfoPanel","importantPanel","jobInfoPanel","feePanel","agePanel","vacancyPanel","eligibilityPanel","selectionPanel","applyProcessPanel","extraPanel","linksPanel","faqPanel","mcqPanel","authorPanel","jobToolsPanel"].forEach((id) => {
+    const panel = document.getElementById(id);
+    if(panel){ panel.style.display = "none"; }
+  });
+  document.getElementById("jobType").textContent = job.category || "Notification";
+  document.getElementById("jobTitle").textContent = title;
+  document.getElementById("jobIntro").innerHTML = renderFormattedText(description);
+  document.querySelector(".article-head").style.display = "none";
+  contentPanel.style.display = "block";
+  contentBox.innerHTML = `<div class="notification-detail-layout"><header class="notification-detail-hero"><span class="notification-detail-badge">${escapeHTML(job.category || "Notification")}</span><h2>${escapeHTML(title)}</h2><div class="notification-detail-meta">${publishDate?`<span>Published: ${escapeHTML(formatReadableDate(publishDate))}</span>`:""}${updatedDate?`<span>Last Updated: ${escapeHTML(formatReadableDate(updatedDate))}</span>`:""}</div></header>${cards}</div>`;
+  renderSidebarLinks(links);
+  renderRelatedJobs(jobId, job, allJobs);
+  const relatedHeading = document.querySelector("#relatedJobs")?.closest(".sidebar-card")?.querySelector("h3");
+  if(relatedHeading){ relatedHeading.textContent = "Related Notifications"; }
+  setJsonLd(buildJobSchemaGraph({ job, title, description, canonicalUrl, faqItems:faqs }));
+  message.style.display = "none";
+  wrap.style.display = "block";
+  updateArticleWordCount();
+};
+
 const defaultUniversalColumns = () => activeLang === "hi"
   ? [{ key:"label", label:"विवरण" }, { key:"value", label:"जानकारी" }]
   : [{ key:"label", label:"Label" }, { key:"value", label:"Value" }];
@@ -3430,6 +3523,10 @@ const renderJobDetail = (jobId, rawJob, allJobs = []) => {
       message.style.display = "none";
       wrap.style.display = "block";
       updateArticleWordCount();
+      return;
+    }
+    if(normalizePostTarget(job.postTarget) === "notification"){
+      renderNotificationDetail({ jobId, job, title, description, canonicalUrl, allJobs });
       return;
     }
     const faqItems = renderFaqSection(job, title);
