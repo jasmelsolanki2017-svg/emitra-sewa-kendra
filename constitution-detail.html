@@ -34,7 +34,7 @@
 </main>
 <footer>© 2026 E-MITRA WALA | <a href="constitution.html">भारतीय संविधान</a></footer>
 <script>
-const DATA_URL="https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app/constitutionArticles.json";
+const INDEX_URL="/data/constitution/index.json",CACHE_KEY="emitraConstitutionIndexV1",CACHE_MS=24*60*60*1000;
 const escapeHTML=(value="")=>String(value).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
 const toArray=(value)=>Array.isArray(value)?value:(value?String(value).split(/\r?\n|,/).map((item)=>item.trim()).filter(Boolean):[]);
 const requestedArticle=String(new URLSearchParams(location.search).get("article")||"").trim();
@@ -48,16 +48,28 @@ const renderArticle=(article)=>{
   document.title=`Article ${number} - ${titleHi} | E-MITRA WALA`;
   document.getElementById("articleMeta").innerHTML=[article.partNo,article.partNameHi,article.partNameEn,article.date].filter(Boolean).map((value)=>`<span>${escapeHTML(value)}</span>`).join("");
   setText("shortSummaryHi",article.shortSummaryHi||article.summaryHi||article.summary||"");hideIfEmpty("summarySection",article.shortSummaryHi||article.summaryHi||article.summary);
-  setText("articleTextHi",article.articleTextHi);hideIfEmpty("textHiSection",article.articleTextHi);
-  setText("articleTextEn",article.articleTextEn);hideIfEmpty("textEnSection",article.articleTextEn);
+  setText("articleTextHi",article.articleTextHi||article.detailedExplanationHi);hideIfEmpty("textHiSection",article.articleTextHi||article.detailedExplanationHi);
+  setText("articleTextEn",article.articleTextEn||article.articleEnglish);hideIfEmpty("textEnSection",article.articleTextEn||article.articleEnglish);
   renderList("keyPointsSection","keyPoints",article.keyPoints);renderList("examUsefulSection","examUseful",article.examUseful);
-  const faqs=Array.isArray(article.faq)?article.faq:[];document.getElementById("faqSection").classList.toggle("hidden",!faqs.length);
+  const faqs=Array.isArray(article.faq)?article.faq:(Array.isArray(article.faqs)?article.faqs:[]);document.getElementById("faqSection").classList.toggle("hidden",!faqs.length);
   document.getElementById("faq").innerHTML=faqs.map((item)=>`<div class="faq-item"><strong>${escapeHTML(item.question||item.q||"Question")}</strong><div>${escapeHTML(item.answer||item.a||"")}</div></div>`).join("");
   document.getElementById("loading").classList.add("hidden");document.getElementById("detailContent").classList.remove("hidden");
 };
 const loadArticle=async()=>{
   if(!requestedArticle){document.getElementById("loading").textContent="Article number URL me missing hai.";return}
-  try{const response=await fetch(DATA_URL,{cache:"no-store"});if(!response.ok)throw new Error(`HTTP ${response.status}`);const data=await response.json()||{};const article=Object.entries(data).map(([id,value])=>({id,...value})).find((item)=>item.id===requestedArticle||item.articleId===requestedArticle||articleNumber(item)===requestedArticle);if(!article||String(article.status||"published").toLowerCase()!=="published")throw new Error("Article nahi mila.");renderArticle(article)}catch(error){document.getElementById("loading").textContent=error.message||"Article load nahi ho paya."}
+  try{
+    let index=[],cacheState="miss";
+    try{const cached=JSON.parse(localStorage.getItem(CACHE_KEY)||"null");if(cached&&Date.now()-Number(cached.savedAt||0)<CACHE_MS&&Array.isArray(cached.data)){index=cached.data;cacheState="hit"}}catch(_error){}
+    if(!index.length){const response=await fetch(INDEX_URL);if(!response.ok)throw new Error(`HTTP ${response.status}`);index=await response.json();localStorage.setItem(CACHE_KEY,JSON.stringify({savedAt:Date.now(),data:index}))}
+    console.info(`[Public data] path: ${INDEX_URL} | approx bytes: ${new Blob([JSON.stringify(index)]).size} | cache: ${cacheState}`);
+    const match=index.find((item)=>item.slug===requestedArticle||articleNumber(item)===requestedArticle);
+    if(!match)throw new Error("Article nahi mila.");
+    const detailUrl=`/data/constitution/${encodeURIComponent(match.slug)}.json`;
+    const response=await fetch(detailUrl);if(!response.ok)throw new Error(`HTTP ${response.status}`);
+    const article=await response.json();
+    console.info(`[Public data] path: ${detailUrl} | approx bytes: ${new Blob([JSON.stringify(article)]).size} | cache: browser`);
+    renderArticle(article);
+  }catch(error){document.getElementById("loading").textContent=error.message||"Article load nahi ho paya."}
 };
 loadArticle();
 </script>

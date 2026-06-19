@@ -81,7 +81,9 @@ footer{background:var(--blue);color:#fff;text-align:center;padding:22px 6%;margi
   <p><a href="privacy-policy.html">Privacy Policy</a><a href="about.html">About</a><a href="current-affairs.html">Current Affairs</a><a href="/#homePortalLatestJobs">Latest Jobs</a><a href="contact.html">Contact</a></p>
 </footer>
 <script>
-const DATA_URL = "https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app/constitutionArticles.json";
+const DATA_URL = "/data/constitution/index.json";
+const CONSTITUTION_CACHE_KEY = "emitraConstitutionIndexV1";
+const CONSTITUTION_CACHE_MS = 24 * 60 * 60 * 1000;
 const articleList = document.getElementById("articleList");
 const searchInput = document.getElementById("searchInput");
 const partFilter = document.getElementById("partFilter");
@@ -232,11 +234,32 @@ const showLoadError = (error) => {
   articleList.innerHTML = `<div class="message">Constitution data load nahi ho paya. Kripya page refresh karein. (${escapeHTML(error.message || "Unknown error")})</div>`;
 };
 
+const logPublicRead = (path, value, cacheState) => {
+  const bytes = new Blob([JSON.stringify(value || null)]).size;
+  console.info(`[Public data] path: ${path} | approx bytes: ${bytes} | cache: ${cacheState}`);
+};
+const readConstitutionCache = () => {
+  try{
+    const cached = JSON.parse(localStorage.getItem(CONSTITUTION_CACHE_KEY) || "null");
+    if(cached && Date.now() - Number(cached.savedAt || 0) < CONSTITUTION_CACHE_MS && Array.isArray(cached.data)){
+      logPublicRead(DATA_URL, cached.data, "hit");
+      return cached.data;
+    }
+  }catch(_error){}
+  console.info(`[Public data] path: ${DATA_URL} | cache: miss`);
+  return null;
+};
+
 const loadConstitutionData = async () => {
   try{
-    const response = await fetch(DATA_URL, { cache:"no-store" });
+    const cached = readConstitutionCache();
+    if(cached){ applyConstitutionData(cached); return; }
+    const response = await fetch(DATA_URL, { cache:"default" });
     if(!response.ok){ throw new Error(`HTTP ${response.status}`); }
-    applyConstitutionData(await response.json());
+    const data = await response.json();
+    localStorage.setItem(CONSTITUTION_CACHE_KEY, JSON.stringify({ savedAt:Date.now(), data }));
+    logPublicRead(DATA_URL, data, "miss");
+    applyConstitutionData(data);
   }catch(error){
     showLoadError(error);
   }

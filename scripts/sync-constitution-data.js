@@ -6,6 +6,8 @@ const root = path.join(__dirname, "..");
 const siteUrl = (process.env.SITE_BASE_URL || "https://emitrawala.online").replace(/\/+$/, "");
 const firebaseUrl = (process.env.FIREBASE_URL || "https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app").replace(/\/+$/, "");
 const outputRoot = path.join(root, "constitution");
+const publicDataRoot = path.join(root, "data", "constitution");
+const publicIndexPath = path.join(publicDataRoot, "index.json");
 const sitemapPath = path.join(root, "sitemap-constitution.xml");
 const mainSitemapPath = path.join(root, "sitemap.xml");
 const localCandidates = [
@@ -74,7 +76,9 @@ const buildPage = (article, previous, next) => {
   const en = englishTitle(article);
   const description = summary(article).slice(0, 155) || `भारतीय संविधान के अनुच्छेद ${number} की हिंदी और English जानकारी।`;
   const canonical = `${siteUrl}/constitution/${slugOf(article)}/`;
-  const faqs = Array.isArray(article.faq) ? article.faq.filter((item) => item && (item.question || item.q)) : [];
+  const faqs = (Array.isArray(article.faq) ? article.faq : (Array.isArray(article.faqs) ? article.faqs : [])).filter((item) => item && (item.question || item.q));
+  const hindiText = article.articleTextHi || article.detailedExplanationHi || "";
+  const englishText = article.articleTextEn || article.articleEnglish || "";
   const articleSchema = {
     "@context": "https://schema.org", "@type": "Article", headline: `Article ${number}: ${hi}`,
     alternativeHeadline: en || undefined, description, inLanguage: ["hi-IN", "en-IN"], mainEntityOfPage: canonical,
@@ -105,8 +109,8 @@ ${faqSchema ? `<script type="application/ld+json">${schemaJson(faqSchema)}</scri
 <header class="hero"><div class="hero-in"><span class="badge">Article ${esc(number)}</span><h1>${esc(hi)}</h1>${en ? `<div class="english">${esc(en)}</div>` : ""}<div class="meta">${[article.partNo, article.partNameHi, article.partNameEn, article.date].filter(Boolean).map((value) => `<span>${esc(value)}</span>`).join("")}</div></div></header>
 <main><a class="back" href="../../constitution.html"><i class="fa-solid fa-arrow-left"></i> सभी संविधान अनुच्छेद</a>
 ${summary(article) ? `<section class="section"><h2>संक्षिप्त सार</h2><p>${esc(summary(article))}</p></section>` : ""}
-${article.articleTextHi ? `<section class="section"><h2>अनुच्छेद की हिंदी में व्याख्या</h2><p>${esc(article.articleTextHi)}</p></section>` : ""}
-${article.articleTextEn ? `<section class="section"><h2>Article in English</h2><p>${esc(article.articleTextEn)}</p></section>` : ""}
+${hindiText ? `<section class="section"><h2>अनुच्छेद की हिंदी में व्याख्या</h2><p>${esc(hindiText)}</p></section>` : ""}
+${englishText ? `<section class="section"><h2>Article in English</h2><p>${esc(englishText)}</p></section>` : ""}
 ${listSection("मुख्य बिंदु", article.keyPoints)}${listSection("Exam Useful Points", article.examUseful)}
 ${faqs.length ? `<section class="section"><h2>अक्सर पूछे जाने वाले प्रश्न</h2>${faqs.map((item) => `<div class="faq"><strong>${esc(item.question || item.q)}</strong><div>${esc(item.answer || item.a)}</div></div>`).join("")}</section>` : ""}
 ${source.sourceName || source.verifiedFrom ? `<section class="section source"><h2>स्रोत और सूचना</h2><p><strong>${esc(source.sourceName || "Constitution of India")}</strong><br>${esc(source.verifiedFrom || "")}<br>${esc(source.note || "")}</p></section>` : ""}
@@ -139,6 +143,7 @@ async function main() {
   const articles = normalize(await loadData());
   if (!articles.length) throw new Error("No published constitution articles found.");
   fs.mkdirSync(outputRoot, { recursive: true });
+  fs.mkdirSync(publicDataRoot, { recursive: true });
   const expectedSlugs = new Set(articles.map(slugOf));
   fs.readdirSync(outputRoot, { withFileTypes: true })
     .filter((entry) => entry.isDirectory() && !expectedSlugs.has(entry.name))
@@ -147,7 +152,21 @@ async function main() {
     const directory = path.join(outputRoot, slugOf(article));
     fs.mkdirSync(directory, { recursive: true });
     fs.writeFileSync(path.join(directory, "index.html"), buildPage(article, articles[index - 1], articles[index + 1]), "utf8");
+    fs.writeFileSync(path.join(publicDataRoot, `${slugOf(article)}.json`), JSON.stringify(article), "utf8");
   });
+  const publicIndex = articles.map((article) => ({
+    articleNo:numberOf(article),
+    titleHi:hindiTitle(article),
+    titleEn:englishTitle(article),
+    slug:slugOf(article),
+    partNo:article.partNo || "",
+    partNameHi:article.partNameHi || article.partHi || article.part || article.category || "",
+    shortSummaryHi:summary(article).slice(0, 240),
+    createdAt:article.createdAt || article.publishDate || article.date || "",
+    updatedAt:article.updatedAt || article.publishDate || article.date || "",
+    status:"published"
+  }));
+  fs.writeFileSync(publicIndexPath, JSON.stringify(publicIndex), "utf8");
   const entries = articles.map(sitemapEntry);
   fs.writeFileSync(sitemapPath, `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${entries.join("\n")}\n</urlset>\n`, "utf8");
   if (fs.existsSync(mainSitemapPath)) {

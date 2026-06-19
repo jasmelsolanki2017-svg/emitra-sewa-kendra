@@ -15,7 +15,8 @@
 
     "LatestJobs": {
       ".read": true,
-      ".write": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'"
+      ".write": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'",
+      ".indexOn": ["category", "postTarget", "postStatus", "status", "createdAt", "slug"]
     },
 
     "premiumPosts": {
@@ -26,7 +27,16 @@
 
     "portalItems": {
       ".read": true,
-      ".write": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'"
+      ".write": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'",
+      ".indexOn": ["category", "status", "createdAt", "slug"]
+    },
+
+    "publicIndex": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'",
+      "$category": {
+        ".indexOn": ["category", "status", "createdAt", "slug"]
+      }
     },
 
     "advertisements": {
@@ -68,7 +78,7 @@
     "constitutionArticles": {
       ".read": true,
       ".write": "auth != null && auth.token.email == 'jasmelsolanki@gmail.com'",
-      ".indexOn": ["articleNo", "status", "updatedAt"]
+      ".indexOn": ["articleNo", "status", "createdAt", "updatedAt", "slug"]
     },
 
     "mockTests": {

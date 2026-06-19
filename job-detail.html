@@ -571,7 +571,7 @@ body.dark-mode .job-tool-btn:hover{background:#ffb15c!important;border-color:#ff
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+import { getDatabase, ref, get, query, orderByChild, equalTo, limitToFirst } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",
@@ -3744,6 +3744,7 @@ if(!id && !pathSlug){
   message.textContent = "Please open this page from Latest Jobs.";
   message.style.display = "block";
 }else if(id){
+  console.info(`[Firebase read] path: LatestJobs/${id} | cache: miss`);
   get(ref(db, "LatestJobs/" + id)).then((snapshot) => {
     if(!snapshot.exists()){
       message.textContent = "Job detail nahi mili ya delete ho chuki hai.";
@@ -3756,31 +3757,22 @@ if(!id && !pathSlug){
     message.textContent = "Job details load nahi ho payi: " + error.message;
     message.style.display = "block";
   });
+}else if(staticPost && staticPost.job){
+  console.info(`[Public data] path: embedded static post/${pathSlug} | approx bytes: ${new Blob([JSON.stringify(staticPost.job)]).size} | cache: page`);
+  renderJobDetail(staticPost.id || pathSlug, staticPost.job);
 }else{
-  get(ref(db, "LatestJobs")).then((snapshot) => {
+  console.info(`[Firebase read] path: LatestJobs query slug=${pathSlug} limit=1 | cache: miss`);
+  get(query(ref(db, "LatestJobs"), orderByChild("slug"), equalTo(pathSlug), limitToFirst(1))).then((snapshot) => {
     let match = null;
-    const allJobs = [];
-    if(snapshot.exists()){
-      snapshot.forEach((child) => {
-        const job = normalizeJob(child.val());
-        if(isJobVisible(job)){ allJobs.push({ id:child.key, job }); }
-        if(match){ return; }
-        if(isMatchingJobSlug(pathSlug, job, child.key)){
-          match = { id:child.key, job };
-        }
-      });
-    }
+    if(snapshot.exists()){snapshot.forEach((child)=>{if(!match){const job=normalizeJob(child.val());if(isJobVisible(job))match={id:child.key,job}}})}
     if(!match){
-      if(staticPost && staticPost.job){
-        renderJobDetail(staticPost.id || pathSlug, staticPost.job);
-        return;
-      }
       message.textContent = "Job detail nahi mili ya delete ho chuki hai.";
       message.style.display = "block";
       wrap.style.display = "none";
       return;
     }
-    renderJobDetail(match.id, match.job, allJobs);
+    console.info(`[Firebase read] path: LatestJobs/${match.id} | approx bytes: ${new Blob([JSON.stringify(match.job)]).size}`);
+    renderJobDetail(match.id, match.job);
   }).catch((error) => {
     message.textContent = "Job details load nahi ho payi: " + error.message;
     message.style.display = "block";
