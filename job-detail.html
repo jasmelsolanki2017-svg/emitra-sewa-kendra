@@ -2755,24 +2755,39 @@ const normalizeColumnDef = (column) => {
   return key ? { key, label:labelizeKey(key) } : null;
 };
 
+const defaultUniversalColumns = () => activeLang === "hi"
+  ? [{ key:"label", label:"विवरण" }, { key:"value", label:"जानकारी" }]
+  : [{ key:"label", label:"Label" }, { key:"value", label:"Value" }];
+
+const universalObjectCell = (row = {}, column = {}, columnIndex = 0) => {
+  if(Object.prototype.hasOwnProperty.call(row, column.key)){ return row[column.key]; }
+  const normalizedKey = String(column.key || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  const matchingKey = Object.keys(row).find((key) => String(key).toLowerCase().replace(/[^a-z0-9]/g, "") === normalizedKey);
+  if(matchingKey){ return row[matchingKey]; }
+  const legacyValues = [
+    row.label ?? row.key ?? row.title ?? row.name ?? row.field,
+    row.value ?? row.details ?? row.detail ?? row.text ?? row.content ?? row.description
+  ];
+  if(columnIndex < legacyValues.length && isFilledFlexibleValue(legacyValues[columnIndex])){ return legacyValues[columnIndex]; }
+  const values = Object.values(row);
+  return values[columnIndex];
+};
+
 const renderUniversalTable = (columns = [], rows = []) => {
   const sourceRows = Array.isArray(rows) ? rows.filter(isFilledFlexibleValue) : [];
   if(!sourceRows.length){ return ""; }
   const columnDefs = Array.isArray(columns) && columns.length
     ? columns.map(normalizeColumnDef).filter(Boolean)
-    : (sourceRows.every((row) => row && typeof row === "object" && !Array.isArray(row))
-      ? Array.from(new Set(sourceRows.flatMap((row) => Object.keys(row)))).map((key) => ({ key, label:labelizeKey(key) }))
-      : []);
+    : defaultUniversalColumns();
   if(sourceRows.every(Array.isArray)){
-    const headValues = columnDefs.length ? columnDefs.map((column) => column.label) : sourceRows[0];
-    const bodyRows = columnDefs.length ? sourceRows : sourceRows.slice(1);
-    if(!headValues.length || !bodyRows.length){ return ""; }
-    return `<div class="structured-table-wrap"><table class="content-table"><thead><tr>${headValues.map((cell) => `<th>${renderFormattedText(cell)}</th>`).join("")}</tr></thead><tbody>${bodyRows.map((row) => `<tr>${row.map((cell) => `<td>${renderFlexibleCell(cell)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+    const maxCells = Math.max(columnDefs.length, ...sourceRows.map((row) => row.length));
+    const visibleColumns = Array.from({ length:maxCells }, (_, index) => columnDefs[index] || { key:`column${index + 1}`, label:`Column ${index + 1}` });
+    return `<div class="structured-table-wrap"><table class="content-table"><thead><tr>${visibleColumns.map((column) => `<th>${renderFormattedText(column.label)}</th>`).join("")}</tr></thead><tbody>${sourceRows.map((row) => `<tr>${visibleColumns.map((column, index) => `<td>${renderFlexibleCell(row[index])}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
   }
   if(sourceRows.every((row) => row && typeof row === "object" && !Array.isArray(row))){
-    const visibleColumns = columnDefs.filter((column) => sourceRows.some((row) => isFilledFlexibleValue(row[column.key])));
+    const visibleColumns = columnDefs.filter((column, index) => sourceRows.some((row) => isFilledFlexibleValue(universalObjectCell(row, column, index))));
     if(!visibleColumns.length){ return ""; }
-    return `<div class="structured-table-wrap"><table class="content-table"><thead><tr>${visibleColumns.map((column) => `<th>${renderFormattedText(column.label)}</th>`).join("")}</tr></thead><tbody>${sourceRows.map((row) => `<tr>${visibleColumns.map((column) => `<td>${renderFlexibleCell(row[column.key])}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+    return `<div class="structured-table-wrap"><table class="content-table"><thead><tr>${visibleColumns.map((column) => `<th>${renderFormattedText(column.label)}</th>`).join("")}</tr></thead><tbody>${sourceRows.map((row) => `<tr>${visibleColumns.map((column) => `<td>${renderFlexibleCell(universalObjectCell(row, column, columnDefs.indexOf(column)))}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
   }
   return "";
 };
