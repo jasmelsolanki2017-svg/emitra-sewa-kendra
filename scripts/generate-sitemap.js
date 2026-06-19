@@ -957,9 +957,15 @@ const renderPremiumStaticPostHtml = (id = "", job = {}) => {
   const staticValue = (value) => {
     if (Array.isArray(value)) {
       if (!value.length) return "";
+      if (value.every((item) => item && typeof item === "object" && !Array.isArray(item) && ("label" in item || "value" in item))) {
+        return `<div class="post-info-grid">${value.map((item) => `<div class="post-info-row"><strong>${htmlEscape(item.label || item.title || item.name || "Details")}</strong><div>${staticValue(item.value ?? item.text ?? item.description ?? "")}</div></div>`).join("")}</div>`;
+      }
       return `<ul>${value.map((item) => `<li>${staticValue(item)}</li>`).join("")}</ul>`;
     }
     if (value && typeof value === "object") {
+      if ("label" in value || "value" in value) {
+        return `<div class="post-info-row"><strong>${htmlEscape(value.label || value.title || value.name || "Details")}</strong><div>${staticValue(value.value ?? value.text ?? value.description ?? "")}</div></div>`;
+      }
       const rows = Object.entries(value).filter(([, item]) => item !== undefined && item !== null && String(item).trim() !== "");
       if (!rows.length) return "";
       return `<div class="post-info-grid">${rows.map(([key, item]) => `<div class="post-info-row"><strong>${htmlEscape(key.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/[_-]+/g, " "))}</strong><div>${staticValue(item)}</div></div>`).join("")}</div>`;
@@ -978,6 +984,7 @@ const renderPremiumStaticPostHtml = (id = "", job = {}) => {
     ["Eligibility", payload.eligibility || payload.qualification],
     ["Selection Process", payload.selectionProcess],
     ["How to Apply", payload.howToApply],
+    ["पूरी जानकारी", payload.article || payload.fullArticle || payload.articleContent || payload.detailedArticle || payload.advancedArticleData?.article || payload.advancedArticleData?.fullArticle],
     ["Important Links", payload.importantLinks],
     ["FAQ", payload.faq || payload.faqs]
   ].map(([title, value]) => {
