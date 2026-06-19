@@ -478,6 +478,7 @@ body.dark-mode .job-tool-btn:hover{background:#ffb15c!important;border-color:#ff
         </section>
 
         <section class="panel" id="linksPanel" style="display:none;">
+          <a class="btn notification" id="resultPdfDownloadBtn" href="#" target="_blank" rel="noopener noreferrer" style="display:none;margin-bottom:12px;">📄 Download Result PDF</a>
           <h2>Important Links</h2>
           <div class="actions">
             <a class="btn apply" id="applyBtn" href="#" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-arrow-up-right-from-square"></i> Apply Online</a>
@@ -3685,6 +3686,11 @@ const renderJobDetail = (jobId, rawJob, allJobs = []) => {
       { id:"syllabusBtn", label:"Syllabus", url:job.syllabusLink, icon:"fa-solid fa-book-open" },
       { id:"answerKeyBtn", label:"Answer Key", url:job.answerKeyLink, icon:"fa-solid fa-key" }
     ];
+    const resultPdfUrl = safeUrl(job.resultPdf?.url || job.advancedArticleData?.resultPdf?.url);
+    const resultPdfDownloadBtn = document.getElementById("resultPdfDownloadBtn");
+    const hasResultPdf = Boolean(resultPdfUrl && resultPdfUrl !== "#");
+    resultPdfDownloadBtn.href = hasResultPdf ? resultPdfUrl : "#";
+    resultPdfDownloadBtn.style.display = hasResultPdf ? "inline-flex" : "none";
     let hasLink = false;
     const hasPostApplyLinks = renderPostWiseApplyLinks(job.postWiseApplyLinks);
     linkButtons.forEach((item) => {
@@ -3720,7 +3726,7 @@ const renderJobDetail = (jobId, rawJob, allJobs = []) => {
       ...extraImportantLinks.map((item) => ({ label:item.label || "Important Link", url:item.url, icon:"fa-solid fa-link" }))
     ]);
     renderRelatedJobs(jobId, job, allJobs);
-    document.getElementById("linksPanel").style.display = hasLink || hasPostApplyLinks || hasLinksManual || hasNestedImportant ? "block" : "none";
+    document.getElementById("linksPanel").style.display = hasResultPdf || hasLink || hasPostApplyLinks || hasLinksManual || hasNestedImportant ? "block" : "none";
 
     const contentBox = document.getElementById("pageContent");
     const hasStructuredDetailData = hasStructuredApplicationFee || hasStructuredAgeLimit || Boolean(vacancySummaryHtml || stateServiceHtml || subordinateServiceHtml || structuredVacancyHtml || nestedSectionHtml);

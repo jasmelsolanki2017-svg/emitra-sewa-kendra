@@ -100,6 +100,7 @@ const hasExplicitSupabaseStorageConfig = Boolean(
   process.env.SUPABASE_PDF_VERIFICATION_BUCKET
 );
 const PDF_VERIFICATION_BUCKET = String(process.env.SUPABASE_PDF_VERIFICATION_BUCKET || (hasExplicitSupabaseStorageConfig ? "pdf-verification" : "user-files")).trim();
+const SUPABASE_RESULT_BUCKET = String(process.env.SUPABASE_RESULT_BUCKET || "result-pdfs").trim();
 const SUPABASE_URL = String(process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || DEFAULT_SUPABASE_URL).trim();
 const SUPABASE_SERVICE_ROLE_KEY = String(process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || "").trim();
 const SUPABASE_PUBLISHABLE_KEY = String(process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || DEFAULT_SUPABASE_PUBLISHABLE_KEY).trim();
@@ -4954,6 +4955,57 @@ app.post("/api/pdf-verification/request", requireFirebaseUserApi, pdfVerificatio
     const status = err.code === "LIMIT_FILE_SIZE" ? 413 : (err.statusCode || 500);
     return res.status(status).json({ ok: false, error: err.code === "LIMIT_FILE_SIZE" ? "PDF 20MB se chhoti honi chahiye" : (err.message || "PDF upload nahi hua") });
   }
+});
+
+const resultPdfUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024, files: 1 },
+  fileFilter: (_req, file, cb) => {
+    if (String(file.mimetype || "").toLowerCase() !== "application/pdf") {
+      return cb(new Error("Only application/pdf files are allowed"));
+    }
+    return cb(null, true);
+  }
+});
+
+const safeResultPdfName = (name = "result.pdf") => {
+  const base = path.basename(String(name || "result.pdf"), path.extname(String(name || "")))
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80) || "result";
+  return `${base}.pdf`;
+};
+
+app.post("/api/upload-result-pdf", requireAdminApi, (req, res) => {
+  resultPdfUpload.single("pdf")(req, res, async (uploadError) => {
+    try {
+      if (uploadError) throw uploadError;
+      if (!req.file) return res.status(400).json({ success:false, error:"PDF file required" });
+      if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+        return res.status(503).json({ success:false, error:"SUPABASE_URL aur SUPABASE_SERVICE_ROLE_KEY backend env me required hain." });
+      }
+      const slug = String(req.body?.slug || "result-post").toLowerCase().replace(/[^a-z0-9\u0900-\u097f_-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 100) || "result-post";
+      const storagePath = `results/${slug}/${Date.now()}-${safeResultPdfName(req.file.originalname)}`;
+      const supabase = getSupabaseAdminClient();
+      const { error } = await supabase.storage.from(SUPABASE_RESULT_BUCKET).upload(storagePath, req.file.buffer, {
+        contentType:"application/pdf",
+        cacheControl:"3600",
+        upsert:false
+      });
+      if (error) throw error;
+      const { data } = supabase.storage.from(SUPABASE_RESULT_BUCKET).getPublicUrl(storagePath);
+      if (!data?.publicUrl) throw new Error("Supabase public URL nahi mila");
+      return res.json({ success:true, url:data.publicUrl });
+    } catch (error) {
+      const status = error instanceof multer.MulterError && error.code === "LIMIT_FILE_SIZE" ? 413 : (error.statusCode || 500);
+      const message = String(error?.message || error || "");
+      const readableError = /bucket/i.test(message) && /(not found|does not exist|missing)/i.test(message)
+        ? `Supabase bucket '${SUPABASE_RESULT_BUCKET}' nahi mila. Public bucket create karein ya SUPABASE_RESULT_BUCKET env sahi karein.`
+        : getPdfStorageErrorMessage(error);
+      return res.status(status).json({ success:false, error:error instanceof multer.MulterError && error.code === "LIMIT_FILE_SIZE" ? "PDF maximum 10MB honi chahiye." : readableError });
+    }
+  });
 });
 
 app.post("/api/pdf-verification/my-requests", async (req, res) => {
