@@ -22,6 +22,10 @@ const postTime = (item = {}) => {
   const parsed = new Date(raw).getTime();
   return Number.isFinite(parsed) ? parsed : 0;
 };
+const isNewPost = (item = {}) => {
+  const createdTime = postTime({ createdAt:item.createdAt || item.publishedAt });
+  return createdTime > 0 && createdTime <= Date.now() && Date.now() - createdTime < 3 * 24 * 60 * 60 * 1000;
+};
 const sortRows = (rows) => rows.sort((a,b) =>
   postTime(b) - postTime(a)
   || Number(a.displayOrder || 999999) - Number(b.displayOrder || 999999)
@@ -68,7 +72,7 @@ const injectHomepageLists = (jobs, portal) => {
         : rowsFrom(portal[target] || {}).concat(jobs.filter((item) => item.postTarget === target));
     const rows = [...new Map(sortRows(sourceRows).map((item) => [slug(item.sourceJobId || item.id,item),item])).values()].slice(0,10);
     const listHtml = rows.length
-      ? rows.map((item) => `<li><span class="post-title-line"><a href="${href(item)}">${esc(item.title)}</a></span></li>`).join("")
+      ? rows.map((item) => `<li><span class="post-title-line"><a href="${href(item)}">${esc(item.title)}</a>${isNewPost(item) ? '<span class="home-new-post-badge">NEW</span>' : ""}</span></li>`).join("")
       : `<li class="home-portal-message">Abhi koi update nahi hai.</li>`;
     html = html.replace(new RegExp(`(<ul class="home-portal-list" id="${listId}">)[\\s\\S]*?(<\\/ul>)`), `$1${listHtml}$2`);
   });
