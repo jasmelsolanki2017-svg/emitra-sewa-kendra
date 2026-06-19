@@ -1273,6 +1273,7 @@ const renderPrerenderedJobDetail = (id = "", job = {}) => {
             <div class="content-box">
               <p>${htmlEscape(description)}</p>
               <table class="detail-table"><tbody>${summaryRows.map(([label, value]) => `<tr><th>${htmlEscape(label)}</th><td>${htmlEscape(value)}</td></tr>`).join("")}</tbody></table>
+              ${toText(job.article || job.fullArticle || job.articleContent || job.detailedArticle || job.advancedArticleData?.article || job.advancedArticleData?.fullArticle) ? `<section><h2>पूरी जानकारी</h2><p>${htmlEscape(toText(job.article || job.fullArticle || job.articleContent || job.detailedArticle || job.advancedArticleData?.article || job.advancedArticleData?.fullArticle))}</p></section>` : ""}
               <p><a class="auto-link" href="${htmlEscape(canonicalUrl)}">Canonical job detail link</a> | <a class="auto-link" href="/#homePortalLatestJobs">All Latest Jobs</a></p>
             </div>`;
   return html
@@ -1316,12 +1317,13 @@ const findPublishedJobBySlug = async (slug = "") => {
     }
     const canonicalSlug = toText(job.slug) || buildSlug(job.title || "job-update", id);
     const canonicalKey = normalizeSlugKey(canonicalSlug);
-    if (
-      canonicalKey === targetSlug ||
-      canonicalKey === aliasTargetSlug ||
-      canonicalKey.indexOf(`${targetSlug}-`) === 0 ||
-      targetSlug.indexOf(`${canonicalKey}-`) === 0
-    ) {
+    const nestedSlugs = [
+      job.advancedArticleData?.slug,
+      job.rawJson?.slug,
+      job.originalJson?.slug
+    ].map(normalizeSlugKey).filter(Boolean);
+    const hasConflictingSlug = nestedSlugs.some((value) => value !== targetSlug && value !== aliasTargetSlug);
+    if (!hasConflictingSlug && (canonicalKey === targetSlug || canonicalKey === aliasTargetSlug)) {
       found = { id, job: { ...job, slug: canonicalSlug } };
       return true;
     }

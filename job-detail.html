@@ -903,12 +903,14 @@ const slugFromUrlPath = (value = "") => {
 
 const collectJobSlugs = (job = {}, fallbackId = "") => {
   const article = job.advancedArticleData && typeof job.advancedArticleData === "object" ? job.advancedArticleData : {};
+  const raw = job.rawJson && typeof job.rawJson === "object" ? job.rawJson : {};
+  const original = job.originalJson && typeof job.originalJson === "object" ? job.originalJson : {};
   return [
     job.slug,
     article.slug,
+    raw.slug,
+    original.slug,
     slugFromUrlPath(job.canonicalUrl),
-    buildCanonicalSlug({ ...job, slug:"" }, fallbackId),
-    buildCanonicalSlug(job, fallbackId)
   ].map(normalizeSlugValue).filter(Boolean);
 };
 
@@ -947,9 +949,8 @@ const isMatchingJobSlug = (requestedSlug = "", job = {}, fallbackId = "") => {
   };
   const aliasTarget = legacySlugAliases[requested] || "";
   const jobSlugs = collectJobSlugs(job, fallbackId);
-  if(jobSlugs.some((slug) => (
-    slug === requested || slug === aliasTarget || slug.indexOf(requested + "-") === 0 || requested.indexOf(slug + "-") === 0
-  ))){ return true; }
+  if(jobSlugs.some((slug) => slug !== requested && slug !== aliasTarget)){ return false; }
+  if(jobSlugs.some((slug) => slug === requested || slug === aliasTarget)){ return true; }
   if(isCurrentAffairsPost(job) && /^today-current-affairs(?:-|$)/.test(requested)){
     const requestedDate = requested.match(/today-current-affairs-(\d{1,2})-([a-z]+)-(\d{4})/);
     const jobDate = currentAffairsSlugDateText(job).toLowerCase().replace(/[,]/g, " ");
@@ -3449,6 +3450,33 @@ const renderPageContent = (content, title, options = {}) => {
   return html || "";
 };
 
+const getDetailedArticle = (job = {}) => {
+  const article = job.advancedArticleData && typeof job.advancedArticleData === "object" ? job.advancedArticleData : {};
+  return firstFilled(job.article, job.fullArticle, job.articleContent, job.detailedArticle, article.article, article.fullArticle);
+};
+
+const renderDetailedArticle = (value) => {
+  if(!isFilledFlexibleValue(value)){ return ""; }
+  if(typeof value === "string"){ return renderPageContent(value, "पूरी जानकारी"); }
+  if(Array.isArray(value)){
+    return `<div class="content-section">${value.map((item) => typeof item === "object" ? renderDetailedArticle(item) : `<p>${renderFormattedText(item)}</p>`).join("")}</div>`;
+  }
+  if(value && typeof value === "object"){
+    const heading = value.title || value.heading || value.name;
+    const intro = value.intro || value.summary;
+    const sections = value.sections || value.paragraphs || value.items;
+    const known = new Set(["title","heading","name","intro","summary","sections","paragraphs","items"]);
+    const extra = Object.entries(value).filter(([key,item]) => !known.has(key) && isFilledFlexibleValue(item));
+    return [
+      heading ? `<h3>${renderFormattedText(heading)}</h3>` : "",
+      intro ? renderDetailedArticle(intro) : "",
+      sections ? renderDetailedArticle(sections) : "",
+      ...extra.map(([key,item]) => `<div class="content-section"><h3>${escapeHTML(labelizeKey(key))}</h3>${renderDetailedArticle(item)}</div>`)
+    ].join("");
+  }
+  return "";
+};
+
 const id = new URLSearchParams(window.location.search).get("id");
 const slugParam = new URLSearchParams(window.location.search).get("slug");
 const postParam = new URLSearchParams(window.location.search).get("post");
@@ -3776,6 +3804,15 @@ const renderJobDetail = (jobId, rawJob, allJobs = []) => {
     const mcqHeading = document.querySelector("#mcqPanel h2");
     if(mcqHeading){ mcqHeading.textContent = "MCQ Practice"; }
 
+    const detailedArticle = getDetailedArticle(job);
+    if(isFilledFlexibleValue(detailedArticle)){
+      const articlePanel = document.getElementById("pageContentPanel");
+      const articleBox = document.getElementById("pageContent");
+      articlePanel.style.display = "block";
+      articleBox.classList.remove("empty");
+      articleBox.innerHTML = `<section class="panel"><h2>पूरी जानकारी</h2><div class="content-box">${renderDetailedArticle(detailedArticle)}</div></section>`;
+    }
+
     const linkButtons = [
       { id:"applyBtn", label:"Apply Online", url:job.applyLink, icon:"fa-solid fa-arrow-up-right-from-square", className:"apply" },
       { id:"officialBtn", label:"Official Notification", url:job.detailLink, icon:"fa-solid fa-file-lines", className:"notification" },
@@ -3833,7 +3870,7 @@ const renderJobDetail = (jobId, rawJob, allJobs = []) => {
     if(contentHtml || nestedSectionHtml){
       document.getElementById("pageContentPanel").style.display = "block";
       contentBox.classList.remove("empty");
-      contentBox.innerHTML = `${contentHtml}${nestedSectionNavHtml}${nestedSectionHtml}`;
+      contentBox.innerHTML += `${contentHtml}${nestedSectionNavHtml}${nestedSectionHtml}`;
     }else{
       document.getElementById("pageContentPanel").style.display = "none";
     }
@@ -3862,14 +3899,16 @@ if(!id && !pathSlug){
     message.textContent = "Job details load nahi ho payi: " + error.message;
     message.style.display = "block";
   });
-}else if(staticPost && staticPost.job){
+}else if(staticPost && staticPost.job && isMatchingJobSlug(pathSlug, staticPost.job, staticPost.id || "")){
   console.info(`[Public data] path: embedded static post/${pathSlug} | approx bytes: ${new Blob([JSON.stringify(staticPost.job)]).size} | cache: page`);
   renderJobDetail(staticPost.id || pathSlug, staticPost.job);
 }else{
   console.info(`[Firebase read] path: LatestJobs query slug=${pathSlug} limit=1 | cache: miss`);
-  get(query(ref(db, "LatestJobs"), orderByChild("slug"), equalTo(pathSlug), limitToFirst(1))).then((snapshot) => {
-    let match = null;
-    if(snapshot.exists()){snapshot.forEach((child)=>{if(!match){const job=normalizeJob(child.val());if(isJobVisible(job))match={id:child.key,job}}})}
+  get(query(ref(db, "LatestJobs"), orderByChild("slug"), equalTo(pathSlug))).then((snapshot) => {
+    const matches = [];
+    if(snapshot.exists()){snapshot.forEach((child)=>{const job=normalizeJob(child.val());if(isJobVisible(job)&&isMatchingJobSlug(pathSlug,job,child.key))matches.push({id:child.key,job})})}
+    if(matches.length > 1){ console.warn(`Duplicate slug detected: ${pathSlug}`, matches.map((item) => item.id)); }
+    const match = matches[0] || null;
     if(!match){
       message.textContent = "Job detail nahi mili ya delete ho chuki hai.";
       message.style.display = "block";
