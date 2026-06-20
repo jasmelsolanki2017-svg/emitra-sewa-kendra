@@ -82,15 +82,16 @@ const injectHomepageLists = (jobs, portal) => {
 const injectHomepageNews = (updates) => {
   const file = path.join(root, "index.html");
   let html = fs.readFileSync(file, "utf8");
-  const rows = sortRows(rowsFrom(updates).filter((item) => item.visible === true && String(item.status || "published").toLowerCase() === "published")).slice(0,9);
+  const rows = sortRows(rowsFrom(updates).filter((item) => item.visible === true && String(item.status || "published").toLowerCase() === "published")).slice(0,3);
   const updateHref = (item) => {
     const raw = String(item.url || item.link || item.postUrl || "").trim();
     if (/^https?:\/\//i.test(raw)) return raw;
     if (raw) return `/${raw.replace(/^\/+/, "")}`;
     return href(item);
   };
-  const groups = [rows.slice(0,3), rows.slice(3,6), rows.slice(6,9)];
-  const tickerHtml = rows.length ? groups.filter((group) => group.length).map((group) => `<div class="news-line"><span class="news-track">${group.map((item)=>`<a href="${esc(updateHref(item))}">${esc(item.text || item.title)}</a>`).join('<span aria-hidden="true"> • </span>')}</span></div>`).join("") : `<div class="news-line"><span class="news-track">Abhi koi latest update available nahi hai.</span></div>`;
+  const tickerHtml = rows.length
+    ? rows.map((item) => `<div class="news-line"><span class="news-track"><a href="${esc(updateHref(item))}">${esc(item.text || item.title)}</a></span></div>`).join("")
+    : `<div class="news-line"><span class="news-track">Abhi koi latest update available nahi hai.</span></div>`;
   const modalHtml = rows.length
     ? rows.map((item)=>`<a class="news-item" href="${esc(updateHref(item))}">${esc(item.text || item.title)}</a>`).join("")
     : `<p>Abhi koi latest update available nahi hai.</p>`;
