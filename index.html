@@ -2288,7 +2288,7 @@ font-size:26px;
 <span id="liveGreeting">Good Day</span> | ⏰ <span id="liveTime"></span> | <span id="weatherInfo">Weather loading...</span> | Rajasthan, India
 </div>
 
-<a class="topbar-admin" href="#" onclick="openLogin('admin')">
+<a class="topbar-admin" id="adminAccessLink" href="#" onclick="openLogin('admin');return false">
 <i class="fa-solid fa-user-shield"></i> Admin Login
 </a>
 
@@ -2334,7 +2334,7 @@ font-size:26px;
 <ul>
 <li><a href="/">Home</a></li>
 <li><a href="about.html">About</a></li>
-<li><a href="#" onclick="openLogin('user')">Login</a></li>
+<li><a id="userAccessLink" href="#" onclick="openLogin('user');return false">Login</a></li>
 <li><a href="/#homePortalLatestJobs">Latest Job</a></li>
 <li><a href="current-affairs.html">Current Affairs</a></li>
 <li><a href="constitution.html">भारतीय संविधान</a></li>
@@ -3253,6 +3253,7 @@ import {
   createUserWithEmailAndPassword,
   deleteUser,
   getAuth,
+  onAuthStateChanged,
   sendEmailVerification,
   setPersistence,
   signInWithEmailAndPassword,
@@ -3283,6 +3284,18 @@ const redirectByRole = (email) => {
   location.href = String(email || "").toLowerCase() === adminEmail ? "dashboard.html" : "user-dashboard.html";
 };
 
+const updateHomepageAuthLinks = (user) => {
+  const isAdmin = String(user?.email || "").toLowerCase() === adminEmail;
+  const userLink = document.getElementById("userAccessLink");
+  const adminLink = document.getElementById("adminAccessLink");
+  if(userLink){
+    userLink.textContent = user && !isAdmin ? "My Dashboard" : "Login";
+  }
+  if(adminLink){
+    adminLink.innerHTML = `<i class="fa-solid fa-user-shield"></i> ${user && isAdmin ? "Admin Dashboard" : "Admin Login"}`;
+  }
+};
+
 const showAuthError = (error, prefix = "Login nahi hua") => {
   const code = String(error?.code || "");
   const messages = {
@@ -3297,10 +3310,17 @@ const showAuthError = (error, prefix = "Login nahi hua") => {
 };
 
 window.openLogin = (mode = "user") => {
+  const signedInUser = auth.currentUser;
+  if(signedInUser){
+    redirectByRole(signedInUser.email);
+    return;
+  }
   currentLoginMode = mode === "admin" ? "admin" : "user";
   window.setAuthView("login", currentLoginMode === "admin");
   document.getElementById("loginModal").style.display = "flex";
 };
+
+onAuthStateChanged(auth, updateHomepageAuthLinks);
 
 window.signUpUser = async (email, password) => {
   email = String(email || "").trim().toLowerCase();
