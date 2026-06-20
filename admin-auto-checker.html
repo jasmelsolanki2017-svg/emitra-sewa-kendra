@@ -320,11 +320,14 @@
   <script>function updateLiveTime(){document.getElementById("liveTime").innerText=new Date().toLocaleString("hi-IN")}updateLiveTime();setInterval(updateLiveTime,1000)</script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-    import { getAuth,onAuthStateChanged,signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+    import { getAuth,onAuthStateChanged,signOut,setPersistence,browserLocalPersistence } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
     import { getDatabase,ref,push,set,update,remove,onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
     const firebaseConfig={apiKey:"AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",authDomain:"my-website-73785.firebaseapp.com",databaseURL:"https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app/",projectId:"my-website-73785",storageBucket:"my-website-73785.firebasestorage.app",messagingSenderId:"854088341990",appId:"1:854088341990:web:3211d4ef9fe4b78d025e27"};
     const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getDatabase(app),adminEmail="jasmelsolanki@gmail.com";
+    const authPersistenceReady=setPersistence(auth,browserLocalPersistence).catch((error)=>{
+      console.warn("Admin auth persistence setup failed",error);
+    });
     const adminServerStorageKey="emitraAdminServerUrl";
     const aiProviderStorageKey="emitraAutoCheckerAiProvider";
     let adminAllowed=false,editingSourceId="",activeDraftId="",sourcesCache={},draftsCache={},dataSyncStarted=false;
@@ -1450,18 +1453,20 @@
       onValue(ref(db,"autoJobCheckerStatus"),(snapshot)=>renderCheckerSummary(snapshot.val()||{}),(error)=>showPermissionHelp("logs",error));
     };
 
-    onAuthStateChanged(auth,(user)=>{
-      if(user&&user.email===adminEmail){
-        adminAllowed=true;
-        $("accessTitle").innerText="Admin Access Verified";
-        $("adminEmailText").innerText=user.email;
-        loadAiProviderSettings().catch(()=>{});
-        startDataSync();
-        if(hasAdminServerUrl()){checkServerStatus().catch(()=>{})}
-      }else{
-        adminAllowed=false;
-        location.replace("index.html");
-      }
+    authPersistenceReady.then(()=>{
+      onAuthStateChanged(auth,(user)=>{
+        if(user&&user.email===adminEmail){
+          adminAllowed=true;
+          $("accessTitle").innerText="Admin Access Verified";
+          $("adminEmailText").innerText=user.email;
+          loadAiProviderSettings().catch(()=>{});
+          startDataSync();
+          if(hasAdminServerUrl()){checkServerStatus().catch(()=>{})}
+        }else{
+          adminAllowed=false;
+          location.replace("index.html");
+        }
+      });
     });
     window.logoutUser=async()=>{adminAllowed=false;localStorage.removeItem("loginTime");try{await signOut(auth)}catch(error){console.warn("Admin logout failed",error)}location.replace("index.html")};
   </script>
