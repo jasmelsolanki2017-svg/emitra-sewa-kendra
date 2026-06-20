@@ -693,33 +693,6 @@ background:#9ebfe5;
 border-radius:999px;
 }
 
-.news-group{
-display:grid;
-gap:8px;
-}
-
-.news-group + .news-group{
-margin-top:4px;
-padding-top:8px;
-border-top:1px dashed #9ebfe5;
-}
-
-.news-group-label{
-width:max-content;
-padding:3px 9px;
-border-radius:999px;
-background:#0057a8;
-color:white;
-font-size:10px;
-font-weight:900;
-letter-spacing:.04em;
-}
-
-.news-group-manual .news-group-label{
-background:#ff7a00;
-color:#03224d;
-}
-
 .news-line{
 min-height:36px;
 background:white;
@@ -2516,7 +2489,7 @@ Create Account
 <small>E-MITRA WALA</small>
 </div>
 
-<div class="news-ticker-rows" id="newsTickerRows"><div class="news-group news-group-posts"><div class="news-group-label">POST UPDATES</div><div class="news-line"><span class="news-track"><a href="post/rushi-bhai-kese-hai-6qzk5t/">Rushi bhai kese hai</a></span></div><div class="news-line"><span class="news-track"><a href="post/rushi-kese-h-bhai-rfu2fr/">Rushi kese h bhai</a></span></div></div><div class="news-group news-group-manual"><div class="news-group-label">MANUAL UPDATES</div><div class="news-line static"><span class="news-track">Live manual updates load ho rahi hain...</span></div></div></div>
+<div class="news-ticker-rows" id="newsTickerRows"><div class="news-line"><span class="news-track"><a href="post/rushi-bhai-kese-hai-6qzk5t/">Rushi bhai kese hai</a></span></div><div class="news-line"><span class="news-track"><a href="post/rushi-kese-h-bhai-rfu2fr/">Rushi kese h bhai</a></span></div></div>
 
 </div>
 
@@ -3445,7 +3418,7 @@ const safeManualUpdateUrl = (value = "") => {
 onValue(ref(db, "latestUpdates"), (snapshot) => {
   const ticker = document.getElementById("newsTickerRows");
   if(!ticker) return;
-  const oldGroup = ticker.querySelector(".news-group-manual");
+  ticker.querySelectorAll(".news-line[data-manual-update]").forEach((line) => line.remove());
   const rows = [];
   snapshot.forEach((child) => {
     const item = child.val() || {};
@@ -3453,17 +3426,13 @@ onValue(ref(db, "latestUpdates"), (snapshot) => {
     rows.push({ id:child.key, ...item });
   });
   rows.sort((a,b) => Number(b.createdAt || b.updatedAt || 0) - Number(a.createdAt || a.updatedAt || 0));
-  const group = document.createElement("div");
-  group.className = "news-group news-group-manual";
-  group.innerHTML = `<div class="news-group-label">MANUAL UPDATES</div>` + (rows.length
-    ? rows.slice(0,3).map((item) => {
+  if(rows.length){
+    ticker.insertAdjacentHTML("beforeend", rows.slice(0,3).map((item) => {
         const text = escapeUpdateText(item.text || item.title || "Manual Update");
         const url = safeManualUpdateUrl(item.url || item.link || item.postUrl);
-        return `<div class="news-line"><span class="news-track">${url ? `<a href="${escapeUpdateText(url)}">${text}</a>` : `<span>${text}</span>`}</span></div>`;
-      }).join("")
-    : `<div class="news-line static"><span class="news-track">Abhi koi manual update nahi hai.</span></div>`);
-  if(oldGroup) oldGroup.replaceWith(group);
-  else ticker.appendChild(group);
+        return `<div class="news-line" data-manual-update="${escapeUpdateText(item.id)}"><span class="news-track">${url ? `<a href="${escapeUpdateText(url)}">${text}</a>` : `<span>${text}</span>`}</span></div>`;
+      }).join(""));
+  }
 });
 
 setPersistence(auth, browserLocalPersistence).catch(() => {});

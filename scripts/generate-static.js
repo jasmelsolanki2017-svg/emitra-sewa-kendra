@@ -91,11 +91,9 @@ const injectHomepageNews = (updates) => {
     if (raw) return `/${raw.replace(/^\/+/, "")}`;
     return href(item);
   };
-  const tickerGroup = (label, type, groupRows) => groupRows.length
-    ? `<div class="news-group news-group-${type}"><div class="news-group-label">${label}</div>${groupRows.map((item) => `<div class="news-line"><span class="news-track"><a href="${esc(updateHref(item))}">${esc(item.text || item.title)}</a></span></div>`).join("")}</div>`
-    : "";
-  const tickerHtml = tickerGroup("POST UPDATES", "posts", postRows)
-    + `<div class="news-group news-group-manual"><div class="news-group-label">MANUAL UPDATES</div><div class="news-line static"><span class="news-track">Live manual updates load ho rahi hain...</span></div></div>`;
+  const tickerHtml = postRows.length
+    ? postRows.map((item) => `<div class="news-line"><span class="news-track"><a href="${esc(updateHref(item))}">${esc(item.text || item.title)}</a></span></div>`).join("")
+    : `<div class="news-line static"><span class="news-track">Abhi koi latest update available nahi hai.</span></div>`;
   const modalHtml = rows.length
     ? rows.map((item)=>`<a class="news-item" href="${esc(updateHref(item))}">${esc(item.text || item.title)}</a>`).join("")
     : `<p>Abhi koi latest update available nahi hai.</p>`;
