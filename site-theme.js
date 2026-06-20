@@ -18,6 +18,7 @@
   };
   const normalizeTheme = () => "premium";
   const removeLegacyThemeBits = () => {
+    document.querySelectorAll(".premium-main > .summary-grid").forEach((grid) => grid.remove());
     document.querySelectorAll('style#emitra-theme-css').forEach((style) => style.remove());
     document.querySelectorAll('script#emitra-theme-js').forEach((script) => {
       if (script !== document.currentScript) script.remove();
