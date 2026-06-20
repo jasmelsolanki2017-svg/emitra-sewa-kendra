@@ -870,6 +870,20 @@
         });
       });
     }
+    function removeLabelValueHeaders(container=document){
+      container.querySelectorAll("table").forEach((table)=>{
+        const firstRow=table.querySelector("thead tr")||table.querySelector("tbody tr:first-child")||table.querySelector("tr:first-child");
+        if(!firstRow)return;
+        const cells=Array.from(firstRow.children).map((cell)=>String(cell.textContent||"").trim().toLowerCase());
+        if(cells.length>=2&&cells[0]==="label"&&cells[1]==="value"){
+          const parent=firstRow.parentElement;
+          if(parent&&parent.tagName.toLowerCase()==="thead")parent.remove();
+          else firstRow.remove();
+        }
+      });
+    }
+    const labelValueObserver=new MutationObserver(()=>removeLabelValueHeaders(root));
+    labelValueObserver.observe(root,{childList:true,subtree:true});
     function renderSidebar(data,links){
       const defs=sectionDefsFor(data);
       const mini=defs.map(([key])=>key).filter(k=>hasRenderableSection(data,k)).slice(0,10);
@@ -895,6 +909,7 @@
       const sections=`<div class="section-grid">${defs.map(([key,title,accent,span])=>renderCard(key,title,renderSection(data,key),accent,span)).join("")}</div>`;
       root.classList.toggle("premium-admin-editing",adminEditMode);
       root.innerHTML=`<div class="premium-layout job-post post-content ${syllabus?"syllabus-layout":""}"><div class="premium-main">${hero}${sections}</div>${renderSidebar(data,links)}</div>`;
+      removeLabelValueHeaders(root);
       const sticky=links.filter(l=>/(apply|download|notification)/i.test(l.label)).slice(0,2);
       mobileSticky.innerHTML=sticky.map(l=>`<a class="action-btn ${linkClass(l.label)}" href="${escapeHTML(l.url)}" target="_blank" rel="noopener noreferrer">${linkIcon(l.label)} ${escapeHTML(l.label)}</a>`).join("");
       attachPremiumDesignPicker();

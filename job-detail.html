@@ -3563,6 +3563,45 @@ const message = document.getElementById("jobMessage");
 const wrap = document.getElementById("jobDetailWrap");
 const staticPost = window.__EMITRA_STATIC_POST__ && typeof window.__EMITRA_STATIC_POST__ === "object" ? window.__EMITRA_STATIC_POST__ : null;
 
+function removeLabelValueHeaders(root = document){
+  root.querySelectorAll("table").forEach((table) => {
+    const firstRow =
+      table.querySelector("thead tr") ||
+      table.querySelector("tbody tr:first-child") ||
+      table.querySelector("tr:first-child");
+    if(!firstRow){ return; }
+    const cells = Array.from(firstRow.children).map((cell) =>
+      String(cell.textContent || "").trim().toLowerCase()
+    );
+    if(cells.length >= 2 && cells[0] === "label" && cells[1] === "value"){
+      const parent = firstRow.parentElement;
+      if(parent && parent.tagName.toLowerCase() === "thead"){
+        parent.remove();
+      }else{
+        firstRow.remove();
+      }
+    }
+  });
+}
+
+const labelValuePostContainer =
+  document.querySelector("#jobDetailWrap") ||
+  document.querySelector("#postContent") ||
+  document.querySelector(".post-content") ||
+  document.querySelector(".post-detail") ||
+  document.querySelector("main");
+
+if(labelValuePostContainer){
+  removeLabelValueHeaders(labelValuePostContainer);
+  const labelValueObserver = new MutationObserver(() => {
+    removeLabelValueHeaders(labelValuePostContainer);
+  });
+  labelValueObserver.observe(labelValuePostContainer, {
+    childList:true,
+    subtree:true
+  });
+}
+
 const renderJobDetail = (jobId, rawJob, allJobs = []) => {
     window.__EMITRA_CURRENT_JOB__ = { id:jobId, rawJob, allJobs };
     const job = normalizeJob(t(rawJob));
