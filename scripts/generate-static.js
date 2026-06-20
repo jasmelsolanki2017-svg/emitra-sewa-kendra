@@ -82,16 +82,22 @@ const injectHomepageLists = (jobs, portal) => {
 const injectHomepageNews = (updates) => {
   const file = path.join(root, "index.html");
   let html = fs.readFileSync(file, "utf8");
-  const rows = sortRows(rowsFrom(updates).filter((item) => item.visible === true && String(item.status || "published").toLowerCase() === "published")).slice(0,3);
+  const visibleRows = sortRows(rowsFrom(updates).filter((item) => item.visible === true && String(item.status || "published").toLowerCase() === "published"));
+  const postRows = visibleRows.filter((item) => item.manual !== true).slice(0,3);
+  const manualRows = visibleRows.filter((item) => item.manual === true).slice(0,3);
+  const rows = postRows.concat(manualRows);
   const updateHref = (item) => {
     const raw = String(item.url || item.link || item.postUrl || "").trim();
     if (/^https?:\/\//i.test(raw)) return raw;
     if (raw) return `/${raw.replace(/^\/+/, "")}`;
     return href(item);
   };
+  const tickerGroup = (label, type, groupRows) => groupRows.length
+    ? `<div class="news-group news-group-${type}"><div class="news-group-label">${label}</div>${groupRows.map((item) => `<div class="news-line"><span class="news-track"><a href="${esc(updateHref(item))}">${esc(item.text || item.title)}</a></span></div>`).join("")}</div>`
+    : "";
   const tickerHtml = rows.length
-    ? rows.map((item) => `<div class="news-line"><span class="news-track"><a href="${esc(updateHref(item))}">${esc(item.text || item.title)}</a></span></div>`).join("")
-    : `<div class="news-line"><span class="news-track">Abhi koi latest update available nahi hai.</span></div>`;
+    ? tickerGroup("POST UPDATES", "posts", postRows) + tickerGroup("MANUAL UPDATES", "manual", manualRows)
+    : `<div class="news-line static"><span class="news-track">Abhi koi latest update available nahi hai.</span></div>`;
   const modalHtml = rows.length
     ? rows.map((item)=>`<a class="news-item" href="${esc(updateHref(item))}">${esc(item.text || item.title)}</a>`).join("")
     : `<p>Abhi koi latest update available nahi hai.</p>`;

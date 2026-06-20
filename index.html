@@ -693,6 +693,33 @@ background:#9ebfe5;
 border-radius:999px;
 }
 
+.news-group{
+display:grid;
+gap:8px;
+}
+
+.news-group + .news-group{
+margin-top:4px;
+padding-top:8px;
+border-top:1px dashed #9ebfe5;
+}
+
+.news-group-label{
+width:max-content;
+padding:3px 9px;
+border-radius:999px;
+background:#0057a8;
+color:white;
+font-size:10px;
+font-weight:900;
+letter-spacing:.04em;
+}
+
+.news-group-manual .news-group-label{
+background:#ff7a00;
+color:#03224d;
+}
+
 .news-line{
 min-height:36px;
 background:white;
@@ -2489,7 +2516,7 @@ Create Account
 <small>E-MITRA WALA</small>
 </div>
 
-<div class="news-ticker-rows" id="newsTickerRows"><div class="news-line"><span class="news-track"><a href="post/rushi-bhai-kese-hai-6qzk5t/">Rushi bhai kese hai</a></span></div><div class="news-line"><span class="news-track"><a href="post/rushi-kese-h-bhai-rfu2fr/">Rushi kese h bhai</a></span></div><div class="news-line"><span class="news-track"><a href="https://emitrawala.online/post/ssc-cgl-recruitment-2026-online-form/">Staff Selection Commission SSC has released the official notification for Combined Graduate Level CGL Examination 2026. Eligible graduate candidates can apply online from 21 May 2026 to 22 June 2026.</a></span></div></div>
+<div class="news-ticker-rows" id="newsTickerRows"><div class="news-group news-group-posts"><div class="news-group-label">POST UPDATES</div><div class="news-line"><span class="news-track"><a href="post/rushi-bhai-kese-hai-6qzk5t/">Rushi bhai kese hai</a></span></div><div class="news-line"><span class="news-track"><a href="post/rushi-kese-h-bhai-rfu2fr/">Rushi kese h bhai</a></span></div></div><div class="news-group news-group-manual"><div class="news-group-label">MANUAL UPDATES</div><div class="news-line"><span class="news-track"><a href="https://emitrawala.online/post/ssc-cgl-recruitment-2026-online-form/">Staff Selection Commission SSC has released the official notification for Combined Graduate Level CGL Examination 2026. Eligible graduate candidates can apply online from 21 May 2026 to 22 June 2026.</a></span></div></div></div>
 
 </div>
 
