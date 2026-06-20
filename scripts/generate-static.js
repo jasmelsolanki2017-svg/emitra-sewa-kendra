@@ -91,9 +91,9 @@ const injectHomepageNews = (updates) => {
     if (raw) return `/${raw.replace(/^\/+/, "")}`;
     return href(item);
   };
-  const tickerHtml = postRows.length
-    ? postRows.map((item) => `<div class="news-line"><span class="news-track"><a href="${esc(updateHref(item))}">${esc(item.text || item.title)}</a></span></div>`).join("")
-    : `<div class="news-line static"><span class="news-track">Abhi koi latest update available nahi hai.</span></div>`;
+  const tickerRows = postRows.map((item) => `<div class="news-line"><span class="news-track"><a href="${esc(updateHref(item))}">${esc(item.text || item.title)}</a></span></div>`);
+  while (tickerRows.length < 3) tickerRows.push(`<div class="news-line news-placeholder" aria-hidden="true"></div>`);
+  const tickerHtml = tickerRows.join("");
   const modalHtml = rows.length
     ? rows.map((item)=>`<a class="news-item" href="${esc(updateHref(item))}">${esc(item.text || item.title)}</a>`).join("")
     : `<p>Abhi koi latest update available nahi hai.</p>`;

@@ -631,36 +631,39 @@ color:#0057a8;
 /* LATEST UPDATES */
 
 .latest-section{
-background:white;
-padding:30px 6% 0;
+background:#f3f8ff;
+padding:24px 6% 0;
 }
 
 .latest-box{
-max-width:1100px;
+width:100%;
+max-width:1180px;
 margin:auto;
-background:#eaf4ff;
-border-left:6px solid #ff7a00;
+background:white;
+border:1px solid #c9d8ea;
+border-top:4px solid #ff7a00;
 padding:0;
-border-radius:8px;
-box-shadow:0 5px 18px rgba(0,0,0,0.08);
+border-radius:10px;
+box-shadow:0 8px 24px rgba(3,34,77,.10);
 overflow:hidden;
 display:grid;
-grid-template-columns:190px 1fr;
+grid-template-columns:200px 1fr;
 cursor:pointer;
 }
 
 .news-head{
-background:#0057a8;
+background:linear-gradient(145deg,#0057a8,#032f68);
 color:white;
-padding:18px;
+padding:20px 22px;
 display:flex;
 flex-direction:column;
 justify-content:center;
 gap:5px;
+border-right:4px solid #ff7a00;
 }
 
 .news-head span{
-color:#ff7a00;
+color:#ffd39f;
 font-size:13px;
 font-weight:800;
 letter-spacing:0;
@@ -678,31 +681,32 @@ font-weight:700;
 }
 
 .news-ticker-rows{
-padding:14px;
+padding:12px 14px;
 display:grid;
+grid-template-rows:repeat(3,36px);
 gap:8px;
 min-width:0;
-max-height:146px;
-overflow-y:auto;
-overscroll-behavior:contain;
-scrollbar-width:thin;
-scrollbar-color:#9ebfe5 transparent;
-}
-
-.news-ticker-rows::-webkit-scrollbar{width:6px}
-.news-ticker-rows::-webkit-scrollbar-thumb{
-background:#9ebfe5;
-border-radius:999px;
+height:140px;
+overflow:hidden;
+background:#eef5fd;
 }
 
 .news-line{
+height:36px;
 min-height:36px;
 background:white;
-border:1px solid #d8e0f0;
-border-radius:6px;
+border:1px solid #cbdcf0;
+border-left:4px solid #0b6dcc;
+border-radius:7px;
 overflow:hidden;
 display:flex;
 align-items:center;
+box-shadow:0 2px 5px rgba(3,34,77,.04);
+}
+
+.news-placeholder{
+border-left-color:#b5c9df;
+background:linear-gradient(90deg,#fff,#f8fbff,#fff);
 }
 
 .news-track{
@@ -2127,11 +2131,14 @@ grid-template-columns:1fr;
 }
 
 .news-ticker-rows{
-max-height:134px;
+height:142px;
+grid-template-rows:repeat(3,34px);
 }
 
 .news-head{
 padding:14px;
+border-right:0;
+border-bottom:4px solid #ff7a00;
 }
 
 .news-head h2{
@@ -2494,7 +2501,7 @@ Create Account
 <small>E-MITRA WALA</small>
 </div>
 
-<div class="news-ticker-rows" id="newsTickerRows"></div>
+<div class="news-ticker-rows" id="newsTickerRows"><div class="news-line news-placeholder" aria-hidden="true"></div><div class="news-line news-placeholder" aria-hidden="true"></div><div class="news-line news-placeholder" aria-hidden="true"></div></div>
 
 </div>
 
@@ -3424,6 +3431,7 @@ onValue(ref(db, "latestUpdates"), (snapshot) => {
   const ticker = document.getElementById("newsTickerRows");
   if(!ticker) return;
   ticker.querySelectorAll(".news-line[data-manual-update]").forEach((line) => line.remove());
+  ticker.querySelectorAll(".news-placeholder").forEach((line) => line.remove());
   const rows = [];
   snapshot.forEach((child) => {
     const item = child.val() || {};
@@ -3437,6 +3445,10 @@ onValue(ref(db, "latestUpdates"), (snapshot) => {
         const url = safeManualUpdateUrl(item.url || item.link || item.postUrl);
         return `<div class="news-line" data-manual-update="${escapeUpdateText(item.id)}"><span class="news-track">${url ? `<a href="${escapeUpdateText(url)}">${text}</a>` : `<span>${text}</span>`}</span></div>`;
       }).join(""));
+  }
+  const missingRows = Math.max(0, 3 - ticker.querySelectorAll(".news-line").length);
+  if(missingRows){
+    ticker.insertAdjacentHTML("beforeend", Array.from({length:missingRows}, () => `<div class="news-line news-placeholder" aria-hidden="true"></div>`).join(""));
   }
 });
 
