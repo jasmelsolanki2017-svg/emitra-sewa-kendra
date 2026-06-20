@@ -84,8 +84,7 @@ const injectHomepageNews = (updates) => {
   let html = fs.readFileSync(file, "utf8");
   const visibleRows = sortRows(rowsFrom(updates).filter((item) => item.visible === true && String(item.status || "published").toLowerCase() === "published"));
   const postRows = visibleRows.filter((item) => item.manual !== true).slice(0,3);
-  const manualRows = visibleRows.filter((item) => item.manual === true).slice(0,3);
-  const rows = postRows.concat(manualRows);
+  const rows = postRows;
   const updateHref = (item) => {
     const raw = String(item.url || item.link || item.postUrl || "").trim();
     if (/^https?:\/\//i.test(raw)) return raw;
@@ -95,9 +94,8 @@ const injectHomepageNews = (updates) => {
   const tickerGroup = (label, type, groupRows) => groupRows.length
     ? `<div class="news-group news-group-${type}"><div class="news-group-label">${label}</div>${groupRows.map((item) => `<div class="news-line"><span class="news-track"><a href="${esc(updateHref(item))}">${esc(item.text || item.title)}</a></span></div>`).join("")}</div>`
     : "";
-  const tickerHtml = rows.length
-    ? tickerGroup("POST UPDATES", "posts", postRows) + tickerGroup("MANUAL UPDATES", "manual", manualRows)
-    : `<div class="news-line static"><span class="news-track">Abhi koi latest update available nahi hai.</span></div>`;
+  const tickerHtml = tickerGroup("POST UPDATES", "posts", postRows)
+    + `<div class="news-group news-group-manual"><div class="news-group-label">MANUAL UPDATES</div><div class="news-line static"><span class="news-track">Live manual updates load ho rahi hain...</span></div></div>`;
   const modalHtml = rows.length
     ? rows.map((item)=>`<a class="news-item" href="${esc(updateHref(item))}">${esc(item.text || item.title)}</a>`).join("")
     : `<p>Abhi koi latest update available nahi hai.</p>`;

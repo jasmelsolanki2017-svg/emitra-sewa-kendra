@@ -739,7 +739,7 @@ padding:0 14px;
 color:#0057a8;
 font-size:15px;
 font-weight:800;
-animation:newsSlide 14s linear infinite !important;
+animation:newsSlide 24s linear infinite !important;
 will-change:transform;
 }
 
@@ -2516,7 +2516,7 @@ Create Account
 <small>E-MITRA WALA</small>
 </div>
 
-<div class="news-ticker-rows" id="newsTickerRows"><div class="news-group news-group-posts"><div class="news-group-label">POST UPDATES</div><div class="news-line"><span class="news-track"><a href="post/rushi-bhai-kese-hai-6qzk5t/">Rushi bhai kese hai</a></span></div><div class="news-line"><span class="news-track"><a href="post/rushi-kese-h-bhai-rfu2fr/">Rushi kese h bhai</a></span></div></div><div class="news-group news-group-manual"><div class="news-group-label">MANUAL UPDATES</div><div class="news-line"><span class="news-track"><a href="https://emitrawala.online/post/ssc-cgl-recruitment-2026-online-form/">Staff Selection Commission SSC has released the official notification for Combined Graduate Level CGL Examination 2026. Eligible graduate candidates can apply online from 21 May 2026 to 22 June 2026.</a></span></div></div></div>
+<div class="news-ticker-rows" id="newsTickerRows"><div class="news-group news-group-posts"><div class="news-group-label">POST UPDATES</div><div class="news-line"><span class="news-track"><a href="post/rushi-bhai-kese-hai-6qzk5t/">Rushi bhai kese hai</a></span></div><div class="news-line"><span class="news-track"><a href="post/rushi-kese-h-bhai-rfu2fr/">Rushi kese h bhai</a></span></div></div><div class="news-group news-group-manual"><div class="news-group-label">MANUAL UPDATES</div><div class="news-line static"><span class="news-track">Live manual updates load ho rahi hain...</span></div></div></div>
 
 </div>
 
@@ -3410,7 +3410,7 @@ import {
   signInWithEmailAndPassword,
   signOut
 } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-import { getDatabase, get, ref, set, update } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+import { getDatabase, get, onValue, ref, set, update } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",
@@ -3427,6 +3427,44 @@ const auth = getAuth(app);
 const db = getDatabase(app);
 const adminEmail = "jasmelsolanki@gmail.com";
 let currentLoginMode = "user";
+
+const escapeUpdateText = (value = "") => String(value)
+  .replace(/&/g, "&amp;")
+  .replace(/</g, "&lt;")
+  .replace(/>/g, "&gt;")
+  .replace(/"/g, "&quot;")
+  .replace(/'/g, "&#039;");
+
+const safeManualUpdateUrl = (value = "") => {
+  const url = String(value || "").trim();
+  if(!url) return "";
+  if(/^https?:\/\//i.test(url)) return url;
+  return `/${url.replace(/^\/+/, "")}`;
+};
+
+onValue(ref(db, "latestUpdates"), (snapshot) => {
+  const ticker = document.getElementById("newsTickerRows");
+  if(!ticker) return;
+  const oldGroup = ticker.querySelector(".news-group-manual");
+  const rows = [];
+  snapshot.forEach((child) => {
+    const item = child.val() || {};
+    if(item.manual !== true || item.visible !== true || String(item.status || "published").toLowerCase() !== "published") return;
+    rows.push({ id:child.key, ...item });
+  });
+  rows.sort((a,b) => Number(b.createdAt || b.updatedAt || 0) - Number(a.createdAt || a.updatedAt || 0));
+  const group = document.createElement("div");
+  group.className = "news-group news-group-manual";
+  group.innerHTML = `<div class="news-group-label">MANUAL UPDATES</div>` + (rows.length
+    ? rows.slice(0,3).map((item) => {
+        const text = escapeUpdateText(item.text || item.title || "Manual Update");
+        const url = safeManualUpdateUrl(item.url || item.link || item.postUrl);
+        return `<div class="news-line"><span class="news-track">${url ? `<a href="${escapeUpdateText(url)}">${text}</a>` : `<span>${text}</span>`}</span></div>`;
+      }).join("")
+    : `<div class="news-line static"><span class="news-track">Abhi koi manual update nahi hai.</span></div>`);
+  if(oldGroup) oldGroup.replaceWith(group);
+  else ticker.appendChild(group);
+});
 
 setPersistence(auth, browserLocalPersistence).catch(() => {});
 
