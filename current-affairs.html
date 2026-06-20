@@ -51,6 +51,34 @@ body.dark-mode .hero:after{background:#0d1728}.card[hidden]{display:none!importa
 </style>
 <link rel="stylesheet" href="mobile-responsive-fix.css">
 <link rel="stylesheet" href="/site-theme.css">
+<style>
+/* Current Affairs owns its card styling; prevent broad site-theme button rules from painting titles. */
+html.site-theme-premium body .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+html.site-theme-premium body .card{background:#fff!important;color:var(--ink)!important;border:1px solid var(--line)!important;border-top:4px solid var(--blue)!important;box-shadow:0 8px 24px rgba(3,34,77,.06)!important}
+html.site-theme-premium body .card.featured{grid-column:1/-1;min-height:285px;background:linear-gradient(135deg,#061c3f,#075dcc)!important;color:#fff!important;border:0!important;border-top:6px solid var(--orange)!important}
+html.site-theme-premium body .card h2{background:transparent!important;color:var(--navy)!important;border:0!important;padding:0!important}
+html.site-theme-premium body .card.featured h2{color:#fff!important}
+html.site-theme-premium body .card h2 a,
+html.site-theme-premium body .card h2 a:visited{display:inline!important;background:transparent!important;color:inherit!important;padding:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;text-decoration:none!important}
+html.site-theme-premium body .card h2 a:hover{background:transparent!important;color:var(--blue)!important}
+html.site-theme-premium body .card.featured h2 a:hover{color:#ffc168!important}
+html.site-theme-premium body .card p{color:#52627b!important}
+html.site-theme-premium body .card.featured p{color:#eaf3ff!important}
+html.site-theme-premium body .card .meta span{background:#eaf4ff!important;color:var(--blue)!important;border-color:#c9dff7!important}
+html.site-theme-premium body .card.featured .meta span{background:rgba(255,255,255,.14)!important;color:#fff!important;border-color:rgba(255,255,255,.28)!important}
+html.site-theme-premium body .card .read,
+html.site-theme-premium body .card .read:visited{display:inline-flex!important;background:#eef6ff!important;color:var(--blue)!important;border:1px solid #c7ddf5!important;padding:9px 13px!important;border-radius:7px!important}
+html.site-theme-premium body .card .read:hover{background:var(--blue)!important;color:#fff!important}
+html.site-theme-premium body .card.featured .read,
+html.site-theme-premium body .card.featured .read:visited{background:var(--orange)!important;color:#fff!important;border-color:var(--orange)!important}
+html.site-theme-premium body .overview-item strong{color:var(--navy)!important}
+html.site-theme-premium body .content-head h2{color:var(--navy)!important}
+html.site-theme-premium body .hero h1{color:#fff!important}
+html.site-theme-premium body .hero h1 span{color:#ffc168!important}
+html.site-theme-premium body .hero-btn.primary{background:var(--orange)!important;color:#fff!important}
+html.site-theme-premium body .hero-btn.secondary{background:#fff!important;color:var(--navy)!important}
+@media(max-width:760px){html.site-theme-premium body .grid{grid-template-columns:1fr}.toolbar{position:relative;top:auto}}
+</style>
 <meta property="og:title" content="Current Affairs and Daily Mock Test | E-MITRA WALA">
 <meta property="og:description" content="Read current affairs updates and practice daily mock test questions for exam preparation on E-MITRA WALA.">
 <meta property="og:url" content="https://emitrawala.online/current-affairs.html">
