@@ -712,7 +712,7 @@ padding:0 14px;
 color:#0057a8;
 font-size:15px;
 font-weight:800;
-animation:newsSlide 18s linear infinite;
+animation:newsSlide 14s linear infinite !important;
 will-change:transform;
 }
 
@@ -721,8 +721,8 @@ display:inline-block;
 white-space:nowrap;
 }
 
-.news-line:hover .news-track,
-.news-line:focus-within .news-track{
+.news-track:has(a:hover),
+.news-track:focus-within{
 animation-play-state:paused;
 }
 
@@ -798,12 +798,6 @@ letter-spacing:.04em;
 @keyframes newsSlide{
 0%{transform:translateX(100%);}
 100%{transform:translateX(-100%);}
-}
-
-@media (prefers-reduced-motion:reduce){
-.news-track{
-animation:none;
-}
 }
 
 .news-modal{
