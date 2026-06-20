@@ -3420,7 +3420,7 @@ const escapeUpdateText = (value = "") => String(value)
   .replace(/"/g, "&quot;")
   .replace(/'/g, "&#039;");
 
-const safeManualUpdateUrl = (value = "") => {
+const safeUpdateUrl = (value = "") => {
   const url = String(value || "").trim();
   if(!url) return "";
   if(/^https?:\/\//i.test(url)) return url;
@@ -3430,26 +3430,22 @@ const safeManualUpdateUrl = (value = "") => {
 onValue(ref(db, "latestUpdates"), (snapshot) => {
   const ticker = document.getElementById("newsTickerRows");
   if(!ticker) return;
-  ticker.querySelectorAll(".news-line[data-manual-update]").forEach((line) => line.remove());
-  ticker.querySelectorAll(".news-placeholder").forEach((line) => line.remove());
   const rows = [];
   snapshot.forEach((child) => {
     const item = child.val() || {};
-    if(item.manual !== true || item.visible !== true || String(item.status || "published").toLowerCase() !== "published") return;
+    if(item.visible !== true || String(item.status || "published").toLowerCase() !== "published") return;
     rows.push({ id:child.key, ...item });
   });
-  rows.sort((a,b) => Number(b.createdAt || b.updatedAt || 0) - Number(a.createdAt || a.updatedAt || 0));
-  if(rows.length){
-    ticker.insertAdjacentHTML("beforeend", rows.slice(0,3).map((item) => {
-        const text = escapeUpdateText(item.text || item.title || "Manual Update");
-        const url = safeManualUpdateUrl(item.url || item.link || item.postUrl);
-        return `<div class="news-line" data-manual-update="${escapeUpdateText(item.id)}"><span class="news-track">${url ? `<a href="${escapeUpdateText(url)}">${text}</a>` : `<span>${text}</span>`}</span></div>`;
-      }).join(""));
+  rows.sort((a,b) => Number(b.updatedAt || b.createdAt || 0) - Number(a.updatedAt || a.createdAt || 0));
+  const tickerRows = rows.slice(0,3).map((item) => {
+    const text = escapeUpdateText(item.text || item.title || "Latest Update");
+    const url = safeUpdateUrl(item.url || item.link || item.postUrl);
+    return `<div class="news-line" data-live-update="${escapeUpdateText(item.id)}"><span class="news-track">${url ? `<a href="${escapeUpdateText(url)}">${text}</a>` : `<span>${text}</span>`}</span></div>`;
+  });
+  while(tickerRows.length < 3){
+    tickerRows.push(`<div class="news-line news-placeholder" aria-hidden="true"></div>`);
   }
-  const missingRows = Math.max(0, 3 - ticker.querySelectorAll(".news-line").length);
-  if(missingRows){
-    ticker.insertAdjacentHTML("beforeend", Array.from({length:missingRows}, () => `<div class="news-line news-placeholder" aria-hidden="true"></div>`).join(""));
-  }
+  ticker.innerHTML = tickerRows.join("");
 });
 
 setPersistence(auth, browserLocalPersistence).catch(() => {});
