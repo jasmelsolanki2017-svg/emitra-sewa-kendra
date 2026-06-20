@@ -79,17 +79,20 @@ const injectHomepageLists = (jobs, portal) => {
   fs.writeFileSync(file, html, "utf8");
 };
 
-const injectHomepageNews = (jobs) => {
+const injectHomepageNews = (updates) => {
   const file = path.join(root, "index.html");
   let html = fs.readFileSync(file, "utf8");
-  const rows = sortRows([...jobs]).slice(0,9);
+  const rows = sortRows(rowsFrom(updates).filter((item) => item.visible === true && String(item.status || "published").toLowerCase() === "published")).slice(0,9);
+  const updateHref = (item) => {
+    const raw = String(item.url || item.link || item.postUrl || "").trim();
+    if (/^https?:\/\//i.test(raw)) return raw;
+    if (raw) return `/${raw.replace(/^\/+/, "")}`;
+    return href(item);
+  };
   const groups = [rows.slice(0,3), rows.slice(3,6), rows.slice(6,9)];
-  const tickerHtml = groups.map((group) => {
-    const items = group.length ? group : rows.slice(0,3);
-    return `<div class="news-line"><span class="news-track">${items.map((item)=>`<a href="${href(item)}">${esc(item.title)}</a>`).join('<span aria-hidden="true"> • </span>')}</span></div>`;
-  }).join("");
+  const tickerHtml = rows.length ? groups.filter((group) => group.length).map((group) => `<div class="news-line"><span class="news-track">${group.map((item)=>`<a href="${esc(updateHref(item))}">${esc(item.text || item.title)}</a>`).join('<span aria-hidden="true"> • </span>')}</span></div>`).join("") : `<div class="news-line"><span class="news-track">Abhi koi latest update available nahi hai.</span></div>`;
   const modalHtml = rows.length
-    ? rows.map((item)=>`<a class="news-item" href="${href(item)}">${esc(item.title)}</a>`).join("")
+    ? rows.map((item)=>`<a class="news-item" href="${esc(updateHref(item))}">${esc(item.text || item.title)}</a>`).join("")
     : `<p>Abhi koi latest update available nahi hai.</p>`;
   html = html
     .replace(/(<div class="news-ticker-rows" id="newsTickerRows">)[\s\S]*?(<\/div>\s*<\/div>\s*<\/section>)/,
@@ -101,7 +104,7 @@ const injectHomepageNews = (jobs) => {
 
 async function main() {
   execFileSync(process.execPath, [path.join(__dirname, "generate-sitemap.js")], { cwd: root, stdio: "inherit" });
-  const [jobsData, portalData, linksData] = await Promise.all([fetchJson("LatestJobs"), fetchJson("portalItems").catch(()=>({})), fetchJson("importantLinks").catch(()=>({}))]);
+  const [jobsData, portalData, linksData, updatesData] = await Promise.all([fetchJson("LatestJobs"), fetchJson("portalItems").catch(()=>({})), fetchJson("importantLinks").catch(()=>({})), fetchJson("latestUpdates").catch(()=>({}))]);
   const jobs = rowsFrom(jobsData);
   const portal = portalData || {};
   for (const [target, [file, title]] of Object.entries(categoryMeta)) {
@@ -120,7 +123,7 @@ async function main() {
       `<section class="post-list" id="categoryPostList"><ul>${importantRows.map((item)=>`<li data-search="${esc(item.title.toLowerCase())}"><a href="${esc(item.url)}" target="_blank" rel="noopener noreferrer">${esc(item.title)}</a></li>`).join("")}</ul></section>`);
   fs.writeFileSync(path.join(root, "important-links.html"), linksHtml, "utf8");
   injectHomepageLists(jobs, portal);
-  injectHomepageNews(jobs);
+  injectHomepageNews(updatesData);
   execFileSync(process.execPath, [path.join(__dirname, "sync-constitution-data.js")], { cwd: root, stdio: "inherit" });
   console.log("Static public pages generated.");
 }
