@@ -3433,6 +3433,31 @@ const sanitizeArticleHtml = (value = "") => {
       if(element.getAttribute("target") === "_blank"){ element.setAttribute("rel","noopener noreferrer"); }
     }
   });
+  const walker = document.createTreeWalker(template.content, NodeFilter.SHOW_TEXT);
+  const textNodes = [];
+  while(walker.nextNode()){
+    const node = walker.currentNode;
+    if(node.parentElement && !node.parentElement.closest("a") && /(?:https?:\/\/|www\.)/i.test(node.nodeValue || "")){ textNodes.push(node); }
+  }
+  textNodes.forEach((node) => {
+    const fragment = document.createDocumentFragment();
+    const parts = String(node.nodeValue || "").split(/((?:https?:\/\/|www\.)[^\s<]+)/gi);
+    parts.forEach((part) => {
+      if(!/^(?:https?:\/\/|www\.)/i.test(part)){ fragment.appendChild(document.createTextNode(part)); return; }
+      const match = part.match(/^(.+?)([),.;!?।]*)$/);
+      const urlText = match ? match[1] : part;
+      const trailing = match ? match[2] : "";
+      const anchor = document.createElement("a");
+      anchor.href = /^www\./i.test(urlText) ? `https://${urlText}` : urlText;
+      anchor.target = "_blank";
+      anchor.rel = "noopener noreferrer";
+      anchor.className = "auto-link";
+      anchor.textContent = urlText;
+      fragment.appendChild(anchor);
+      if(trailing){ fragment.appendChild(document.createTextNode(trailing)); }
+    });
+    node.replaceWith(fragment);
+  });
   return template.innerHTML;
 };
 

@@ -171,6 +171,8 @@
     .article-body th,.article-body td{border:1px solid var(--border);padding:10px 11px;text-align:left;vertical-align:top}
     .article-body th{background:#f3f7fd;color:#071b3f;font-weight:900}
     .article-body tr:nth-child(even) td{background:#fbfdff}
+    .article-body a,.article-body .auto-link{color:#003ac0;text-decoration:underline;font-weight:800;overflow-wrap:anywhere;word-break:break-word}
+    .article-body a:hover{color:#b30000}
     .article-body .notice-box,.article-body .notification-highlight{border-left:4px solid #f07c00!important;background:#fff8e8!important;border-radius:6px!important;padding:12px!important}
 
     .premium-aside{position:sticky;top:92px;max-height:calc(100vh - 105px);overflow:auto;padding:4px 0 16px}
@@ -520,6 +522,30 @@
           if(href&&!/^(https?:|mailto:|tel:|#|\/)/i.test(href))element.removeAttribute("href");
           if(element.getAttribute("target")==="_blank")element.setAttribute("rel","noopener noreferrer");
         }
+      });
+      const walker=document.createTreeWalker(template.content,NodeFilter.SHOW_TEXT);
+      const textNodes=[];
+      while(walker.nextNode()){
+        const node=walker.currentNode;
+        if(node.parentElement&&!node.parentElement.closest("a")&&/(?:https?:\/\/|www\.)/i.test(node.nodeValue||""))textNodes.push(node);
+      }
+      textNodes.forEach(node=>{
+        const fragment=document.createDocumentFragment();
+        String(node.nodeValue||"").split(/((?:https?:\/\/|www\.)[^\s<]+)/gi).forEach(part=>{
+          if(!/^(?:https?:\/\/|www\.)/i.test(part)){fragment.appendChild(document.createTextNode(part));return}
+          const match=part.match(/^(.+?)([),.;!?।]*)$/);
+          const urlText=match?match[1]:part;
+          const trailing=match?match[2]:"";
+          const anchor=document.createElement("a");
+          anchor.href=/^www\./i.test(urlText)?`https://${urlText}`:urlText;
+          anchor.target="_blank";
+          anchor.rel="noopener noreferrer";
+          anchor.className="auto-link";
+          anchor.textContent=urlText;
+          fragment.appendChild(anchor);
+          if(trailing)fragment.appendChild(document.createTextNode(trailing));
+        });
+        node.replaceWith(fragment);
       });
       return template.innerHTML;
     };
