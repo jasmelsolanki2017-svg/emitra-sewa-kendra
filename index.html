@@ -303,6 +303,8 @@ transition:opacity .28s ease,visibility .28s ease;
 
 body.menu-drawer-open{overflow:hidden}
 body.menu-drawer-open .menu-drawer-overlay{opacity:1;visibility:visible}
+body.menu-drawer-open nav{z-index:1400}
+body.menu-drawer-open .important-menu-panel{z-index:1450}
 
 .side-menu-row[hidden],
 #importantLinksMenuList a[hidden]{display:none!important}
@@ -2389,12 +2391,15 @@ font-size:26px;
 <div class="important-menu-panel" id="menuDrawer" aria-hidden="true">
 <div class="menu-drawer-head"><span><i class="fa-solid fa-bars"></i> Menu</span><button class="menu-drawer-close" type="button" onclick="closeImportantMenu()" aria-label="Close menu">‹</button></div>
 <div class="menu-drawer-search"><label><i class="fa-solid fa-magnifying-glass"></i><input id="menuDrawerSearch" type="search" placeholder="Search in Menu" oninput="filterImportantMenu(this.value)"></label></div>
-<a class="side-menu-row" href="#importantLinksList">
-<i class="fa-solid fa-link"></i> Important Links
+<a class="side-menu-row" href="/">
+<i class="fa-solid fa-house"></i> Home
 </a>
-<div id="importantLinksMenuList">
-<span class="important-menu-empty"><i class="fa-solid fa-spinner"></i> Links ready ho rahe hain...</span>
-</div>
+<a class="side-menu-row" href="about.html">
+<i class="fa-solid fa-circle-info"></i> About
+</a>
+<a class="side-menu-row" href="#" onclick="closeImportantMenu();openLogin('user');return false">
+<i class="fa-solid fa-user"></i> Login
+</a>
 <a class="side-menu-row" href="/#homePortalLatestJobs">
 <i class="fa-solid fa-briefcase"></i> Latest Jobs
 </a>
@@ -2404,14 +2409,14 @@ font-size:26px;
 <a class="side-menu-row" href="constitution.html">
 <i class="fa-solid fa-scale-balanced"></i> भारतीय संविधान
 </a>
-<a class="side-menu-row" href="mock-test.html">
-<i class="fa-solid fa-clipboard-check"></i> Daily Mock Test
+<a class="side-menu-row" href="/tools.html">
+<i class="fa-solid fa-screwdriver-wrench"></i> Tools
 </a>
-<a class="side-menu-row" href="/#homePortalAdmitCard">
-<i class="fa-solid fa-id-card"></i> Admit Card
+<a class="side-menu-row" href="useful-pages.html">
+<i class="fa-solid fa-bookmark"></i> Useful Pages
 </a>
-<a class="side-menu-row" href="/#homePortalResults">
-<i class="fa-solid fa-chart-simple"></i> Results
+<a class="side-menu-row" href="contact.html">
+<i class="fa-solid fa-envelope"></i> Contact
 </a>
 </div>
 
