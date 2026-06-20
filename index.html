@@ -215,26 +215,97 @@ color:#03224d;
 }
 
 .important-menu-panel{
-display:none;
 position:fixed;
-top:166px;
-left:6%;
-width:280px;
-background:#061d4b;
-border:1px solid #0b9444;
-border-radius:8px;
-box-shadow:0 12px 26px rgba(0,0,0,.18);
-overflow:hidden;
-z-index:1200;
-max-height:min(70vh, 360px);
+inset:0 auto 0 0;
+width:min(320px,88vw);
+background:#0877d8;
+border:0;
+border-radius:0;
+box-shadow:12px 0 34px rgba(0,24,64,.28);
+z-index:1400;
+max-height:none;
 overflow-y:auto;
-margin-top:8px;
+margin:0;
+transform:translateX(-105%);
+transition:transform .28s ease;
 }
 
 .brand-menu.open .important-menu-panel{
-display:block;
-height:auto!important;
-min-height:0!important;
+transform:translateX(0);
+}
+
+.menu-drawer-head{
+position:sticky;
+top:0;
+z-index:2;
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:12px;
+min-height:72px;
+padding:15px 18px;
+background:#58a5ed;
+color:#fff;
+font-weight:900;
+}
+
+.menu-drawer-close{
+width:38px;
+height:38px;
+border:0;
+border-radius:8px;
+background:rgba(255,255,255,.16);
+color:#fff;
+font-size:25px;
+cursor:pointer;
+}
+
+.menu-drawer-search{
+position:sticky;
+top:72px;
+z-index:2;
+padding:10px;
+background:#0877d8;
+}
+
+.menu-drawer-search label{
+display:flex;
+align-items:center;
+gap:10px;
+padding:13px;
+background:#063fa3;
+border-radius:7px;
+color:#fff;
+}
+
+.menu-drawer-search input{
+width:100%;
+min-width:0;
+border:0;
+outline:0;
+background:transparent;
+color:#fff;
+font-size:15px;
+font-weight:700;
+}
+
+.menu-drawer-search input::placeholder{color:#e8f4ff}
+
+.menu-drawer-overlay{
+position:fixed;
+inset:0;
+z-index:1350;
+background:rgba(1,18,48,.55);
+opacity:0;
+visibility:hidden;
+transition:opacity .28s ease,visibility .28s ease;
+}
+
+body.menu-drawer-open{overflow:hidden}
+body.menu-drawer-open .menu-drawer-overlay{opacity:1;visibility:visible}
+
+.side-menu-row[hidden],
+#importantLinksMenuList a[hidden]{display:none!important}
 }
 
 .important-menu-title{
@@ -276,11 +347,11 @@ display:none!important;
 display:flex;
 align-items:center;
 gap:12px;
-background:#0b2749;
+background:#0877d8;
 color:#fff;
 text-decoration:none;
-padding:11px 16px;
-border-bottom:1px solid #24405f;
+padding:15px 18px;
+border-bottom:1px solid rgba(255,255,255,.15);
 font-size:15px;
 font-weight:800;
 line-height:1.35;
@@ -295,7 +366,7 @@ font-size:18px;
 
 .side-menu-row:hover,
 #importantLinksMenuList a:hover{
-background:#ff7a00;
+background:#0967bd;
 color:white;
 }
 
@@ -303,13 +374,6 @@ color:white;
 .brand-menu{
 align-items:center;
 width:100%;
-}
-
-.important-menu-panel{
-position:absolute;
-width:min(280px, 100%);
-margin-top:2px;
-max-height:70vh;
 }
 
 .side-menu-trigger{
@@ -616,10 +680,21 @@ padding:14px;
 display:grid;
 gap:8px;
 min-width:0;
+max-height:146px;
+overflow-y:auto;
+overscroll-behavior:contain;
+scrollbar-width:thin;
+scrollbar-color:#9ebfe5 transparent;
+}
+
+.news-ticker-rows::-webkit-scrollbar{width:6px}
+.news-ticker-rows::-webkit-scrollbar-thumb{
+background:#9ebfe5;
+border-radius:999px;
 }
 
 .news-line{
-height:36px;
+min-height:36px;
 background:white;
 border:1px solid #d8e0f0;
 border-radius:6px;
@@ -639,6 +714,14 @@ font-weight:800;
 animation:none;
 overflow:hidden;
 text-overflow:ellipsis;
+}
+
+.news-track > a{
+display:block;
+min-width:0;
+overflow:hidden;
+text-overflow:ellipsis;
+white-space:nowrap;
 }
 
 .news-track.multi-link-track{
@@ -2039,6 +2122,10 @@ gap:8px;
 grid-template-columns:1fr;
 }
 
+.news-ticker-rows{
+max-height:134px;
+}
+
 .news-head{
 padding:14px;
 }
@@ -2297,7 +2384,9 @@ font-size:26px;
 
 <a class="logo" href="index.html"><img src="site-logo.svg" width="520" height="150" decoding="async" fetchpriority="high" alt="E-MITRA WALA"></a>
 
-<div class="important-menu-panel">
+<div class="important-menu-panel" id="menuDrawer" aria-hidden="true">
+<div class="menu-drawer-head"><span><i class="fa-solid fa-bars"></i> Menu</span><button class="menu-drawer-close" type="button" onclick="closeImportantMenu()" aria-label="Close menu">‹</button></div>
+<div class="menu-drawer-search"><label><i class="fa-solid fa-magnifying-glass"></i><input id="menuDrawerSearch" type="search" placeholder="Search in Menu" oninput="filterImportantMenu(this.value)"></label></div>
 <a class="side-menu-row" href="#importantLinksList">
 <i class="fa-solid fa-link"></i> Important Links
 </a>
@@ -2343,9 +2432,10 @@ font-size:26px;
 
 </nav>
 
-<button type="button" class="side-menu-trigger" onclick="toggleImportantMenu()" aria-label="Open quick menu">
+<button type="button" class="side-menu-trigger" onclick="toggleImportantMenu()" aria-label="Open side menu" aria-controls="menuDrawer" aria-expanded="false">
 <span aria-hidden="true">☰</span>
 </button>
+<div class="menu-drawer-overlay" onclick="closeImportantMenu()" aria-hidden="true"></div>
 
 <!-- IMPORTANT LINKS -->
 
@@ -2894,6 +2984,43 @@ rel="noopener noreferrer">
 </div>
 
 <script>
+
+function setImportantMenuState(open){
+const menu = document.getElementById("importantMenu");
+const drawer = document.getElementById("menuDrawer");
+const trigger = document.querySelector(".side-menu-trigger");
+if(!menu || !drawer){ return; }
+menu.classList.toggle("open", open);
+document.body.classList.toggle("menu-drawer-open", open);
+drawer.setAttribute("aria-hidden", String(!open));
+if(trigger){ trigger.setAttribute("aria-expanded", String(open)); }
+if(open){
+setTimeout(() => document.getElementById("menuDrawerSearch")?.focus(), 180);
+}
+}
+
+function toggleImportantMenu(){
+const menu = document.getElementById("importantMenu");
+setImportantMenuState(!menu?.classList.contains("open"));
+}
+
+function closeImportantMenu(){
+setImportantMenuState(false);
+}
+
+function filterImportantMenu(query = ""){
+const needle = String(query || "").trim().toLowerCase();
+document.querySelectorAll("#menuDrawer .side-menu-row, #importantLinksMenuList a").forEach((link) => {
+link.hidden = Boolean(needle && !String(link.textContent || "").toLowerCase().includes(needle));
+});
+}
+
+document.getElementById("menuDrawer")?.addEventListener("click", (event) => {
+if(event.target.closest("a")){ closeImportantMenu(); }
+});
+document.addEventListener("keydown", (event) => {
+if(event.key === "Escape"){ closeImportantMenu(); }
+});
 
 function getTimeGreeting(date){
 
