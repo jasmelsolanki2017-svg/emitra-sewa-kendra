@@ -470,6 +470,27 @@
       return `<span class="premium-editable" data-edit-path="${editPathAttr(path)}" data-style-key="${escapeHTML(key)}" contenteditable="${adminEditMode?'true':'false'}" spellcheck="false"${styleAttrForKey(key)}>${html}</span>`;
     };
     const valueHTML=(value,path=null)=>editableHTML(value,path);
+    const looksLikeArticleHtml=value=>/<(?:h[1-6]|p|div|section|article|table|thead|tbody|tfoot|tr|th|td|ul|ol|li|blockquote|strong|b|em|i|a|br|hr)\b/i.test(String(value||""));
+    const sanitizeArticleHtml=value=>{
+      const template=document.createElement("template");
+      template.innerHTML=String(value||"");
+      const allowedTags=new Set(["H1","H2","H3","H4","H5","H6","P","DIV","SECTION","ARTICLE","TABLE","THEAD","TBODY","TFOOT","TR","TH","TD","UL","OL","LI","BLOCKQUOTE","STRONG","B","EM","I","U","A","BR","HR","SPAN"]);
+      const allowedAttributes=new Set(["href","title","target","rel","colspan","rowspan","scope","class"]);
+      template.content.querySelectorAll("script,style,iframe,object,embed,form,input,button,textarea,select,meta,link").forEach(element=>element.remove());
+      template.content.querySelectorAll("*").forEach(element=>{
+        if(!allowedTags.has(element.tagName)){element.replaceWith(...element.childNodes);return}
+        Array.from(element.attributes).forEach(attribute=>{
+          const name=attribute.name.toLowerCase();
+          if(!allowedAttributes.has(name)||name.startsWith("on")||name==="style")element.removeAttribute(attribute.name);
+        });
+        if(element.tagName==="A"){
+          const href=String(element.getAttribute("href")||"").trim();
+          if(href&&!/^(https?:|mailto:|tel:|#|\/)/i.test(href))element.removeAttribute("href");
+          if(element.getAttribute("target")==="_blank")element.setAttribute("rel","noopener noreferrer");
+        }
+      });
+      return template.innerHTML;
+    };
     const iconFor=key=>({summary:"ℹ",importantDates:"📅",applicationFee:"💰",ageLimit:"👤",vacancyDetails:"👥",eligibility:"🎓",selectionProcess:"🔢",examPattern:"📝",groupWiseSyllabus:"📚",participatingInstitutes:"🏛",documentsRequired:"📄",howToCheckResult:"✅",howToApply:"⬇",importantLinks:"🔗",regionWiseResultLinks:"📄",faqs:"❓"}[key]||"✓");
     const linkClass=label=>/whatsapp/i.test(label)?"whatsapp":/telegram/i.test(label)?"telegram":/apply/i.test(label)?"apply":/download|notification/i.test(label)?"download":/official|website/i.test(label)?"website":/source/i.test(label)?"source":"default";
     const linkIcon=label=>/whatsapp/i.test(label)?"🟢":/telegram/i.test(label)?"✈":/apply/i.test(label)?"↗":/download|notification/i.test(label)?"⬇":/official|website/i.test(label)?"🌐":"🔗";
@@ -650,8 +671,16 @@
       return `<div class="faq-list">${rows.map(item=>`<details class="faq-item"><summary>${escapeHTML(item.question||item.q||item.title||"Question")}</summary><div>${valueHTML(item.answer||item.a||item.value||item.description||"")}</div></details>`).join("")}</div>`;
     }
     function renderContentSections(value){
+      if(typeof value==="string"&&looksLikeArticleHtml(value))return sanitizeArticleHtml(value);
       const arr=arrayify(value);
-      return arr.map(item=>isPlainObject(item)?`<article class="article-section"><h3>${escapeHTML(item.title||item.heading||"Details")}</h3><p>${valueHTML(item.content||item.text||item.body||item.description||item.value||"")}</p></article>`:`<article class="article-section"><p>${valueHTML(item)}</p></article>`).join("");
+      return arr.map(item=>{
+        if(isPlainObject(item)){
+          const content=item.content||item.text||item.body||item.description||item.value||"";
+          const body=typeof content==="string"&&looksLikeArticleHtml(content)?sanitizeArticleHtml(content):`<p>${valueHTML(content)}</p>`;
+          return `<article class="article-section"><h3>${escapeHTML(item.title||item.heading||"Details")}</h3>${body}</article>`;
+        }
+        return typeof item==="string"&&looksLikeArticleHtml(item)?sanitizeArticleHtml(item):`<article class="article-section"><p>${valueHTML(item)}</p></article>`;
+      }).join("");
     }
     function renderRelated(value){
       const arr=arrayify(value);

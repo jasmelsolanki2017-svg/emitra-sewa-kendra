@@ -3408,6 +3408,34 @@ const pageContentDuplicateSectionTitles = new Set([
   "eligibility"
 ]);
 
+const looksLikeArticleHtml = (value = "") => /<(?:h[1-6]|p|div|section|article|table|thead|tbody|tfoot|tr|th|td|ul|ol|li|blockquote|strong|b|em|i|a|br|hr)\b/i.test(String(value || ""));
+
+const sanitizeArticleHtml = (value = "") => {
+  const template = document.createElement("template");
+  template.innerHTML = String(value || "");
+  const allowedTags = new Set(["H1","H2","H3","H4","H5","H6","P","DIV","SECTION","ARTICLE","TABLE","THEAD","TBODY","TFOOT","TR","TH","TD","UL","OL","LI","BLOCKQUOTE","STRONG","B","EM","I","U","A","BR","HR","SPAN"]);
+  const allowedAttributes = new Set(["href","title","target","rel","colspan","rowspan","scope","class"]);
+  template.content.querySelectorAll("script,style,iframe,object,embed,form,input,button,textarea,select,meta,link").forEach((element) => element.remove());
+  template.content.querySelectorAll("*").forEach((element) => {
+    if(!allowedTags.has(element.tagName)){
+      element.replaceWith(...element.childNodes);
+      return;
+    }
+    Array.from(element.attributes).forEach((attribute) => {
+      const name = attribute.name.toLowerCase();
+      if(!allowedAttributes.has(name) || name.startsWith("on") || name === "style"){
+        element.removeAttribute(attribute.name);
+      }
+    });
+    if(element.tagName === "A"){
+      const href = String(element.getAttribute("href") || "").trim();
+      if(href && !/^(https?:|mailto:|tel:|#|\/)/i.test(href)){ element.removeAttribute("href"); }
+      if(element.getAttribute("target") === "_blank"){ element.setAttribute("rel","noopener noreferrer"); }
+    }
+  });
+  return template.innerHTML;
+};
+
 const renderPageContent = (content, title, options = {}) => {
   const lines = String(content || "").split(/\r?\n/);
   const hiddenTitles = options.hideDuplicateSections ? pageContentDuplicateSectionTitles : new Set();
@@ -3471,7 +3499,9 @@ const getDetailedArticle = (job = {}) => {
 
 const renderDetailedArticle = (value) => {
   if(!isFilledFlexibleValue(value)){ return ""; }
-  if(typeof value === "string"){ return renderPageContent(value, "पूरी जानकारी"); }
+  if(typeof value === "string"){
+    return looksLikeArticleHtml(value) ? sanitizeArticleHtml(value) : renderPageContent(value, "पूरी जानकारी");
+  }
   if(Array.isArray(value)){
     return `<div class="content-section">${value.map((item) => typeof item === "object" ? renderDetailedArticle(item) : `<p>${renderFormattedText(item)}</p>`).join("")}</div>`;
   }
