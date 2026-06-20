@@ -1022,8 +1022,8 @@ text-decoration:underline;
 display:inline-block;
 margin-left:6px;
 padding:3px 7px;
-border-radius:999px;
-background:#dc1717;
+border-radius:2px;
+background:#ff5a5f;
 color:#fff;
 font-size:9px;
 font-weight:800;
@@ -1032,6 +1032,12 @@ letter-spacing:.25px;
 vertical-align:middle;
 white-space:nowrap;
 box-shadow:none;
+animation:homeNewBadgeBlink 1.2s ease-in-out infinite;
+}
+
+@keyframes homeNewBadgeBlink{
+0%,100%{filter:brightness(1);opacity:1}
+50%{filter:brightness(1.3);opacity:.65}
 }
 
 .home-portal-box.has-more .home-portal-view-all{
