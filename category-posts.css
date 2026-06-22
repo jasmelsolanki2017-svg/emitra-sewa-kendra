@@ -19,6 +19,7 @@ main{width:min(1180px,94vw);min-height:690px;margin:0 auto 28px;padding:0 0 28px
 .post-list a{color:#00e;text-decoration:underline}
 .post-list a:visited{color:#551a8b}
 .last-date-text{color:#000;text-decoration:none}
+.last-date-urgent-badge{display:inline-block;margin-left:8px;padding:2px 7px;border-radius:999px;background:#c5161d;color:#fff;font-size:11px;font-weight:900;line-height:1.4;vertical-align:middle;white-space:nowrap}
 .empty{padding:24px 28px;color:#555;font-size:16px}
 @media(max-width:640px){
   .topbar{min-height:112px;padding-left:100px;justify-content:flex-start;text-align:left}
