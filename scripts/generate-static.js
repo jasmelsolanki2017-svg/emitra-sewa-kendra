@@ -31,30 +31,46 @@ const sortRows = (rows) => rows.sort((a,b) =>
   || Number(a.displayOrder || 999999) - Number(b.displayOrder || 999999)
 );
 const DAY_MS = 24 * 60 * 60 * 1000;
-const getPostLastDate = (item = {}) => item.lastDate || item.formLastDate
-  || item.importantDates?.lastDate || item.importantDates?.applicationLastDate
-  || item.applyLastDate || item.lastApplyDate || "";
 const parsePostLastDate = (value = "") => {
   const text = String(value || "").trim();
-  let match = text.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
+  let match = text.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})(?:\b|$)/);
   if (match) {
     const day = Number(match[1]), month = Number(match[2]), year = Number(match[3]);
     const date = new Date(year, month - 1, day);
     return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day ? date : null;
   }
-  match = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  match = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:\b|$)/);
   if (match) {
     const year = Number(match[1]), month = Number(match[2]), day = Number(match[3]);
     const date = new Date(year, month - 1, day);
     return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day ? date : null;
   }
-  match = text.match(/^(\d{1,2})\s+([a-z]+)\s+(\d{4})$/i);
+  match = text.match(/^(\d{1,2})\s+([a-z]+)\s+(\d{4})(?:\b|$)/i);
   if (!match) return null;
   const months = {january:0,jan:0,february:1,feb:1,march:2,mar:2,april:3,apr:3,may:4,june:5,jun:5,july:6,jul:6,august:7,aug:7,september:8,sep:8,sept:8,october:9,oct:9,november:10,nov:10,december:11,dec:11};
   const day = Number(match[1]), month = months[match[2].toLowerCase()], year = Number(match[3]);
   if (month === undefined) return null;
   const date = new Date(year, month, day);
   return date.getFullYear() === year && date.getMonth() === month && date.getDate() === day ? date : null;
+};
+const getPostLastDate = (item = {}) => {
+  const importantDates = item.importantDates;
+  const arrayLastDate = Array.isArray(importantDates)
+    ? importantDates.find((row) => {
+        const label = String(row?.label || row?.title || row?.name || "").toLowerCase();
+        return /last\s*date/.test(label) && /(apply|application|online|form)/.test(label) && !/(fee|payment|correction)/.test(label);
+      })?.value
+    : "";
+  const candidates = [
+    item.lastDate,
+    item.formLastDate,
+    !Array.isArray(importantDates) && importantDates?.lastDate,
+    !Array.isArray(importantDates) && importantDates?.applicationLastDate,
+    item.applyLastDate,
+    item.lastApplyDate,
+    arrayLastDate
+  ];
+  return candidates.find((value) => parsePostLastDate(value)) || "";
 };
 const getLastDateUrgency = (item = {}, now = new Date()) => {
   const date = parsePostLastDate(getPostLastDate(item));
