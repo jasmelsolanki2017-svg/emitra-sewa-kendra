@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",
@@ -73,7 +73,7 @@ function renderGuide(data = {}){
 }
 
 if(slug){
-  onValue(ref(db, "serviceGuides/" + slug), (snapshot) => {
+  get(ref(db, "serviceGuides/" + slug)).then((snapshot) => {
     renderGuide(snapshot.exists() ? (snapshot.val() || {}) : {});
-  });
+  }).catch(() => {});
 }

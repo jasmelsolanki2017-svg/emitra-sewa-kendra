@@ -2569,21 +2569,6 @@
         mergePdfVerificationRequests();
       });
 
-      onValue(ref(db, "pdfVerificationRequests"), (snapshot) => {
-        currentPdfTopRequests = [];
-        if(snapshot.exists()){
-          snapshot.forEach((child) => {
-            const request = child.val() || {};
-            if(request.userUid === user.uid){
-              currentPdfTopRequests.push({ id:child.key, request });
-            }
-          });
-        }
-        mergePdfVerificationRequests();
-      }, (error) => {
-        console.warn("Top PDF requests listener failed", error);
-      });
-
       onValue(ref(db, "memberCloudLinks/" + user.uid), (snapshot) => {
         currentCloudLinks = [];
         if(snapshot.exists()){
@@ -3058,25 +3043,22 @@
     return rows.sort((a, b) => Number(b.job.createdAt || 0) - Number(a.job.createdAt || 0));
   };
 
-  const updatesRef = ref(db, "latestUpdates");
-
-  onValue(updatesRef, (snapshot) => {
+  fetch("/data/latest-updates-lite.json", { cache:"no-cache" }).then((response) => {
+    if(!response.ok){ throw new Error(`HTTP ${response.status}`); }
+    return response.json();
+  }).then((data) => {
     const box = document.getElementById("updatesList");
-    let count = 0;
-
-    const rows = getUpdateRows(snapshot);
+    const rows = Array.isArray(data) ? data : [];
     if(box){
       box.innerHTML = "";
     }
 
     if(rows.length){
-      rows.forEach((data) => {
-        count += 1;
-
+      rows.forEach((item) => {
         if(box){
           box.innerHTML += `
             <div class="row">
-              <strong>${escapeHTML(data.text)}</strong>
+              <strong>${escapeHTML(item.text || item.title || "Latest Update")}</strong>
             </div>
           `;
         }
@@ -3085,31 +3067,29 @@
       renderMessage(box, "अभी कोई update नहीं है।");
     }
 
-    document.getElementById("updatesCount").innerText = count;
-  }, (error) => {
+    document.getElementById("updatesCount").innerText = rows.length;
+  }).catch((error) => {
     const box = document.getElementById("updatesList");
     if(box){ renderMessage(box, "Updates load नहीं हो पाईं: " + error.message); }
   });
 
-  const linksRef = ref(db, "importantLinks");
-
-  onValue(linksRef, (snapshot) => {
+  fetch("/data/important-links-lite.json", { cache:"no-cache" }).then((response) => {
+    if(!response.ok){ throw new Error(`HTTP ${response.status}`); }
+    return response.json();
+  }).then((data) => {
     const box = document.getElementById("importantLinksList");
-    let count = 0;
+    const rows = Array.isArray(data) ? data : [];
     if(box){
       box.innerHTML = "";
     }
 
-    if(snapshot.exists()){
-      snapshot.forEach((child) => {
-        const data = child.val();
-        count += 1;
-
+    if(rows.length){
+      rows.forEach((item) => {
         if(box){
           box.innerHTML += `
             <div class="row">
-              <strong>${escapeHTML(data.title || "Important Link")}</strong><br>
-              <a href="${safeUrl(data.url)}" target="_blank" rel="noopener noreferrer">Open Link</a>
+              <strong>${escapeHTML(item.title || "Important Link")}</strong><br>
+              <a href="${safeUrl(item.url)}" target="_blank" rel="noopener noreferrer">Open Link</a>
             </div>
           `;
         }
@@ -3118,8 +3098,8 @@
       renderMessage(box, "अभी कोई important link नहीं है।");
     }
 
-    document.getElementById("linksCount").innerText = count;
-  }, (error) => {
+    document.getElementById("linksCount").innerText = rows.length;
+  }).catch((error) => {
     const box = document.getElementById("importantLinksList");
     if(box){ renderMessage(box, "Important links load नहीं हो पाए: " + error.message); }
   });

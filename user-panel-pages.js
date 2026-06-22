@@ -491,8 +491,11 @@ const getJobRows = (snapshot) => {
 
 function loadUpdates(){
   const box = document.getElementById("updatesList");
-  onValue(ref(db, "latestUpdates"), (snapshot) => {
-    const rows = getUpdateRows(snapshot);
+  fetch("/data/latest-updates-lite.json", { cache:"no-cache" }).then((response) => {
+    if(!response.ok){ throw new Error(`HTTP ${response.status}`); }
+    return response.json();
+  }).then((data) => {
+    const rows = Array.isArray(data) ? data : [];
     if(!rows.length){
       renderMessage(box, "Abhi koi update nahi hai.");
       return;
@@ -500,28 +503,27 @@ function loadUpdates(){
     box.innerHTML = rows.map((data) => `
       <div class="row"><strong>${escapeHTML(data.text)}</strong></div>
     `).join("");
-  }, (error) => renderMessage(box, "Updates load nahi ho payi: " + error.message));
+  }).catch((error) => renderMessage(box, "Updates load nahi ho payi: " + error.message));
 }
 
 function loadLinks(){
   const box = document.getElementById("importantLinksList");
-  onValue(ref(db, "importantLinks"), (snapshot) => {
-    if(!snapshot.exists()){
+  fetch("/data/important-links-lite.json", { cache:"no-cache" }).then((response) => {
+    if(!response.ok){ throw new Error(`HTTP ${response.status}`); }
+    return response.json();
+  }).then((data) => {
+    if(!Array.isArray(data) || !data.length){
       renderMessage(box, "Abhi koi important link nahi hai.");
       return;
     }
-    const rows = [];
-    snapshot.forEach((child) => {
-      const data = child.val() || {};
-      rows.push(`
+    const rows = data.map((item) => `
         <div class="row">
-          <strong>${escapeHTML(data.title || "Important Link")}</strong><br>
-          <a href="${safeUrl(data.url)}" target="_blank" rel="noopener noreferrer">Open Link</a>
+          <strong>${escapeHTML(item.title || "Important Link")}</strong><br>
+          <a href="${safeUrl(item.url)}" target="_blank" rel="noopener noreferrer">Open Link</a>
         </div>
       `);
-    });
     box.innerHTML = rows.join("");
-  }, (error) => renderMessage(box, "Important links load nahi ho paye: " + error.message));
+  }).catch((error) => renderMessage(box, "Important links load nahi ho paye: " + error.message));
 }
 
 function filterJobs(){

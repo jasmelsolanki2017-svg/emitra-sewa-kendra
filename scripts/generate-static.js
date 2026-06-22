@@ -224,6 +224,13 @@ async function main() {
   fs.mkdirSync(dataDir, { recursive:true });
   const latestJobRows = sortPostsByLastDateUrgency(jobs.filter((item) => !item.postTarget || item.postTarget === "latestJob"));
   fs.writeFileSync(path.join(dataDir, "latest-jobs-lite.json"), JSON.stringify(latestJobRows.map(lightweightJob)), "utf8");
+  const publicUpdates = sortRows(rowsFrom(updatesData).filter((item) => item.visible === true && String(item.status || "published").toLowerCase() === "published"))
+    .map((item) => ({ text:item.text || item.title || "Latest Update", url:item.url || item.link || item.postUrl || "", createdAt:item.createdAt || item.updatedAt || 0 }));
+  fs.writeFileSync(path.join(dataDir, "latest-updates-lite.json"), JSON.stringify(publicUpdates), "utf8");
+  const publicLinks = rowsFrom(linksData)
+    .map((item) => ({ title:item.title || "Important Link", url:item.url || item.link || "#", displayOrder:item.displayOrder || 999999 }))
+    .sort((a,b) => Number(a.displayOrder) - Number(b.displayOrder));
+  fs.writeFileSync(path.join(dataDir, "important-links-lite.json"), JSON.stringify(publicLinks), "utf8");
   const importantRows = rowsFrom(linksData).map((item) => ({...item, url:item.url || item.link || "#"}));
   const linksHtml = categoryHtml("latestJob", "Important Links", importantRows)
     .replace(/<section class="post-list" id="categoryPostList">[\s\S]*?<\/section>/,

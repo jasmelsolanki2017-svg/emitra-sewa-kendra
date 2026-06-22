@@ -115,7 +115,7 @@ main{max-width:1120px;margin:auto;padding:36px 6%}.layout{display:grid;grid-temp
 <footer><p>© 2026 E-MITRA WALA | Rajasthan Digital Service Help</p><p><a href="privacy-policy.html">Privacy Policy</a><a href="terms-and-conditions.html">Terms & Conditions</a><a href="disclaimer.html">Disclaimer</a><a href="cookie-policy.html">Cookie Policy</a><a href="editorial-policy.html">Editorial Policy</a><a href="correction-policy.html">Correction Policy</a><a href="advertising-policy.html">Advertising Policy</a><a href="dmca.html">DMCA</a></p></footer>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 const firebaseConfig={apiKey:"AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",authDomain:"my-website-73785.firebaseapp.com",databaseURL:"https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app/",projectId:"my-website-73785",storageBucket:"my-website-73785.firebasestorage.app",messagingSenderId:"854088341990",appId:"1:854088341990:web:3211d4ef9fe4b78d025e27"};
 const app=initializeApp(firebaseConfig),db=getDatabase(app),grid=document.getElementById("usefulPagesGrid");
 const escapeHTML=(v="")=>String(v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
@@ -125,7 +125,7 @@ const safeHref=(value="#")=>{
   return "#";
 };
 const normalizeRow=(id,item)=>typeof item==="string"?{id,title:item,description:"",url:"#"}:{id,...(item&&typeof item==="object"?item:{})};
-onValue(ref(db,"usefulContentPages"),(snapshot)=>{
+get(ref(db,"usefulContentPages")).then((snapshot)=>{
   if(!grid||!snapshot.exists()) return;
   const rows=[];
   snapshot.forEach((child)=>{
@@ -140,7 +140,7 @@ onValue(ref(db,"usefulContentPages"),(snapshot)=>{
     return;
   }
   grid.innerHTML=rows.map((item)=>`<a class="card" href="${safeHref(item.url)}"><strong>${escapeHTML(item.title||"Useful Page")}</strong><span>${escapeHTML(item.description||"Useful guide page")}</span></a>`).join("");
-});
+}).catch(()=>{});
 </script>
 <button class="theme-toggle" type="button" aria-label="Toggle dark mode" title="Dark mode" onclick="toggleDarkMode()"><span class="theme-symbol" aria-hidden="true">☾</span></button>
 <script src="/site-theme.js" defer></script>
