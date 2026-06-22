@@ -143,12 +143,32 @@ const injectHomepageLists = (jobs, portal) => {
   fs.writeFileSync(file, html, "utf8");
 };
 
-const injectHomepageNews = (updates) => {
+const injectHomepageNews = (updates, jobs = []) => {
   const file = path.join(root, "index.html");
   let html = fs.readFileSync(file, "utf8");
   const visibleRows = sortRows(rowsFrom(updates).filter((item) => item.visible === true && String(item.status || "published").toLowerCase() === "published"));
-  const postRows = visibleRows;
+  const urgentRows = sortPostsByLastDateUrgency(
+    jobs.filter((item) => (!item.postTarget || item.postTarget === "latestJob") && getLastDateUrgency(item))
+  ).map((item) => {
+    const urgency = getLastDateUrgency(item);
+    return {
+      ...item,
+      text: `${urgency?.diffDays === 0 ? "Last Date Today" : "Last Date Soon"}: ${item.title}`,
+      url: href(item),
+      urgentLastDate: getPostLastDate(item)
+    };
+  });
+  const seenUrls = new Set(urgentRows.map((item) => updateHrefValue(item.url)));
+  const postRows = urgentRows.concat(visibleRows.filter((item) => {
+    const raw = item.url || item.link || item.postUrl || "";
+    return !seenUrls.has(updateHrefValue(raw));
+  }));
   const rows = postRows;
+  function updateHrefValue(value = "") {
+    const raw = String(value || "").trim();
+    if (/^https?:\/\//i.test(raw)) return raw;
+    return raw ? `/${raw.replace(/^\/+/, "")}` : "";
+  }
   const updateHref = (item) => {
     const raw = String(item.url || item.link || item.postUrl || "").trim();
     if (/^https?:\/\//i.test(raw)) return raw;
@@ -158,11 +178,11 @@ const injectHomepageNews = (updates) => {
   const tickerGroups = [[], [], []];
   postRows.forEach((item, index) => tickerGroups[index % 3].push(item));
   const tickerRows = tickerGroups.map((group) => group.length
-    ? `<div class="news-line"><span class="news-track multi-link-track">${group.map((item) => `<a class="news-link" href="${esc(updateHref(item))}">${esc(item.text || item.title)}</a>`).join('<span class="news-separator" aria-hidden="true">•</span>')}</span></div>`
+    ? `<div class="news-line"><span class="news-track multi-link-track">${group.map((item) => `<a class="news-link"${item.urgentLastDate ? ` data-urgent-last-date="${esc(item.urgentLastDate)}"` : ""} href="${esc(updateHref(item))}">${esc(item.text || item.title)}</a>`).join('<span class="news-separator" aria-hidden="true">•</span>')}</span></div>`
     : `<div class="news-line news-placeholder" aria-hidden="true"></div>`);
   const tickerHtml = tickerRows.join("");
   const modalHtml = rows.length
-    ? rows.map((item)=>`<a class="news-item" href="${esc(updateHref(item))}">${esc(item.text || item.title)}</a>`).join("")
+      ? rows.map((item)=>`<a class="news-item"${item.urgentLastDate ? ` data-urgent-last-date="${esc(item.urgentLastDate)}"` : ""} href="${esc(updateHref(item))}">${esc(item.text || item.title)}</a>`).join("")
     : `<p>Abhi koi latest update available nahi hai.</p>`;
   html = html
     .replace(/(<div class="news-ticker-rows" id="newsTickerRows">)[\s\S]*?(<\/div>\s*<\/div>\s*<\/section>)/,
@@ -194,7 +214,7 @@ async function main() {
       `<section class="post-list" id="categoryPostList"><ul>${importantRows.map((item)=>`<li data-search="${esc(item.title.toLowerCase())}"><a href="${esc(item.url)}" target="_blank" rel="noopener noreferrer">${esc(item.title)}</a></li>`).join("")}</ul></section>`);
   fs.writeFileSync(path.join(root, "important-links.html"), linksHtml, "utf8");
   injectHomepageLists(jobs, portal);
-  injectHomepageNews(updatesData);
+  injectHomepageNews(updatesData, jobs);
   execFileSync(process.execPath, [path.join(__dirname, "sync-constitution-data.js")], { cwd: root, stdio: "inherit" });
   console.log("Static public pages generated.");
 }
