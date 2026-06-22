@@ -533,12 +533,18 @@
       });
       return rows;
     }
+    const isPlaceholderInfo=value=>/^(?:.*\bnot mentioned\b.*|update soon|to be updated(?:\s+.*)?|.*\bwill be updated\b.*|n\/?a|na|not available|details? awaited|as per (?:the )?(?:official )?(?:notification|rules)|.*\brules के अनुसार लागू होगा।?)$/i.test(String(value||"").trim());
+    const hasMeaningfulInfo=value=>{
+      if(Array.isArray(value))return value.some(hasMeaningfulInfo);
+      if(isPlainObject(value))return Object.values(value).some(hasMeaningfulInfo);
+      return isFilled(value)&&!isPlaceholderInfo(value);
+    };
     function hasRenderableSection(data,key){
       if(key==="postDetails")return renderPostDetails(data)!=="";
       if(key==="overview")return overviewRows(data).length>0;
       if(key==="applicationFee")return isFilled(getSection(data,key))||isFilled(data.paymentMode);
       if(key==="importantLinks")return normalizeJsonImportantLinks(data).length>0;
-      return isFilled(getSection(data,key));
+      return hasMeaningfulInfo(getSection(data,key));
     }
     const isSyllabusPost=data=>{
       const text=[data?.postTarget,data?.category,data?.postType,data?.type,data?.title,data?.slug].filter(Boolean).join(" ").toLowerCase();
@@ -582,9 +588,12 @@
       return renderTable(rows,["label","value"],["importantDates"]);
     }
     function renderFee(data){
-      const rows=arrayify(getSection(data,"applicationFee")).map((r,i)=>isPlainObject(r)?{...r,__paths:Object.fromEntries(Object.keys(r).filter(k=>!String(k).startsWith("__")).map(k=>[k,["applicationFee",i,k]]))}:r);
+      const rows=arrayify(getSection(data,"applicationFee")).filter(r=>{
+        if(!isPlainObject(r))return hasMeaningfulInfo(r);
+        return ["fee","value","amount","paperOne","bothPapers"].some(key=>hasMeaningfulInfo(r[key]));
+      }).map((r,i)=>isPlainObject(r)?{...r,__paths:Object.fromEntries(Object.keys(r).filter(k=>!String(k).startsWith("__")).map(k=>[k,["applicationFee",i,k]]))}:r);
       const table=renderTable(rows,["category","fee","paperOne","bothPapers","amount"],["applicationFee"]);
-      const payment=data.paymentMode?`<div class="fee-note"><b>Payment Mode:</b> ${valueHTML(data.paymentMode,["paymentMode"])}</div>`:"";
+      const payment=hasMeaningfulInfo(data.paymentMode)?`<div class="fee-note"><b>Payment Mode:</b> ${valueHTML(data.paymentMode,["paymentMode"])}</div>`:"";
       return table+payment;
     }
     function renderAgeLimit(value){
@@ -653,6 +662,7 @@
     }
     function renderSection(data,key){
       const value=getSection(data,key);
+      if(!hasMeaningfulInfo(value)&&key!=="postDetails"&&key!=="overview"&&key!=="applicationFee"&&key!=="importantLinks")return"";
       if(!isFilled(value)&&key!=="postDetails"&&key!=="overview"&&key!=="applicationFee"&&key!=="importantLinks")return"";
       if(key==="postDetails")return renderPostDetails(data);
       if(key==="summary")return renderTable(value,["label","value"],["summary"]);

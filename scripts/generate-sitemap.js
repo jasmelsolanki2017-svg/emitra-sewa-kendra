@@ -954,6 +954,19 @@ const renderPremiumStaticPostHtml = (id = "", job = {}) => {
   };
   const staticPayload = `<script>window.__EMITRA_STATIC_PREMIUM_POST__=${JSON.stringify(payload).replace(/</g, "\\u003c")};</script>`;
   const schema = `<script type="application/ld+json" data-schema="premium-static">\n${JSON.stringify(buildPremiumSchemaGraph({ id, job: payload, canonicalUrl }), null, 2)}\n</script>`;
+  const isPlaceholderInfo = (value) => /^(?:.*\bnot mentioned\b.*|update soon|to be updated(?:\s+.*)?|.*\bwill be updated\b.*|n\/?a|na|not available|details? awaited|as per (?:the )?(?:official )?(?:notification|rules)|.*\brules के अनुसार लागू होगा।?)$/i.test(String(value || "").trim());
+  const hasMeaningfulInfo = (value) => {
+    if (Array.isArray(value)) return value.some(hasMeaningfulInfo);
+    if (value && typeof value === "object") return Object.values(value).some(hasMeaningfulInfo);
+    return String(value ?? "").trim() !== "" && !isPlaceholderInfo(value);
+  };
+  const hasMeaningfulFee = (value) => {
+    const rows = Array.isArray(value) ? value : [value];
+    return rows.some((row) => {
+      if (!row || typeof row !== "object" || Array.isArray(row)) return hasMeaningfulInfo(row);
+      return ["fee", "value", "amount", "paperOne", "bothPapers"].some((key) => hasMeaningfulInfo(row[key]));
+    });
+  };
   const staticValue = (value) => {
     if (Array.isArray(value)) {
       if (!value.length) return "";
@@ -971,7 +984,7 @@ const renderPremiumStaticPostHtml = (id = "", job = {}) => {
       return `<div class="post-info-grid">${rows.map(([key, item]) => `<div class="post-info-row"><strong>${htmlEscape(key.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/[_-]+/g, " "))}</strong><div>${staticValue(item)}</div></div>`).join("")}</div>`;
     }
     const text = String(value ?? "").trim();
-    if (!text || /^(?:update soon|n\/a|na|#)$/i.test(text)) return "";
+    if (!text || text === "#" || isPlaceholderInfo(text)) return "";
     if (/^https?:\/\//i.test(text)) return `<a href="${htmlEscape(text)}" target="_blank" rel="noopener noreferrer">Open Link</a>`;
     return `<p>${htmlEscape(text).replace(/\n/g, "<br>")}</p>`;
   };
@@ -988,6 +1001,7 @@ const renderPremiumStaticPostHtml = (id = "", job = {}) => {
     ["Important Links", payload.importantLinks],
     ["FAQ", payload.faq || payload.faqs]
   ].map(([title, value]) => {
+    if (title === "Application Fee" ? !hasMeaningfulFee(value) : !hasMeaningfulInfo(value)) return "";
     const body = staticValue(value);
     return body ? `<section class="premium-card full-span"><h2>${htmlEscape(title)}</h2><div class="card-body">${body}</div></section>` : "";
   }).filter(Boolean).join("");
