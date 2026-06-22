@@ -3,6 +3,7 @@ const path = require("path");
 const { execFileSync } = require("child_process");
 
 const root = path.join(__dirname, "..");
+const dataDir = path.join(root, "data");
 const DB = (process.env.FIREBASE_URL || "https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app").replace(/\/+$/, "");
 const SITE = "https://emitrawala.online";
 const esc = (v = "") => String(v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
@@ -93,6 +94,18 @@ const urgencyBadge = (item) => {
   if (!urgency) return "";
   return `<span class="last-date-urgent-badge">${urgency.diffDays === 0 ? "Last Date Today" : "Last Date Soon"}</span>`;
 };
+const lightweightJob = (item = {}) => ({
+  id:item.id || "",
+  title:item.title || item.text || "Job Update",
+  type:item.type || item.category || "Online Form",
+  startDate:item.startDate || "",
+  lastDate:getPostLastDate(item),
+  qualification:typeof item.qualification === "string" ? item.qualification : "",
+  location:item.location || "All India",
+  applyLink:item.applyLink || "",
+  slug:slug(item.sourceJobId || item.id, item),
+  createdAt:item.createdAt || 0
+});
 
 const categoryMeta = {
   latestJob:["latest-jobs.html","All Latest Jobs"],
@@ -208,6 +221,9 @@ async function main() {
   }
   const caRows = sortRows(jobs.filter((item) => String(item.postTarget || item.advancedArticleData?.postTarget || "").toLowerCase().replace(/[^a-z]/g,"") === "currentaffairs"));
   fs.writeFileSync(path.join(root, "current-affairs.html"), currentAffairsHtml(caRows), "utf8");
+  fs.mkdirSync(dataDir, { recursive:true });
+  const latestJobRows = sortPostsByLastDateUrgency(jobs.filter((item) => !item.postTarget || item.postTarget === "latestJob"));
+  fs.writeFileSync(path.join(dataDir, "latest-jobs-lite.json"), JSON.stringify(latestJobRows.map(lightweightJob)), "utf8");
   const importantRows = rowsFrom(linksData).map((item) => ({...item, url:item.url || item.link || "#"}));
   const linksHtml = categoryHtml("latestJob", "Important Links", importantRows)
     .replace(/<section class="post-list" id="categoryPostList">[\s\S]*?<\/section>/,

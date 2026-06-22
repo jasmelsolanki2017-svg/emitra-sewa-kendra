@@ -3124,21 +3124,18 @@
     if(box){ renderMessage(box, "Important links load नहीं हो पाए: " + error.message); }
   });
 
-  const jobsRef = ref(db, "LatestJobs");
-
-  onValue(jobsRef, (snapshot) => {
+  const loadStaticJobs = async () => {
     const box = document.getElementById("jobsList");
-    let count = 0;
-
-    const rows = getJobRows(snapshot);
+    const response = await fetch("/data/latest-jobs-lite.json", { cache:"no-cache" });
+    if(!response.ok){ throw new Error(`HTTP ${response.status}`); }
+    const data = await response.json();
+    const rows = (Array.isArray(data) ? data : []).map((job) => ({ id:job.id || job.slug || "", job:normalizeJob(job) }));
     if(box){
       box.innerHTML = "";
     }
 
     if(rows.length){
       rows.forEach(({ id, job }) => {
-        count += 1;
-
         if(box){
           box.innerHTML += `
             <div class="job-card">
@@ -3158,9 +3155,10 @@
       renderMessage(box, "अभी कोई job available नहीं है।");
     }
 
-    document.getElementById("jobsCount").innerText = count;
+    document.getElementById("jobsCount").innerText = rows.length;
     filterJobs();
-  }, (error) => {
+  };
+  loadStaticJobs().catch((error) => {
     const box = document.getElementById("jobsList");
     if(box){ renderMessage(box, "Jobs load नहीं हो पाईं: " + error.message); }
   });

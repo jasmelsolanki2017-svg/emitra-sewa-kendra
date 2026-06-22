@@ -2579,7 +2579,7 @@ Important Links
       <div class="home-portal-grid">
         <div class="home-portal-box" id="homePortalNotification">
           <h3 class="home-portal-title"><span class="desktop-title">Notification</span><span class="mobile-title">New Updates</span></h3>
-          <ul class="home-portal-list" id="homePortalNotificationList"><li><span class="post-title-line"><a href="post/rajasthan-cet-2026-exam-date-%E0%A4%98%E0%A5%8B%E0%A4%B7%E0%A4%BF%E0%A4%A4/">Rajasthan CET 2026 Exam Date घोषित</a><span class="home-new-post-badge">NEW</span></span></li><li><span class="post-title-line"><a href="post/rajasthan-govt-college-admission-merit-list-2026/">Rajasthan Govt College Admission Merit List 2026</a></span></li><li><span class="post-title-line"><a href="post/dsssb-various-post-recruitment-2026-advt-03-2026/">DSSSB Various Post Recruitment 2026</a></span></li><li><span class="post-title-line"><a href="post/kvs-samvida-sathi-recruitment-2026-r0bioa/">KVS Samvida Sathi Recruitment 2026</a></span></li></ul>
+          <ul class="home-portal-list" id="homePortalNotificationList"><li><span class="post-title-line"><a href="post/rajasthan-cet-2026-exam-date-%E0%A4%98%E0%A5%8B%E0%A4%B7%E0%A4%BF%E0%A4%A4/">Rajasthan CET 2026 Exam Date घोषित</a></span></li><li><span class="post-title-line"><a href="post/rajasthan-govt-college-admission-merit-list-2026/">Rajasthan Govt College Admission Merit List 2026</a></span></li><li><span class="post-title-line"><a href="post/dsssb-various-post-recruitment-2026-advt-03-2026/">DSSSB Various Post Recruitment 2026</a></span></li><li><span class="post-title-line"><a href="post/kvs-samvida-sathi-recruitment-2026-r0bioa/">KVS Samvida Sathi Recruitment 2026</a></span></li></ul>
           <a class="home-portal-view-all" href="notification.html">View More »</a>
         </div>
 
@@ -3408,7 +3408,7 @@ import {
   signInWithEmailAndPassword,
   signOut
 } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-import { getDatabase, get, onValue, ref, set, update } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+import { getDatabase, get, ref, set, update } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",
@@ -3439,52 +3439,6 @@ const safeUpdateUrl = (value = "") => {
   if(/^https?:\/\//i.test(url)) return url;
   return `/${url.replace(/^\/+/, "")}`;
 };
-
-onValue(ref(db, "latestUpdates"), (snapshot) => {
-  const ticker = document.getElementById("newsTickerRows");
-  if(!ticker) return;
-  const today = new Date(); today.setHours(0,0,0,0);
-  const urgentRows = [...document.querySelectorAll("[data-urgent-last-date]")].map((link) => {
-    const raw = String(link.dataset.urgentLastDate || "").trim();
-    const match = raw.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})|^(\d{4})-(\d{1,2})-(\d{1,2})|^(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})/);
-    const months = {january:0,jan:0,february:1,feb:1,march:2,mar:2,april:3,apr:3,may:4,june:5,jun:5,july:6,jul:6,august:7,aug:7,september:8,sep:8,sept:8,october:9,oct:9,november:10,nov:10,december:11,dec:11};
-    let date = null;
-    if(match){
-      if(match[1]) date = new Date(Number(match[3]),Number(match[2])-1,Number(match[1]));
-      else if(match[4]) date = new Date(Number(match[4]),Number(match[5])-1,Number(match[6]));
-      else date = new Date(Number(match[9]),months[String(match[8]).toLowerCase()],Number(match[7]));
-    }
-    if(!date) return null;
-    date.setHours(0,0,0,0);
-    const diffDays = Math.round((date-today)/86400000);
-    if(diffDays < 0 || diffDays > 2) return null;
-    return {id:`urgent-${link.href}`,text:link.textContent.trim(),url:link.getAttribute("href"),updatedAt:Number.MAX_SAFE_INTEGER-diffDays,urgent:true};
-  }).filter(Boolean).filter((item,index,all)=>all.findIndex((row)=>row.url===item.url)===index);
-  const rows = [];
-  snapshot.forEach((child) => {
-    const item = child.val() || {};
-    if(item.visible !== true || String(item.status || "published").toLowerCase() !== "published") return;
-    rows.push({ id:child.key, ...item });
-  });
-  rows.sort((a,b) => Number(b.updatedAt || b.createdAt || 0) - Number(a.updatedAt || a.createdAt || 0));
-  urgentRows.reverse().forEach((item) => {
-    const duplicate = rows.findIndex((row) => safeUpdateUrl(row.url || row.link || row.postUrl) === safeUpdateUrl(item.url));
-    if(duplicate >= 0) rows.splice(duplicate,1);
-    rows.unshift(item);
-  });
-  const groups = [[], [], []];
-  rows.forEach((item,index) => groups[index % 3].push(item));
-  const tickerRows = groups.map((group) => {
-    if(!group.length) return `<div class="news-line news-placeholder" aria-hidden="true"></div>`;
-    const links = group.map((item) => {
-      const text = escapeUpdateText(item.text || item.title || "Latest Update");
-      const url = safeUpdateUrl(item.url || item.link || item.postUrl);
-      return url ? `<a class="news-link" href="${escapeUpdateText(url)}">${text}</a>` : `<span>${text}</span>`;
-    }).join('<span class="news-separator" aria-hidden="true">•</span>');
-    return `<div class="news-line"><span class="news-track multi-link-track">${links}</span></div>`;
-  });
-  ticker.innerHTML = tickerRows.join("");
-});
 
 setPersistence(auth, browserLocalPersistence).catch(() => {});
 

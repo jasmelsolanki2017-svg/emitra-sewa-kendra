@@ -541,8 +541,11 @@ function filterJobs(){
 
 function loadJobs(){
   const box = document.getElementById("jobsList");
-  onValue(ref(db, "LatestJobs"), (snapshot) => {
-    const rows = getJobRows(snapshot);
+  fetch("/data/latest-jobs-lite.json", { cache:"no-cache" }).then((response) => {
+    if(!response.ok){ throw new Error(`HTTP ${response.status}`); }
+    return response.json();
+  }).then((data) => {
+    const rows = (Array.isArray(data) ? data : []).map((job) => ({ id:job.id || job.slug || "", job:normalizeJob(job) }));
     if(!rows.length){
       renderMessage(box, "Abhi koi job available nahi hai.");
       return;
@@ -560,7 +563,7 @@ function loadJobs(){
       </div>
     `).join("");
     filterJobs();
-  }, (error) => renderMessage(box, "Jobs load nahi ho payi: " + error.message));
+  }).catch((error) => renderMessage(box, "Jobs load nahi ho payi: " + error.message));
 
   const search = document.getElementById("jobSearch");
   if(search){ search.addEventListener("input", filterJobs); }
