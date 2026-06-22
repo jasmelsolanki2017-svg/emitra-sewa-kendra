@@ -147,7 +147,7 @@ const injectHomepageNews = (updates) => {
   const file = path.join(root, "index.html");
   let html = fs.readFileSync(file, "utf8");
   const visibleRows = sortRows(rowsFrom(updates).filter((item) => item.visible === true && String(item.status || "published").toLowerCase() === "published"));
-  const postRows = visibleRows.filter((item) => item.manual !== true).slice(0,3);
+  const postRows = visibleRows;
   const rows = postRows;
   const updateHref = (item) => {
     const raw = String(item.url || item.link || item.postUrl || "").trim();
@@ -155,8 +155,11 @@ const injectHomepageNews = (updates) => {
     if (raw) return `/${raw.replace(/^\/+/, "")}`;
     return href(item);
   };
-  const tickerRows = postRows.map((item) => `<div class="news-line"><span class="news-track"><a href="${esc(updateHref(item))}">${esc(item.text || item.title)}</a></span></div>`);
-  while (tickerRows.length < 3) tickerRows.push(`<div class="news-line news-placeholder" aria-hidden="true"></div>`);
+  const tickerGroups = [[], [], []];
+  postRows.forEach((item, index) => tickerGroups[index % 3].push(item));
+  const tickerRows = tickerGroups.map((group) => group.length
+    ? `<div class="news-line"><span class="news-track multi-link-track">${group.map((item) => `<a class="news-link" href="${esc(updateHref(item))}">${esc(item.text || item.title)}</a>`).join('<span class="news-separator" aria-hidden="true">•</span>')}</span></div>`
+    : `<div class="news-line news-placeholder" aria-hidden="true"></div>`);
   const tickerHtml = tickerRows.join("");
   const modalHtml = rows.length
     ? rows.map((item)=>`<a class="news-item" href="${esc(updateHref(item))}">${esc(item.text || item.title)}</a>`).join("")
