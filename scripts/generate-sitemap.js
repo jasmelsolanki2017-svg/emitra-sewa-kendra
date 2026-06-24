@@ -4,6 +4,8 @@ const https = require("https");
 
 const SITE_BASE_URL = (process.env.SITE_BASE_URL || "https://emitrawala.online").replace(/\/+$/, "");
 const FIREBASE_URL = (process.env.FIREBASE_URL || "https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app").replace(/\/+$/, "");
+const ADSENSE_SCRIPT = `<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6630418041120530"
+     crossorigin="anonymous"></script>`;
 const SITEMAP_PATH = path.join(__dirname, "..", "sitemap.xml");
 const JOB_SITEMAP_PATH = path.join(__dirname, "..", "sitemap-jobs.xml");
 const LEGAL_SITEMAP_PATH = path.join(__dirname, "..", "sitemap-legal.xml");
@@ -794,6 +796,7 @@ const renderCurrentAffairsPremiumHtml = ({ id = "", job = {}, seo = {}, canonica
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
+${ADSENSE_SCRIPT}
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${htmlEscape(seo.seoTitle || `${title} | EMITRAWALA.ONLINE`)}</title>
 <meta name="description" content="${htmlEscape(description)}">

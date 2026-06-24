@@ -5,6 +5,8 @@ const https = require("https");
 const root = path.join(__dirname, "..");
 const siteUrl = (process.env.SITE_BASE_URL || "https://emitrawala.online").replace(/\/+$/, "");
 const firebaseUrl = (process.env.FIREBASE_URL || "https://my-website-73785-default-rtdb.asia-southeast1.firebasedatabase.app").replace(/\/+$/, "");
+const ADSENSE_SCRIPT = `<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6630418041120530"
+     crossorigin="anonymous"></script>`;
 const outputRoot = path.join(root, "constitution");
 const publicDataRoot = path.join(root, "data", "constitution");
 const publicIndexPath = path.join(publicDataRoot, "index.json");
@@ -93,7 +95,7 @@ const buildPage = (article, previous, next) => {
   } : null;
   const source = article.source && typeof article.source === "object" ? article.source : {};
   return `<!DOCTYPE html>
-<html lang="hi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><script src="/site-theme-init.js"></script>
+<html lang="hi"><head><meta charset="UTF-8">${ADSENSE_SCRIPT}<meta name="viewport" content="width=device-width,initial-scale=1"><script src="/site-theme-init.js"></script>
 <title>Article ${esc(number)}: ${esc(hi)} | भारतीय संविधान</title>
 <meta name="description" content="${esc(description)}"><meta name="robots" content="index,follow,max-image-preview:large">
 <link rel="canonical" href="${esc(canonical)}"><link rel="icon" href="../../favicon.png">
