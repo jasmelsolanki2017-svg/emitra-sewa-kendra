@@ -1503,9 +1503,10 @@ const buildOverviewRows = (job = {}) => [
   { label:"Post Type", value:job.type },
   { label:"Last Date", value:job.lastApplyDate || job.lastDate }
 ].filter((row) => isFilledValue(row.value, row.options));
-const normalizeJobToArticle = (input = {}) => {
+const normalizePostData = (input = {}) => {
   const base = typeof input === "string" ? { title:input, type:"Online Form" } : ((input && typeof input === "object") ? { ...input } : {});
-  const article = base.advancedArticleData && typeof base.advancedArticleData === "object" ? { ...base.advancedArticleData } : {};
+  const rawAdvancedArticleData = base.advancedArticleData;
+  const article = rawAdvancedArticleData && typeof rawAdvancedArticleData === "object" && !Array.isArray(rawAdvancedArticleData) ? { ...rawAdvancedArticleData } : {};
   const pickPostField = (...keys) => {
     for(const source of [base, article]){
       for(const key of keys){
@@ -1519,7 +1520,7 @@ const normalizeJobToArticle = (input = {}) => {
   const contentText = typeof rawContent === "string" ? rawContent : (typeof article.content === "string" ? article.content : "");
   const contentBlocks = Array.isArray(rawContent) ? rawContent : (Array.isArray(content.blocks) ? content.blocks : (Array.isArray(content.items) ? content.items : (Array.isArray(content.sections) ? content.sections : [])));
   const seo = base.seo && typeof base.seo === "object" ? base.seo : (article.seo && typeof article.seo === "object" ? article.seo : {});
-  const titleValue = base.title || article.title || base.notificationTitle || article.notificationTitle || content.title || seo.title || "";
+  const titleValue = base.title || base.articleTitle || article.title || article.articleTitle || base.notificationTitle || article.notificationTitle || content.title || seo.title || "";
   const title = t(titleValue);
   const shortInfoValue = base.shortInfo || base.short_description || base.short_information || article.shortInfo || article.short_description || article.short_information || content.short_description || content.shortInfo || content.short_information || seo.metaDescription || seo.description || "";
   const shortInfo = t(shortInfoValue);
@@ -1544,11 +1545,19 @@ const normalizeJobToArticle = (input = {}) => {
   const documentsRequired = pickPostField("documentsRequired", "documents_required", "requiredDocuments", "required_documents");
   const howToApply = pickPostField("howToApply", "how_to_apply", "applyProcess", "apply_process");
   const schemaData = pickPostField("schemaData", "schema_data");
+  const normalizedAdvancedArticleData = typeof rawAdvancedArticleData === "string" || Array.isArray(rawAdvancedArticleData)
+    ? rawAdvancedArticleData
+    : { ...article, __advancedArticleDataSourceType:rawAdvancedArticleData === undefined ? "generated" : "object", title, shortInfo, sections, contentBlocks, contentText, customSections, tables, exams, intro, overview, importantLinks, faq, faqs:faq, mcqs, practiceQuestions:mcqs, importantDates, applicationFee, applicationFees:applicationFee, ageLimit, vacancyDetails, qualification, eligibility:qualification, selectionProcess, examPattern, groupWiseSyllabus, participatingInstitutes, documentsRequired, howToApply, schemaData, content:{ ...content, intro, questions:faq, mcqs, practiceQuestions:mcqs }, seo };
   return {
     ...base,
     title,
+    articleTitle:base.articleTitle || article.articleTitle || title,
     shortInfo,
     slug:String(base.slug || article.slug || slugifyText(title)).trim(),
+    category:base.category || article.category || base.type || "",
+    language:base.language || article.language || "hi",
+    datePublished:base.datePublished || article.datePublished || base.postDate || base.createdAt || "",
+    dateModified:base.dateModified || article.dateModified || base.updatedAt || "",
     postTarget:isCurrentAffairsPost({ ...article, ...base }) ? "currentAffairs" : normalizePostTarget(base.postTarget || article.postTarget),
     seoTitle:base.seoTitle || seo.seoTitle || seo.title,
     metaDescription:base.metaDescription || seo.metaDescription || seo.description || shortInfo,
@@ -1577,9 +1586,10 @@ const normalizeJobToArticle = (input = {}) => {
     documentsRequired,
     howToApply,
     schemaData,
-    advancedArticleData:{ ...article, title, shortInfo, sections, contentBlocks, contentText, customSections, tables, exams, intro, overview, importantLinks, faq, faqs:faq, mcqs, practiceQuestions:mcqs, importantDates, applicationFee, applicationFees:applicationFee, ageLimit, vacancyDetails, qualification, eligibility:qualification, selectionProcess, examPattern, groupWiseSyllabus, participatingInstitutes, documentsRequired, howToApply, schemaData, content:{ ...content, intro, questions:faq, mcqs, practiceQuestions:mcqs }, seo }
+    advancedArticleData:normalizedAdvancedArticleData
   };
 };
+const normalizeJobToArticle = (input = {}) => normalizePostData(input);
 const normalizeJob = (value) => normalizeJobToArticle(value);
 const normalizePost = normalizeJob;
 
@@ -1702,7 +1712,7 @@ const applicationFeeRowsFromValue = (value) => {
     const category = value.category || value.label || value.title || value.name;
     const amount = value.fee ?? value.amount ?? value.value;
     if(isFilledValue(category) && isFilledValue(amount)){
-      const label = /\bfee$/i.test(String(category).trim()) ? String(category).trim() : `${String(category).trim()} Fee`;
+      const label = /\bfee$/i.test(String(category).trim()) ? String(category).trim() : String(category).trim();
       return [feeRow(label, amount)];
     }
     return Object.entries(value)
@@ -3451,6 +3461,7 @@ const sanitizeArticleHtml = (value = "") => {
     if(element.tagName === "A"){
       const href = String(element.getAttribute("href") || "").trim();
       if(href && !/^(https?:|mailto:|tel:|#|\/)/i.test(href)){ element.removeAttribute("href"); }
+      if(/^javascript:/i.test(href)){ element.removeAttribute("href"); }
       if(element.getAttribute("target") === "_blank"){ element.setAttribute("rel","noopener noreferrer"); }
     }
   });
@@ -3539,8 +3550,12 @@ const renderPageContent = (content, title, options = {}) => {
 };
 
 const getDetailedArticle = (job = {}) => {
-  const article = job.advancedArticleData && typeof job.advancedArticleData === "object" ? job.advancedArticleData : {};
-  return firstFilled(job.article, job.fullArticle, job.articleContent, job.detailedArticle, article.article, article.fullArticle);
+  const article = job.advancedArticleData && typeof job.advancedArticleData === "object" && !Array.isArray(job.advancedArticleData) ? job.advancedArticleData : {};
+  const directArticle = firstFilled(job.article, job.fullArticle, job.articleContent, job.detailedArticle, article.article, article.fullArticle, article.articleContent, article.detailedArticle);
+  if(isFilledFlexibleValue(directArticle)){ return directArticle; }
+  if(typeof job.advancedArticleData === "string" || Array.isArray(job.advancedArticleData)){ return job.advancedArticleData; }
+  if(article && article.__advancedArticleDataSourceType === "object"){ return article; }
+  return "";
 };
 
 const renderDetailedArticle = (value) => {
@@ -3555,7 +3570,7 @@ const renderDetailedArticle = (value) => {
     const heading = value.title || value.heading || value.name;
     const intro = value.intro || value.summary;
     const sections = value.sections || value.paragraphs || value.items;
-    const known = new Set(["title","heading","name","intro","summary","sections","paragraphs","items"]);
+    const known = new Set(["title","heading","name","intro","summary","sections","paragraphs","items","__advancedArticleDataSourceType"]);
     const extra = Object.entries(value).filter(([key,item]) => !known.has(key) && isFilledFlexibleValue(item));
     return [
       heading ? `<h3>${renderFormattedText(heading)}</h3>` : "",
@@ -3565,6 +3580,45 @@ const renderDetailedArticle = (value) => {
     ].join("");
   }
   return "";
+};
+
+const renderArticleLinksTable = (links = []) => {
+  const cleanLinks = asArray(links).map((item) => {
+    const label = typeof item === "object" ? (item.label || item.title || item.name || "Important Link") : "Important Link";
+    const url = typeof item === "object" ? (item.url || item.href || item.link) : item;
+    return { label, url:safeUrl(url) };
+  }).filter((item) => item.url && item.url !== "#");
+  if(!cleanLinks.length){ return ""; }
+  return `<div class="structured-table-wrap"><table class="content-table"><tbody>${cleanLinks.map((item) => `<tr><th>${escapeHTML(item.label)}</th><td><a class="btn table-link-btn" href="${item.url}" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-arrow-up-right-from-square"></i> ${escapeHTML(item.label)}</a></td></tr>`).join("")}</tbody></table></div>`;
+};
+
+const renderArticleFaqs = (items = []) => {
+  const faqs = normalizeFaqItems(items);
+  if(!faqs.length){ return ""; }
+  return faqs.map((item) => `<details class="faq-item"><summary>${escapeHTML(item.question)}</summary><p>${renderFormattedText(item.answer)}</p></details>`).join("");
+};
+
+const buildStructuredArticleFallback = (job = {}, title = "Job Update") => {
+  const blocks = [];
+  const push = (heading, body) => {
+    if(body){ blocks.push(`<section class="content-section"><h2 class="sarkari-section-title">${escapeHTML(heading)}</h2>${body}</section>`); }
+  };
+  const introText = Array.isArray(job.intro) ? job.intro.join("\n\n") : (job.intro || job.shortInfo || "");
+  if(title){ blocks.push(`<h1>${renderFormattedText(title)}</h1>`); }
+  if(isFilledFlexibleValue(introText)){ blocks.push(`<p>${renderFormattedText(introText)}</p>`); }
+  push("Overview", rowsToStructuredTable(normalizeOverviewRows(job.overview)));
+  push("Important Dates", rowsToStructuredTable(buildImportantDateRows(job, findFlexibleRowValue(getFlexibleField(job, "importantDates"), [/start/, /online.*from/, /apply.*from/]), job.lastApplyDate || job.lastDate)));
+  push("Application Fee", rowsToStructuredTable(applicationFeeRowsFromValue(getFlexibleField(job, "applicationFee"))));
+  push("Age Limit", rowsToStructuredTable(ageLimitRowsFromValue(getFlexibleField(job, "ageLimit"))));
+  push("Eligibility", renderFlexibleCell(getFlexibleField(job, "eligibility") || job.qualification));
+  push("Vacancy Details", renderDataTable(getFlexibleField(job, "vacancyDetails")) || renderFlexibleCell(getFlexibleField(job, "vacancyDetails")));
+  push("Selection Process", renderFlexibleCell(getFlexibleField(job, "selectionProcess") || job.selectionProcess));
+  push("Exam Pattern", renderDataTable(getFlexibleField(job, "examPattern")) || renderFlexibleCell(getFlexibleField(job, "examPattern")));
+  push("Syllabus", renderFlexibleCell(getFlexibleField(job, "groupWiseSyllabus")));
+  push("How To Apply", renderFlexibleCell(getFlexibleField(job, "howToApply") || job.howToApply));
+  push("Important Links", renderArticleLinksTable(getFlexibleField(job, "importantLinks") || buildImportantLinks(job)));
+  push("FAQs", renderArticleFaqs(job.faq || job.faqs));
+  return blocks.join("");
 };
 
 const id = new URLSearchParams(window.location.search).get("id");
@@ -3934,12 +3988,13 @@ const renderJobDetail = (jobId, rawJob, allJobs = []) => {
     if(mcqHeading){ mcqHeading.textContent = "MCQ Practice"; }
 
     const detailedArticle = getDetailedArticle(job);
-    if(isFilledFlexibleValue(detailedArticle)){
+    const articleHtml = isFilledFlexibleValue(detailedArticle) ? renderDetailedArticle(detailedArticle) : buildStructuredArticleFallback(job, title);
+    if(articleHtml){
       const articlePanel = document.getElementById("pageContentPanel");
       const articleBox = document.getElementById("pageContent");
       articlePanel.style.display = "block";
       articleBox.classList.remove("empty");
-      articleBox.innerHTML = `<section class="panel"><h2>पूरी जानकारी</h2><div class="content-box"><div class="article-body">${renderDetailedArticle(detailedArticle)}</div></div></section>`;
+      articleBox.innerHTML = `<section class="panel"><h2>पूरी जानकारी</h2><div class="content-box"><div class="article-body">${articleHtml}</div></div></section>`;
     }
 
     const linkButtons = [

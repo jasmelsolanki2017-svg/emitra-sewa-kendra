@@ -486,7 +486,7 @@
       ["faqs","Frequently Asked Questions (FAQ)","accent-blue","full-span"]
     ];
     const SYLLABUS_SECTION_ORDER=["summary","groupWiseSyllabus","examPattern","selectionProcess","importantDates","applicationFee","ageLimit","eligibility","vacancyDetails","documentsRequired","howToApply","importantLinks","faqs"];
-    const aliases={postDetails:["postDetails","post_details"],title:["title","postTitle","post_title"],postName:["postName","post_name","examName","exam_name","recruitmentName","recruitment_name"],organization:["organization","organisation","department","departmentName","department_name","board","company"],shortInformation:["shortInformation","short_information","shortInfo","short_info","notificationSummary","description"],summary:["summary","overview","short_summary","shortSummary","long_summary","longSummary"],detailedArticle:["article","fullArticle","articleContent","detailedArticle"],faqs:["faqs","faq"],importantDates:["importantDates","important_dates","dates"],applicationFee:["applicationFee","application_fee","applicationFees","application_fees","fees","fee"],ageLimit:["ageLimit","age_limit"],vacancyDetails:["vacancyDetails","vacancy_details","vacancy","vacancies","seats"],eligibility:["eligibility","qualification","qualifications","educationQualification","education_qualification"],departmentWisePosts:["departmentWisePosts","department_wise_posts","departmentWiseVacancy","department_wise_vacancy","departmentWise","department_wise"],categoryWiseVacancy:["categoryWiseVacancy","category_wise_vacancy","categoryWise","category_wise","category_wise_total","categoryWiseTotal"],selectionProcess:["selectionProcess","selection_process"],examPattern:["examPattern","exam_pattern"],groupWiseSyllabus:["groupWiseSyllabus","group_wise_syllabus","syllabus"],participatingInstitutes:["participatingInstitutes","participating_institutes","institutes"],documentsRequired:["documentsRequired","documents_required","requiredDocuments","required_documents"],howToApply:["howToApply","how_to_apply"],importantLinks:["importantLinks","important_links"],howToCheckResult:["howToCheckResult","howToCheck","checkResult"],regionWiseResultLinks:["regionWiseResultLinks","regionWiseLinks","regionLinks","resultLinksByRegion"]};
+    const aliases={postDetails:["postDetails","post_details"],title:["title","articleTitle","postTitle","post_title"],postName:["postName","post_name","examName","exam_name","recruitmentName","recruitment_name"],organization:["organization","organisation","department","departmentName","department_name","board","company"],shortInformation:["shortInformation","short_information","shortInfo","short_info","notificationSummary","description"],summary:["summary","overview","short_summary","shortSummary","long_summary","longSummary"],detailedArticle:["article","fullArticle","articleContent","detailedArticle","advancedArticleData"],faqs:["faqs","faq"],importantDates:["importantDates","important_dates","dates"],applicationFee:["applicationFee","application_fee","applicationFees","application_fees","fees","fee"],ageLimit:["ageLimit","age_limit"],vacancyDetails:["vacancyDetails","vacancy_details","vacancy","vacancies","seats"],eligibility:["eligibility","qualification","qualifications","educationQualification","education_qualification"],departmentWisePosts:["departmentWisePosts","department_wise_posts","departmentWiseVacancy","department_wise_vacancy","departmentWise","department_wise"],categoryWiseVacancy:["categoryWiseVacancy","category_wise_vacancy","categoryWise","category_wise","category_wise_total","categoryWiseTotal"],selectionProcess:["selectionProcess","selection_process"],examPattern:["examPattern","exam_pattern"],groupWiseSyllabus:["groupWiseSyllabus","group_wise_syllabus","syllabus"],participatingInstitutes:["participatingInstitutes","participating_institutes","institutes"],documentsRequired:["documentsRequired","documents_required","requiredDocuments","required_documents"],howToApply:["howToApply","how_to_apply"],importantLinks:["importantLinks","important_links"],howToCheckResult:["howToCheckResult","howToCheck","checkResult"],regionWiseResultLinks:["regionWiseResultLinks","regionWiseLinks","regionLinks","resultLinksByRegion"]};
     const escapeHTML=(v="")=>String(v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
     const toTitle=(key="")=>String(key).replace(/([a-z])([A-Z])/g,"$1 $2").replace(/[-_]+/g," ").replace(/\b\w/g,m=>m.toUpperCase());
     const isFilled=v=>{
@@ -562,6 +562,7 @@
         if(element.tagName==="A"){
           const href=String(element.getAttribute("href")||"").trim();
           if(href&&!/^(https?:|mailto:|tel:|#|\/)/i.test(href))element.removeAttribute("href");
+          if(/^javascript:/i.test(href))element.removeAttribute("href");
           if(element.getAttribute("target")==="_blank")element.setAttribute("rel","noopener noreferrer");
         }
       });
@@ -722,12 +723,18 @@
       const rows=source.map((r,i)=>isPlainObject(r)?{label:r.label||r.title||r.name||r.event||toTitle(r.key||"Date"),value:r.value||r.date||r.detail||r.time||r.description,__paths:{label:["importantDates",i,"label"],value:["importantDates",i,"value"]}}:r);
       return renderTable(rows,["label","value"],["importantDates"]);
     }
+    function feeRowsFromValue(value){
+      return arrayify(value).flatMap((r,i)=>{
+        if(!isPlainObject(r))return hasMeaningfulInfo(r)?[{label:"Fee",value:r,__paths:{value:["applicationFee",i]}}]:[];
+        const label=r.label||r.title||r.name||r.category||r.type||r.key;
+        const value=r.value??r.fee??r.amount??r.paperOne??r.bothPapers;
+        if(isFilled(label)&&hasMeaningfulInfo(value))return [{label,value,__paths:{label:["applicationFee",i,"label"],value:["applicationFee",i,"value"]}}];
+        return Object.entries(r).filter(([k,v])=>!/(?:label|title|name|category|type|key)$/i.test(k)&&hasMeaningfulInfo(v)).map(([k,v])=>({label:toTitle(k),value:v,__paths:{value:["applicationFee",i,k]}}));
+      });
+    }
     function renderFee(data){
-      const rows=arrayify(getSection(data,"applicationFee")).filter(r=>{
-        if(!isPlainObject(r))return hasMeaningfulInfo(r);
-        return ["fee","value","amount","paperOne","bothPapers"].some(key=>hasMeaningfulInfo(r[key]));
-      }).map((r,i)=>isPlainObject(r)?{...r,__paths:Object.fromEntries(Object.keys(r).filter(k=>!String(k).startsWith("__")).map(k=>[k,["applicationFee",i,k]]))}:r);
-      const table=renderTable(rows,["category","fee","paperOne","bothPapers","amount"],["applicationFee"]);
+      const rows=feeRowsFromValue(getSection(data,"applicationFee"));
+      const table=renderTable(rows,["label","value"],["applicationFee"]);
       const payment=hasMeaningfulInfo(data.paymentMode)?`<div class="fee-note"><b>Payment Mode:</b> ${valueHTML(data.paymentMode,["paymentMode"])}</div>`:"";
       return table+payment;
     }
@@ -781,6 +788,7 @@
     }
     function renderContentSections(value){
       if(typeof value==="string"&&looksLikeArticleHtml(value))return sanitizeArticleHtml(value);
+      if(isPlainObject(value)&&typeof value.html==="string"&&looksLikeArticleHtml(value.html))return sanitizeArticleHtml(value.html);
       const arr=arrayify(value);
       return arr.map(item=>{
         if(isPlainObject(item)){
@@ -907,7 +915,7 @@
       return `<div class="premium-admin-editor" role="region" aria-label="Admin live editor"><div><strong>Admin Live Edit</strong><small>${adminEditMode?"Box/title/line select karke text aur design edit karein, phir Save Changes dabayein.":"Edit Live dabakar isi page par post update karen."}</small><div class="premium-admin-status" id="premiumAdminStatus"></div></div><div class="premium-admin-actions"><button type="button" onclick="enablePremiumLiveEdit()" ${adminEditMode?"disabled":""}>Edit Live</button><button type="button" class="save" onclick="savePremiumLiveEdit()" ${adminEditMode?"":"disabled"}>Save Changes</button><button type="button" class="cancel" onclick="cancelPremiumLiveEdit()" ${adminEditMode?"":"disabled"}>Cancel</button><button type="button" onclick="sharePremiumToWhatsapp()">WhatsApp Post</button><button type="button" onclick="sendPremiumToTelegram()">Telegram Post</button><a class="action-btn website" href="premium-admin.html" target="_blank" rel="noopener noreferrer" style="min-height:auto;padding:10px 13px;font-size:13px">Admin Panel</a></div><div class="premium-design-tools" id="premiumDesignTools"><label>Selected<input id="designTargetName" type="text" value="Click box/line" readonly></label><label>Box Colour<input id="designBg" type="color" onchange="applyPremiumDesignControl()"></label><label>Font Colour<input id="designColor" type="color" onchange="applyPremiumDesignControl()"></label><label>Border Colour<input id="designBorderColor" type="color" onchange="applyPremiumDesignControl()"></label><label>Border Width<select id="designBorderWidth" onchange="applyPremiumDesignControl()"><option value="">Default</option><option value="0">0</option><option value="1px">1px</option><option value="2px">2px</option><option value="3px">3px</option><option value="4px">4px</option><option value="6px">6px</option></select></label><label>Border Style<select id="designBorderStyle" onchange="applyPremiumDesignControl()"><option value="">Default</option><option value="solid">Solid</option><option value="double">Double</option><option value="dashed">Dashed</option><option value="dotted">Dotted</option></select></label><label>Font Size<select id="designFontSize" onchange="applyPremiumDesignControl()"><option value="">Default</option><option value="12px">12px</option><option value="14px">14px</option><option value="16px">16px</option><option value="18px">18px</option><option value="20px">20px</option><option value="24px">24px</option><option value="30px">30px</option></select></label><label>Align<select id="designAlign" onchange="applyPremiumDesignControl()"><option value="">Default</option><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></label><label>Radius<select id="designRadius" onchange="applyPremiumDesignControl()"><option value="">Default</option><option value="0">0</option><option value="4px">4px</option><option value="8px">8px</option><option value="14px">14px</option><option value="22px">22px</option></select></label><label>Padding<select id="designPadding" onchange="applyPremiumDesignControl()"><option value="">Default</option><option value="4px">Small</option><option value="8px">Normal</option><option value="12px">Big</option><option value="18px">Large</option></select></label><div class="tool-buttons"><button type="button" onclick="togglePremiumDesign('bold')">Bold</button><button type="button" onclick="togglePremiumDesign('italic')">Italic</button><button type="button" onclick="togglePremiumDesign('underline')">Underline</button><button type="button" class="cancel" style="display:block" onclick="resetPremiumDesign()">Reset Style</button></div></div></div>`;
     }
     function renderPremiumPost(data){
-      data={...data};
+      data=normalizePostData(data);
       currentPostData=cloneJson(data);
       currentPostSlug=data.slug||requestedSlug||currentPostSlug;
       hasRenderedPost=true;
@@ -927,6 +935,15 @@
       attachPremiumDesignPicker();
       bindSummaryCardScroll();
       scrollHashAfterRender();
+    }
+    function normalizePostData(post={}){
+      const base=post&&typeof post==="object"?{...post}:{};
+      const advanced=base.advancedArticleData;
+      const article=advanced&&typeof advanced==="object"&&!Array.isArray(advanced)?advanced:{};
+      const pick=(...keys)=>{for(const source of [base,article]){for(const key of keys){if(source&&source[key]!==undefined&&source[key]!==null)return source[key]}}return undefined};
+      const title=pick("title","articleTitle")||"Premium Update";
+      const detailed=pick("article","fullArticle","articleContent","detailedArticle")||(typeof advanced==="string"||Array.isArray(advanced)?advanced:"");
+      return {...base,title,articleTitle:base.articleTitle||article.articleTitle||title,slug:base.slug||article.slug||"",category:base.category||article.category||base.type||"",language:base.language||article.language||"hi",datePublished:base.datePublished||article.datePublished||base.postDate||base.createdAt||"",dateModified:base.dateModified||article.dateModified||base.updatedAt||"",intro:pick("intro")||base.shortInfo||"",overview:pick("overview")||base.overview,importantDates:pick("importantDates","important_dates","dates"),applicationFee:pick("applicationFee","application_fee","applicationFees","application_fees","fees","fee"),ageLimit:pick("ageLimit","age_limit"),eligibility:pick("eligibility","qualification","qualifications","educationQualification","education_qualification"),selectionProcess:pick("selectionProcess","selection_process"),examPattern:pick("examPattern","exam_pattern"),vacancyDetails:pick("vacancyDetails","vacancy_details","vacancy","vacancies"),groupWiseSyllabus:pick("groupWiseSyllabus","group_wise_syllabus","syllabus"),howToApply:pick("howToApply","how_to_apply","applyProcess","apply_process"),importantLinks:pick("importantLinks","important_links"),faqs:pick("faqs","faq"),detailedArticle:detailed};
     }
     async function loadPremiumPostBySlug(){ throw new Error("Static post data unavailable."); }
     async function fetchFreshPost(){ throw new Error("Static post data unavailable."); }

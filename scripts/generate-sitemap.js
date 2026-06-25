@@ -978,21 +978,60 @@ const renderPremiumStaticPostHtml = (id = "", job = {}) => {
       return ["fee", "value", "amount", "paperOne", "bothPapers"].some((key) => hasMeaningfulInfo(row[key]));
     });
   };
+  const looksLikeArticleHtml = (value = "") => /<(?:h[1-6]|p|table|thead|tbody|tr|th|td|ul|ol|li|strong|b|em|a|br)\b/i.test(String(value || ""));
+  const sanitizeStaticArticleHtml = (value = "") => String(value || "")
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<style[\s\S]*?<\/style>/gi, "")
+    .replace(/\son\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, "")
+    .replace(/\sstyle\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, "")
+    .replace(/\s(href|src)\s*=\s*(['"]?)\s*javascript:[\s\S]*?\2/gi, "");
+  const normalizeStaticLabelValueRows = (value, fallbackLabel = "Details") => (Array.isArray(value) ? value : [value])
+    .flatMap((item, index) => {
+      if (!hasMeaningfulInfo(item)) return [];
+      if (item && typeof item === "object" && !Array.isArray(item)) {
+        const label = item.label || item.title || item.name || item.event || item.category || item.key || `${fallbackLabel} ${index + 1}`;
+        const rowValue = item.value ?? item.date ?? item.fee ?? item.amount ?? item.text ?? item.description ?? item.detail ?? item.content ?? "";
+        if (hasMeaningfulInfo(label) && hasMeaningfulInfo(rowValue)) return [{ label, value: rowValue }];
+        return Object.entries(item)
+          .filter(([key, row]) => !/^(label|title|name|event|category|key|type)$/i.test(key) && hasMeaningfulInfo(row))
+          .map(([key, row]) => ({ label: key.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/[_-]+/g, " "), value: row }));
+      }
+      return [{ label: fallbackLabel, value: item }];
+    });
+  const staticRowsGrid = (rows = []) => {
+    const rendered = rows
+      .map((item) => ({ label:item.label || "Details", body:staticValue(item.value) }))
+      .filter((item) => item.body);
+    return rendered.length
+      ? `<div class="post-info-grid">${rendered.map((item) => `<div class="post-info-row"><strong>${htmlEscape(item.label)}</strong><div>${item.body}</div></div>`).join("")}</div>`
+      : "";
+  };
+  const staticLinks = (links = []) => {
+    const seen = new Set();
+    const rows = (Array.isArray(links) ? links : [])
+      .map((item) => ({
+        label: htmlEscape(item && typeof item === "object" ? (item.label || item.title || item.name || "Important Link") : "Important Link"),
+        url: String(item && typeof item === "object" ? (item.url || item.href || item.link || "") : item || "").trim()
+      }))
+      .filter((item) => /^https?:\/\//i.test(item.url) && !seen.has(item.url) && seen.add(item.url));
+    return rows.length ? `<div class="link-grid">${rows.map((item) => `<a class="link-card" href="${htmlEscape(item.url)}" target="_blank" rel="noopener noreferrer"><strong>${item.label}</strong><span>Direct link open karein</span></a>`).join("")}</div>` : "";
+  };
   const staticValue = (value) => {
+    if (typeof value === "string" && looksLikeArticleHtml(value)) return sanitizeStaticArticleHtml(value);
     if (Array.isArray(value)) {
       if (!value.length) return "";
       if (value.every((item) => item && typeof item === "object" && !Array.isArray(item) && ("label" in item || "value" in item))) {
-        return `<div class="post-info-grid">${value.map((item) => `<div class="post-info-row"><strong>${htmlEscape(item.label || item.title || item.name || "Details")}</strong><div>${staticValue(item.value ?? item.text ?? item.description ?? "")}</div></div>`).join("")}</div>`;
+        return staticRowsGrid(normalizeStaticLabelValueRows(value));
       }
       return `<ul>${value.map((item) => `<li>${staticValue(item)}</li>`).join("")}</ul>`;
     }
     if (value && typeof value === "object") {
-      if ("label" in value || "value" in value) {
-        return `<div class="post-info-row"><strong>${htmlEscape(value.label || value.title || value.name || "Details")}</strong><div>${staticValue(value.value ?? value.text ?? value.description ?? "")}</div></div>`;
+      if ("label" in value || "value" in value || "category" in value || "fee" in value || "event" in value || "date" in value) {
+        return staticRowsGrid(normalizeStaticLabelValueRows(value));
       }
       const rows = Object.entries(value).filter(([, item]) => item !== undefined && item !== null && String(item).trim() !== "");
       if (!rows.length) return "";
-      return `<div class="post-info-grid">${rows.map(([key, item]) => `<div class="post-info-row"><strong>${htmlEscape(key.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/[_-]+/g, " "))}</strong><div>${staticValue(item)}</div></div>`).join("")}</div>`;
+      return staticRowsGrid(rows.map(([key, item]) => ({ label:key.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/[_-]+/g, " "), value:item })));
     }
     const text = String(value ?? "").trim();
     if (!text || text === "#" || isPlaceholderInfo(text)) return "";
@@ -1013,7 +1052,13 @@ const renderPremiumStaticPostHtml = (id = "", job = {}) => {
     ["FAQ", payload.faq || payload.faqs]
   ].map(([title, value]) => {
     if (title === "Application Fee" ? !hasMeaningfulFee(value) : !hasMeaningfulInfo(value)) return "";
-    const body = staticValue(value);
+    const body = title === "Important Links"
+      ? staticLinks(value)
+      : title === "Application Fee"
+        ? staticRowsGrid(normalizeStaticLabelValueRows(value, "Fee"))
+        : title === "Important Dates"
+          ? staticRowsGrid(normalizeStaticLabelValueRows(value, "Date"))
+          : staticValue(value);
     return body ? `<section class="premium-card full-span"><h2>${htmlEscape(title)}</h2><div class="card-body">${body}</div></section>` : "";
   }).filter(Boolean).join("");
   const staticMain = `<div class="premium-layout job-post post-content"><div class="premium-main"><section class="premium-hero"><div class="hero-copy"><span class="pill">${htmlEscape(payload.category || payload.postType || "Verified Update")}</span><h1>${htmlEscape(payload.title || seo.title)}</h1>${payload.shortInfo || payload.shortInformation ? `<p class="hero-short">${htmlEscape(payload.shortInfo || payload.shortInformation)}</p>` : ""}</div></section><div class="section-grid">${staticSections}</div></div></div>`;
