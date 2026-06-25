@@ -2940,15 +2940,20 @@ E-MITRA WALA E-Mitra Sewa Kendra ek trusted digital service center hai.
       }
       return "/api/settings";
     }
+    function applyVisitorCounterVisibility(settings){
+      var section = document.querySelector(".counter-section");
+      if(!section) return;
+      var visibility = String((settings && settings.visitorCounterVisibility) || "public").toLowerCase();
+      var isPrivate = visibility === "private";
+      section.hidden = isPrivate;
+      section.style.display = isPrivate ? "none" : "";
+    }
     try{
       fetch(settingsUrl()).then(function(res){
         if(!res.ok) return null;
         return res.json();
       }).then(function(data){
-        var allow = data && data.settings && (typeof data.settings.allowVisitors !== 'undefined' ? data.settings.allowVisitors : true);
-        if(allow === false){
-          document.documentElement.innerHTML = '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f7fbff;color:#0057a8;font-family:Arial,Helvetica,sans-serif;">\n  <div style="max-width:720px;padding:28px;text-align:center;border:1px solid #d8e0f0;background:white;border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,0.08);">\n    <h1 style="color:#ff7a00;margin-bottom:8px;">Site Temporarily Closed</h1>\n    <p style="color:#33475b;font-weight:700;">Website visitors are currently disabled by the administrator. Please check back later.</p>\n  </div>\n</div>';
-        }
+        applyVisitorCounterVisibility(data && data.settings);
       }).catch(function(){/* ignore errors */});
     }catch(e){/* ignore */}
   })();
