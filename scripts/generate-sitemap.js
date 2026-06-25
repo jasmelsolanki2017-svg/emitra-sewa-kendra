@@ -15,6 +15,14 @@ const PREMIUM_POST_PATH = path.join(__dirname, "..", "premium-post.html");
 const NOT_FOUND_PATH = path.join(__dirname, "..", "404.html");
 const POST_ROOT = path.join(__dirname, "..", "post");
 const EXCLUDED_POST_SLUGS = new Set([]);
+const FORCE_INDEX_POST_SLUGS = new Set([
+  "job-1779730227353",
+  "current-affairs-update-s6fqt1",
+  "rpsc-ras-bharti-2026-607-posts",
+  "rajasthan-jail-prahari-final-merit-list-2026in-7fbxvc",
+  "national-testing-agency-wrpc3l"
+]);
+const isForceIndexPostRow = (row = {}) => FORCE_INDEX_POST_SLUGS.has(buildSeoFields(row.job || {}, row.id || "").slug.toLowerCase());
 const LEGAL_SITEMAP_URLS = [
   "about.html",
   "contact.html",
@@ -1377,7 +1385,7 @@ const readExistingStaticPostRows = (rows = []) => {
       };
     })
     .filter(Boolean)
-    .filter(isUsefulPublishedPost);
+    .filter((row) => isForceIndexPostRow(row) || isUsefulPublishedPost(row));
 };
 
 const withNoindexMeta = (html = "") => {
@@ -1385,6 +1393,27 @@ const withNoindexMeta = (html = "") => {
     return html.replace(/<meta\s+name=["']robots["'][^>]*>/i, '<meta name="robots" content="noindex,follow">');
   }
   return html.replace(/<head>/i, '<head>\n<meta name="robots" content="noindex,follow">');
+};
+
+const withIndexMeta = (html = "") => {
+  if (/<meta\s+name=["']robots["'][^>]*>/i.test(html)) {
+    return html.replace(/<meta\s+name=["']robots["'][^>]*>/i, '<meta name="robots" content="index,follow">');
+  }
+  return html.replace(/<head>/i, '<head>\n<meta name="robots" content="index,follow">');
+};
+
+const parseStaticPublishedPayload = (html = "") => {
+  const payloadMatch = html.match(/window\.__EMITRA_STATIC_(?:PREMIUM_)?POST__=([\s\S]*?);<\/script>/);
+  if (!payloadMatch) return null;
+  try {
+    const payload = JSON.parse(payloadMatch[1]);
+    const job = payload && (payload.job || payload);
+    if (!job || typeof job !== "object") return null;
+    if (String(job.postStatus || job.status || "published").toLowerCase() === "draft") return null;
+    return job;
+  } catch (_error) {
+    return null;
+  }
 };
 
 const noindexExcludedStaticPages = (usefulRows = []) => {
@@ -1399,6 +1428,22 @@ const noindexExcludedStaticPages = (usefulRows = []) => {
       const filePath = path.join(POST_ROOT, entry.name, "index.html");
       if (!fs.existsSync(filePath)) return;
       const html = fs.readFileSync(filePath, "utf8");
+      if (FORCE_INDEX_POST_SLUGS.has(slug)) {
+        const indexedHtml = withIndexMeta(html);
+        if (indexedHtml !== html) {
+          fs.writeFileSync(filePath, indexedHtml, "utf8");
+          updated += 1;
+        }
+        return;
+      }
+      if (parseStaticPublishedPayload(html)) {
+        const indexedHtml = withIndexMeta(html);
+        if (indexedHtml !== html) {
+          fs.writeFileSync(filePath, indexedHtml, "utf8");
+          updated += 1;
+        }
+        return;
+      }
       let refreshedHtml = html;
       const payloadMatch = html.match(/window\.__EMITRA_STATIC_POST__=([\s\S]*?);<\/script>/);
       if (payloadMatch) {
@@ -1454,10 +1499,10 @@ async function main() {
   const latestRows = Object.entries(jobs || {})
     .map(([id, value]) => ({ id, job: normalizeJob(value) }))
     .map((row) => enrichPremiumRows([row], premiumPosts)[0])
-    .filter((row) => isPublishedJob(row.job) && isUsefulPublishedPost(row) && !isExcludedPostRow(row));
+    .filter((row) => isPublishedJob(row.job) && (isForceIndexPostRow(row) || isUsefulPublishedPost(row)) && !isExcludedPostRow(row));
   const rows = buildAllStaticRows(latestRows, portalData).filter((row) => !isExcludedPostRow(row));
   const sitemapRows = [...rows, ...readExistingStaticPostRows(rows)]
-    .filter(isUsefulPublishedPost)
+    .filter((row) => isForceIndexPostRow(row) || isUsefulPublishedPost(row))
     .filter((row) => !isExcludedPostRow(row));
   const entries = sitemapRows
     .map(({ id, job }) => sitemapEntry({
