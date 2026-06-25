@@ -23,6 +23,15 @@
   var params = new URLSearchParams(window.location.search || "");
   var isOldQueryUrl = /\/job-detail\.html$/i.test(window.location.pathname || "") && (params.get("id") || params.get("post") || params.get("slug"));
   var slug = isOldQueryUrl ? (params.get("post") || params.get("slug") || "") : ((window.location.pathname.match(/^\/post\/([^/?#]+)/) || [])[1] || "");
+  if(isOldQueryUrl && !slug && params.get("id")){
+    var homeCanonical = window.location.origin + "/";
+    var homeLink = document.querySelector('link[rel="canonical"]');
+    if(homeLink){ homeLink.setAttribute("href", homeCanonical); }
+    var homeOgUrl = document.querySelector('meta[property="og:url"]');
+    if(homeOgUrl){ homeOgUrl.setAttribute("content", homeCanonical); }
+    window.location.replace("/");
+    return;
+  }
   if(!slug){ return; }
   var canonical = window.location.origin + "/post/" + encodeURIComponent(decodeURIComponent(slug));
   var link = document.querySelector('link[rel="canonical"]');

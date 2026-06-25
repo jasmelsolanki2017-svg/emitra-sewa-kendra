@@ -2588,6 +2588,34 @@ const sendTelegramMessage = async (text) => {
   return data;
 };
 
+const sendTelegramDocumentByUrl = async (documentUrl = "", caption = "") => {
+  const url = toText(documentUrl);
+  if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
+    const error = new Error("TELEGRAM_BOT_TOKEN aur TELEGRAM_CHAT_ID env me set nahi hain");
+    error.statusCode = 400;
+    throw error;
+  }
+  if (!/^https?:\/\//i.test(url)) {
+    const error = new Error("Telegram PDF ke liye public https URL chahiye");
+    error.statusCode = 400;
+    throw error;
+  }
+  const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      chat_id: TELEGRAM_CHAT_ID,
+      document: url,
+      caption: toText(caption).slice(0, 1024)
+    })
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || data.ok === false) {
+    throw new Error(data.description || `Telegram document HTTP ${response.status}`);
+  }
+  return data;
+};
+
 const sendWhatsappMessage = async (text) => {
   if (!WHATSAPP_ACCESS_TOKEN || !WHATSAPP_PHONE_NUMBER_ID || !WHATSAPP_TO_NUMBER) {
     const error = new Error("WhatsApp auto send ke liye WHATSAPP_ACCESS_TOKEN, WHATSAPP_PHONE_NUMBER_ID, WHATSAPP_TO_NUMBER env me set karein");
@@ -5545,11 +5573,11 @@ app.get("/job-detail.html", async (req, res, next) => {
   try {
     const found = await getPublishedJobById(id);
     if (!found) {
-      return next();
+      return res.redirect(301, "/");
     }
     return res.redirect(301, getPublicJobUrl(found.id, found.job));
   } catch (err) {
-    return next();
+    return res.redirect(301, "/");
   }
 });
 
@@ -6263,8 +6291,11 @@ app.post("/admin/auto-job-checker/share/send", async (req, res) => {
       return res.status(400).json({ ok: false, error: "Share text missing" });
     }
     let result = null;
+    const pdfUrl = toText(req.body?.pdfUrl || item.pdfUrl || item.pdfLink || item.currentAffairsPdf || item.currentAffairsPdfUrl || item.dailyPdf || item.dailyPdfUrl || item.downloadPdfUrl);
     if (channel === "telegram") {
-      result = await sendTelegramMessage(text);
+      const message = await sendTelegramMessage(text);
+      const document = pdfUrl ? await sendTelegramDocumentByUrl(pdfUrl, item.title || "Current Affairs PDF") : null;
+      result = { message, document };
     } else if (channel === "whatsapp") {
       result = await sendWhatsappMessage(text);
     } else {
