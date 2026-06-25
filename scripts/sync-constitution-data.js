@@ -23,6 +23,10 @@ const esc = (value = "") => String(value ?? "").replace(/&/g, "&amp;").replace(/
 const xml = (value = "") => esc(value).replace(/&#039;/g, "&apos;");
 const text = (value = "") => String(value ?? "").replace(/\s+/g, " ").trim();
 const numberOf = (item = {}) => text(item.articleNo || item.number || item.articleNumber || item.article);
+const numericArticleNo = (item = {}) => {
+  const match = numberOf(item).match(/\d+/);
+  return match ? Number(match[0]) : Number.MAX_SAFE_INTEGER;
+};
 const hindiTitle = (item = {}) => text(item.titleHi || item.hindiTitle || item.titleHindi || item.title);
 const englishTitle = (item = {}) => text(item.titleEn || item.englishTitle || item.titleEnglish);
 const summary = (item = {}) => text(item.shortSummaryHi || item.summaryHi || item.summary || item.articleTextHi);
@@ -62,8 +66,26 @@ const normalize = (data) => {
     : Array.isArray(data?.constitutionArticles) ? data.constitutionArticles
       : Array.isArray(data?.articles) ? data.articles : Object.values(data || {});
   return source.filter((item) => item && typeof item === "object" && String(item.status || "published").toLowerCase() === "published")
-    .sort((a, b) => Number(a.displayOrder || numberOf(a)) - Number(b.displayOrder || numberOf(b))
+    .sort((a, b) => numericArticleNo(a) - numericArticleNo(b)
+      || Number(a.displayOrder || 0) - Number(b.displayOrder || 0)
       || numberOf(a).localeCompare(numberOf(b), undefined, { numeric: true }));
+};
+
+const formatArticleText = (value) => {
+  const raw = text(value);
+  if (!raw) return "";
+  const withBreaks = raw
+    .replace(/(इस अनुच्छेद के मुख्य बिंदु समझने के लिए इन बातों पर ध्यान देना चाहिए:)\s*/g, "$1\n")
+    .replace(/(यह केवल एक कानूनी वाक्य नहीं है,)/g, "\n$1")
+    .replace(/(व्यावहारिक रूप से इस अनुच्छेद का महत्व)/g, "\n$1")
+    .replace(/(परीक्षा दृष्टि से याद रखने योग्य बातें हैं:)/g, "\n$1")
+    .replace(/(कथन-कारण, सही\/गलत, मिलान और एक पंक्ति वाले प्रश्नों में)/g, "\n$1");
+  return withBreaks.replace(/\n{3,}/g, "\n\n").trim();
+};
+
+const textSection = (heading, value) => {
+  const body = formatArticleText(value);
+  return body ? `<section class="section"><h2>${esc(heading)}</h2><p>${esc(body)}</p></section>` : "";
 };
 
 const listSection = (heading, values) => {
@@ -110,9 +132,9 @@ ${faqSchema ? `<script type="application/ld+json">${schemaJson(faqSchema)}</scri
 <nav class="nav"><div class="nav-in"><a class="logo" href="../../index.html">E-MITRA <span>WALA</span></a><div class="nav-links"><a href="../../index.html">Home</a><a href="../../current-affairs.html">Current Affairs</a><a href="../../constitution.html">भारतीय संविधान</a></div></div></nav>
 <header class="hero"><div class="hero-in"><span class="badge">Article ${esc(number)}</span><h1>${esc(hi)}</h1>${en ? `<div class="english">${esc(en)}</div>` : ""}<div class="meta">${[article.partNo, article.partNameHi, article.partNameEn, article.date].filter(Boolean).map((value) => `<span>${esc(value)}</span>`).join("")}</div></div></header>
 <main><a class="back" href="../../constitution.html"><i class="fa-solid fa-arrow-left"></i> सभी संविधान अनुच्छेद</a>
-${summary(article) ? `<section class="section"><h2>संक्षिप्त सार</h2><p>${esc(summary(article))}</p></section>` : ""}
-${hindiText ? `<section class="section"><h2>अनुच्छेद की हिंदी में व्याख्या</h2><p>${esc(hindiText)}</p></section>` : ""}
-${englishText ? `<section class="section"><h2>Article in English</h2><p>${esc(englishText)}</p></section>` : ""}
+${textSection("संक्षिप्त सार", summary(article))}
+${textSection("अनुच्छेद की हिंदी में व्याख्या", hindiText)}
+${textSection("Article in English", englishText)}
 ${listSection("मुख्य बिंदु", article.keyPoints)}${listSection("Exam Useful Points", article.examUseful)}
 ${faqs.length ? `<section class="section"><h2>अक्सर पूछे जाने वाले प्रश्न</h2>${faqs.map((item) => `<div class="faq"><strong>${esc(item.question || item.q)}</strong><div>${esc(item.answer || item.a)}</div></div>`).join("")}</section>` : ""}
 ${source.sourceName || source.verifiedFrom ? `<section class="section source"><h2>स्रोत और सूचना</h2><p><strong>${esc(source.sourceName || "Constitution of India")}</strong><br>${esc(source.verifiedFrom || "")}<br>${esc(source.note || "")}</p></section>` : ""}
