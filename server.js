@@ -58,6 +58,18 @@ app.use((req, res, next) => {
   }
   return next();
 });
+app.get("/pdf-forms.html", (_req, res) => {
+  return res.redirect(301, "/OFFLINEFORM.HTML");
+});
+
+app.get("/cdn-cgi/l/email-protection", (_req, res) => {
+  return res.redirect(301, "/");
+});
+
+app.get("/cdn-cgi/l/email-protection/", (_req, res) => {
+  return res.redirect(301, "/");
+});
+
 const staticMiddleware = express.static(__dirname);
 app.use((req, res, next) => {
   const publicPath = String(req.path || "").toLowerCase();
@@ -5543,6 +5555,14 @@ app.get("/job-detail.html", async (req, res, next) => {
 
 app.get("/post/:slug", async (req, res, next) => {
   try {
+    const postSlugRedirects = {
+      "rrb-alp-online-form-2026-11-127-posts-kfcxav": "rrb-alp-cen-01-2026-apply-online-11127-posts",
+      "x-socqk": ""
+    };
+    if (Object.prototype.hasOwnProperty.call(postSlugRedirects, req.params.slug)) {
+      const targetSlug = postSlugRedirects[req.params.slug];
+      return res.redirect(301, targetSlug ? `/post/${targetSlug}/` : "/");
+    }
     const found = await findPublishedJobBySlug(req.params.slug);
     if (!found) {
       const slug = String(req.params.slug || "");
