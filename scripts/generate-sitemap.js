@@ -721,6 +721,11 @@ const currentAffairsPdfUrl = (job = {}) => {
   return match ? String(match.url || match.href || match.link || "").trim() : "";
 };
 
+const currentAffairsGeneratedPdfUrl = (slug = "") => {
+  const cleanSlug = String(slug || "").trim();
+  return cleanSlug ? `${SITE_BASE_URL}/api/current-affairs/pdf/${encodeURIComponent(cleanSlug)}` : "";
+};
+
 const buildCurrentAffairsMonthRows = ({ id = "", job = {}, allRows = [] } = {}) => {
   const currentKey = currentAffairsDateKey(job);
   const currentDate = parseCurrentAffairsDate(currentAffairsDateText(job));
@@ -762,7 +767,7 @@ const renderCurrentAffairsPremiumHtml = ({ id = "", job = {}, seo = {}, canonica
   const dateText = String(job.postDate || job.date || job.content?.date || job.currentAffairsData?.date || job.currentAffairsData?.["तारीख"] || "").trim();
   const displayDate = (dateText || title.replace(/.*?(\d{1,2}\s+[A-Za-z]+\s+\d{4}).*/i, "$1") || "").toUpperCase();
   const questions = getCurrentAffairsQuestions(job);
-  const pdfUrl = currentAffairsPdfUrl(job);
+  const pdfUrl = currentAffairsPdfUrl(job) || currentAffairsGeneratedPdfUrl(seo.slug);
   const pdfButton = pdfUrl
     ? `<a class="ca-yellow-btn" href="${htmlEscape(pdfUrl)}" download target="_blank" rel="noopener noreferrer">DOWNLOAD PDF <i class="fa-solid fa-download"></i></a>`
     : `<button class="ca-yellow-btn" type="button" onclick="window.print()">DOWNLOAD PDF <i class="fa-solid fa-download"></i></button>`;

@@ -1574,6 +1574,117 @@ const buildSeoFields = (job = {}, id = "") => {
   };
 };
 
+const currentAffairsPdfPublicUrl = (slug = "") => {
+  const cleanSlug = toText(slug).replace(/^\/+|\/+$/g, "");
+  return cleanSlug ? `${SITE_BASE_URL}/api/current-affairs/pdf/${encodeURIComponent(cleanSlug)}` : "";
+};
+
+const pdfSafeText = (value = "", fallback = "") => {
+  const text = toText(value).replace(/[^\x09\x0A\x0D\x20-\x7E]/g, " ").replace(/\s+/g, " ").trim();
+  return text || fallback;
+};
+
+const getCurrentAffairsPdfCandidates = (job = {}) => {
+  const article = job.advancedArticleData && typeof job.advancedArticleData === "object" ? job.advancedArticleData : {};
+  const content = job.content && typeof job.content === "object" && !Array.isArray(job.content) ? job.content : {};
+  const articleContent = article.content && typeof article.content === "object" && !Array.isArray(article.content) ? article.content : {};
+  const direct = [
+    job.pdfLink, job.pdfUrl, job.currentAffairsPdf, job.currentAffairsPdfUrl, job.dailyPdf, job.dailyPdfUrl,
+    job.downloadPdf, job.downloadPdfUrl, job.pdfDownloadUrl, content.pdfLink, content.pdfUrl, content.currentAffairsPdf,
+    content.dailyPdf, content.downloadPdfUrl, article.pdfLink, article.pdfUrl, article.currentAffairsPdf,
+    article.dailyPdf, article.downloadPdfUrl, articleContent.pdfLink, articleContent.pdfUrl
+  ];
+  const directUrl = direct.map((value) => toText(value)).find((value) => /^https?:\/\//i.test(value) || /\.pdf(?:$|[?#])/i.test(value));
+  if (directUrl) return directUrl;
+  const linkSources = [job.importantLinks, job.links, content.importantLinks, content.links, article.importantLinks, article.links, articleContent.importantLinks, articleContent.links];
+  const linkItems = linkSources.flatMap((items) => Array.isArray(items) ? items : []);
+  const match = linkItems.find((item) => {
+    if (!item || typeof item !== "object") return false;
+    const label = toText(item.label || item.title || item.name || item.text).toLowerCase();
+    const url = toText(item.url || item.href || item.link || item.file);
+    return url && (/pdf|download|डाउनलोड/.test(label) || /\.pdf(?:$|[?#])/i.test(url));
+  });
+  return match ? toText(match.url || match.href || match.link || match.file) : "";
+};
+
+const getCurrentAffairsQuestionsForPdf = (job = {}) => {
+  const article = job.advancedArticleData && typeof job.advancedArticleData === "object" ? job.advancedArticleData : {};
+  const content = job.content && typeof job.content === "object" && !Array.isArray(job.content) ? job.content : {};
+  const sources = [job.mcqs, job.questions, content.questions, article.mcqs, article.questions, job.currentAffairs, job.currentAffairsData?.currentAffairs];
+  return sources.flatMap((items) => Array.isArray(items) ? items : [])
+    .map((item) => ({
+      question: toText(item?.question || item?.q || item?.title),
+      answer: toText(item?.answer || item?.correctAnswer || item?.correct || item?.solution),
+      explanation: toText(item?.explanation || item?.reason || item?.description)
+    }))
+    .filter((item) => item.question)
+    .slice(0, 80);
+};
+
+const findCurrentAffairsBySlug = async (slug = "") => {
+  const db = getAdminDb();
+  if (!db) return null;
+  const requested = toText(slug).toLowerCase();
+  const snapshot = await db.ref("LatestJobs").get();
+  if (!snapshot.exists()) return null;
+  let found = null;
+  snapshot.forEach((child) => {
+    if (found) return;
+    const job = child.val() || {};
+    if (!isCurrentAffairsPost(job)) return;
+    const seo = buildSeoFields(job, child.key);
+    const candidates = [job.slug, job.seo?.slug, job.advancedArticleData?.slug, seo.slug].map((value) => toText(value).toLowerCase());
+    if (candidates.includes(requested)) found = { id: child.key, job, seo };
+  });
+  return found;
+};
+
+app.get("/api/current-affairs/pdf/:slug", async (req, res) => {
+  try {
+    const found = await findCurrentAffairsBySlug(req.params.slug);
+    if (!found) return res.status(404).json({ ok: false, error: "Current Affairs PDF post not found" });
+    const { job, seo } = found;
+    const title = pdfSafeText(job.title || seo.seoTitle, "Current Affairs Update");
+    const date = pdfSafeText(job.postDate || job.date || job.content?.date || job.currentAffairsData?.date || job.currentAffairsData?.["तारीख"]);
+    const summary = pdfSafeText(job.shortInfo || job.metaDescription || job.summary || job.content?.intro?.[0]);
+    const questions = getCurrentAffairsQuestionsForPdf(job);
+    const fileName = `${seo.slug || "daily-current-affairs"}.pdf`;
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="${fileName.replace(/"/g, "")}"`);
+    res.setHeader("Cache-Control", "public, max-age=900");
+    const doc = new PDFDocument({ size: "A4", margin: 44, info: { Title: title } });
+    doc.pipe(res);
+    doc.rect(0, 0, doc.page.width, 82).fill("#072b61");
+    doc.fillColor("#ffc400").font("Helvetica-Bold").fontSize(20).text("E-MITRA WALA", 44, 24);
+    doc.fillColor("#ffffff").font("Helvetica").fontSize(11).text("Daily Current Affairs PDF", 44, 51);
+    doc.moveDown(3);
+    doc.fillColor("#072b61").font("Helvetica-Bold").fontSize(18).text(title, { align: "center" });
+    if (date) doc.fillColor("#334155").font("Helvetica-Bold").fontSize(11).text(date, { align: "center" });
+    doc.moveDown();
+    if (summary) {
+      doc.fillColor("#111827").font("Helvetica").fontSize(10).text(summary, { lineGap: 3 });
+      doc.moveDown();
+    }
+    doc.fillColor("#072b61").font("Helvetica-Bold").fontSize(13).text("Important Questions");
+    doc.moveDown(0.5);
+    if (questions.length) {
+      questions.forEach((item, index) => {
+        doc.fillColor("#111827").font("Helvetica-Bold").fontSize(10).text(`Q${index + 1}. ${pdfSafeText(item.question, "Question")}`);
+        if (item.answer) doc.fillColor("#0f766e").font("Helvetica-Bold").text(`Answer: ${pdfSafeText(item.answer)}`);
+        if (item.explanation) doc.fillColor("#475569").font("Helvetica").text(pdfSafeText(item.explanation));
+        doc.moveDown(0.5);
+      });
+    } else {
+      doc.fillColor("#111827").font("Helvetica").fontSize(10).text("Full current affairs details available on the article page.");
+    }
+    doc.moveDown();
+    doc.fillColor("#072b61").font("Helvetica-Bold").fontSize(10).text(`${SITE_BASE_URL}/post/${encodeURIComponent(seo.slug)}/`);
+    doc.end();
+  } catch (err) {
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
 const buildWhatsappPostText = (id = "", job = {}) => {
   const targetLabels = {
     latestJob: "लेटेस्ट जॉब अपडेट",
@@ -6291,7 +6402,10 @@ app.post("/admin/auto-job-checker/share/send", async (req, res) => {
       return res.status(400).json({ ok: false, error: "Share text missing" });
     }
     let result = null;
-    const pdfUrl = toText(req.body?.pdfUrl || item.pdfUrl || item.pdfLink || item.currentAffairsPdf || item.currentAffairsPdfUrl || item.dailyPdf || item.dailyPdfUrl || item.downloadPdfUrl);
+    const explicitPdfUrl = toText(req.body?.pdfUrl || getCurrentAffairsPdfCandidates(item));
+    const pdfUrl = explicitPdfUrl || (channel === "telegram" && isCurrentAffairsPost(item)
+      ? currentAffairsPdfPublicUrl(buildSeoFields(item, shareId).slug)
+      : "");
     if (channel === "telegram") {
       const message = await sendTelegramMessage(text);
       const document = pdfUrl ? await sendTelegramDocumentByUrl(pdfUrl, item.title || "Current Affairs PDF") : null;
