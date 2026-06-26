@@ -94,7 +94,8 @@ const sortPostsByLastDateUrgency = (posts, now = new Date()) => {
 const urgencyBadge = (item) => {
   const urgency = getLastDateUrgency(item);
   if (!urgency) return "";
-  return `<span class="last-date-urgent-badge">${urgency.diffDays === 0 ? "Last Date Today" : "Last Date Soon"}</span>`;
+  const lastDate = getPostLastDate(item);
+  return `<span class="last-date-urgent-badge" data-last-date="${esc(lastDate)}">${urgency.diffDays === 0 ? "Last Date Today" : "Last Date Soon"}</span>`;
 };
 const lightweightJob = (item = {}) => ({
   id:item.id || "",
