@@ -302,6 +302,11 @@ main{max-width:1180px;margin:auto;padding:26px 3% 42px;}
 .sidebar-links .btn{font-size:13px;min-height:38px;padding:8px 10px;box-shadow:none;}
 .related-list a{display:block;color:var(--deep);text-decoration:none;font-weight:800;font-size:13px;padding:8px 0;border-bottom:1px dashed #d8e5f3;}
 .related-list a:last-child{border-bottom:0;}
+.post-blue-footer{max-width:1250px;margin:0 auto 26px;background:#3f80ec;color:#fff;text-align:center;padding:25px 18px 18px;}
+.post-blue-footer p{margin:4px 0;font-size:18px;line-height:1.45;}
+.post-blue-footer-nav{display:flex;justify-content:center;gap:24px;flex-wrap:wrap;margin-top:8px;}
+.post-blue-footer a{color:#fff;text-decoration:underline;font-size:18px;}
+.post-back-top{display:inline-flex;align-items:center;justify-content:center;width:72px;height:36px;margin:14px auto -18px;background:#fff;border-radius:7px 7px 0 0;color:#666!important;text-decoration:none!important;font-size:28px;line-height:1;box-shadow:0 -2px 7px rgba(0,0,0,.15);}
 .notification-detail-layout{display:grid;gap:16px;font-family:'Noto Sans Devanagari','Poppins',sans-serif}
 .notification-detail-hero{background:linear-gradient(135deg,#06285d,#075dcc);color:#fff;border-radius:12px;padding:20px;box-shadow:0 10px 28px rgba(6,40,93,.18)}
 .notification-detail-hero h2{font-size:clamp(24px,5vw,38px);line-height:1.25;margin:9px 0 12px;color:#fff}
@@ -598,9 +603,17 @@ body.dark-mode .job-tool-btn:hover{background:#ffb15c!important;border-color:#ff
   </div>
 </main>
 
-<footer>
-  <p>© 2026 E-MITRA WALA | Job Details</p>
-  <p><a href="privacy-policy.html">Privacy Policy</a><a href="about.html">About Us</a><a href="current-affairs.html">Current Affairs</a><a href="contact.html">Contact Us</a><a href="disclaimer.html">Disclaimer</a><a href="terms-and-conditions.html">Terms & Conditions</a></p>
+<footer class="post-blue-footer" id="postFooter">
+  <p>Copyright © 2009-2026. All Rights Reserved.</p>
+  <p>E-MITRA WALA is part of the "News Tak" family of sites</p>
+  <nav class="post-blue-footer-nav" aria-label="Footer links">
+    <a href="about.html">About Us</a>
+    <a href="contact.html">Contact us</a>
+    <a href="disclaimer.html">Disclaimer</a>
+    <a href="privacy-policy.html">Privacy Policy</a>
+    <a href="sitemap.xml">Site Map</a>
+  </nav>
+  <a class="post-back-top" href="#top" aria-label="Back to top">⌃</a>
 </footer>
 
 <button class="theme-toggle" type="button" aria-label="Toggle dark mode" title="Dark mode" onclick="toggleDarkMode()"><span class="theme-symbol" aria-hidden="true">☾</span></button>
