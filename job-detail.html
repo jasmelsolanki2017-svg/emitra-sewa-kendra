@@ -10,29 +10,32 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="shortcut icon" href="favicon.ico">
 <link rel="apple-touch-icon" href="favicon.png">
-<meta name="description" content="E-MITRA WALA job detail page with important dates, qualification, apply link and custom job information.">
-<meta name="robots" content="index,follow">
+<meta name="description" content="Latest E-MITRA WALA job updates, official links and important dates.">
+<meta name="robots" content="noindex,follow">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Job Details | E-MITRA WALA">
-<meta property="og:description" content="E-MITRA WALA job detail page with important dates, qualification, apply link and custom job information.">
-<meta property="og:url" content="https://emitrawala.online/job-detail.html">
+<meta property="og:description" content="Latest E-MITRA WALA job updates, official links and important dates.">
+<meta property="og:url" content="https://emitrawala.online/latest-jobs.html">
 <meta name="twitter:card" content="summary">
-<link rel="canonical" href="https://emitrawala.online/job-detail.html">
+<link rel="canonical" href="https://emitrawala.online/latest-jobs.html">
 <script>
 (function(){
   var params = new URLSearchParams(window.location.search || "");
   var isOldQueryUrl = /\/job-detail\.html$/i.test(window.location.pathname || "") && (params.get("id") || params.get("post") || params.get("slug"));
   var slug = isOldQueryUrl ? (params.get("post") || params.get("slug") || "") : ((window.location.pathname.match(/^\/post\/([^/?#]+)/) || [])[1] || "");
   if(isOldQueryUrl && !slug && params.get("id")){
-    var homeCanonical = window.location.origin + "/";
+    var homeCanonical = window.location.origin + "/latest-jobs.html";
     var homeLink = document.querySelector('link[rel="canonical"]');
     if(homeLink){ homeLink.setAttribute("href", homeCanonical); }
     var homeOgUrl = document.querySelector('meta[property="og:url"]');
     if(homeOgUrl){ homeOgUrl.setAttribute("content", homeCanonical); }
-    window.location.replace("/");
+    window.location.replace("/latest-jobs.html");
     return;
   }
-  if(!slug){ return; }
+  if(/\/job-detail\.html$/i.test(window.location.pathname || "") && !slug){
+    window.location.replace("/latest-jobs.html");
+    return;
+  }
   var canonical = window.location.origin + "/post/" + encodeURIComponent(decodeURIComponent(slug));
   var link = document.querySelector('link[rel="canonical"]');
   if(link){ link.setAttribute("href", canonical); }
@@ -56,38 +59,11 @@
 <script type="application/ld+json" id="jobSchemaJsonLd">
 {
   "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "BreadcrumbList",
-      "@id": "https://emitrawala.online/job-detail.html#breadcrumb",
-      "itemListElement": [
-        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://emitrawala.online/index.html" },
-        { "@type": "ListItem", "position": 2, "name": "Latest Jobs", "item": "https://emitrawala.online//#homePortalLatestJobs" },
-        { "@type": "ListItem", "position": 3, "name": "Job Details", "item": "https://emitrawala.online/job-detail.html" }
-      ]
-    },
-    {
-      "@type": "Article",
-      "@id": "https://emitrawala.online/job-detail.html#article",
-      "headline": "Job Details | E-MITRA WALA",
-      "title": "Job Details",
-      "description": "E-MITRA WALA job detail page with important dates, qualification, apply link and custom job information.",
-      "url": "https://emitrawala.online/job-detail.html",
-      "mainEntityOfPage": "https://emitrawala.online/job-detail.html",
-      "publisher": { "@type": "Organization", "name": "E-MITRA WALA", "url": "https://emitrawala.online/" }
-    },
-    {
-      "@type": "FAQPage",
-      "@id": "https://emitrawala.online/job-detail.html#faq",
-      "mainEntity": [
-        {
-          "@type": "Question",
-          "name": "Job details kaise dekhein?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Latest Jobs page se kisi post par click karke important dates, eligibility, fees aur apply links dekhein." }
-        }
-      ]
-    }
-  ]
+  "@type": "WebPage",
+  "name": "Latest Jobs | E-MITRA WALA",
+  "url": "https://emitrawala.online/latest-jobs.html",
+  "description": "Latest government job updates, admit cards, results and important notices from E-MITRA WALA.",
+  "isPartOf": { "@type": "WebSite", "name": "E-MITRA WALA", "url": "https://emitrawala.online/" }
 }
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -403,7 +379,7 @@ body.dark-mode .job-tool-btn:hover{background:#ffb15c!important;border-color:#ff
   <a class="logo" href="index.html">E-MITRA <span>WALA</span></a>
   <ul>
     <li><a href="index.html">Home</a></li>
-    <li><a href="/#homePortalLatestJobs">Latest Jobs</a></li>
+    <li><a href="/latest-jobs.html">Latest Jobs</a></li>
     <li><a href="current-affairs.html">Current Affairs</a></li>
     <li><a href="OFFLINEFORM.HTML">PDF Forms</a></li>
     <li><a href="about.html">About</a></li>
@@ -442,7 +418,7 @@ body.dark-mode .job-tool-btn:hover{background:#ffb15c!important;border-color:#ff
           <div class="content-box">
             <p>E-MITRA WALA par latest government job, admit card, result, answer key aur syllabus updates SEO-friendly article layout me publish hote hain.</p>
             <p>Is page par job title, important dates, application fee, eligibility, vacancy details, official notification aur apply links load hote hain.</p>
-            <p><a class="auto-link" href="/#homePortalLatestJobs">Latest Jobs list dekhein</a> ya <a class="auto-link" href="index.html#homePortalLatestJobs">homepage latest posts</a> par wapas jayein.</p>
+            <p><a class="auto-link" href="/latest-jobs.html">Latest Jobs list dekhein</a> ya <a class="auto-link" href="index.htmllatest-jobs.html">homepage latest posts</a> par wapas jayein.</p>
           </div>
         </section>
         <section class="panel" id="featurePanel" style="display:none;">
@@ -604,14 +580,14 @@ body.dark-mode .job-tool-btn:hover{background:#ffb15c!important;border-color:#ff
 </main>
 
 <footer class="post-blue-footer" id="postFooter">
-  <p>Copyright © 2009-2026. All Rights Reserved.</p>
-  <p>E-MITRA WALA is part of the "News Tak" family of sites</p>
+  <p>© 2026 E-MITRA WALA | All Rights Reserved.</p>
+  <p>E-MITRA WALA is an independent information and e-Mitra service help website. We are not a government website.</p>
   <nav class="post-blue-footer-nav" aria-label="Footer links">
-    <a href="about.html">About Us</a>
-    <a href="contact.html">Contact us</a>
-    <a href="disclaimer.html">Disclaimer</a>
+    <a href="about.html">About</a>
+    <a href="contact.html">Contact</a>
     <a href="privacy-policy.html">Privacy Policy</a>
-    <a href="sitemap.xml">Site Map</a>
+    <a href="disclaimer.html">Disclaimer</a>
+    <a href="terms-and-conditions.html">Terms</a>
   </nav>
   <a class="post-back-top" href="#top" aria-label="Back to top">⌃</a>
 </footer>
@@ -1133,7 +1109,7 @@ const buildBreadcrumbSchema = (title = "Job Details", canonicalUrl = location.hr
   "@id":`${canonicalUrl}#breadcrumb`,
   "itemListElement":[
     { "@type":"ListItem", "position":1, "name":"Home", "item":`${location.origin}/index.html` },
-    { "@type":"ListItem", "position":2, "name":currentAffairs ? "Current Affairs" : "Latest Jobs", "item":`${location.origin}/${currentAffairs ? "current-affairs.html" : "/#homePortalLatestJobs"}` },
+    { "@type":"ListItem", "position":2, "name":currentAffairs ? "Current Affairs" : "Latest Jobs", "item":`${location.origin}/${currentAffairs ? "current-affairs.html" : "/latest-jobs.html"}` },
     { "@type":"ListItem", "position":3, "name":title, "item":canonicalUrl }
   ]
 });
@@ -2298,7 +2274,7 @@ const renderSidebarLinks = (items = []) => {
     seen.add(key);
     return buildButton(item, item.className || "");
   }).filter(Boolean).join("");
-  box.innerHTML = html || '<a class="btn notification" href="/#homePortalLatestJobs">Latest Jobs</a>';
+  box.innerHTML = html || '<a class="btn notification" href="/latest-jobs.html">Latest Jobs</a>';
 };
 
 const renderArticleMeta = (job = {}) => {

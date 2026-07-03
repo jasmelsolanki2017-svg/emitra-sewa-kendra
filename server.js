@@ -1105,7 +1105,7 @@ const jobSchemaGraph = ({ id = "", job = {}, title = "Job Update", description =
         "@id": `${canonicalUrl}#breadcrumb`,
         itemListElement: [
           { "@type": "ListItem", position: 1, name: "Home", item: `${SITE_BASE_URL}/` },
-          { "@type": "ListItem", position: 2, name: "Latest Jobs", item: `${SITE_BASE_URL}/#homePortalLatestJobs` },
+          { "@type": "ListItem", position: 2, name: "Latest Jobs", item: `${SITE_BASE_URL}/latest-jobs.html` },
           { "@type": "ListItem", position: 3, name: title, item: canonicalUrl }
         ]
       },
@@ -1286,7 +1286,7 @@ const renderPrerenderedJobDetail = (id = "", job = {}) => {
               <p>${htmlEscape(description)}</p>
               <table class="detail-table"><tbody>${summaryRows.map(([label, value]) => `<tr><th>${htmlEscape(label)}</th><td>${htmlEscape(value)}</td></tr>`).join("")}</tbody></table>
               ${toText(job.article || job.fullArticle || job.articleContent || job.detailedArticle || job.advancedArticleData?.article || job.advancedArticleData?.fullArticle) ? `<section><h2>पूरी जानकारी</h2><p>${htmlEscape(toText(job.article || job.fullArticle || job.articleContent || job.detailedArticle || job.advancedArticleData?.article || job.advancedArticleData?.fullArticle))}</p></section>` : ""}
-              <p><a class="auto-link" href="${htmlEscape(canonicalUrl)}">Canonical job detail link</a> | <a class="auto-link" href="/#homePortalLatestJobs">All Latest Jobs</a></p>
+              <p><a class="auto-link" href="${htmlEscape(canonicalUrl)}">Canonical job detail link</a> | <a class="auto-link" href="/latest-jobs.html">All Latest Jobs</a></p>
             </div>`;
   return html
     .replace(/<title>[\s\S]*?<\/title>/i, `<title>${htmlEscape(seo.seoTitle)}</title>`)
@@ -5661,7 +5661,7 @@ app.get("/robots.txt", (req, res) => {
 });
 
 app.get("/job-form.html", (_req, res) => {
-  return res.redirect(301, "/#homePortalLatestJobs");
+  return res.redirect(301, "/latest-jobs.html");
 });
 
 app.get("/job-detail.html", async (req, res, next) => {
@@ -5671,24 +5671,24 @@ app.get("/job-detail.html", async (req, res, next) => {
     try {
       const found = await findPublishedJobBySlug(slug);
       if (!found) {
-        return next();
+        return res.redirect(301, "/latest-jobs.html");
       }
       return res.redirect(301, getPublicJobUrl(found.id, found.job));
     } catch (err) {
-      return next();
+      return res.redirect(301, "/latest-jobs.html");
     }
   }
   if (!id) {
-    return next();
+    return res.redirect(301, "/latest-jobs.html");
   }
   try {
     const found = await getPublishedJobById(id);
     if (!found) {
-      return res.redirect(301, "/");
+      return res.redirect(301, "/latest-jobs.html");
     }
     return res.redirect(301, getPublicJobUrl(found.id, found.job));
   } catch (err) {
-    return res.redirect(301, "/");
+    return res.redirect(301, "/latest-jobs.html");
   }
 });
 

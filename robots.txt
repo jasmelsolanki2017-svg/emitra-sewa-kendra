@@ -1,29 +1,11 @@
 User-agent: *
 Allow: /
-Allow: /post/
-Disallow: /dashboard.html
-Disallow: /admin-links.html
-Disallow: /admin-updates.html
-Disallow: /admin-ads.html
-Disallow: /premium-admin.html
-Disallow: /admin-mock-tests.html
-Disallow: /admin-auto-checker.html
-Disallow: /admin-requests.html
-Disallow: /admin-services.html
-Disallow: /admin-current-affairs.html
-Disallow: /admin-pdf-verification.html
-Disallow: /admin-useful-pages.html
-Disallow: /all-members.html
-Disallow: /user-dashboard.html
-Disallow: /user-latest-updates.html
-Disallow: /user-important-links.html
-Disallow: /user-latest-jobs.html
-Disallow: /user-download-center.html
-Disallow: /user-data-folder.html
-Disallow: /user-my-requests.html
-Disallow: /server.js
 
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /login.html
+Disallow: /user-dashboard.html
+Disallow: /job-detail.html
+
+Allow: /ads.txt
 Sitemap: https://emitrawala.online/sitemap.xml
-Sitemap: https://emitrawala.online/sitemap-jobs.xml
-Sitemap: https://emitrawala.online/sitemap-legal.xml
-Sitemap: https://emitrawala.online/sitemap-constitution.xml

@@ -120,13 +120,19 @@ const categoryMeta = {
   admission:["admission.html","All Admission Form"]
 };
 
-const categoryHtml = (target, title, rows) => `<!DOCTYPE html><html lang="hi"><head><meta charset="UTF-8">${ADSENSE_SCRIPT}<meta name="viewport" content="width=device-width,initial-scale=1"><script src="/site-theme-init.js"></script><meta name="robots" content="index,follow"><title>${esc(title)} | E-MITRA WALA</title><meta name="description" content="${esc(title)} की latest static list."><link rel="canonical" href="${SITE}/${categoryMeta[target][0]}"><link rel="icon" href="favicon.png"><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="category-posts.css?v=20260622-urgent"><link rel="stylesheet" href="/site-theme.css"></head><body data-category-type="${esc(target)}"><div class="topbar"><div>E-MITRA WALA</div><div>${esc(title)}</div></div><header><h1 id="categoryTitle">${esc(title)}</h1><p id="categoryDesc">${rows.length} published posts</p></header><nav><a href="index.html">Home</a><a href="latest-jobs.html">Latest Jobs</a><a href="result.html">Result</a><a href="admit-card.html">Admit Card</a><a href="answer-key.html">Answer Key</a></nav><main><div class="toolbar"><input id="categorySearch" type="search" placeholder="Search posts..."><span class="count" id="categoryCount">${rows.length} Posts</span></div><section class="post-list" id="categoryPostList"><ul>${rows.map((item)=>`<li data-search="${esc(`${item.title} ${item.type || ""} ${item.location || ""}`.toLowerCase())}"><a href="${href(item)}">${esc(item.title)}</a>${target === "latestJob" ? urgencyBadge(item) : ""}${getPostLastDate(item) ? `<span class="last-date-text"> | Last Date : ${esc(getPostLastDate(item))}</span>` : ""}</li>`).join("")}</ul></section></main><footer>© 2026 E-MITRA WALA</footer><script src="category-posts.js?v=20260618-static"></script><script src="/site-theme.js" defer></script></body></html>`;
+const categoryDescription = (title = "") => `${title} updates, official links, important dates and latest information on E-MITRA WALA.`;
+const categoryFooter = `<footer><p>© 2026 E-MITRA WALA | All Rights Reserved.</p><p>E-MITRA WALA is an independent information and e-Mitra service help website. We are not a government website.</p><p><a href="about.html">About</a> <a href="contact.html">Contact</a> <a href="privacy-policy.html">Privacy Policy</a> <a href="disclaimer.html">Disclaimer</a> <a href="terms-and-conditions.html">Terms</a></p></footer>`;
+const categoryHtml = (target, title, rows) => {
+  const url = `${SITE}/${categoryMeta[target][0]}`;
+  const description = categoryDescription(title);
+  return `<!DOCTYPE html><html lang="hi"><head><meta charset="UTF-8">${ADSENSE_SCRIPT}<meta name="viewport" content="width=device-width,initial-scale=1"><script src="/site-theme-init.js"></script><meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"><title>${esc(title)} | E-MITRA WALA</title><meta name="description" content="${esc(description)}"><link rel="canonical" href="${url}"><meta property="og:type" content="website"><meta property="og:title" content="${esc(title)} | E-MITRA WALA"><meta property="og:description" content="${esc(description)}"><meta property="og:url" content="${url}"><link rel="icon" href="favicon.png"><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="category-posts.css?v=20260622-urgent"><link rel="stylesheet" href="/site-theme.css"></head><body data-category-type="${esc(target)}"><div class="topbar"><div>E-MITRA WALA</div><div>${esc(title)}</div></div><header><h1 id="categoryTitle">${esc(title)}</h1>${rows.length ? `<p id="categoryDesc">${rows.length} published posts</p>` : ""}</header><nav><a href="index.html">Home</a><a href="latest-jobs.html">Latest Jobs</a><a href="current-affairs.html">Current Affairs</a><a href="tools.html">Tools</a><a href="useful-pages.html">Useful Pages</a><a href="about.html">About</a><a href="contact.html">Contact</a></nav><main>${rows.length ? `<div class="toolbar"><input id="categorySearch" type="search" placeholder="Search posts..."><span class="count" id="categoryCount">${rows.length} Posts</span></div><section class="post-list" id="categoryPostList"><ul>${rows.map((item)=>`<li data-search="${esc(`${item.title} ${item.type || ""} ${item.location || ""}`.toLowerCase())}"><a href="${href(item)}">${esc(item.title)}</a>${target === "latestJob" ? urgencyBadge(item) : ""}${getPostLastDate(item) ? `<span class="last-date-text"> | Last Date : ${esc(getPostLastDate(item))}</span>` : ""}</li>`).join("")}</ul></section>` : ""}</main>${categoryFooter}<script src="category-posts.js?v=20260618-static"></script><script src="/site-theme.js" defer></script></body></html>`;
+};
 
 const currentAffairsHtml = (rows) => {
   const cards = rows.map((item) => `<article class="card" data-search="${esc(`${item.title} ${item.shortInfo || ""}`.toLowerCase())}"><div class="meta"><span>${esc(item.type || "Current Affairs")}</span>${item.postDate ? `<span>${esc(item.postDate)}</span>` : ""}</div><h2><a href="${href(item)}">${esc(item.title)}</a></h2><p>${esc(item.shortInfo || item.metaDescription || "Important facts, questions, answers and explanations.")}</p><a class="read" href="${href(item)}">Read Article</a></article>`).join("");
   const source = fs.readFileSync(path.join(root, "current-affairs.html"), "utf8");
   return source
-    .replace(/<div id="postList" class="grid">[\s\S]*?<\/div>\s*<\/main>/, `<div id="postList" class="grid">${cards || '<div class="message">Abhi koi current affairs post available nahi hai.</div>'}</div></main>`)
+    .replace(/<div id="postList" class="grid">[\s\S]*?<\/div>\s*<\/main>/, `<div id="postList" class="grid">${cards}</div></main>`)
     .replace(/<script type="module">[\s\S]*?<\/script>/, `<script>(function(){const input=document.getElementById("searchInput"),cards=[...document.querySelectorAll("#postList .card")];if(!input)return;input.addEventListener("input",()=>{const q=input.value.trim().toLowerCase();cards.forEach(card=>card.hidden=!!q&&!card.dataset.search.includes(q));});})();</script>`);
 };
 
@@ -153,7 +159,7 @@ const injectHomepageLists = (jobs, portal) => {
     const rows = [...new Map(sortedRows.map((item) => [slug(item.sourceJobId || item.id,item),item])).values()].slice(0,10);
     const listHtml = rows.length
       ? rows.map((item) => `<li><span class="post-title-line"><a href="${href(item)}">${esc(item.title)}</a>${target === "latestJob" ? urgencyBadge(item) : ""}${isNewPost(item) ? '<span class="home-new-post-badge">NEW</span>' : ""}</span></li>`).join("")
-      : `<li class="home-portal-message">Abhi koi update nahi hai.</li>`;
+      : "";
     html = html.replace(new RegExp(`(<ul class="home-portal-list" id="${listId}">)[\\s\\S]*?(<\\/ul>)`), `$1${listHtml}$2`);
   });
   fs.writeFileSync(file, html, "utf8");
@@ -199,7 +205,7 @@ const injectHomepageNews = (updates, jobs = []) => {
   const tickerHtml = tickerRows.join("");
   const modalHtml = rows.length
       ? rows.map((item)=>`<a class="news-item"${item.urgentLastDate ? ` data-urgent-last-date="${esc(item.urgentLastDate)}"` : ""} href="${esc(updateHref(item))}">${esc(item.text || item.title)}</a>`).join("")
-    : `<p>Abhi koi latest update available nahi hai.</p>`;
+    : "";
   html = html
     .replace(/(<div class="news-ticker-rows" id="newsTickerRows">)[\s\S]*?(<\/div>\s*<\/div>\s*<\/section>)/,
       `$1${tickerHtml}$2`)

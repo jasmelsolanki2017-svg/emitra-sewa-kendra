@@ -8,7 +8,7 @@ const ADSENSE_SCRIPT = `<script async src="https://pagead2.googlesyndication.com
      crossorigin="anonymous"></script>`;
 const POST_BLUE_FOOTER = `<style id="post-blue-footer-style">
 .post-blue-footer{max-width:1250px;margin:0 auto 26px;background:#3f80ec;color:#fff;text-align:center;padding:25px 18px 18px;font-family:Poppins,"Noto Sans Devanagari",Arial,sans-serif}.post-blue-footer p{margin:4px 0;font-size:18px;line-height:1.45}.post-blue-footer-nav{display:flex;justify-content:center;gap:24px;flex-wrap:wrap;margin-top:8px}.post-blue-footer a{color:#fff;text-decoration:underline;font-size:18px}.post-back-top{display:inline-flex;align-items:center;justify-content:center;width:72px;height:36px;margin:14px auto -18px;background:#fff;border-radius:7px 7px 0 0;color:#666!important;text-decoration:none!important;font-size:28px;line-height:1;box-shadow:0 -2px 7px rgba(0,0,0,.15)}@media(max-width:760px){.post-blue-footer{margin-bottom:84px;padding:20px 12px 12px}.post-blue-footer p,.post-blue-footer a{font-size:15px}.post-blue-footer-nav{gap:12px}.post-back-top{width:64px;height:32px;font-size:24px}}
-</style><footer class="post-blue-footer" id="postFooter"><p>Copyright © 2009-2026. All Rights Reserved.</p><p>E-MITRA WALA is part of the "News Tak" family of sites</p><nav class="post-blue-footer-nav" aria-label="Footer links"><a href="../../about.html">About Us</a><a href="../../contact.html">Contact us</a><a href="../../disclaimer.html">Disclaimer</a><a href="../../privacy-policy.html">Privacy Policy</a><a href="../../sitemap.xml">Site Map</a></nav><a class="post-back-top" href="#top" aria-label="Back to top">⌃</a></footer>`;
+</style><footer class="post-blue-footer" id="postFooter"><p>© 2026 E-MITRA WALA | All Rights Reserved.</p><p>E-MITRA WALA is an independent information and e-Mitra service help website. We are not a government website.</p><nav class="post-blue-footer-nav" aria-label="Footer links"><a href="../../about.html">About</a><a href="../../contact.html">Contact</a><a href="../../privacy-policy.html">Privacy Policy</a><a href="../../disclaimer.html">Disclaimer</a><a href="../../terms-and-conditions.html">Terms</a></nav><a class="post-back-top" href="#top" aria-label="Back to top">⌃</a></footer>`;
 const SITEMAP_PATH = path.join(__dirname, "..", "sitemap.xml");
 const JOB_SITEMAP_PATH = path.join(__dirname, "..", "sitemap-jobs.xml");
 const LEGAL_SITEMAP_PATH = path.join(__dirname, "..", "sitemap-legal.xml");
@@ -18,14 +18,18 @@ const PREMIUM_POST_PATH = path.join(__dirname, "..", "premium-post.html");
 const NOT_FOUND_PATH = path.join(__dirname, "..", "404.html");
 const POST_ROOT = path.join(__dirname, "..", "post");
 const EXCLUDED_POST_SLUGS = new Set([]);
-const FORCE_INDEX_POST_SLUGS = new Set([
-  "job-1779730227353",
-  "current-affairs-update-s6fqt1",
-  "rpsc-ras-bharti-2026-607-posts",
-  "rajasthan-jail-prahari-final-merit-list-2026in-7fbxvc",
-  "national-testing-agency-wrpc3l"
-]);
-const isForceIndexPostRow = (row = {}) => FORCE_INDEX_POST_SLUGS.has(buildSeoFields(row.job || {}, row.id || "").slug.toLowerCase());
+const PUBLIC_SITEMAP_PAGES = [
+  { path:"", changefreq:"daily", priority:"1.0" },
+  { path:"latest-jobs.html", changefreq:"daily", priority:"0.9" },
+  { path:"current-affairs.html", changefreq:"daily", priority:"0.9" },
+  { path:"tools.html", changefreq:"weekly", priority:"0.9" },
+  { path:"useful-pages.html", changefreq:"weekly", priority:"0.8" },
+  { path:"about.html", changefreq:"monthly", priority:"0.7" },
+  { path:"contact.html", changefreq:"monthly", priority:"0.7" },
+  { path:"privacy-policy.html", changefreq:"monthly", priority:"0.6" },
+  { path:"disclaimer.html", changefreq:"monthly", priority:"0.6" },
+  { path:"terms-and-conditions.html", changefreq:"monthly", priority:"0.6" }
+];
 const LEGAL_SITEMAP_URLS = [
   "about.html",
   "contact.html",
@@ -418,7 +422,7 @@ const buildSchemaGraph = ({ id = "", job = {}, canonicalUrl = "" }) => {
   const jobPosting = currentAffairs ? null : buildJobPostingSchema({ job, title: seo.title, description: seo.metaDescription, canonicalUrl });
   const breadcrumbSecond = currentAffairs
     ? { name: "Current Affairs", item: `${SITE_BASE_URL}/current-affairs.html` }
-    : { name: "Latest Jobs", item: `${SITE_BASE_URL}/#homePortalLatestJobs` };
+    : { name: "Latest Jobs", item: `${SITE_BASE_URL}/latest-jobs.html` };
   return {
     "@context": "https://schema.org",
     "@graph": [
@@ -458,7 +462,7 @@ const buildPremiumSchemaGraph = ({ id = "", job = {}, canonicalUrl = "" }) => {
       "@id": `${canonicalUrl}#breadcrumb`,
       "itemListElement": [
         { "@type": "ListItem", "position": 1, "name": "Home", "item": `${SITE_BASE_URL}/` },
-        { "@type": "ListItem", "position": 2, "name": "Latest Jobs", "item": `${SITE_BASE_URL}/#homePortalLatestJobs` },
+        { "@type": "ListItem", "position": 2, "name": "Latest Jobs", "item": `${SITE_BASE_URL}/latest-jobs.html` },
         { "@type": "ListItem", "position": 3, "name": seo.title, "item": canonicalUrl }
       ]
     },
@@ -701,7 +705,7 @@ const renderAdmissionFallbackHtml = (job = {}, title = "Admission Update", descr
             ${how.length ? `<section class="panel"><h2>How to Check</h2><div class="content-box">${renderStaticList(how, true)}</div></section>` : ""}
             ${links ? `<section class="panel"><h2>Important Links</h2><div class="post-wise-links">${links}</div></section>` : ""}
             ${faq ? `<section class="panel"><h2>FAQ</h2><div class="content-box">${faq}</div></section>` : ""}
-            <p><a class="auto-link" href="${htmlEscape(canonicalUrl)}">Canonical admission detail link</a> | <a class="auto-link" href="../../#homePortalLatestJobs">All Updates</a></p>`;
+            <p><a class="auto-link" href="${htmlEscape(canonicalUrl)}">Canonical admission detail link</a> | <a class="auto-link" href="../../latest-jobs.html">All Updates</a></p>`;
 };
 
 const currentAffairsPdfUrl = (job = {}) => {
@@ -816,7 +820,7 @@ ${ADSENSE_SCRIPT}
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${htmlEscape(seo.seoTitle || `${title} | EMITRAWALA.ONLINE`)}</title>
 <meta name="description" content="${htmlEscape(description)}">
-<meta name="robots" content="index,follow">
+<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
 <meta property="og:type" content="article">
 <meta property="og:title" content="${htmlEscape(seo.seoTitle || title)}">
 <meta property="og:description" content="${htmlEscape(description)}">
@@ -860,8 +864,8 @@ a{text-decoration:none;color:inherit}
 </style>
 </head>
 <body class="current-affairs-static">
-<header class="ca-top"><div class="ca-top-inner"><div><div class="ca-logo">EMITRAWALA.<span>ONLINE</span></div><div class="ca-tagline">SARKARI RESULT, ADMIT CARD, JOBS & MORE</div></div><form class="ca-search" action="../../index.html"><input type="search" placeholder="Search for Jobs, Results, Admit Card...."><button>Search</button></form><a class="ca-telegram" href="https://t.me/emitrawalaonline" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-telegram"></i><span>Join Telegram<small>Stay Updated</small></span></a></div><nav class="ca-menu"><ul><li><a href="../../index.html">HOME</a></li><li><a href="../../#homePortalLatestJobs">LATEST JOBS</a></li><li><a href="../../#homePortalLatestJobs">ADMIT CARD</a></li><li><a href="../../#homePortalLatestJobs">RESULT</a></li><li><a href="../../#homePortalLatestJobs">ANSWER KEY</a></li><li class="active"><a href="../../current-affairs.html">CURRENT AFFAIRS</a></li><li><a href="../../#homePortalLatestJobs">SYLLABUS</a></li><li><a href="../../contact.html">CONTACT US</a></li></ul></nav></header>
-<main class="ca-wrap"><div class="ca-grid"><section><div class="ca-print-brand"><img src="../../site-logo.png" alt="E-MITRA WALA"><div><strong>E-MITRA WALA</strong><span>emitrawala.online | Current Affairs PDF</span></div></div><div class="ca-hero"><h1>TODAY'S CURRENT AFFAIRS <span class="date">${htmlEscape(displayDate || "DAILY UPDATE")}</span></h1><p>Stay Updated with Daily Current Affairs for All Competitive Exams</p></div><form class="ca-content-search"><input type="search" placeholder="Search in Current Affairs..."><button>Search</button></form><div class="ca-tabs">${categories.map((cat) => `<span>${htmlEscape(cat)}</span>`).join("")}</div><div class="ca-question-list">${questionCards || `<div class="ca-question-card"><div class="ca-qnum">Q1</div><div class="ca-question-body"><div class="ca-card-head"><h2>${htmlEscape(title)}</h2></div><p class="ca-explain">${htmlEscape(description)}</p></div></div>`}</div><div class="ca-more"><a class="ca-blue-btn" href="../../current-affairs.html">View More Current Affairs <i class="fa-solid fa-chevron-down"></i></a></div></section><aside class="ca-side"><div class="ca-side-box"><h3>DAILY CURRENT AFFAIRS QUIZ</h3><div class="quiz-body"><div class="quiz-icon"><i class="fa-regular fa-clipboard"></i></div><div class="quiz-meta"><p><span>Questions</span><b>: ${questions.length || 0}</b></p><p><span>Marks</span><b>: ${questions.length || 0}</b></p><p><span>Time</span><b>: 15 Min</b></p></div></div><div class="quiz-action"><a class="ca-yellow-btn" href="../../mock-test.html">START QUIZ <i class="fa-solid fa-chevron-right"></i></a></div></div><div class="ca-side-box"><h3>DAILY CURRENT AFFAIRS PDF</h3><div class="pdf-body"><div class="pdf-icon"><i class="fa-solid fa-file-pdf"></i></div><strong>${htmlEscape(displayDate || "Daily")}<br>Current Affairs PDF</strong>${pdfButton}</div></div><div class="ca-side-box"><h3>CURRENT AFFAIRS BY MONTH</h3><div class="month-title">${htmlEscape(monthTitle)}</div><div class="month-list">${monthRows.map((row) => `<a href="${htmlEscape(row.href)}"><i class="fa-regular fa-calendar-days"></i>${htmlEscape(row.label)} <span style="margin-left:auto">›</span></a>`).join("")}</div><div class="view-all"><a class="ca-yellow-btn" href="../../current-affairs.html">VIEW ALL</a></div></div><div class="ca-side-box"><h3>IMPORTANT LINKS</h3><div class="important-list"><a href="../../#homePortalLatestJobs"><i class="fa-solid fa-briefcase"></i>Latest Jobs</a><a href="../../#homePortalLatestJobs"><i class="fa-regular fa-id-card"></i>Admit Card</a><a href="../../#homePortalLatestJobs"><i class="fa-solid fa-chart-simple"></i>Results</a><a href="../../#homePortalLatestJobs"><i class="fa-solid fa-key"></i>Answer Key</a><a href="../../#homePortalLatestJobs"><i class="fa-solid fa-book-open"></i>Syllabus</a><a href="../../tools.html"><i class="fa-solid fa-screwdriver-wrench"></i>Important Tools</a><a href="https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp"></i>WhatsApp Channel</a><a href="../../contact.html"><i class="fa-solid fa-phone"></i>Contact Us</a></div></div></aside></div><section class="features"><a class="feature" href="../../mock-test.html"><i class="fa-solid fa-circle-question"></i><div><h4>DAILY QUIZ</h4><p>Participate in Daily Quiz and Test Your Knowledge</p></div></a><a class="feature" href="../../current-affairs.html"><i class="fa-regular fa-file-pdf"></i><div><h4>MONTHLY PDF</h4><p>Download Monthly Current Affairs PDF</p></div></a><a class="feature" href="../../tools.html"><i class="fa-solid fa-screwdriver-wrench"></i><div><h4>IMPORTANT TOOLS</h4><p>Use free tools for forms, photos and PDFs</p></div></a><a class="feature" href="https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp"></i><div><h4>WHATSAPP CHANNEL</h4><p>Join for daily updates and alerts</p></div></a></section></main><footer class="ca-footer"><div class="footer-grid"><div><h2>EMITRAWALA.<span>ONLINE</span></h2><p>Your Trusted Source for Sarkari Result, Admit Card, Jobs & More.</p></div><div><h3>QUICK LINKS</h3><a href="../../index.html">Home</a><a href="../../about.html">About Us</a><a href="../../privacy-policy.html">Privacy Policy</a><a href="../../terms-and-conditions.html">Terms & Conditions</a></div><div><h3>USEFUL LINKS</h3><a href="../../#homePortalLatestJobs">Latest Jobs</a><a href="../../#homePortalLatestJobs">Admit Card</a><a href="../../#homePortalLatestJobs">Results</a><a href="../../current-affairs.html">Current Affairs</a><a href="../../tools.html">Important Tools</a></div><div><h3>FOLLOW US</h3><p>Join our WhatsApp Channel for Latest Updates</p><a class="telegram-btn" href="https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp"></i> Join WhatsApp</a></div></div><div class="copyright">© 2026 Emitrawala.online | All Rights Reserved.</div></footer>${POST_BLUE_FOOTER}<script>(function(){const tabs=[...document.querySelectorAll(".ca-tabs span")],cards=[...document.querySelectorAll(".ca-question-card")],form=document.querySelector(".ca-content-search"),input=document.querySelector(".ca-content-search input");let active="all";function apply(){const q=(input&&input.value||"").toLowerCase().trim();cards.forEach(card=>{const cat=(card.dataset.category||"").toLowerCase();const text=card.innerText.toLowerCase();const okCat=active==="all"||cat===active;const okText=!q||text.includes(q);card.style.display=okCat&&okText?"":"none"})}tabs.forEach((tab,index)=>{if(index===0)tab.classList.add("active");tab.addEventListener("click",()=>{tabs.forEach(t=>t.classList.remove("active"));tab.classList.add("active");active=tab.innerText.toLowerCase().trim();apply()})});if(form)form.addEventListener("submit",event=>{event.preventDefault();apply()});if(input)input.addEventListener("input",apply);})();</script></body></html>`;
+<header class="ca-top"><div class="ca-top-inner"><div><div class="ca-logo">EMITRAWALA.<span>ONLINE</span></div><div class="ca-tagline">SARKARI RESULT, ADMIT CARD, JOBS & MORE</div></div><form class="ca-search" action="../../index.html"><input type="search" placeholder="Search for Jobs, Results, Admit Card...."><button>Search</button></form><a class="ca-telegram" href="https://t.me/emitrawalaonline" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-telegram"></i><span>Join Telegram<small>Stay Updated</small></span></a></div><nav class="ca-menu"><ul><li><a href="../../index.html">HOME</a></li><li><a href="../../latest-jobs.html">LATEST JOBS</a></li><li><a href="../../latest-jobs.html">ADMIT CARD</a></li><li><a href="../../latest-jobs.html">RESULT</a></li><li><a href="../../latest-jobs.html">ANSWER KEY</a></li><li class="active"><a href="../../current-affairs.html">CURRENT AFFAIRS</a></li><li><a href="../../latest-jobs.html">SYLLABUS</a></li><li><a href="../../contact.html">CONTACT US</a></li></ul></nav></header>
+<main class="ca-wrap"><div class="ca-grid"><section><div class="ca-print-brand"><img src="../../site-logo.png" alt="E-MITRA WALA"><div><strong>E-MITRA WALA</strong><span>emitrawala.online | Current Affairs PDF</span></div></div><div class="ca-hero"><h1>TODAY'S CURRENT AFFAIRS <span class="date">${htmlEscape(displayDate || "DAILY UPDATE")}</span></h1><p>Stay Updated with Daily Current Affairs for All Competitive Exams</p></div><form class="ca-content-search"><input type="search" placeholder="Search in Current Affairs..."><button>Search</button></form><div class="ca-tabs">${categories.map((cat) => `<span>${htmlEscape(cat)}</span>`).join("")}</div><div class="ca-question-list">${questionCards || `<div class="ca-question-card"><div class="ca-qnum">Q1</div><div class="ca-question-body"><div class="ca-card-head"><h2>${htmlEscape(title)}</h2></div><p class="ca-explain">${htmlEscape(description)}</p></div></div>`}</div><div class="ca-more"><a class="ca-blue-btn" href="../../current-affairs.html">View More Current Affairs <i class="fa-solid fa-chevron-down"></i></a></div></section><aside class="ca-side"><div class="ca-side-box"><h3>DAILY CURRENT AFFAIRS QUIZ</h3><div class="quiz-body"><div class="quiz-icon"><i class="fa-regular fa-clipboard"></i></div><div class="quiz-meta"><p><span>Questions</span><b>: ${questions.length || 0}</b></p><p><span>Marks</span><b>: ${questions.length || 0}</b></p><p><span>Time</span><b>: 15 Min</b></p></div></div><div class="quiz-action"><a class="ca-yellow-btn" href="../../mock-test.html">START QUIZ <i class="fa-solid fa-chevron-right"></i></a></div></div><div class="ca-side-box"><h3>DAILY CURRENT AFFAIRS PDF</h3><div class="pdf-body"><div class="pdf-icon"><i class="fa-solid fa-file-pdf"></i></div><strong>${htmlEscape(displayDate || "Daily")}<br>Current Affairs PDF</strong>${pdfButton}</div></div><div class="ca-side-box"><h3>CURRENT AFFAIRS BY MONTH</h3><div class="month-title">${htmlEscape(monthTitle)}</div><div class="month-list">${monthRows.map((row) => `<a href="${htmlEscape(row.href)}"><i class="fa-regular fa-calendar-days"></i>${htmlEscape(row.label)} <span style="margin-left:auto">›</span></a>`).join("")}</div><div class="view-all"><a class="ca-yellow-btn" href="../../current-affairs.html">VIEW ALL</a></div></div><div class="ca-side-box"><h3>IMPORTANT LINKS</h3><div class="important-list"><a href="../../latest-jobs.html"><i class="fa-solid fa-briefcase"></i>Latest Jobs</a><a href="../../latest-jobs.html"><i class="fa-regular fa-id-card"></i>Admit Card</a><a href="../../latest-jobs.html"><i class="fa-solid fa-chart-simple"></i>Results</a><a href="../../latest-jobs.html"><i class="fa-solid fa-key"></i>Answer Key</a><a href="../../latest-jobs.html"><i class="fa-solid fa-book-open"></i>Syllabus</a><a href="../../tools.html"><i class="fa-solid fa-screwdriver-wrench"></i>Important Tools</a><a href="https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp"></i>WhatsApp Channel</a><a href="../../contact.html"><i class="fa-solid fa-phone"></i>Contact Us</a></div></div></aside></div><section class="features"><a class="feature" href="../../mock-test.html"><i class="fa-solid fa-circle-question"></i><div><h4>DAILY QUIZ</h4><p>Participate in Daily Quiz and Test Your Knowledge</p></div></a><a class="feature" href="../../current-affairs.html"><i class="fa-regular fa-file-pdf"></i><div><h4>MONTHLY PDF</h4><p>Download Monthly Current Affairs PDF</p></div></a><a class="feature" href="../../tools.html"><i class="fa-solid fa-screwdriver-wrench"></i><div><h4>IMPORTANT TOOLS</h4><p>Use free tools for forms, photos and PDFs</p></div></a><a class="feature" href="https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp"></i><div><h4>WHATSAPP CHANNEL</h4><p>Join for daily updates and alerts</p></div></a></section></main><footer class="ca-footer"><div class="footer-grid"><div><h2>EMITRAWALA.<span>ONLINE</span></h2><p>Your Trusted Source for Sarkari Result, Admit Card, Jobs & More.</p></div><div><h3>QUICK LINKS</h3><a href="../../index.html">Home</a><a href="../../about.html">About Us</a><a href="../../privacy-policy.html">Privacy Policy</a><a href="../../terms-and-conditions.html">Terms & Conditions</a></div><div><h3>USEFUL LINKS</h3><a href="../../latest-jobs.html">Latest Jobs</a><a href="../../latest-jobs.html">Admit Card</a><a href="../../latest-jobs.html">Results</a><a href="../../current-affairs.html">Current Affairs</a><a href="../../tools.html">Important Tools</a></div><div><h3>FOLLOW US</h3><p>Join our WhatsApp Channel for Latest Updates</p><a class="telegram-btn" href="https://whatsapp.com/channel/0029Vb7y0JL9Bb67psBzxG1Q" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp"></i> Join WhatsApp</a></div></div><div class="copyright">© 2026 Emitrawala.online | All Rights Reserved.</div></footer>${POST_BLUE_FOOTER}<script>(function(){const tabs=[...document.querySelectorAll(".ca-tabs span")],cards=[...document.querySelectorAll(".ca-question-card")],form=document.querySelector(".ca-content-search"),input=document.querySelector(".ca-content-search input");let active="all";function apply(){const q=(input&&input.value||"").toLowerCase().trim();cards.forEach(card=>{const cat=(card.dataset.category||"").toLowerCase();const text=card.innerText.toLowerCase();const okCat=active==="all"||cat===active;const okText=!q||text.includes(q);card.style.display=okCat&&okText?"":"none"})}tabs.forEach((tab,index)=>{if(index===0)tab.classList.add("active");tab.addEventListener("click",()=>{tabs.forEach(t=>t.classList.remove("active"));tab.classList.add("active");active=tab.innerText.toLowerCase().trim();apply()})});if(form)form.addEventListener("submit",event=>{event.preventDefault();apply()});if(input)input.addEventListener("input",apply);})();</script></body></html>`;
 };
 
 const renderStaticPostHtml = (id = "", job = {}, allRows = []) => {
@@ -900,7 +904,7 @@ const renderStaticPostHtml = (id = "", job = {}, allRows = []) => {
             <div class="content-box">
               <p>${htmlEscape(seo.metaDescription)}</p>
               <table class="detail-table"><tbody>${summaryRows.map(([label, value]) => `<tr><th>${htmlEscape(label)}</th><td>${htmlEscape(value)}</td></tr>`).join("")}</tbody></table>
-              <p><a class="auto-link" href="${htmlEscape(canonicalUrl)}">Canonical job detail link</a> | <a class="auto-link" href="../../#homePortalLatestJobs">All Latest Jobs</a></p>
+              <p><a class="auto-link" href="${htmlEscape(canonicalUrl)}">Canonical job detail link</a> | <a class="auto-link" href="../../latest-jobs.html">All Latest Jobs</a></p>
             </div>`;
   const staticPayload = `<script>window.__EMITRA_STATIC_POST__=${JSON.stringify({ id, job: { ...job, slug: seo.slug, canonicalUrl } }).replace(/</g, "\\u003c")};</script>`;
   let html = fs.readFileSync(JOB_DETAIL_PATH, "utf8")
@@ -908,6 +912,7 @@ const renderStaticPostHtml = (id = "", job = {}, allRows = []) => {
     .replace(/<body>/i, currentAffairs ? `<body class="current-affairs-static">` : "<body>")
     .replace(/<title>[\s\S]*?<\/title>/i, `<title>${htmlEscape(seo.seoTitle)}</title>`)
     .replace(/<meta name="description" content="[^"]*">/i, `<meta name="description" content="${htmlEscape(seo.metaDescription)}">`)
+    .replace(/<meta name="robots" content="[^"]*">/i, `<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">`)
     .replace(/<meta property="og:title" content="[^"]*">/i, `<meta property="og:title" content="${htmlEscape(seo.seoTitle)}">`)
     .replace(/<meta property="og:description" content="[^"]*">/i, `<meta property="og:description" content="${htmlEscape(seo.metaDescription)}">`)
     .replace(/<meta property="og:url" content="[^"]*">/i, `<meta property="og:url" content="${htmlEscape(canonicalUrl)}">`)
@@ -1074,7 +1079,12 @@ const renderPremiumStaticPostHtml = (id = "", job = {}) => {
     .replace(/<head>/i, "<head>\n<base href=\"../../\">")
     .replace(/<title>[\s\S]*?<\/title>/i, `<title>${htmlEscape(seo.seoTitle)}</title>`)
     .replace(/<meta name="description" content="[^"]*">/i, `<meta name="description" content="${htmlEscape(seo.metaDescription)}">`)
+    .replace(/<meta name="robots" content="[^"]*">/i, `<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">`)
     .replace(/<link rel="canonical" href="[^"]*">/i, `<link rel="canonical" href="${htmlEscape(canonicalUrl)}">`)
+    .replace(/<meta property="og:type" content="[^"]*">/i, `<meta property="og:type" content="article">`)
+    .replace(/<meta property="og:title" content="[^"]*">/i, `<meta property="og:title" content="${htmlEscape(seo.seoTitle)}">`)
+    .replace(/<meta property="og:description" content="[^"]*">/i, `<meta property="og:description" content="${htmlEscape(seo.metaDescription)}">`)
+    .replace(/<meta property="og:url" content="[^"]*">/i, `<meta property="og:url" content="${htmlEscape(canonicalUrl)}">`)
     .replace(/(<main class="premium-shell" id="premiumRoot">)[\s\S]*?(<\/main>)/i, `$1${staticMain}$2`)
     .replace(/<script type="module">/i, `${schema}\n${staticPayload}\n<script type="module">`));
   html = html
@@ -1340,9 +1350,9 @@ const buildHomeFallbackHtml = (rows = []) => {
   if (!topRows.length) {
     return `    <article class="home-job-card">
       <span>Latest Jobs</span>
-      <h3><a href="/#homePortalLatestJobs" target="_blank" rel="noopener noreferrer">Latest government job updates</a></h3>
+      <h3><a href="/latest-jobs.html" target="_blank" rel="noopener noreferrer">Latest government job updates</a></h3>
       <p>Latest online form, admit card, result aur answer key updates yahan milenge.</p>
-      <a href="/#homePortalLatestJobs" target="_blank" rel="noopener noreferrer">View Details</a>
+      <a href="/latest-jobs.html" target="_blank" rel="noopener noreferrer">View Details</a>
     </article>`;
   }
   return topRows.map(({ id, job }) => {
@@ -1438,7 +1448,7 @@ const readExistingStaticPostRows = (rows = []) => {
       };
     })
     .filter(Boolean)
-    .filter((row) => isForceIndexPostRow(row) || isUsefulPublishedPost(row));
+    .filter(isUsefulPublishedPost);
 };
 
 const withNoindexMeta = (html = "") => {
@@ -1446,27 +1456,6 @@ const withNoindexMeta = (html = "") => {
     return html.replace(/<meta\s+name=["']robots["'][^>]*>/i, '<meta name="robots" content="noindex,follow">');
   }
   return html.replace(/<head>/i, '<head>\n<meta name="robots" content="noindex,follow">');
-};
-
-const withIndexMeta = (html = "") => {
-  if (/<meta\s+name=["']robots["'][^>]*>/i.test(html)) {
-    return html.replace(/<meta\s+name=["']robots["'][^>]*>/i, '<meta name="robots" content="index,follow">');
-  }
-  return html.replace(/<head>/i, '<head>\n<meta name="robots" content="index,follow">');
-};
-
-const parseStaticPublishedPayload = (html = "") => {
-  const payloadMatch = html.match(/window\.__EMITRA_STATIC_(?:PREMIUM_)?POST__=([\s\S]*?);<\/script>/);
-  if (!payloadMatch) return null;
-  try {
-    const payload = JSON.parse(payloadMatch[1]);
-    const job = payload && (payload.job || payload);
-    if (!job || typeof job !== "object") return null;
-    if (String(job.postStatus || job.status || "published").toLowerCase() === "draft") return null;
-    return job;
-  } catch (_error) {
-    return null;
-  }
 };
 
 const noindexExcludedStaticPages = (usefulRows = []) => {
@@ -1481,22 +1470,6 @@ const noindexExcludedStaticPages = (usefulRows = []) => {
       const filePath = path.join(POST_ROOT, entry.name, "index.html");
       if (!fs.existsSync(filePath)) return;
       const html = fs.readFileSync(filePath, "utf8");
-      if (FORCE_INDEX_POST_SLUGS.has(slug)) {
-        const indexedHtml = withIndexMeta(html);
-        if (indexedHtml !== html) {
-          fs.writeFileSync(filePath, indexedHtml, "utf8");
-          updated += 1;
-        }
-        return;
-      }
-      if (parseStaticPublishedPayload(html)) {
-        const indexedHtml = withIndexMeta(html);
-        if (indexedHtml !== html) {
-          fs.writeFileSync(filePath, indexedHtml, "utf8");
-          updated += 1;
-        }
-        return;
-      }
       let refreshedHtml = html;
       const payloadMatch = html.match(/window\.__EMITRA_STATIC_POST__=([\s\S]*?);<\/script>/);
       if (payloadMatch) {
@@ -1545,30 +1518,40 @@ const patch404SlugMatching = () => {
 };
 
 async function main() {
-  const sitemapXml = removeDynamicJobEntries(fs.readFileSync(SITEMAP_PATH, "utf8")).trim();
   const jobs = await fetchJson(`${FIREBASE_URL}/LatestJobs.json`);
   const premiumPosts = await fetchJson(`${FIREBASE_URL}/premiumPosts.json`).catch(() => ({}));
   const portalData = await fetchJson(`${FIREBASE_URL}/portalItems.json`).catch(() => ({}));
   const latestRows = Object.entries(jobs || {})
     .map(([id, value]) => ({ id, job: normalizeJob(value) }))
     .map((row) => enrichPremiumRows([row], premiumPosts)[0])
-    .filter((row) => isPublishedJob(row.job) && (isForceIndexPostRow(row) || isUsefulPublishedPost(row)) && !isExcludedPostRow(row));
+    .filter((row) => isPublishedJob(row.job) && isUsefulPublishedPost(row) && !isExcludedPostRow(row));
   const rows = buildAllStaticRows(latestRows, portalData).filter((row) => !isExcludedPostRow(row));
   const sitemapRows = [...rows, ...readExistingStaticPostRows(rows)]
-    .filter((row) => isForceIndexPostRow(row) || isUsefulPublishedPost(row))
+    .filter(isUsefulPublishedPost)
     .filter((row) => !isExcludedPostRow(row));
-  const entries = sitemapRows
+  const pageEntries = PUBLIC_SITEMAP_PAGES.map((page) => sitemapEntry({
+    loc: page.path ? `${SITE_BASE_URL}/${page.path}` : `${SITE_BASE_URL}/`,
+    lastmod: sitemapDate(Date.now()),
+    changefreq: page.changefreq,
+    priority: page.priority
+  }));
+  const postEntries = sitemapRows
     .map(({ id, job }) => sitemapEntry({
       loc: jobUrl(id, job),
       lastmod: sitemapDate(job.updatedAt || job.createdAt || job.postDate),
       changefreq: "daily",
       priority: "0.8"
     }));
+  const entries = [...pageEntries, ...postEntries];
 
-  const nextXml = sitemapXml.replace("</urlset>", `${entries.length ? `${entries.join("\n")}\n` : ""}</urlset>\n`);
-  const jobSitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
+  const nextXml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${entries.join("\n")}
+</urlset>
+`;
+  const jobSitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${postEntries.join("\n")}
 </urlset>
 `;
   fs.writeFileSync(SITEMAP_PATH, nextXml, "utf8");
