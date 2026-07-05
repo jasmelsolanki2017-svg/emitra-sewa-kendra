@@ -2,177 +2,44 @@
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0"><script src="/site-theme-init.js"></script>
-<meta name="description" content="404 page on E-MITRA WALA with useful public information, services, tools and updates.">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="/site-theme-init.js"></script>
 <meta name="robots" content="noindex,follow">
+<meta name="description" content="E-MITRA WALA page not found. Use latest jobs, admit card, result, current affairs and tools links to continue.">
 <link rel="canonical" href="https://emitrawala.online/404.html">
-<title>Redirecting | E-MITRA WALA</title>
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6630418041120530"
-     crossorigin="anonymous"></script>
-<script>
-(function(){
-  var path = window.location.pathname || "";
-  var match = path.match(/\/post\/([^/?#]+)/);
-  if(match && match[1]){
-    var requestedSlug = decodeURIComponent(match[1]).replace(/^\/+|\/+$/g, "");
-    var redirectedKey = "postFallbackRedirected";
-    if(sessionStorage.getItem(redirectedKey) !== requestedSlug){
-      sessionStorage.setItem(redirectedKey, requestedSlug);
-      sessionStorage.setItem("postFallbackSlug", requestedSlug);
-      window.location.replace("/job-detail.html");
-      return;
-    }
-    var knownPostSlugs = [
-      "abvmu-up-cnet-2026",
-      "aiims-cre-5-group-b-c-recruitment-2026",
-      "bank-of-baroda-bob-apprentices-recruitment-2026-apply-online-for-5000-post-i5xhps",
-      "bank-of-baroda-cic-recruitment-2026",
-      "bihar-bpsc-aes-admit-card-date-2026",
-      "bihar-police-bpssc-asi-operation-recruitment-2026",
-      "bihar-police-bpssc-company-commander-recruitment-2026",
-      "bpssc-bihar-police-sub-inspector-si-05-2025-mains-result",
-      "cgpsc-adpo-recruitment-2026-online-form",
-      "cisf-asi-paramedical-staff-recruitment-2026",
-      "ctet-september-2026-online-form",
-      "current-affairs-12-june-2026-iczkup",
-      "current-affairs-update-3xkakq",
-      "current-affairs-update-6ixosm",
-      "current-affairs-update-bwhdwj",
-      "current-affairs-update-ge9jun",
-      "current-affairs-update-h6vzyq",
-      "current-affairs-update-qctjkp",
-      "daily-current-affairs-01-june-2026",
-      "daily-current-affairs-03-july-2026",
-      "delhi-police-constable-result-2026",
-      "drdo-ceptam-11-tier-i-result-2026",
-      "dsssb-various-post-recruitment-2026-advt-03-2026",
-      "haryana-htet-december-2025-exam-date-2026",
-      "hprca-proof-reader-copy-holder-admit-card-2026",
-      "hssc-cet-group-d-recruitment-2026",
-      "indian-airforce-agniveervayu-intake-02-2027-online-form-2026",
-      "indian-navy-10-2-btech-cadet-entry-january-2027",
-      "indian-navy-ssc-executive-it-online-form-2026-cud59n",
-      "jhtet-jharkhand-online-form-2026-jqgpqz",
-      "join-indian-army-bhartiya-sena-army-10-2-tes-56th-recruitment-2026-army-10-2-technical-ent-5s4kom",
-      "kvs-samvida-sathi-recruitment-2026-r0bioa",
-      "lakshmibai-college-assistant-professor-recruitment-2025",
-      "mpesb-hospital-assistant-recruitment-2026-online-form",
-      "mpesb-mp-pat-result-2026",
-      "mppsc-sse-mains-2025-online-form-2026",
-      "national-testing-agency-wrpc3l",
-      "ncert-non-academic-group-a-group-b-and-group-c-exam-answer-key-2026-gvzcnd",
-      "nta-csir-ugc-net-june-2026-online-form",
-      "nta-jipmat-2026-admit-card-exam-city",
-      "nta-neet-ug-2026-re-exam-admit-card-exam-city-details",
-      "punjab-police-constable-admit-card-2026",
-      "railway-rrb-ntpc-graduate-level-result-2026",
-      "railway-rrb-technician-cen-02-2026-recruitment-2026",
-      "rajasthan-agriculture-supervisor-result-2026",
-      "rajasthan-bstc-college-allotment-list-2026",
-      "rajasthan-cet-12th-level-online-form-2026",
-      "rajasthan-cet-2026-exam-date-घोषित",
-      "rajasthan-govt-college-admission-merit-list-2026",
-      "rajasthan-rsos-class-10th-12th-result-2026",
-      "rajasthan-rssb-cet-graduate-level-online-form-2026",
-      "rajasthan-rssb-forester-recruitment-2026",
-      "rajasthan-rssb-lab-assistant-answer-key-2026",
-      "rajasthan-set-2026-online-form",
-      "rpsc-apo-recruitment-2026-371-posts",
-      "rpsc-ras-recruitment-2026-607-posts",
-      "rpsc-school-lecturer-special-recruitment-2026",
-      "rrb-alp-cen-01-2026-apply-online-11127-posts",
-      "rrb-ntpc-10-2-inter-level-final-result-2026",
-      "rrb-ntpc-10-2-ug-answer-key-2026",
-      "rrb-technician-recruitment-2026-apply-online-6565-posts",
-      "rssb-computer-instructor-recruitment-2026",
-      "sbi-apprentice-online-form-2026-oba8wq",
-      "sbi-po-recruitment-2026-online-form",
-      "ssc-cgl-2025-final-result",
-      "ssc-cgl-recruitment-2026-online-form",
-      "ssc-chsl-10-2-recruitment-2025-tier-ii-answer-key-2026",
-      "ssc-delhi-police-head-constable-result-2026",
-      "ssc-gd-constable-answer-key-2026",
-      "ssc-stenographer-grade-c-d-2025-frta-result",
-      "today-current-affairs-02-july-2026-hindi",
-      "today-current-affairs-04-june-2026-9fortm",
-      "today-current-affairs-05-june-2026-vbb0ur",
-      "today-current-affairs-1-july-2026",
-      "today-current-affairs-13-june-2026-v8pveg",
-      "today-current-affairs-16-june-2026-jvb3mp",
-      "today-current-affairs-19-june-2026-otjzlf",
-      "today-current-affairs-20-june-2026",
-      "today-current-affairs-21-june-2026-yv1edc",
-      "today-current-affairs-22-june-2026",
-      "today-current-affairs-23-june-2026",
-      "today-current-affairs-24-june-2026-15zof4",
-      "today-current-affairs-25-june-2026",
-      "today-current-affairs-26-june-2026",
-      "today-current-affairs-27-june-2026",
-      "today-current-affairs-28-june-2026",
-      "today-current-affairs-29-june-2026",
-      "today-current-affairs-4zoeww",
-      "today-current-affairs-dih92d",
-      "today-current-affairs-quiz-14-june-2026-2duikr",
-      "today-current-affairs-quiz-15-june-2026-bfu8w3",
-      "today-current-affairs-rthqkl",
-      "up-deled-admission-2026-online-form",
-      "up-police-constable-2026-exam-city-admit-card",
-      "up-police-si-03-2025-pet-exam-date",
-      "uppsc-apo-2025-pre-result-mains-admit-card-2026",
-      "upsc-capf-assistant-commandant-2026",
-      "upsc-ias-ifs-prelims-2026",
-      "upsssc-auditor-assistant-accountant-14-exam-2026",
-      "upsssc-forest-guard-wild-life-guard-recruitment-2026",
-      "upsssc-lekhpal-mains-answer-key-2026",
-      "upsssc-lower-pcs-recruitment-2026",
-      "upsssc-platoon-commander-block-organizer-recruitment-2026",
-      "uptet-2026-exam-city-admit-card-syllabus"
-    ];
-    var postSlugAliases = {
-      "central-teacher-eligibility-test-ctet-september-2026-apply-online-form-tthxuz": "job-1779730227353",
-      "national-testing-agency-wrpc3": "national-testing-agency-wrpc3l",
-      "rrb-alp-online-form-2026-11-127-posts-kfcxav": "rrb-alp-cen-01-2026-apply-online-11127-posts"
-    };
-    var normalizeSlug = function(value){
-      return String(value || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-    };
-    var requestedKey = normalizeSlug(requestedSlug);
-    var aliasTarget = postSlugAliases[requestedSlug] || postSlugAliases[requestedKey] || "";
-    var matchedSlug = aliasTarget || knownPostSlugs.find(function(slug){
-      var slugKey = normalizeSlug(slug);
-      return slugKey === requestedKey || slugKey.indexOf(requestedKey + "-") === 0 || requestedKey.indexOf(slugKey + "-") === 0;
-    });
-    var slug = encodeURIComponent(matchedSlug || requestedSlug);
-    var canonical = window.location.origin + "/post/" + slug;
-    var link = document.querySelector('link[rel="canonical"]');
-    if(link){ link.setAttribute("href", canonical); }
-    if(matchedSlug && matchedSlug !== requestedSlug){
-      window.location.replace(canonical);
-      return;
-    }
-  }
-})();
-</script>
-<script>
-(function(){
-  if(!("serviceWorker" in navigator)){ return; }
-  window.addEventListener("load", function(){
-    navigator.serviceWorker.getRegistrations().then(function(registrations){
-      registrations.forEach(function(registration){
-        registration.unregister().catch(function(){});
-      });
-    }).catch(function(){});
-  }, { once:true });
-})();
-</script>
-<link rel="stylesheet" href="/site-theme.css">
-<meta property="og:title" content="Redirecting | E-MITRA WALA">
-<meta property="og:description" content="404 page on E-MITRA WALA with useful public information, services, tools and updates.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Page Not Found | E-MITRA WALA">
+<meta property="og:description" content="This page was not found. Continue with useful E-MITRA WALA public pages.">
 <meta property="og:url" content="https://emitrawala.online/404.html">
-<meta property="og:type" content="article">
+<title>Page Not Found | E-MITRA WALA</title>
+<link rel="stylesheet" href="/site-theme.css">
+<style>
+  body{margin:0;font-family:Arial,'Noto Sans Devanagari',sans-serif;background:#f4f7fb;color:#101828}
+  .wrap{max-width:900px;margin:0 auto;padding:48px 18px}
+  .box{background:#fff;border:1px solid #d8e2ef;border-radius:8px;padding:28px;box-shadow:0 10px 28px rgba(15,23,42,.08)}
+  h1{margin:0 0 10px;color:#063b7a;font-size:32px}
+  p{line-height:1.6}
+  .links{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:22px}
+  .links a{display:block;background:#075db3;color:#fff;text-decoration:none;font-weight:700;border-radius:6px;padding:12px 14px;text-align:center}
+  .note{margin-top:22px;font-size:14px;color:#475467}
+</style>
 </head>
 <body>
-<p>Page not found. <a href="/index.html">Go to E-MITRA WALA</a></p>
+<main class="wrap">
+  <section class="box">
+    <h1>Page Not Found</h1>
+    <p>Ye page available nahi hai ya URL change ho gaya hai. Neeche diye gaye public pages se latest updates dekh sakte hain.</p>
+    <div class="links">
+      <a href="/latest-jobs.html">Latest Jobs</a>
+      <a href="/admit-card.html">Admit Card</a>
+      <a href="/result.html">Result</a>
+      <a href="/current-affairs.html">Current Affairs</a>
+      <a href="/tools.html">Tools</a>
+      <a href="/contact.html">Contact</a>
+    </div>
+    <p class="note">E-MITRA WALA is an independent information and e-Mitra service help website. We are not a government website.</p>
+  </section>
+</main>
 <script src="/site-theme.js" defer></script>
 </body>
 </html>

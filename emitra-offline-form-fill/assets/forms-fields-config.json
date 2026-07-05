@@ -378,11 +378,11 @@
           "source": "applicantName",
           "page": 1,
           "type": "text",
-          "xPct": 0.72218,
-          "yPct": 0.77404,
-          "wPct": 0.2498,
+          "xPct": 0.719,
+          "yPct": 0.7724,
+          "wPct": 0.244,
           "hPct": 0.02395,
-          "fontSize": 13
+          "fontSize": 12.5
         },
         {
           "id": "patwariFather",
@@ -390,11 +390,11 @@
           "source": "fatherName",
           "page": 1,
           "type": "text",
-          "xPct": 0.1699,
-          "yPct": 0.8021699999999999,
-          "wPct": 0.26994,
+          "xPct": 0.151,
+          "yPct": 0.8015,
+          "wPct": 0.275,
           "hPct": 0.02395,
-          "fontSize": 15.5
+          "fontSize": 14
         },
         {
           "id": "patwariAddress",
@@ -402,11 +402,11 @@
           "source": "currentAddress",
           "page": 1,
           "type": "text",
-          "xPct": 0.4996,
-          "yPct": 0.80133,
-          "wPct": 0.46334000000000003,
+          "xPct": 0.477,
+          "yPct": 0.8012,
+          "wPct": 0.49,
           "hPct": 0.02395,
-          "fontSize": 13.5
+          "fontSize": 12.5
         },
         {
           "id": "patwariSubCaste",
@@ -414,11 +414,11 @@
           "source": "subCasteApplicant",
           "page": 1,
           "type": "text",
-          "xPct": 0.4996,
-          "yPct": 0.8386499999999999,
-          "wPct": 0.26591000000000004,
+          "xPct": 0.497,
+          "yPct": 0.8375,
+          "wPct": 0.265,
           "hPct": 0.02395,
-          "fontSize": 14
+          "fontSize": 13
         },
         {
           "id": "rationNumber",
@@ -426,11 +426,11 @@
           "source": "rationNumber",
           "page": 1,
           "type": "text",
-          "xPct": 0.2703158563015312,
-          "yPct": 0.872862,
-          "wPct": 0.36664,
+          "xPct": 0.258,
+          "yPct": 0.872,
+          "wPct": 0.355,
           "hPct": 0.023945,
-          "fontSize": 10
+          "fontSize": 11
         },
         {
           "id": "patwariDateDay",

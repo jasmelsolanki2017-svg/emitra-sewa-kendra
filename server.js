@@ -70,6 +70,21 @@ app.get("/cdn-cgi/l/email-protection/", (_req, res) => {
   return res.redirect(301, "/");
 });
 
+app.use((req, res, next) => {
+  const host = String(req.headers.host || "").toLowerCase();
+  const forwardedProto = String(req.headers["x-forwarded-proto"] || req.protocol || "").split(",")[0].trim().toLowerCase();
+  let pathname = req.path || "/";
+  const needsHost = host === "www.emitrawala.online";
+  const needsHttps = host === "emitrawala.online" && forwardedProto && forwardedProto !== "https";
+  const needsIndexCleanup = /\/index\.html$/i.test(pathname);
+  if (!needsHost && !needsHttps && !needsIndexCleanup) {
+    return next();
+  }
+  pathname = needsIndexCleanup ? pathname.replace(/\/index\.html$/i, "/") : pathname;
+  const query = req.originalUrl.includes("?") ? req.originalUrl.slice(req.originalUrl.indexOf("?")) : "";
+  return res.redirect(301, `https://emitrawala.online${pathname}${query}`);
+});
+
 const staticMiddleware = express.static(__dirname);
 app.use((req, res, next) => {
   const publicPath = String(req.path || "").toLowerCase();
