@@ -863,6 +863,37 @@
       return data;
     }
 
+    async function callAdminFormApi(path, formData){
+      const user = auth.currentUser;
+      if(!user){
+        throw new Error("Admin login missing");
+      }
+
+      const token = await user.getIdToken();
+      const url = adminApiUrl(path);
+      const response = await fetch(url, {
+        method:"POST",
+        headers:{
+          "Authorization":"Bearer " + token
+        },
+        body:formData
+      });
+      const data = await response.json().catch(() => ({}));
+
+      if(!response.ok || data.success === false || data.ok === false){
+        throw new Error(data.error || data.message || `Server upload failed (${response.status})`);
+      }
+
+      return data;
+    }
+
+    async function uploadMemberFileViaServer(uid, file){
+      const formData = new FormData();
+      formData.append("uid", uid);
+      formData.append("file", file, file.name || "file");
+      return callAdminFormApi("/admin/member-files/upload", formData);
+    }
+
     const defaultMemberPassword = "User@123";
 
     window.createAdminMember = () => {
@@ -1015,15 +1046,28 @@
 
       let uploadedBytes = 0;
       let uploadedCount = 0;
+      let directUploadedBytes = 0;
       const failed = [];
 
       for(let index = 0; index < files.length; index += 1){
         const file = files[index];
-        const fileRecordRef = push(ref(db, "memberFiles/" + uid));
-        const path = `${uid}/${fileRecordRef.key}-admin-${cleanFileName(file.name)}`;
         if(status){ status.innerText = `Upload ho raha hai... ${index + 1}/${files.length}`; }
 
         try{
+          try{
+            const result = await uploadMemberFileViaServer(uid, file);
+            uploadedBytes += Number(result.file?.size || file.size || 0);
+            uploadedCount += 1;
+            continue;
+          }catch(serverError){
+            const canUseDirectFallback = !getAdminServerUrl() && !isStaticHosted();
+            if(!canUseDirectFallback){
+              throw serverError;
+            }
+          }
+
+          const fileRecordRef = push(ref(db, "memberFiles/" + uid));
+          const path = `${uid}/${fileRecordRef.key}-admin-${cleanFileName(file.name)}`;
           const { error } = await supabase.storage.from(supabaseBucket).upload(path, file, {
             cacheControl:"3600",
             contentType:file.type || "application/octet-stream",
@@ -1032,6 +1076,7 @@
           if(error){ throw error; }
 
           uploadedBytes += Number(file.size || 0);
+          directUploadedBytes += Number(file.size || 0);
           uploadedCount += 1;
           await set(fileRecordRef, {
             name:file.name,
@@ -1050,13 +1095,16 @@
         }
       }
 
-      if(uploadedCount > 0){
+      if(directUploadedBytes > 0){
         await update(ref(db, "members/" + uid), {
           storageUsedBytes:used + uploadedBytes,
           storageLimitBytes:limit,
           uploadApproved:member.uploadApproved === true,
           updatedAt:Date.now()
         });
+      }
+
+      if(uploadedCount > 0){
         input.value = "";
       }
 

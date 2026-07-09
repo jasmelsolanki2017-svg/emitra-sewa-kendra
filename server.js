@@ -127,6 +127,7 @@ const hasExplicitSupabaseStorageConfig = Boolean(
   process.env.SUPABASE_PDF_VERIFICATION_BUCKET
 );
 const PDF_VERIFICATION_BUCKET = String(process.env.SUPABASE_PDF_VERIFICATION_BUCKET || (hasExplicitSupabaseStorageConfig ? "pdf-verification" : "user-files")).trim();
+const SUPABASE_USER_FILES_BUCKET = String(process.env.SUPABASE_USER_FILES_BUCKET || "user-files").trim();
 const SUPABASE_RESULT_BUCKET = String(process.env.SUPABASE_RESULT_BUCKET || "result-pdfs").trim();
 const SUPABASE_URL = String(process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || DEFAULT_SUPABASE_URL).trim();
 const SUPABASE_SERVICE_ROLE_KEY = String(process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || "").trim();
@@ -4359,6 +4360,123 @@ const pdfVerificationRequestUpload = multer({
     }
     return cb(null, true);
   }
+});
+
+const adminMemberFileUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 50 * 1024 * 1024, files: 1 }
+});
+
+function safeMemberUploadName(name = "file") {
+  return String(name || "file")
+    .replace(/[^a-zA-Z0-9._-]+/g, "-")
+    .replace(/-+/g, "-")
+    .slice(0, 90) || "file";
+}
+
+function getStorageErrorMessage(error, bucketName = "user-files") {
+  const message = String(error?.message || error?.error || error || "").trim();
+  if (!message) return "Supabase storage error";
+  if (/bucket/i.test(message) && /(not found|does not exist|missing)/i.test(message)) {
+    return `Supabase bucket '${bucketName}' nahi mila. Bucket create karein ya env bucket name sahi karein.`;
+  }
+  if (/(jwt|apikey|api key|unauthorized|forbidden|permission|not allowed|row level security|rls)/i.test(message)) {
+    return SUPABASE_SERVICE_ROLE_KEY
+      ? `Supabase '${bucketName}' upload permission fail. Service role key aur bucket policy check karein.`
+      : `Supabase '${bucketName}' upload permission fail. SUPABASE_SERVICE_ROLE_KEY backend env me set karein ya bucket policy check karein.`;
+  }
+  if (/fetch failed|failed to fetch|network|timeout|econn/i.test(message)) {
+    return `Supabase '${bucketName}' se network connection fail hua: ${message}`;
+  }
+  return `Supabase upload fail: ${message}`;
+}
+
+app.post("/admin/member-files/upload", (req, res) => {
+  adminMemberFileUpload.single("file")(req, res, async (uploadError) => {
+    try {
+      const { db, decoded } = await requireAdmin(req);
+      if (uploadError) {
+        const status = uploadError instanceof multer.MulterError && uploadError.code === "LIMIT_FILE_SIZE" ? 413 : 400;
+        const message = uploadError instanceof multer.MulterError && uploadError.code === "LIMIT_FILE_SIZE"
+          ? "File maximum 50MB honi chahiye."
+          : uploadError.message || "File upload parse nahi hua.";
+        return res.status(status).json({ success:false, error:message });
+      }
+
+      const uid = String(req.body?.uid || "").trim();
+      if (!uid || !/^[A-Za-z0-9_-]{8,160}$/.test(uid)) {
+        return res.status(400).json({ success:false, error:"Valid user UID missing hai." });
+      }
+      if (!req.file || !req.file.buffer) {
+        return res.status(400).json({ success:false, error:"Upload ke liye file missing hai." });
+      }
+
+      const memberSnap = await db.ref(`members/${uid}`).get();
+      const member = memberSnap.exists() ? (memberSnap.val() || {}) : {};
+      if (!memberSnap.exists()) {
+        return res.status(404).json({ success:false, error:"User member record nahi mila." });
+      }
+
+      const limit = Number(member.storageLimitBytes || 0) > 0
+        ? Number(member.storageLimitBytes || 0)
+        : (Number(member.freeStorageLimitMb || 0) > 0 ? Number(member.freeStorageLimitMb || 0) : 50) * 1024 * 1024;
+      const used = Number(member.storageUsedBytes || 0);
+      const fileSize = Number(req.file.size || req.file.buffer.length || 0);
+      if (used + fileSize > limit) {
+        return res.status(413).json({ success:false, error:"Storage limit full hai. Pehle storage limit badhayein ya old file delete karein." });
+      }
+
+      const fileRecordRef = db.ref(`memberFiles/${uid}`).push();
+      const fileName = safeMemberUploadName(req.file.originalname || "file");
+      const storagePath = `${uid}/${fileRecordRef.key}-admin-${fileName}`;
+      const supabase = getSupabaseAdminClient();
+      const { error } = await supabase.storage.from(SUPABASE_USER_FILES_BUCKET).upload(storagePath, req.file.buffer, {
+        cacheControl: "3600",
+        contentType: req.file.mimetype || "application/octet-stream",
+        upsert: false
+      });
+      if (error) {
+        return res.status(error.statusCode || 502).json({
+          success:false,
+          error:getStorageErrorMessage(error, SUPABASE_USER_FILES_BUCKET)
+        });
+      }
+
+      const { data } = supabase.storage.from(SUPABASE_USER_FILES_BUCKET).getPublicUrl(storagePath);
+      const record = {
+        name:req.file.originalname || fileName,
+        size:fileSize,
+        type:req.file.mimetype || "",
+        path:storagePath,
+        storageProvider:"supabase",
+        bucket:SUPABASE_USER_FILES_BUCKET,
+        downloadUrl:data?.publicUrl || "",
+        uploadedAt:Date.now(),
+        uploadedBy:decoded.email || ADMIN_EMAIL,
+        uploadedByRole:"admin"
+      };
+      const nextUsed = used + fileSize;
+      await db.ref().update({
+        [`memberFiles/${uid}/${fileRecordRef.key}`]: record,
+        [`members/${uid}/storageUsedBytes`]: nextUsed,
+        [`members/${uid}/storageLimitBytes`]: limit,
+        [`members/${uid}/updatedAt`]: Date.now()
+      });
+
+      return res.json({
+        success:true,
+        fileId:fileRecordRef.key,
+        file:record,
+        storageUsedBytes:nextUsed,
+        storageLimitBytes:limit
+      });
+    } catch (error) {
+      return res.status(error.statusCode || 500).json({
+        success:false,
+        error:error.message || "Admin member file upload fail hua."
+      });
+    }
+  });
 });
 
 app.get("/api/health", (req, res) => {
