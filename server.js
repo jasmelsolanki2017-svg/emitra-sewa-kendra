@@ -44,8 +44,15 @@ try {
 const app = express();
 const isAllowedCorsOrigin = (origin = "") => {
   if (!origin) return true;
+  if (origin === "null") return true;
+  const extraOrigins = String(process.env.ADMIN_CORS_ORIGINS || "")
+    .split(",")
+    .map((item) => item.trim().replace(/\/+$/, ""))
+    .filter(Boolean);
+  if (extraOrigins.includes(origin)) return true;
   return origin === "https://emitrawala.online"
     || origin === "https://www.emitrawala.online"
+    || /^https:\/\/[a-z0-9-]+\.github\.io$/i.test(origin)
     || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin);
 };
 app.use((req, res, next) => {

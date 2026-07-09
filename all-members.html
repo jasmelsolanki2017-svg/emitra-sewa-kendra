@@ -270,6 +270,7 @@
     let memberCloudLinks = {};
     let activeMemberUid = "";
     const adminServerStorageKey = "emitraAdminServerUrl";
+    const defaultAdminServerUrl = "https://emitra-sewa-kendra.onrender.com";
     const membersCacheKey = "emitraAdminMembersCache";
     const memberFilesCacheKey = "emitraAdminMemberFilesCache";
     const memberCloudLinksCacheKey = "emitraAdminMemberCloudLinksCache";
@@ -823,7 +824,7 @@
       const base = getAdminServerUrl();
       if(base){ return base + path; }
       if(isStaticHosted()){
-        throw new Error("Render Server URL save karein, phir dobara try karein.");
+        return defaultAdminServerUrl + path;
       }
       return path;
     };
@@ -1110,7 +1111,7 @@
 
       if(status){
         status.innerText = failed.length
-          ? `Uploaded: ${uploadedCount}, Failed: ${failed.length}. ${failed.slice(0, 2).join(" | ")}`
+          ? `Uploaded: ${uploadedCount}, Failed: ${failed.length}. ${failed.slice(0, 2).join(" | ")}${failed.some((item) => /Failed to fetch|NetworkError|Load failed/i.test(item)) ? " | Server URL/deploy/CORS check karein." : ""}`
           : `${uploadedCount} file user ke My Data Folder me upload ho gayi.`;
       }
     };
