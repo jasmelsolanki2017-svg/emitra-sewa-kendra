@@ -864,11 +864,11 @@ line-height:1.5;
 
 .home-portal{
 background:#f3f8ff;
-padding:0 6% 46px;
+padding:8px 10px 34px;
 }
 
 .home-portal-wrap{
-max-width:1180px;
+max-width:1020px;
 margin:auto;
 }
 
@@ -878,6 +878,7 @@ border:1px solid #d8e2f0;
 border-bottom:0;
 text-align:center;
 padding:22px 14px 16px;
+display:none;
 }
 
 .home-portal-masthead h1,
@@ -913,7 +914,7 @@ text-decoration:underline;
 .home-portal-main{
 background:#f3f8ff;
 border-top:1px solid #c9d2e4;
-padding:18px 0 0;
+padding:0;
 }
 
 .home-portal-ticker{
@@ -924,6 +925,7 @@ color:#e65f00;
 font-weight:900;
 text-align:center;
 margin-bottom:14px;
+display:none;
 }
 
 .home-portal-ticker span{
@@ -944,7 +946,7 @@ background:white;
 border:1px solid #c9d2e4;
 padding:14px;
 margin-bottom:14px;
-display:flex;
+display:none;
 gap:10px;
 align-items:center;
 }
@@ -964,7 +966,7 @@ outline:none;
 }
 
 .home-portal-quick{
-display:grid;
+display:none;
 grid-template-columns:repeat(4,1fr);
 gap:8px;
 margin-bottom:16px;
@@ -996,7 +998,7 @@ border:1px solid rgba(0,0,0,.12);
 .home-portal-grid{
 display:grid;
 grid-template-columns:repeat(3,1fr);
-gap:12px;
+gap:4px;
 align-items:stretch;
 grid-auto-rows:1fr;
 }
@@ -1004,9 +1006,10 @@ grid-auto-rows:1fr;
 .home-portal-box{
 background:white;
 border:2px solid #c40000;
+border-radius:4px;
 box-shadow:none;
 outline:none;
-min-height:270px;
+min-height:390px;
 height:100%;
 display:flex;
 flex-direction:column;
@@ -1016,9 +1019,10 @@ flex-direction:column;
 background:#b30000;
 color:white;
 text-align:center;
-font-size:20px;
+font-size:16px;
 font-weight:900;
-padding:7px 8px;
+line-height:1.1;
+padding:7px 8px 8px;
 }
 
 .home-portal-title .mobile-title{
@@ -1026,17 +1030,17 @@ display:none;
 }
 
 .home-portal-list{
-padding:12px 16px 8px 28px;
+padding:12px 14px 8px 28px;
 flex:1;
 }
 
 .home-portal-list li{
 padding:6px 0;
 color:#111;
-font-size:15px;
+font-size:13px;
 font-family:Arial,sans-serif;
 font-weight:700;
-line-height:1.42;
+line-height:1.35;
 list-style:disc;
 }
 
@@ -1154,7 +1158,7 @@ display:inline-flex;
 
 #homePortalResults{order:1;}
 #homePortalAdmitCard{order:2;}
-latest-jobs.html{order:3;}
+#homePortalLatestJobs{order:3;}
 #homePortalNotification{order:4;}
 #homePortalAnswerKey{order:5;}
 #homePortalSyllabus{order:6;}
@@ -2194,8 +2198,8 @@ grid-template-columns:repeat(2,1fr);
 }
 
 .home-portal-grid{
-grid-template-columns:repeat(2,minmax(0,1fr));
-gap:8px;
+grid-template-columns:repeat(3,minmax(0,1fr));
+gap:4px;
 grid-auto-rows:auto;
 }
 
@@ -2211,23 +2215,23 @@ display:none;
 }
 
 .home-portal-box{
-border:1px solid #b30000;
-min-height:360px;
+border:2px solid #b30000;
+min-height:390px;
 }
 
-#homePortalNotification{order:1;}
+#homePortalNotification{order:4;}
 #homePortalAdmitCard{order:2;}
-#homePortalResults{order:3;}
-latest-jobs.html{order:4;}
+#homePortalResults{order:1;}
+#homePortalLatestJobs{order:3;}
 #homePortalAnswerKey{order:5;}
 #homePortalSyllabus{order:6;}
 #homePortalAdmission{order:7;}
 #homePortalCurrentAffairs{order:8;}
 
 .home-portal-title{
-font-size:17px;
+font-size:16px;
 line-height:1.15;
-padding:8px 4px;
+padding:7px 4px;
 }
 
 .home-portal-title .desktop-title{
@@ -2239,11 +2243,11 @@ display:inline;
 }
 
 .home-portal-list{
-padding:14px 8px 8px 22px;
+padding:12px 8px 8px 22px;
 }
 
 .home-portal-list li{
-font-size:14px;
+font-size:12px;
 line-height:1.28;
 padding:5px 0;
 overflow-wrap:anywhere;
@@ -2521,6 +2525,99 @@ Create Account
 <div class="news-ticker-rows" id="newsTickerRows"><div class="news-line"><span class="news-track multi-link-track"><a class="news-link" data-urgent-last-date="08 July 2026" href="/post/sbi-po-recruitment-2026-online-form/">Last Date Today: SBI PO Recruitment 2026 Online Form</a><span class="news-separator" aria-hidden="true">•</span><a class="news-link" href="/post/mppsc-sse-mains-2025-online-form-2026/">MPPSC State Service Exam SSE 2025 Mains Online Form 2026</a></span></div><div class="news-line"><span class="news-track multi-link-track"><a class="news-link" href="/post/uptet-2026-exam-city-admit-card-syllabus/">UPTET 2026 Exam City, Admit Card, Syllabus Download</a><span class="news-separator" aria-hidden="true">•</span><a class="news-link" href="/post/ssc-chsl-10-2-recruitment-2025-tier-ii-answer-key-2026/">SSC CHSL 10+2 Tier II Answer Key 2026</a></span></div><div class="news-line"><span class="news-track multi-link-track"><a class="news-link" href="/post/cgpsc-adpo-recruitment-2026-online-form/">CGPSC Assistant District Prosecution Officer ADPO Recruitment 2026 Online Form</a></span></div></div>
   </div>
 </section>
+
+<section class="home-portal" id="homeJobPortal">
+  <div class="home-portal-wrap">
+    <div class="home-portal-masthead">
+      <h1 id="homePortalHeading">Sarkari Job, Result & Admit Card</h1>
+      <p>Latest Government Jobs, Online Form, Result, Admit Card, Answer Key aur Exam Updates</p>
+      <div class="home-portal-links">
+        <a href="#homePortalLatestJobs">Latest Jobs</a>
+        <a href="#homePortalNotification">Notification</a>
+        <a href="#homePortalResults">Results</a>
+        <a href="#homePortalAdmitCard">Admit Card</a>
+        <a href="#homePortalAnswerKey">Answer Key</a>
+        <a href="current-affairs.html">Current Affairs</a>
+        <a href="government-/#homePortalLatestJobs">Form Guide</a>
+      </div>
+    </div>
+
+    <div class="home-portal-main">
+      <div class="home-portal-ticker">Breaking Updates: <span>Latest job updates yahan regularly show hongi.</span></div>
+
+      <div class="home-portal-search">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="search" id="homePortalJobSearch" placeholder="Search karein: SSC, Railway, Police, Army, Teacher, Rajasthan">
+      </div>
+
+      <div class="home-portal-quick" aria-label="Important job categories">
+        <a class="q1" href="#homePortalLatestJobs">Latest Jobs</a>
+        <a class="q2" href="#homePortalNotification">Notification</a>
+        <a class="q3" href="#homePortalAdmitCard">Admit Card</a>
+        <a class="q4" href="#homePortalAnswerKey">Answer Key</a>
+        <a class="q5" href="#homePortalResults">Result</a>
+        <a class="q6" href="current-affairs.html">Current Affairs</a>
+        <a class="q7" href="useful-pages.html">Useful Pages</a>
+        <a class="q8" href="invoice-generator.html">Invoice Generator</a>
+        <a class="q9" href="contact.html">Contact Help</a>
+      </div>
+
+      <div class="home-portal-grid">
+        <div class="home-portal-box" id="homePortalNotification">
+          <h3 class="home-portal-title"><span class="desktop-title">Notification</span><span class="mobile-title">New Updates</span></h3>
+          <ul class="home-portal-list" id="homePortalNotificationList"><li><span class="post-title-line"><a href="post/rajasthan-cet-2026-exam-date-%E0%A4%98%E0%A5%8B%E0%A4%B7%E0%A4%BF%E0%A4%A4/">Rajasthan CET 2026 Exam Date घोषित</a><span class="home-new-post-badge">NEW</span></span></li><li><span class="post-title-line"><a href="post/rajasthan-govt-college-admission-merit-list-2026/">Rajasthan Govt College Admission Merit List 2026</a></span></li><li><span class="post-title-line"><a href="post/dsssb-various-post-recruitment-2026-advt-03-2026/">DSSSB Various Post Recruitment 2026</a></span></li><li><span class="post-title-line"><a href="post/kvs-samvida-sathi-recruitment-2026-r0bioa/">KVS Samvida Sathi Recruitment 2026</a></span></li></ul>
+          <a class="home-portal-view-all" href="notification.html">View More »</a>
+        </div>
+
+        <div class="home-portal-box" id="homePortalAdmitCard">
+          <h3 class="home-portal-title">Admit Card</h3>
+          <ul class="home-portal-list" id="homePortalAdmitCardList"><li><span class="post-title-line"><a href="post/rajasthan-rssb-forester-recruitment-2026/">Rajasthan RSSB Forester Recruitment 2026 Online Form for 259 Posts</a><span class="home-new-post-badge">NEW</span></span></li><li><span class="post-title-line"><a href="post/nta-neet-ug-2026-re-exam-admit-card-exam-city-details/">NTA NEET UG 2026 Re Exam Admit Card / Exam City Details</a><span class="home-new-post-badge">NEW</span></span></li><li><span class="post-title-line"><a href="post/up-police-si-03-2025-pet-exam-date/">UP Police Sub Inspector SI PET Exam Date 2026 for 4543 Posts</a><span class="home-new-post-badge">NEW</span></span></li><li><span class="post-title-line"><a href="post/upsc-capf-assistant-commandant-2026/">UPSC CAPF Assistant Commandant Recruitment 2026 Apply Online for 349 Posts</a><span class="home-new-post-badge">NEW</span></span></li><li><span class="post-title-line"><a href="post/hprca-proof-reader-copy-holder-admit-card-2026/">HPRCA Proof Reader and Copy Holder Admit Card 2026</a></span></li><li><span class="post-title-line"><a href="post/bihar-bpsc-aes-admit-card-date-2026/">Bihar BPSC AES Admit Card Date 2026</a></span></li><li><span class="post-title-line"><a href="post/up-police-constable-2026-exam-city-admit-card/">UP Police Constable 2026 Exam City Details / Admit Card</a></span></li><li><span class="post-title-line"><a href="post/nta-jipmat-2026-admit-card-exam-city/">NTA JIPMAT 2026 Admit Card / Exam City Download</a></span></li><li><span class="post-title-line"><a href="post/drdo-ceptam-11-tier-i-result-2026/">DRDO CEPTAM 11 Tier I Result 2026</a></span></li><li><span class="post-title-line"><a href="post/imu-common-entrance-test-cet-2026-jxzu1r/">IMU Common Entrance Test CET 2026</a></span></li></ul>
+          <a class="home-portal-view-all" href="admit-card.html">View More »</a>
+        </div>
+
+        <div class="home-portal-box" id="homePortalResults">
+          <h3 class="home-portal-title"><span class="desktop-title">Result</span><span class="mobile-title">Exam Result</span></h3>
+          <ul class="home-portal-list" id="homePortalResultList"><li><span class="post-title-line"><a href="post/bpssc-bihar-police-sub-inspector-si-05-2025-mains-result/">BPSSC Bihar Police Sub Inspector SI Mains Result 2026</a><span class="home-new-post-badge">NEW</span></span></li><li><span class="post-title-line"><a href="post/ssc-stenographer-grade-c-d-2025-frta-result/">SSC Stenographer Grade C &amp; D 2025 FRTA Result / Cutoff</a><span class="home-new-post-badge">NEW</span></span></li><li><span class="post-title-line"><a href="post/mpesb-mp-pat-result-2026/">MPESB MP PAT Result 2026</a><span class="home-new-post-badge">NEW</span></span></li><li><span class="post-title-line"><a href="post/ssc-cgl-2025-final-result/">SSC CGL 2025 Final Result 2026 Download</a><span class="home-new-post-badge">NEW</span></span></li><li><span class="post-title-line"><a href="post/upsc-ias-ifs-prelims-2026/">UPSC IAS / IFS Prelims Admit Card &amp; Result 2026</a></span></li><li><span class="post-title-line"><a href="post/abvmu-up-cnet-2026/">ABVMU UP Common Nursing Entrance Test CNET 2026 Result</a></span></li><li><span class="post-title-line"><a href="post/railway-rrb-ntpc-graduate-level-result-2026/">Railway RRB NTPC Graduate Level Result 2026</a></span></li><li><span class="post-title-line"><a href="post/ssc-delhi-police-head-constable-result-2026/">SSC Delhi Police Head Constable Result 2026 जारी – Merit List और Cut Off देखें</a></span></li><li><span class="post-title-line"><a href="post/rrb-ntpc-10-2-inter-level-final-result-2026/">RRB NTPC 10+2 Inter Level Final Result 2026</a></span></li><li><span class="post-title-line"><a href="post/bank-of-baroda-bob-apprentices-recruitment-2026-apply-online-for-5000-post-i5xhps/">Bank of Baroda BOB Apprentices Recruitment 2026 Apply Online for 5000 Post</a></span></li></ul>
+          <a class="home-portal-view-all" href="result.html">View More »</a>
+        </div>
+
+        <div class="home-portal-box" id="homePortalLatestJobs">
+          <h3 class="home-portal-title">Top Online Form</h3>
+          <ul class="home-portal-list" id="homePortalJobList"><li><span class="post-title-line"><a href="post/indian-navy-10-2-btech-cadet-entry-january-2027/">Indian Air Force AFCAT 02/2026 Batch Recruitment 2026 Apply Online</a><span class="home-new-post-badge">NEW</span></span></li><li><span class="post-title-line"><a href="post/ssc-chsl-10-2-recruitment-2025-tier-ii-answer-key-2026/">SSC CHSL 10+2 Tier II Answer Key 2026</a><span class="home-new-post-badge">NEW</span></span></li><li><span class="post-title-line"><a href="post/hssc-cet-group-d-recruitment-2026/">HSSC CET Group D Recruitment 2026 Online Form</a><span class="home-new-post-badge">NEW</span></span></li><li><span class="post-title-line"><a href="post/sbi-po-recruitment-2026-online-form/">SBI PO Recruitment 2026 Online Form</a><span class="home-new-post-badge">NEW</span></span></li><li><span class="post-title-line"><a href="post/bank-of-baroda-cic-recruitment-2026/">Bank of Baroda C&amp;IC Recruitment 2026 Apply Online for 86 Posts</a><span class="home-new-post-badge">NEW</span></span></li><li><span class="post-title-line"><a href="post/upsssc-platoon-commander-block-organizer-recruitment-2026/">UPSSSC Platoon Commander / Block Organizer Recruitment 2026</a><span class="home-new-post-badge">NEW</span></span></li><li><span class="post-title-line"><a href="post/lakshmibai-college-assistant-professor-recruitment-2025/">Lakshmibai College Assistant Professor Recruitment 2025</a><span class="home-new-post-badge">NEW</span></span></li><li><span class="post-title-line"><a href="post/aiims-cre-5-group-b-c-recruitment-2026/">AIIMS CRE-5 Group B &amp; C Recruitment 2026 Online Form</a></span></li><li><span class="post-title-line"><a href="post/cisf-asi-paramedical-staff-recruitment-2026/">CISF ASI Paramedical Staff Recruitment 2026</a></span></li><li><span class="post-title-line"><a href="post/rajasthan-set-2026-online-form/">Rajasthan SET 2026 Online Form</a></span></li></ul>
+          <a class="home-portal-view-all" href="top-online-form.html">View More »</a>
+        </div>
+
+        <div class="home-portal-box" id="homePortalAnswerKey">
+          <h3 class="home-portal-title">Answer Keys</h3>
+          <ul class="home-portal-list" id="homePortalAnswerKeyList"><li><span class="post-title-line"><a href="post/rajasthan-rssb-lab-assistant-answer-key-2026/">Rajasthan RSSB Lab Assistant Answer Key 2026</a></span></li><li><span class="post-title-line"><a href="post/ssc-gd-constable-answer-key-2026/">SSC GD Constable Answer Key 2026</a></span></li><li><span class="post-title-line"><a href="post/ncert-non-academic-group-a-group-b-and-group-c-exam-answer-key-2026-gvzcnd/">NCERT Non Academic Group A, Group B and Group C Exam Answer Key 2026</a></span></li><li><span class="post-title-line"><a href="post/national-testing-agency-wrpc3l/">National Testing Agency</a></span></li><li><span class="post-title-line"><a href="post/upsssc-lekhpal-mains-answer-key-2026/">UPSSSC Lekhpal Mains Answer Key 2026</a></span></li></ul>
+          <a class="home-portal-view-all" href="answer-key.html">View More »</a>
+        </div>
+
+        <div class="home-portal-box" id="homePortalSyllabus">
+          <h3 class="home-portal-title">Syllabus</h3>
+          <ul class="home-portal-list" id="homePortalSyllabusList"><li><span class="post-title-line"><a href="post/upsssc-auditor-assistant-accountant-14-exam-2026/">UPSSSC Auditor and Assistant Accountant Recruitment 2026 Online Form</a></span></li></ul>
+          <a class="home-portal-view-all" href="syllabus.html">View More »</a>
+        </div>
+
+        <div class="home-portal-box" id="homePortalAdmission">
+          <h3 class="home-portal-title">Admission Form</h3>
+          <ul class="home-portal-list" id="homePortalAdmissionList"><li><span class="post-title-line"><a href="post/up-deled-admission-2026-online-form/">UP DELED Admission 2026 Online Form</a><span class="home-new-post-badge">NEW</span></span></li><li><span class="post-title-line"><a href="post/1-12th-b-a-b-sc-b-com-15-22-wyyftq/">1. *🔥सभी 12th पास स्टूडेंट्स जो राजकीय महाविद्यालयो में स्नातक प्रथम वर्ष B.A/B.SC/B.COM में प्रवेश लेना उनके ऑनलाइन आवेदन फॉर्म सुचारू रूप से शुरू हो गये हैं जिसकी अंतिम दिनांक 15 मई से बढाकर 22 मई कर दी गयी हैं</a></span></li></ul>
+          <a class="home-portal-view-all" href="admission.html">View More »</a>
+        </div>
+
+        <div class="home-portal-box" id="homePortalCurrentAffairs">
+          <h3 class="home-portal-title">Current Affairs</h3>
+          <ul class="home-portal-list" id="homePortalCurrentAffairsList"><li><span class="post-title-line"><a href="post/today-current-affairs-19-june-2026-otjzlf/">Today Current Affairs - 19 June 2026</a><span class="home-new-post-badge">NEW</span></span></li><li><span class="post-title-line"><a href="post/today-current-affairs-rthqkl/">Today Current Affairs</a><span class="home-new-post-badge">NEW</span></span></li><li><span class="post-title-line"><a href="post/today-current-affairs-4zoeww/">Today Current Affairs</a><span class="home-new-post-badge">NEW</span></span></li><li><span class="post-title-line"><a href="post/today-current-affairs-16-june-2026-jvb3mp/">Today Current Affairs - 16 June 2026</a></span></li><li><span class="post-title-line"><a href="post/today-current-affairs-quiz-15-june-2026-bfu8w3/">Today Current Affairs Quiz - 15 June 2026</a></span></li><li><span class="post-title-line"><a href="post/today-current-affairs-quiz-14-june-2026-2duikr/">Today Current Affairs Quiz - 14 June 2026</a></span></li><li><span class="post-title-line"><a href="post/today-current-affairs-13-june-2026-v8pveg/">Today Current Affairs - 13 June 2026</a></span></li><li><span class="post-title-line"><a href="post/current-affairs-12-june-2026-iczkup/">Current Affairs 12 June 2026</a></span></li><li><span class="post-title-line"><a href="post/current-affairs-update-6ixosm/">Current Affairs Update</a></span></li><li><span class="post-title-line"><a href="post/current-affairs-update-bwhdwj/">Current Affairs Update</a></span></li></ul>
+          <a class="home-portal-view-all" href="current-affairs.html">View More »</a>
+        </div>
+      </div>
+      <p class="home-portal-message" id="homePortalNoResult" style="display:none;">कोई matching update नहीं मिली</p>
+
+    </div>
+  </div>
+</section>
+
+
 
 <section class="counter-section" aria-labelledby="visitorCounterHeading">
   <h2 id="visitorCounterHeading">Website Visitors</h2>
@@ -3461,5 +3558,4 @@ window.loginUser = async (email, password) => {
 <button class="theme-toggle" type="button" aria-label="Toggle dark mode" title="Dark mode" onclick="toggleDarkMode()"><span class="theme-symbol" aria-hidden="true">☾</span></button>
 <script src="site-theme.js" defer></script>
 </body>
-
 </html>
