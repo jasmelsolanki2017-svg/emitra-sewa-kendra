@@ -1234,7 +1234,24 @@ const displayOrder = (job = {}) => {
   return number > 0 ? number : Number.POSITIVE_INFINITY;
 };
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+const LAST_DATE_SOON_DAYS = 7;
+const lastDateUrgency = (job = {}, now = new Date()) => {
+  const date = parseLooseDate(findApplicationLastDate(job));
+  if (!date) return null;
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const diffDays = Math.round((date - today) / DAY_MS);
+  return diffDays >= 0 && diffDays <= LAST_DATE_SOON_DAYS ? { date, diffDays } : null;
+};
+
 const sortJobs = (rows = []) => rows.sort((a, b) => {
+  const aUrgency = lastDateUrgency(a.job);
+  const bUrgency = lastDateUrgency(b.job);
+  if (aUrgency || bUrgency) {
+    if (!aUrgency) return 1;
+    if (!bUrgency) return -1;
+    return aUrgency.date - bUrgency.date;
+  }
   const orderDiff = displayOrder(a.job) - displayOrder(b.job);
   return orderDiff || Number(b.job.createdAt || 0) - Number(a.job.createdAt || 0);
 });

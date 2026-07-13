@@ -75,12 +75,13 @@ const getPostLastDate = (item = {}) => {
   ];
   return candidates.find((value) => parsePostLastDate(value)) || "";
 };
+const LAST_DATE_SOON_DAYS = 7;
 const getLastDateUrgency = (item = {}, now = new Date()) => {
   const date = parsePostLastDate(getPostLastDate(item));
   if (!date) return null;
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const diffDays = Math.round((date - today) / DAY_MS);
-  return diffDays >= 0 && diffDays <= 2 ? { date, diffDays } : null;
+  return diffDays >= 0 && diffDays <= LAST_DATE_SOON_DAYS ? { date, diffDays } : null;
 };
 const sortPostsByLastDateUrgency = (posts, now = new Date()) => {
   const urgent = [], normal = [];
