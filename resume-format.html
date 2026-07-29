@@ -116,10 +116,13 @@ footer a{color:var(--yellow);text-decoration:none;font-weight:800;margin:0 7px;d
   nav,.hero,.panel,.whatsapp,footer{display:none!important;}
   main{display:block;padding:0;max-width:none;}
   .preview-wrap{overflow:visible;}
-  .resume-sheet{width:210mm;min-height:297mm;border:0;box-shadow:none;border-radius:0;margin:0;padding:14mm 16mm;}
+  .resume-sheet{width:198mm;min-height:285mm;border:1px solid #d8e0f0;box-shadow:none;border-radius:6px;margin:0 auto;padding:13mm 15mm;}
+  .resume-head{display:grid;grid-template-columns:1fr 112px;gap:18px;align-items:start;}
+  .photo-box{justify-self:end;width:104px;height:124px;}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
   .resume-classicdoc{min-height:auto;}
   .resume-classicdoc .doc-page-two{break-before:page;page-break-before:always;margin-top:0;}
-  @page{size:A4;margin:0;}
+  @page{size:A4;margin:6mm;}
 }
 </style>
 <link rel="stylesheet" href="mobile-responsive-fix.css">
@@ -132,6 +135,21 @@ footer a{color:var(--yellow);text-decoration:none;font-weight:800;margin:0 7px;d
   html,body{background:white!important;margin:0!important;padding:0!important;}
   main{max-width:none!important;padding:0!important;}
   .preview-wrap{overflow:visible!important;padding:0!important;}
+  #resumeSheet{width:198mm!important;min-height:285mm!important;margin:0 auto!important;padding:13mm 15mm!important;border:1px solid #d8e0f0!important;border-radius:6px!important;box-shadow:none!important;background:white!important;}
+  #resumeSheet .resume-head{display:grid!important;grid-template-columns:1fr 112px!important;gap:18px!important;align-items:start!important;}
+  #resumeSheet .photo-box{justify-self:end!important;width:104px!important;height:124px!important;}
+  #resumeSheet .two-col{display:grid!important;grid-template-columns:1fr 1fr!important;gap:16px!important;}
+  #resumeSheet.resume-compact .resume-head{grid-template-columns:1fr 92px!important;}
+  #resumeSheet.resume-compact .photo-box{width:88px!important;height:104px!important;}
+  #resumeSheet.resume-biodata .resume-head{grid-template-columns:1fr!important;text-align:center!important;}
+  #resumeSheet.resume-biodata .photo-box{justify-self:center!important;}
+  #resumeSheet.resume-biodata .two-col{grid-template-columns:1fr!important;}
+  #resumeSheet.resume-modern .resume-head{grid-template-columns:1fr 104px!important;}
+  #resumeSheet.resume-classicdoc{width:198mm!important;min-height:auto!important;}
+  #resumeSheet.resume-classicdoc .resume-head{display:block!important;}
+  #resumeSheet.resume-classicdoc .photo-box{float:right!important;width:98px!important;height:116px!important;}
+  #resumeSheet.resume-classicdoc .two-col{display:block!important;}
+  @page{size:A4;margin:6mm;}
 }
 </style>
 <link rel="stylesheet" href="/site-theme.css">
