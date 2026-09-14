@@ -4374,6 +4374,17 @@ const adminMemberFileUpload = multer({
   limits: { fileSize: 50 * 1024 * 1024, files: 1 }
 });
 
+const adminMemberProfilePhotoUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024, files: 1 },
+  fileFilter(_req, file, cb) {
+    if (/^image\/(png|jpe?g|webp|gif)$/i.test(file.mimetype || "") || /\.(png|jpe?g|webp|gif)$/i.test(file.originalname || "")) {
+      return cb(null, true);
+    }
+    return cb(new Error("Sirf PNG, JPG, WEBP ya GIF profile photo upload karein."));
+  }
+});
+
 function safeMemberUploadName(name = "file") {
   return String(name || "file")
     .replace(/[^a-zA-Z0-9._-]+/g, "-")
@@ -4481,6 +4492,78 @@ app.post("/admin/member-files/upload", (req, res) => {
       return res.status(error.statusCode || 500).json({
         success:false,
         error:error.message || "Admin member file upload fail hua."
+      });
+    }
+  });
+});
+
+app.post("/admin/member-profile-photo/upload", (req, res) => {
+  adminMemberProfilePhotoUpload.single("photo")(req, res, async (uploadError) => {
+    try {
+      const { db, decoded } = await requireAdmin(req);
+      if (uploadError) {
+        const status = uploadError instanceof multer.MulterError && uploadError.code === "LIMIT_FILE_SIZE" ? 413 : 400;
+        const message = uploadError instanceof multer.MulterError && uploadError.code === "LIMIT_FILE_SIZE"
+          ? "Profile photo maximum 5MB honi chahiye."
+          : uploadError.message || "Profile photo parse nahi hui.";
+        return res.status(status).json({ success:false, error:message });
+      }
+
+      const uid = String(req.body?.uid || "").trim();
+      if (!uid || !/^[A-Za-z0-9_-]{8,160}$/.test(uid)) {
+        return res.status(400).json({ success:false, error:"Valid user UID missing hai." });
+      }
+      if (!req.file || !req.file.buffer) {
+        return res.status(400).json({ success:false, error:"Upload ke liye profile photo missing hai." });
+      }
+
+      const memberSnap = await db.ref(`members/${uid}`).get();
+      const member = memberSnap.exists() ? (memberSnap.val() || {}) : {};
+      if (!memberSnap.exists()) {
+        return res.status(404).json({ success:false, error:"User member record nahi mila." });
+      }
+
+      const fileName = safeMemberUploadName(req.file.originalname || "profile-photo");
+      const storagePath = `${uid}/profile/profile-${Date.now()}-${fileName}`;
+      const supabase = getSupabaseAdminClient();
+      const { error } = await supabase.storage.from(SUPABASE_USER_FILES_BUCKET).upload(storagePath, req.file.buffer, {
+        cacheControl: "3600",
+        contentType: req.file.mimetype || "image/jpeg",
+        upsert: false
+      });
+      if (error) {
+        return res.status(error.statusCode || 502).json({
+          success:false,
+          error:getStorageErrorMessage(error, SUPABASE_USER_FILES_BUCKET)
+        });
+      }
+
+      const oldPath = String(member.profilePhotoPath || "");
+      if (oldPath) {
+        await supabase.storage.from(member.profilePhotoBucket || SUPABASE_USER_FILES_BUCKET).remove([oldPath]).catch(() => {});
+      }
+
+      const { data } = supabase.storage.from(SUPABASE_USER_FILES_BUCKET).getPublicUrl(storagePath);
+      const photoData = {
+        profilePhotoUrl:data?.publicUrl || "",
+        profilePhotoPath:storagePath,
+        profilePhotoBucket:SUPABASE_USER_FILES_BUCKET,
+        profilePhotoName:req.file.originalname || fileName,
+        profilePhotoSize:Number(req.file.size || req.file.buffer.length || 0),
+        profilePhotoUpdatedAt:Date.now(),
+        profilePhotoUpdatedBy:decoded.email || ADMIN_EMAIL,
+        updatedAt:Date.now()
+      };
+      await db.ref(`members/${uid}`).update(photoData);
+
+      return res.json({
+        success:true,
+        photo:photoData
+      });
+    } catch (error) {
+      return res.status(error.statusCode || 500).json({
+        success:false,
+        error:error.message || "Admin member profile photo upload fail hua."
       });
     }
   });
