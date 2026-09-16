@@ -677,6 +677,7 @@
       border-left:5px solid var(--blue);
       border-radius:8px;
       padding:11px 12px;
+      margin-top:14px;
       margin-bottom:12px;
     }
 
@@ -777,10 +778,6 @@
       overflow-wrap:anywhere;
     }
 
-    .profile-card{
-      border-top:4px solid var(--blue);
-    }
-
     .profile-card .profile-card-row{
       display:flex;
       align-items:center;
@@ -839,8 +836,12 @@
     }
 
     .card{
+      --tile-color:var(--blue);
+      --tile-soft:var(--soft);
+      --tile-border:var(--line);
       background:white;
-      border:1px solid var(--line);
+      border:1px solid var(--tile-border);
+      border-top:4px solid var(--tile-color);
       border-radius:8px;
       padding:13px;
       box-shadow:0 4px 12px rgba(8,31,74,.06);
@@ -852,14 +853,14 @@
       box-shadow:var(--shadow);
     }
 
-    .card i{
+    .card > i{
       width:34px;
       height:34px;
       display:inline-flex;
       align-items:center;
       justify-content:center;
-      background:var(--soft);
-      color:var(--blue);
+      background:var(--tile-soft);
+      color:var(--tile-color);
       border-radius:8px;
       font-size:17px;
       margin-bottom:8px;
@@ -868,13 +869,24 @@
     .card h3{color:var(--blue);margin-bottom:5px;font-size:15px;}
     .card p{color:var(--muted);line-height:1.35;font-size:12px;}
 
+    .card-accent-profile{--tile-color:#0b63ce;--tile-soft:#eaf3ff;--tile-border:#bdd7ff;}
+    .card-accent-updates{--tile-color:#7c3aed;--tile-soft:#f3e8ff;--tile-border:#dbc7ff;}
+    .card-accent-jobs{--tile-color:#0f766e;--tile-soft:#e7f7f4;--tile-border:#b9e5dd;}
+    .card-accent-test{--tile-color:#ca8a04;--tile-soft:#fff7d6;--tile-border:#f5d37b;}
+    .card-accent-invoice{--tile-color:#ea580c;--tile-soft:#fff1e8;--tile-border:#ffc7a8;}
+    .card-accent-resume{--tile-color:#be123c;--tile-soft:#fff0f3;--tile-border:#f8b7c5;}
+    .card-accent-download{--tile-color:#0284c7;--tile-soft:#e6f6ff;--tile-border:#a9ddf8;}
+    .card-accent-pdf{--tile-color:#4f46e5;--tile-soft:#eef0ff;--tile-border:#c6cbff;}
+    .card-accent-links{--tile-color:#16a34a;--tile-soft:#eaf8ef;--tile-border:#b9e6c8;}
+    .card-accent-folder{--tile-color:#b45309;--tile-soft:#fff4df;--tile-border:#f0c77f;}
+
     .card a,
     .job-card a{
       display:inline-flex;
       align-items:center;
       justify-content:center;
       margin-top:9px;
-      background:var(--blue);
+      background:var(--tile-color,var(--blue));
       color:white;
       text-decoration:none;
       padding:7px 10px;
@@ -1510,23 +1522,6 @@
       <div class="service-request-status" id="requestStatus"></div>
     </div>
 
-    <div class="profile-chat">
-      <div class="profile-chat-head">
-        <div>
-          <h3><i class="fa-solid fa-comments"></i> Admin Chat</h3>
-          <p>Request reply aur admin update ka jawab yahin se bhejein.</p>
-        </div>
-        <a href="user-my-requests.html">Open Chat</a>
-      </div>
-      <div class="profile-chat-summary" id="profileChatSummary">
-        <div>
-          <strong>Request chat loading...</strong>
-          <small>Latest admin reply aur request status yahan short me dikhega.</small>
-        </div>
-        <a class="open-chat-btn" href="user-my-requests.html">Full History</a>
-      </div>
-    </div>
-
     <div class="admin-message-panel">
       <div class="admin-message-head">
         <div>
@@ -1559,7 +1554,7 @@
   </div>
 
   <div class="grid">
-    <div class="card profile-card">
+    <div class="card profile-card card-accent-profile">
       <i class="fa-solid fa-user"></i>
       <h3>My Profile</h3>
       <p>Apni account details aur upload access status yahan quick check karein.</p>
@@ -1569,67 +1564,84 @@
       <div class="profile-card-row"><i class="fa-solid fa-cloud-arrow-up"></i><span id="cardUploadAccess">Upload: Pending</span></div>
     </div>
 
-    <div class="card">
+    <div class="card card-accent-updates">
       <i class="fa-solid fa-bell"></i>
       <h3>Latest Updates</h3>
       <p>Admin se aayi latest information aur notices alag page par dekhein.</p>
       <a href="user-latest-updates.html">Open Updates</a>
     </div>
 
-    <div class="card">
+    <div class="card card-accent-jobs">
       <i class="fa-solid fa-briefcase"></i>
       <h3>Latest Jobs</h3>
       <p>Latest job updates yahan ek jagah milengi.</p>
       <a href="user-latest-jobs.html">View Jobs</a>
     </div>
 
-    <div class="card">
+    <div class="card card-accent-test">
       <i class="fa-solid fa-clipboard-check"></i>
       <h3>Daily Mock Test</h3>
       <p>Rajasthan GK, Reasoning, Math aur English practice tests attempt karein.</p>
       <a href="mock-test.html">Start Test</a>
     </div>
 
-    <div class="card">
+    <div class="card card-accent-invoice">
       <i class="fa-solid fa-file-invoice"></i>
       <h3>Invoice Generator</h3>
       <p>Shop logo, signature, GST fields aur saved history ke saath invoice banayein.</p>
       <a href="invoice-generator.html">Create Invoice</a>
     </div>
 
-    <div class="card">
+    <div class="card card-accent-resume">
       <i class="fa-solid fa-id-card-clip"></i>
       <h3>Resume Builder</h3>
       <p>Print-ready resume aur biodata format details fill karke banayein.</p>
       <a href="resume-format.html">Build Resume</a>
     </div>
 
-    <div class="card">
+    <div class="card card-accent-download">
       <i class="fa-solid fa-download"></i>
       <h3>Download Center</h3>
       <p>Forms, PDFs aur documents download karein.</p>
       <a href="user-download-center.html">Open Downloads</a>
     </div>
 
-    <div class="card">
+    <div class="card card-accent-pdf">
       <i class="fa-solid fa-shield-halved"></i>
       <h3>PDF Verification</h3>
       <p>Original PDF submit karein aur verified PDF status/download alag page par dekhein.</p>
       <a href="user-pdf-verification.html">Open PDF</a>
     </div>
 
-    <div class="card">
+    <div class="card card-accent-links">
       <i class="fa-solid fa-link"></i>
       <h3>Important Links</h3>
       <p>Useful government links aur services yahan available rahenge.</p>
       <a href="user-important-links.html">Open Links</a>
     </div>
 
-    <div class="card">
+    <div class="card card-accent-folder">
       <i class="fa-solid fa-folder-open"></i>
       <h3>My Data Folder</h3>
       <p>My Documents, uploaded files aur admin data links ek alag page par rahenge.</p>
       <a href="user-data-folder.html">Open Data Folder</a>
+    </div>
+  </div>
+
+  <div class="profile-chat">
+    <div class="profile-chat-head">
+      <div>
+        <h3><i class="fa-solid fa-comments"></i> Admin Chat</h3>
+        <p>Request reply aur admin update ka jawab yahin se bhejein.</p>
+      </div>
+      <a href="user-my-requests.html">Open Chat</a>
+    </div>
+    <div class="profile-chat-summary" id="profileChatSummary">
+      <div>
+        <strong>Request chat loading...</strong>
+        <small>Latest admin reply aur request status yahan short me dikhega.</small>
+      </div>
+      <a class="open-chat-btn" href="user-my-requests.html">Full History</a>
     </div>
   </div>
 
