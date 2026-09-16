@@ -807,7 +807,10 @@ function renderUserFiles(){
     list.innerHTML = `<div class="message">${escapeHTML(getFolderName(activeFolderId))} folder me abhi koi file upload nahi hai.</div>`;
     return;
   }
-  list.innerHTML = folderFiles.map((item) => `
+  const countNote = folderFiles.length === currentFiles.length
+    ? `${folderFiles.length} file preview me dikh rahi hai.`
+    : `${folderFiles.length} file preview me dikh rahi hai. Total saved files: ${currentFiles.length}.`;
+  list.innerHTML = `<div class="message file-count-message">${escapeHTML(countNote)}</div>` + folderFiles.map((item) => `
     <div class="file-row${selectedFileIds.has(item.id) ? " selected" : ""}" data-file-card="${escapeHTML(item.id)}">
       <input class="file-select-check" type="checkbox" ${selectedFileIds.has(item.id) ? "checked" : ""} aria-label="Select ${escapeHTML(cleanDisplayFileName(item.file.name || "Document"))}" onchange="toggleUserFileSelection('${escapeHTML(item.id)}', this.checked)">
       <button type="button" class="file-menu-btn" aria-label="File actions" onclick="toggleUserFileMenu('${escapeHTML(item.id)}', event)"><i class="fa-solid fa-ellipsis-vertical"></i></button>
@@ -1054,13 +1057,16 @@ window.uploadUserFile = async () => {
 
   if(uploadedCount > 0){
     input.value = "";
+    const searchInput = document.getElementById("documentSearchInput");
+    if(searchInput){ searchInput.value = ""; }
+    activeFolderId = allFolderId;
     currentFiles.sort((a, b) => Number(b.file.uploadedAt || 0) - Number(a.file.uploadedAt || 0));
     renderUserFiles();
   }
 
   status.innerText = failed.length
     ? `Uploaded: ${uploadedCount}, Failed: ${failed.length}. ${failed.slice(0, 2).join(" | ")}`
-    : `${uploadedCount} file ${folderName} folder me upload ho gayi.`;
+    : `${uploadedCount} file ${folderName} folder me upload ho gayi. Preview me All files dikh rahe hain.`;
 };
 
 window.downloadUserFile = (id) => {
