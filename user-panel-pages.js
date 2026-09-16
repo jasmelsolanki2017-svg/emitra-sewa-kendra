@@ -138,6 +138,11 @@ const getFileUrl = (file = {}) => {
     : file.downloadUrl || getSupabasePublicUrl(file.path);
 };
 
+const getPdfPreviewUrl = (url = "") => {
+  const cleanUrl = String(url || "").split("#")[0];
+  return cleanUrl ? `${cleanUrl}#toolbar=1&navpanes=0&scrollbar=1&view=Fit&page=1` : "";
+};
+
 const getFileEntry = (id = "") => currentFiles.find((entry) => entry.id === id);
 
 const safeFileRowId = (path = "") => `storage_${btoa(unescape(encodeURIComponent(path))).replace(/=+$/g, "").replace(/[^a-zA-Z0-9_-]/g, "_")}`;
@@ -227,7 +232,7 @@ const renderFileThumbnail = (file = {}) => {
     return `<button type="button" class="file-thumb image-thumb" onclick="previewUserFileByPath('${escapeHTML(file.path || "")}')" aria-label="Preview ${name}"><img src="${url.replace(/"/g, "&quot;")}" alt="${name}" loading="lazy"></button>`;
   }
   if(kind === "pdf" && url){
-    return `<button type="button" class="file-thumb pdf-thumb" onclick="previewUserFileByPath('${escapeHTML(file.path || "")}')" aria-label="Preview ${name}"><iframe src="${url.replace(/"/g, "&quot;")}#toolbar=0&navpanes=0&scrollbar=0" title="${name}" loading="lazy"></iframe><span>PDF</span></button>`;
+    return `<button type="button" class="file-thumb pdf-thumb" onclick="previewUserFileByPath('${escapeHTML(file.path || "")}')" aria-label="Preview ${name}"><span class="file-format-badge">PDF</span><i class="fa-solid fa-file-pdf"></i><span class="file-thumb-action">Preview</span></button>`;
   }
   const label = kind ? kind.toUpperCase() : "FILE";
   const icon = kind === "video" ? "fa-file-video" : kind === "audio" ? "fa-file-audio" : kind === "text" ? "fa-file-lines" : "fa-file";
@@ -331,7 +336,8 @@ const openFilePreview = (file = {}, id = "") => {
   const body = document.getElementById("filePreviewBody");
   const name = file.name || "Document Preview";
   const safeName = escapeHTML(name);
-  const safePreviewUrl = url.replace(/"/g, "&quot;");
+  const previewUrl = kind === "pdf" ? getPdfPreviewUrl(url) : url;
+  const safePreviewUrl = previewUrl.replace(/"/g, "&quot;");
   const safeDownloadUrl = safeUrl(url);
   title.innerText = name;
   const kind = getPreviewKind(file);
