@@ -22,6 +22,9 @@ const supabase = createSupabaseClient(
 );
 
 const supabaseBucket = "user-files";
+const userApiServerStorageKey = "emitraUserServerUrl";
+const fallbackAdminServerStorageKey = "emitraAdminServerUrl";
+const defaultApiServerUrl = "https://emitra-sewa-kendra.onrender.com";
 const sessionKey = "loginTime";
 const sessionLimitMs = 60 * 60 * 1000;
 let sessionIntervalId = null;
@@ -50,6 +53,40 @@ const escapeHTML = (value = "") => String(value)
 const safeUrl = (value = "#") => {
   const url = String(value || "#").trim();
   return /^https?:\/\//i.test(url) ? url : "#";
+};
+
+const getUserApiServerUrl = () => String(
+  localStorage.getItem(userApiServerStorageKey) ||
+  localStorage.getItem(fallbackAdminServerStorageKey) ||
+  ""
+).trim().replace(/\/+$/, "");
+
+const isStaticHosted = () => /^(www\.)?emitrawala\.online$|github\.io$|\.web\.app$|\.firebaseapp\.com$/i.test(window.location.hostname);
+
+const userApiUrl = (path = "") => {
+  const base = getUserApiServerUrl();
+  if(base){ return base + path; }
+  if(isStaticHosted()){ return defaultApiServerUrl + path; }
+  return path;
+};
+
+const readApiResponse = async (response) => {
+  const text = await response.text().catch(() => "");
+  if(!text){ return {}; }
+  try{
+    return JSON.parse(text);
+  }catch(_error){
+    return { error:text.slice(0, 180) };
+  }
+};
+
+const uploadErrorMessage = (response, payload = {}) => {
+  const message = String(payload.error || payload.message || "").trim();
+  if(message && !/^</.test(message)){ return message; }
+  if(response.status === 404){
+    return "Upload API backend tak nahi pahunchi. Server URL ya live backend check karein.";
+  }
+  return `Upload fail hua. Server response ${response.status || "unknown"} tha.`;
 };
 
 const formatBytes = (bytes = 0) => {
@@ -989,14 +1026,14 @@ window.uploadUserFile = async () => {
       formData.append("folderId", folderId);
       formData.append("folderName", folderName);
       formData.append("folderSegment", folderSegment);
-      const response = await fetch("/api/member-files/upload", {
+      const response = await fetch(userApiUrl("/api/member-files/upload"), {
         method:"POST",
         headers:{ Authorization:`Bearer ${token}` },
         body:formData
       });
-      const payload = await response.json().catch(() => ({}));
+      const payload = await readApiResponse(response);
       if(!response.ok || !payload.success){
-        throw new Error(payload.error || payload.message || "Upload fail hua.");
+        throw new Error(uploadErrorMessage(response, payload));
       }
 
       const fileRecord = payload.file || {};
