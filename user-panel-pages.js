@@ -962,7 +962,6 @@ window.uploadUserFile = async () => {
     return;
   }
 
-  let uploadedBytes = 0;
   let uploadedCount = 0;
   const failed = [];
   const folderSelect = document.getElementById("uploadFolderSelect");
@@ -974,36 +973,36 @@ window.uploadUserFile = async () => {
 
   for(let index = 0; index < files.length; index += 1){
     const file = files[index];
-    const fileRecordRef = push(ref(db, "memberFiles/" + currentUser.uid));
     const folderSegment = getFolderPathSegment(folderId, folderName);
-    const path = `${currentUser.uid}/${folderSegment}/${fileRecordRef.key}-${cleanFileName(file.name)}`;
-    status.innerText = `Supabase par upload ho raha hai... ${index + 1}/${files.length}`;
+    status.innerText = `Server par upload ho raha hai... ${index + 1}/${files.length}`;
 
     try{
-      const { error } = await supabase.storage.from(supabaseBucket).upload(path, file, {
-        cacheControl:"3600",
-        contentType:file.type || "application/octet-stream",
-        upsert:false
+      const token = await currentUser.getIdToken();
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folderId", folderId);
+      formData.append("folderName", folderName);
+      formData.append("folderSegment", folderSegment);
+      const response = await fetch("/api/member-files/upload", {
+        method:"POST",
+        headers:{ Authorization:`Bearer ${token}` },
+        body:formData
       });
-      if(error){ throw error; }
+      const payload = await response.json().catch(() => ({}));
+      if(!response.ok || !payload.success){
+        throw new Error(payload.error || payload.message || "Upload fail hua.");
+      }
 
-      uploadedBytes += Number(file.size || 0);
+      const fileRecord = payload.file || {};
       uploadedCount += 1;
-      const fileRecord = {
-        name:file.name,
-        size:file.size,
-        type:file.type || "",
-        folderId,
-        folderName,
-        path:path,
-        storageProvider:"supabase",
-        bucket:supabaseBucket,
-        downloadUrl:getSupabasePublicUrl(path),
-        uploadedAt:Date.now()
-      };
-      await set(fileRecordRef, fileRecord);
-      if(!currentFiles.some((item) => item.id === fileRecordRef.key)){
-        currentFiles.unshift({ id:fileRecordRef.key, file:fileRecord });
+      if(payload.storageUsedBytes !== undefined){
+        currentMember.storageUsedBytes = Number(payload.storageUsedBytes || 0);
+      }
+      if(payload.storageLimitBytes !== undefined){
+        currentMember.storageLimitBytes = Number(payload.storageLimitBytes || 0);
+      }
+      if(payload.fileId && !currentFiles.some((item) => item.id === payload.fileId)){
+        currentFiles.unshift({ id:payload.fileId, file:fileRecord });
       }
     }catch(error){
       failed.push(`${file.name}: ${error.message}`);
@@ -1011,12 +1010,6 @@ window.uploadUserFile = async () => {
   }
 
   if(uploadedCount > 0){
-    const nextUsed = used + uploadedBytes;
-    await update(ref(db, "members/" + currentUser.uid), {
-      storageUsedBytes:nextUsed,
-      storageLimitBytes:limit,
-      updatedAt:Date.now()
-    });
     input.value = "";
     currentFiles.sort((a, b) => Number(b.file.uploadedAt || 0) - Number(a.file.uploadedAt || 0));
     renderUserFiles();

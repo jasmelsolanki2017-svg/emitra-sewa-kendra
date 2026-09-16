@@ -4497,6 +4497,99 @@ app.post("/admin/member-files/upload", (req, res) => {
   });
 });
 
+app.post("/api/member-files/upload", requireFirebaseUserApi, (req, res) => {
+  adminMemberFileUpload.single("file")(req, res, async (uploadError) => {
+    try {
+      const { db, decoded } = req.firebaseUserContext || {};
+      if (!db || !decoded?.uid) {
+        return res.status(401).json({ success:false, error:"Login required." });
+      }
+      if (uploadError) {
+        const status = uploadError instanceof multer.MulterError && uploadError.code === "LIMIT_FILE_SIZE" ? 413 : 400;
+        const message = uploadError instanceof multer.MulterError && uploadError.code === "LIMIT_FILE_SIZE"
+          ? "File maximum 50MB honi chahiye."
+          : uploadError.message || "File upload parse nahi hua.";
+        return res.status(status).json({ success:false, error:message });
+      }
+      if (!req.file || !req.file.buffer) {
+        return res.status(400).json({ success:false, error:"Upload ke liye file missing hai." });
+      }
+
+      const uid = decoded.uid;
+      const memberSnap = await db.ref(`members/${uid}`).get();
+      const member = memberSnap.exists() ? (memberSnap.val() || {}) : {};
+      if (!memberSnap.exists()) {
+        return res.status(404).json({ success:false, error:"User member record nahi mila." });
+      }
+      if (member.uploadApproved !== true) {
+        return res.status(403).json({ success:false, error:"Upload ke liye admin approval zaroori hai." });
+      }
+
+      const limit = Number(member.storageLimitBytes || 0) > 0
+        ? Number(member.storageLimitBytes || 0)
+        : (Number(member.freeStorageLimitMb || 0) > 0 ? Number(member.freeStorageLimitMb || 0) : 50) * 1024 * 1024;
+      const used = Number(member.storageUsedBytes || 0);
+      const fileSize = Number(req.file.size || req.file.buffer.length || 0);
+      if (used + fileSize > limit) {
+        return res.status(413).json({ success:false, error:"Storage limit full hai. Pehle storage limit badhayein ya old file delete karein." });
+      }
+
+      const folderId = String(req.body?.folderId || "__general").trim() || "__general";
+      const folderName = String(req.body?.folderName || "General").trim() || "General";
+      const folderSegment = safeMemberUploadName(String(req.body?.folderSegment || "general").trim() || "general").replace(/\.+$/g, "") || "general";
+      const fileRecordRef = db.ref(`memberFiles/${uid}`).push();
+      const fileName = safeMemberUploadName(req.file.originalname || "file");
+      const storagePath = `${uid}/${folderSegment}/${fileRecordRef.key}-${fileName}`;
+      const supabase = getSupabaseAdminClient();
+      const { error } = await supabase.storage.from(SUPABASE_USER_FILES_BUCKET).upload(storagePath, req.file.buffer, {
+        cacheControl: "3600",
+        contentType: req.file.mimetype || "application/octet-stream",
+        upsert: false
+      });
+      if (error) {
+        return res.status(error.statusCode || 502).json({
+          success:false,
+          error:getStorageErrorMessage(error, SUPABASE_USER_FILES_BUCKET)
+        });
+      }
+
+      const { data } = supabase.storage.from(SUPABASE_USER_FILES_BUCKET).getPublicUrl(storagePath);
+      const record = {
+        name:req.file.originalname || fileName,
+        size:fileSize,
+        type:req.file.mimetype || "",
+        folderId,
+        folderName,
+        path:storagePath,
+        storageProvider:"supabase",
+        bucket:SUPABASE_USER_FILES_BUCKET,
+        downloadUrl:data?.publicUrl || "",
+        uploadedAt:Date.now()
+      };
+      const nextUsed = used + fileSize;
+      await db.ref().update({
+        [`memberFiles/${uid}/${fileRecordRef.key}`]: record,
+        [`members/${uid}/storageUsedBytes`]: nextUsed,
+        [`members/${uid}/storageLimitBytes`]: limit,
+        [`members/${uid}/updatedAt`]: Date.now()
+      });
+
+      return res.json({
+        success:true,
+        fileId:fileRecordRef.key,
+        file:record,
+        storageUsedBytes:nextUsed,
+        storageLimitBytes:limit
+      });
+    } catch (error) {
+      return res.status(error.statusCode || 500).json({
+        success:false,
+        error:error.message || "File upload fail hua."
+      });
+    }
+  });
+});
+
 app.post("/admin/member-profile-photo/upload", (req, res) => {
   adminMemberProfilePhotoUpload.single("photo")(req, res, async (uploadError) => {
     try {
