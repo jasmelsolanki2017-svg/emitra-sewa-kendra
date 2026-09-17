@@ -35,6 +35,7 @@ let currentFolders = [];
 let activeFolderId = "__all";
 let currentRequestNotifications = [];
 let storageFallbackToken = 0;
+let storageListError = "";
 let previewFileId = "";
 const selectedFileIds = new Set();
 
@@ -199,10 +200,11 @@ const inferFolderFromPath = (path = "") => {
 };
 
 async function listSupabaseUserFiles(prefix, output = []){
+  for(let offset = 0; ; offset += 100){
   const { data, error } = await supabase.storage.from(supabaseBucket).list(prefix, {
     limit:100,
-    offset:0,
-    sortBy:{ column:"created_at", order:"desc" }
+    offset,
+    sortBy:{ column:"name", order:"asc" }
   });
   if(error){ throw error; }
   for(const item of data || []){
@@ -213,13 +215,30 @@ async function listSupabaseUserFiles(prefix, output = []){
       await listSupabaseUserFiles(path, output);
     }
   }
+  if(!data || data.length < 100){ break; }
+  }
   return output;
 }
 
 async function loadStorageFallbackFiles(user){
   const token = ++storageFallbackToken;
   try{
-    const rows = await listSupabaseUserFiles(user.uid);
+    storageListError = "";
+    let rows;
+    let bucket = supabaseBucket;
+    try{
+      const response = await fetch(userApiUrl("/api/member-files"), {
+        headers:{ Authorization:`Bearer ${await user.getIdToken()}` }
+      });
+      const payload = await readApiResponse(response);
+      if(!response.ok || !payload.success || !Array.isArray(payload.files)){ throw new Error("Storage list unavailable"); }
+      rows = payload.files;
+      bucket = payload.bucket || supabaseBucket;
+    }catch(error){
+      rows = await listSupabaseUserFiles(user.uid);
+      // Public storage policies can return an empty list without an error.
+      storageListError = "Storage ki poori file list verify nahi ho saki. Page refresh karke dobara try karein.";
+    }
     if(token !== storageFallbackToken){ return; }
     const knownPaths = new Set(currentFiles.map((entry) => String(entry.file.path || "")));
     const fallbackRows = rows
@@ -235,17 +254,19 @@ async function loadStorageFallbackFiles(user){
             ...folder,
             path,
             storageProvider:"supabase",
-            bucket:supabaseBucket,
+            bucket,
             uploadedAt:item.created_at ? new Date(item.created_at).getTime() : 0,
             storageOnly:true
           }
         };
       });
-    if(!fallbackRows.length){ return; }
     currentFiles = [...currentFiles, ...fallbackRows]
       .sort((a, b) => Number(b.file.uploadedAt || 0) - Number(a.file.uploadedAt || 0));
     renderUserFiles();
   }catch(error){
+    if(token !== storageFallbackToken){ return; }
+    storageListError = "Storage ki files load nahi ho sakin. Page refresh karke dobara try karein.";
+    renderUserFiles();
     console.warn("Supabase storage fallback list failed", error);
   }
 }
@@ -804,13 +825,13 @@ function renderUserFiles(){
     return;
   }
   if(!folderFiles.length){
-    list.innerHTML = `<div class="message">${escapeHTML(getFolderName(activeFolderId))} folder me abhi koi file upload nahi hai.</div>`;
+    list.innerHTML = `<div class="message">${escapeHTML(storageListError || `${getFolderName(activeFolderId)} folder me abhi koi file upload nahi hai.`)}</div>`;
     return;
   }
   const countNote = folderFiles.length === currentFiles.length
     ? `${folderFiles.length} file preview me dikh rahi hai.`
     : `${folderFiles.length} file preview me dikh rahi hai. Total saved files: ${currentFiles.length}.`;
-  list.innerHTML = `<div class="message file-count-message">${escapeHTML(countNote)}</div>` + folderFiles.map((item) => `
+  list.innerHTML = `<div class="message file-count-message">${escapeHTML(countNote)}${storageListError ? `<br>${escapeHTML(storageListError)}` : ""}</div>` + folderFiles.map((item) => `
     <div class="file-row${selectedFileIds.has(item.id) ? " selected" : ""}" data-file-card="${escapeHTML(item.id)}">
       <input class="file-select-check" type="checkbox" ${selectedFileIds.has(item.id) ? "checked" : ""} aria-label="Select ${escapeHTML(cleanDisplayFileName(item.file.name || "Document"))}" onchange="toggleUserFileSelection('${escapeHTML(item.id)}', this.checked)">
       <button type="button" class="file-menu-btn" aria-label="File actions" onclick="toggleUserFileMenu('${escapeHTML(item.id)}', event)"><i class="fa-solid fa-ellipsis-vertical"></i></button>

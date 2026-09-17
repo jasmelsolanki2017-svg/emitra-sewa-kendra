@@ -4497,6 +4497,35 @@ app.post("/admin/member-files/upload", (req, res) => {
   });
 });
 
+app.get("/api/member-files", requireFirebaseUserApi, async (req, res) => {
+  try {
+    const { decoded } = req.firebaseUserContext;
+    const storage = getSupabaseAdminClient().storage.from(SUPABASE_USER_FILES_BUCKET);
+    const files = [];
+    const prefixes = [decoded.uid];
+    while (prefixes.length) {
+      const prefix = prefixes.pop();
+      for (let offset = 0; ; offset += 100) {
+        const { data, error } = await storage.list(prefix, {
+          limit: 100, offset, sortBy: { column: "name", order: "asc" }
+        });
+        if (error) throw error;
+        for (const item of data || []) {
+          if (!item.name || item.name.includes("/") || item.name === "." || item.name === "..") continue;
+          const path = `${prefix}/${item.name}`;
+          if (item.id || item.metadata) files.push({ path, item });
+          else prefixes.push(path);
+        }
+        if (!data || data.length < 100) break;
+      }
+    }
+    res.set("Cache-Control", "no-store");
+    return res.json({ success: true, bucket: SUPABASE_USER_FILES_BUCKET, files });
+  } catch (error) {
+    return res.status(502).json({ success: false, error: "Storage files load nahi ho sakin. Dobara try karein." });
+  }
+});
+
 app.post("/api/member-files/upload", requireFirebaseUserApi, (req, res) => {
   adminMemberFileUpload.single("file")(req, res, async (uploadError) => {
     try {
