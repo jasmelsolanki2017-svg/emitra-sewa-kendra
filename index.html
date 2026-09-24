@@ -2388,6 +2388,7 @@ font-size:26px;
 </script>
 <link rel="stylesheet" href="mobile-responsive-fix.css">
 <link rel="stylesheet" href="site-theme.css">
+<script src="age-calculation.js?v=20260924"></script>
 </head>
 
 <body class="site-theme-premium">
@@ -3117,19 +3118,7 @@ daysBox.innerText = "0";
 return;
 }
 
-let years = calculateTillDate.getFullYear() - birthDate.getFullYear();
-let months = calculateTillDate.getMonth() - birthDate.getMonth();
-let days = calculateTillDate.getDate() - birthDate.getDate();
-
-if(days < 0){
-months -= 1;
-days += new Date(calculateTillDate.getFullYear(), calculateTillDate.getMonth(), 0).getDate();
-}
-
-if(months < 0){
-years -= 1;
-months += 12;
-}
+const { years, months, days, birthdayText } = getCalendarAge(birthDate, calculateTillDate);
 
 yearsBox.innerText = years;
 monthsBox.innerText = months;
@@ -3137,7 +3126,7 @@ daysBox.innerText = days;
 calendarInput.value = formatDateForInput(birthDate);
 tillTextInput.value = formatDateForText(calculateTillDate);
 tillCalendarInput.value = formatDateForInput(calculateTillDate);
-status.innerText = `${formatDateForText(calculateTillDate)} tak age: ${years} year, ${months} month, ${days} day.`;
+status.innerText = `${formatDateForText(calculateTillDate)} tak poori hui age: ${years} year, ${months} month, ${days} day.\n${birthdayText}`;
 }
 
 function parseDateText(value){

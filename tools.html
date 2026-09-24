@@ -122,6 +122,7 @@ body.embed-mode .tool-card{box-shadow:none;border-radius:8px;margin:0}
 @media(max-width:620px){nav{flex-direction:column;align-items:flex-start;padding:12px 4%}nav ul{justify-content:flex-start;gap:12px}.logo img{width:170px;max-width:74vw}.hero{padding:26px 4%}main{padding:16px 3%}.tool-hub-grid{grid-template-columns:1fr;gap:12px}.tool-hub-card{min-height:126px}.tool-hub-icon{width:58px;height:58px;font-size:22px}.tool-card{padding:13px}.tool-head{display:block}.badge{display:inline-flex;margin-top:8px}.form-grid{grid-template-columns:1fr}.tool-index div{grid-template-columns:1fr}.actions>*{width:100%}.admin-tool-list{grid-template-columns:1fr}}
 </style>
 <link rel="stylesheet" href="/site-theme.css">
+<script src="age-calculation.js?v=20260924"></script>
 </head>
 <body>
 <nav>
@@ -840,17 +841,9 @@ function runAgeCalculator(){
   const onDate = dateOnly($("ageOn").value) || new Date();
   if(!dob){ setStatus("ageStatus", "Date of Birth select karein."); return; }
   if(dob > onDate){ setStatus("ageStatus", "DOB age on date se baad ki nahi ho sakti."); return; }
-  let years = onDate.getFullYear() - dob.getFullYear();
-  let months = onDate.getMonth() - dob.getMonth();
-  let days = onDate.getDate() - dob.getDate();
-  if(days < 0){
-    months -= 1;
-    days += new Date(onDate.getFullYear(), onDate.getMonth(), 0).getDate();
-  }
-  if(months < 0){ years -= 1; months += 12; }
-  const totalDays = Math.floor((new Date(onDate.getFullYear(), onDate.getMonth(), onDate.getDate()) - dob) / 86400000);
+  const { years, months, days, totalDays, birthdayText } = getCalendarAge(dob, onDate);
   $("agePreview").innerHTML = `<div class="result-list"><span>${years} Years</span><span>${months} Months</span><span>${days} Days</span><span>Total ${totalDays} Days</span></div>`;
-  setStatus("ageStatus", "Age calculate ho gayi.");
+  setStatus("ageStatus", birthdayText);
 }
 function clearAgeTool(){
   $("ageDob").value = "";
