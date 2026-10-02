@@ -142,7 +142,7 @@
     <div>
       <div class="tag"><i class="fa-solid fa-file-pen"></i> Browser Based PDF Tool</div>
       <h1>eMitra Offline Form Fill</h1>
-      <p>Rajasthan caste certificate aur bonafide/mool niwas forms ko browser me fill, preview, print aur download karein.</p>
+      <p>Rajasthan SC/ST, OBC caste certificate, bonafide/mool niwas aur marriage forms ko browser me fill, preview, print aur download karein.</p>
     </div>
     <div id="status" class="toolStatus">Loading...</div>
   </div>
@@ -151,6 +151,7 @@
 <header class="toolbar">
   <select id="formSelect" title="Form चुनें" style="max-width:260px;font-weight:700">
     <option value="caste">जाति प्रमाण पत्र Form</option>
+    <option value="obc">OBC Caste Certificate Form (Center)</option>
     <option value="bonafide">मूल निवास / Bonafide Form</option>
     <option value="marriage">Marriage Certificate Form</option>
   </select>
@@ -174,7 +175,7 @@
     <div class="panel">
       <h2>User Form Data</h2>
       <p class="small">Data browser me hi rahega. Server/database me save nahi hota. Form change karne par common data same rahega.</p>
-      <p class="small ok"><b>Note:</b> ऊपर form type चुनो. जाति प्रमाण पत्र और मूल निवास/Bonafide दोनों form auto-fill हैं. Position Editor से field ko drag करके exact जगह set कर सकते हो.</p>
+      <p class="small ok"><b>Note:</b> ऊपर form type चुनो. SC/ST, OBC, मूल निवास/Bonafide और विवाह form auto-fill हैं. Position Editor से field ko drag करके exact जगह set कर सकते हो.</p>
       <p class="small"><b>Typing Mode:</b> Auto Hindi में Roman type करते ही Hindi बनेगा. Manual / Google Keyboard mode में site auto convert नहीं करेगी, जिससे Gboard/Google Input Tools suggestions use कर सकते हो.</p>
       <div class="formActions">
         <button id="clearDataBtn" type="button" class="danger">Clear Data</button>
@@ -253,6 +254,12 @@ if(offlineDriveMenuBtn){
   });
 }
 const FORMS = {
+  obc: {
+    title: 'OBC Caste Certificate Form (Center)',
+    pdf: 'assets/OBC-Caste-Certificate-Form-For-Center.pdf',
+    localKey: 'obcFormFieldConfig',
+    downloadName: 'obc-caste-certificate-center-filled.pdf'
+  },
   caste: {
     title: 'Rajasthan Caste Certificate Form',
     pdf: 'assets/SC_ST-CASTE-APPLICATION-FORM-2019.pdf',
@@ -351,6 +358,78 @@ function escapeHtml(value){
 }
 
 const FORM_SCHEMAS = {
+  obc: [
+    {group:"मुख्य जानकारी — OBC", fields:[
+      ["aadhaar","आधार नंबर","text",""],
+      ["janAadhaar","जन आधार / भामाशाह","text",""],
+      ["applicantName","प्रार्थी का नाम","text",""],
+      ["fatherName","पिता का नाम","text",""],
+      ["currentAddress","वर्तमान पता","textarea",""],
+      ["permanentAddress","स्थाई पता","textarea",""],
+      ["village","गाँव/शहर","text",""],
+      ["tehsil","तहसील","text",""],
+      ["district","जिला","text",""],
+      ["birthPlace","जन्म स्थान","text",""],
+      ["age","उम्र","text",""],
+      ["religionApplicant","धर्म आवेदक","text",""],
+      ["subCasteApplicant","उपजाति आवेदक","text",""],
+      ["mobile","मोबाइल नंबर","text",""],
+      ["place","स्थान","text",""],
+      ["gender","लिंग","select:=चुनें,male=पुरुष,female=महिला",""],
+      ["maritalStatus","वैवाहिक स्थिति","select:=चुनें,married=विवाहित,unmarried=अविवाहित",""],
+      ["rajasthanResident","राजस्थान मूल निवासी","select:=चुनें,yes=हाँ,no=नहीं",""],
+      ["casteApplicant","जाति","text",""],
+      ["casteListNumber","राज्य सूची में जाति क्रमांक","text",""],
+      ["date","गवाह 1 दिनांक","text",""],
+      ["dob","जन्म दिनांक DD-MM-YYYY","text",""]
+    ]},
+    {group:"माता-पिता / पति का व्यवसाय", fields:[
+      ["motherOrganization","माता संगठन","text",""],
+      ["motherPost","माता पद","text",""],
+      ["motherPayScale","माता वेतनमान","text",""],
+      ["motherProperty","माता अचल संपत्ति व स्थान","textarea",""],
+      ["fatherOrganization","पिता संगठन","text",""],
+      ["fatherPost","पिता पद","text",""],
+      ["fatherPayScale","पिता वेतनमान","text",""],
+      ["fatherProperty","पिता अचल संपत्ति व स्थान","textarea",""],
+      ["husbandOrganization","पति संगठन","text",""],
+      ["husbandPost","पति पद","text",""],
+      ["husbandPayScale","पति वेतनमान","text",""],
+      ["husbandProperty","पति अचल संपत्ति व स्थान","textarea",""]
+    ]},
+    {group:"आय और शपथ पत्र", fields:[
+      ["familyAnnualIncome","वेतन/कृषि आय छोड़कर पारिवारिक वार्षिक आय","text",""],
+      ["incomeTaxPayer","आयकरदाता","select:=चुनें,हाँ=हाँ,नहीं=नहीं",""],
+      ["wealthTaxDetails","धनकर लागू/विवरण","textarea",""],
+      ["deathDisabilityDate","मृत्यु/स्थायी अक्षमता दिनांक","text",""],
+      ["disabilityDetails","स्थायी अक्षमता का विवरण","textarea",""],
+      ["totalFamilyAnnualIncome","परिवार की कुल वार्षिक आय","text",""],
+      ["parentsPost","माता-पिता का पद","text",""],
+      ["parentsAnnualIncome","माता-पिता की वार्षिक आय","text",""]
+    ]},
+    {group:"गवाह 1", fields:[
+      ["w1Name","गवाह 1 नाम","text",""],
+      ["w1Father","गवाह 1 पिता का नाम","text",""],
+      ["w1Address","गवाह 1 पता","textarea",""],
+      ["w1Dept","गवाह 1 विभाग","text",""],
+      ["w1Office","गवाह 1 कार्यालय","text",""],
+      ["w1Post","गवाह 1 पद","text",""],
+      ["w1Mobile","गवाह 1 मोबाइल","text",""]
+    ]},
+    {group:"गवाह 2", fields:[
+      ["w2Name","गवाह 2 नाम","text",""],
+      ["w2Father","गवाह 2 पिता का नाम","text",""],
+      ["w2Address","गवाह 2 पता","textarea",""],
+      ["w2Dept","गवाह 2 विभाग","text",""],
+      ["w2Office","गवाह 2 कार्यालय","text",""],
+      ["w2Post","गवाह 2 पद","text",""],
+      ["w2Mobile","गवाह 2 मोबाइल","text",""]
+    ]},
+    {group:"पटवारी रिपोर्ट", fields:[
+      ["creamyLayerStatus","पटवारी क्रीमीलेयर स्थिति","select:=चुनें,आता है=आता है,नहीं आता है=नहीं आता है",""],
+      ["patwariHalka","पटवार हल्का नंबर","text",""]
+    ]}
+  ],
   caste: [
     {group:'मुख्य जानकारी', fields:[
       ['aadhaar','Applicant Aadhaar Number','text','1234 5678 9012'],
@@ -1282,6 +1361,9 @@ function getCasteFieldValue(field, data){
 }
 
 function prepareConditionalData(data){
+  if(currentFormKey === 'obc'){
+    return {...data, rajasthanResidentText: data.rajasthanResident === 'yes' ? 'हाँ' : data.rajasthanResident === 'no' ? 'नहीं' : ''};
+  }
   if(currentFormKey === 'marriage'){
     const prepared = {...data};
     const groomName = String(prepared.groomName || '').trim();
@@ -1360,6 +1442,14 @@ async function loadCombinedConfigs(){
   }
   allConfigs = preferNewerConfig(remoteConfig);
   if(!allConfigs.forms) throw new Error('Combined config me forms object missing hai');
+  // Older server/local admin configs can predate the bundled OBC form.
+  if(!allConfigs.forms.obc){
+    const res = await fetch(COMBINED_CONFIG_URL + '?t=' + Date.now(), {cache:'no-store'});
+    if(!res.ok) throw new Error('Load failed: '+COMBINED_CONFIG_URL);
+    const bundled = await res.json();
+    if(!bundled.forms?.obc) throw new Error('OBC form config missing');
+    allConfigs.forms.obc = structuredClone(bundled.forms.obc);
+  }
   rebuildFormSelect();
   return allConfigs;
 }
