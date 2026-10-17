@@ -425,7 +425,15 @@ color:#fff;
 /* IMPORTANT LINKS */
 
 .important-links{
-display:none;
+max-width:1250px;
+margin:18px auto;
+padding:16px 18px;
+background:#fff;
+border:1px solid #d5e4f5;
+border-left:5px solid #ff7a00;
+border-radius:10px;
+box-shadow:0 5px 16px rgba(0,57,116,.09);
+text-align:center;
 }
 
 .important-links-title{
@@ -2472,7 +2480,14 @@ font-size:26px;
 <div class="menu-drawer-overlay" onclick="closeImportantMenu()" aria-hidden="true"></div>
 
 <!-- IMPORTANT LINKS -->
-
+<section class="important-links" aria-labelledby="importantLinksTitle">
+<h2 class="important-links-title" id="importantLinksTitle">Important Links</h2>
+<div id="importantLinksList">
+<!-- IMPORTANT_LINKS_HOME_START -->
+<span class="important-links-empty">Important links loading...</span>
+<!-- IMPORTANT_LINKS_HOME_END -->
+</div>
+</section>
 
 
 <!-- LOGIN POPUP -->

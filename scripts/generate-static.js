@@ -226,6 +226,19 @@ const injectHomepageNews = (updates, jobs = []) => {
   fs.writeFileSync(file, html, "utf8");
 };
 
+const injectHomepageImportantLinks = (links = []) => {
+  const file = path.join(root, "index.html");
+  let html = fs.readFileSync(file, "utf8");
+  const linksHtml = links.length
+    ? links.map((item) => `<a href="${esc(item.url)}" target="_blank" rel="noopener noreferrer">${esc(item.title)}</a>`).join("")
+    : '<span class="important-links-empty">Abhi koi important link available nahi hai.</span>';
+  html = html.replace(
+    /(<!-- IMPORTANT_LINKS_HOME_START -->)[\s\S]*?(<!-- IMPORTANT_LINKS_HOME_END -->)/,
+    `$1\n${linksHtml}\n$2`
+  );
+  fs.writeFileSync(file, html, "utf8");
+};
+
 async function main() {
   execFileSync(process.execPath, [path.join(__dirname, "generate-sitemap.js")], { cwd: root, stdio: "inherit" });
   const [jobsData, portalData, linksData, updatesData] = await Promise.all([fetchJson("LatestJobs"), fetchJson("portalItems").catch(()=>({})), fetchJson("importantLinks").catch(()=>({})), fetchJson("latestUpdates").catch(()=>({}))]);
@@ -252,6 +265,7 @@ async function main() {
     .map((item) => ({ title:item.title || "Important Link", url:item.url || item.link || "#", displayOrder:item.displayOrder || 999999 }))
     .sort((a,b) => Number(a.displayOrder) - Number(b.displayOrder));
   fs.writeFileSync(path.join(dataDir, "important-links-lite.json"), JSON.stringify(publicLinks), "utf8");
+  injectHomepageImportantLinks(publicLinks);
   const importantRows = rowsFrom(linksData).map((item) => ({...item, url:item.url || item.link || "#"}));
   const linksHtml = categoryHtml("latestJob", "Important Links", importantRows)
     .replace(/<section class="post-list" id="categoryPostList">[\s\S]*?<\/section>/,
