@@ -169,6 +169,11 @@ const injectHomepageLists = (jobs, portal) => {
 const injectHomepageNews = (updates, jobs = []) => {
   const file = path.join(root, "index.html");
   let html = fs.readFileSync(file, "utf8");
+  const titleKey = (value = "") => String(value || "").replace(/\s+/g, " ").trim().toLowerCase();
+  const jobForUpdateTitle = (item = {}) => {
+    const title = titleKey(item.title);
+    return title ? jobs.find((job) => titleKey(job.title) === title) : null;
+  };
   const visibleRows = sortRows(rowsFrom(updates).filter((item) => item.visible === true && String(item.status || "published").toLowerCase() === "published"));
   const urgentRows = sortPostsByLastDateUrgency(
     jobs.filter((item) => (!item.postTarget || item.postTarget === "latestJob") && getLastDateUrgency(item))
@@ -193,6 +198,12 @@ const injectHomepageNews = (updates, jobs = []) => {
     return raw ? `/${raw.replace(/^\/+/, "")}` : "";
   }
   const updateHref = (item) => {
+    // An automatic update may retain an old slug after its post was changed.
+    // A current post with the same title is the canonical destination.
+    if (item.manual !== true) {
+      const matchingJob = jobForUpdateTitle(item);
+      if (matchingJob) return href(matchingJob);
+    }
     const raw = String(item.url || item.link || item.postUrl || "").trim();
     if (/^https?:\/\//i.test(raw)) return raw;
     if (raw) return `/${raw.replace(/^\/+/, "")}`;
