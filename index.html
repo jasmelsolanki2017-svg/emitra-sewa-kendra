@@ -422,45 +422,6 @@ color:#fff;
 .lang-switch button.active{background:#fff;color:#0057a8;}
 .lang-switch span{opacity:.75;}
 
-/* IMPORTANT LINKS */
-
-.important-links{
-max-width:1250px;
-margin:18px auto;
-padding:16px 18px;
-background:#fff;
-border:1px solid #d5e4f5;
-border-left:5px solid #ff7a00;
-border-radius:10px;
-box-shadow:0 5px 16px rgba(0,57,116,.09);
-text-align:center;
-}
-
-.important-links-title{
-font-size:20px;
-font-weight:800;
-color:#0057a8;
-margin-bottom:8px;
-}
-
-#importantLinksList a{
-display:inline-block;
-background:#0057a8;
-color:white;
-text-decoration:none;
-padding:10px 22px;
-border-radius:30px;
-font-weight:700;
-margin:6px;
-transition:0.3s;
-}
-
-#importantLinksList a:hover{
-background:#043a76;
-color:#ff7a00;
-transform:translateY(-3px);
-}
-
 /* LOGIN POPUP */
 
 .login-modal{
@@ -2453,6 +2414,10 @@ font-size:26px;
 <a class="side-menu-row" href="contact.html">
 <i class="fa-solid fa-envelope"></i> Contact
 </a>
+<div class="important-menu-title"><i class="fa-solid fa-link"></i> Important Links</div>
+<div id="importantLinksMenuList" aria-live="polite">
+<div class="important-menu-empty"><i class="fa-solid fa-spinner fa-spin"></i> Important links loading...</div>
+</div>
 </div>
 
 </div>
@@ -2478,17 +2443,6 @@ font-size:26px;
 <span aria-hidden="true">☰</span>
 </button>
 <div class="menu-drawer-overlay" onclick="closeImportantMenu()" aria-hidden="true"></div>
-
-<!-- IMPORTANT LINKS -->
-<section class="important-links" aria-labelledby="importantLinksTitle">
-<h2 class="important-links-title" id="importantLinksTitle">Important Links</h2>
-<div id="importantLinksList">
-<!-- IMPORTANT_LINKS_HOME_START -->
-<span class="important-links-empty">Important links loading...</span>
-<!-- IMPORTANT_LINKS_HOME_END -->
-</div>
-</section>
-
 
 <!-- LOGIN POPUP -->
 
@@ -3375,7 +3329,7 @@ import {
   signInWithEmailAndPassword,
   signOut
 } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-import { getDatabase, get, ref, set, update } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+import { getDatabase, get, onValue, ref, set, update } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCOAV-Dk_ZryXEawLxtcqMlRU6CPhPzpe8",
@@ -3406,6 +3360,27 @@ const safeUpdateUrl = (value = "") => {
   if(/^https?:\/\//i.test(url)) return url;
   return `/${url.replace(/^\/+/, "")}`;
 };
+
+const renderImportantLinksInMenu = (links = {}) => {
+  const list = document.getElementById("importantLinksMenuList");
+  if(!list) return;
+  const items = Object.values(links || {}).filter((item) => item && item.title && /^https?:\/\//i.test(String(item.url || "").trim()));
+  if(!items.length){
+    list.innerHTML = '<div class="important-menu-empty"><i class="fa-solid fa-link-slash"></i> Abhi koi important link available nahi hai.</div>';
+    return;
+  }
+  list.innerHTML = items.map((item) => {
+    const title = escapeUpdateText(item.title);
+    const url = escapeUpdateText(item.url.trim());
+    return `<a href="${url}" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-arrow-up-right-from-square"></i> ${title}</a>`;
+  }).join("");
+};
+
+onValue(ref(db, "importantLinks"), (snapshot) => {
+  renderImportantLinksInMenu(snapshot.exists() ? snapshot.val() : {});
+}, () => {
+  renderImportantLinksInMenu({});
+});
 
 setPersistence(auth, browserLocalPersistence).catch(() => {});
 
