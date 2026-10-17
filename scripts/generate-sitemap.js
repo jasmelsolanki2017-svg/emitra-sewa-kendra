@@ -1527,9 +1527,13 @@ async function main() {
     .map((row) => enrichPremiumRows([row], premiumPosts)[0])
     .filter((row) => isPublishedJob(row.job) && isUsefulPublishedPost(row) && !isExcludedPostRow(row));
   const rows = buildAllStaticRows(latestRows, portalData).filter((row) => !isExcludedPostRow(row));
-  const sitemapRows = [...rows, ...readExistingStaticPostRows(rows)]
-    .filter(isUsefulPublishedPost)
-    .filter((row) => !isExcludedPostRow(row));
+  // Keep one sitemap entry per canonical slug when a Firebase post also has
+  // an existing static page from an earlier publish.
+  const sitemapRows = dedupeJobRows(
+    [...rows, ...readExistingStaticPostRows(rows)]
+      .filter(isUsefulPublishedPost)
+      .filter((row) => !isExcludedPostRow(row))
+  );
   const pageEntries = PUBLIC_SITEMAP_PAGES.map((page) => sitemapEntry({
     loc: page.path ? `${SITE_BASE_URL}/${page.path}` : `${SITE_BASE_URL}/`,
     lastmod: sitemapDate(Date.now()),
