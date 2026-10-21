@@ -2386,7 +2386,7 @@ font-size:26px;
 
 <div class="important-menu-panel" id="menuDrawer" aria-hidden="true">
 <div class="menu-drawer-head"><span><i class="fa-solid fa-bars"></i> Menu</span><button class="menu-drawer-close" type="button" onclick="closeImportantMenu()" aria-label="Close menu">‹</button></div>
-<div class="menu-drawer-search"><label><i class="fa-solid fa-magnifying-glass"></i><input id="menuDrawerSearch" type="search" placeholder="Search in Menu" oninput="filterImportantMenu(this.value)"></label></div>
+<div class="menu-drawer-search"><label><i class="fa-solid fa-magnifying-glass"></i><input id="menuDrawerSearch" name="menu-search" type="search" placeholder="Search in Menu" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" oninput="filterImportantMenu(this.value)"></label></div>
 <a class="side-menu-row" href="/">
 <i class="fa-solid fa-house"></i> Home
 </a>
@@ -2523,7 +2523,7 @@ https://emitrawala.online/post/ctet-september-2026-online-form/
 
       <div class="home-portal-search">
         <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="search" id="homePortalJobSearch" placeholder="Search karein: SSC, Railway, Police, Army, Teacher, Rajasthan">
+        <input type="search" id="homePortalJobSearch" name="job-search" placeholder="Search karein: SSC, Railway, Police, Army, Teacher, Rajasthan" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
       </div>
 
       <div class="home-portal-quick" aria-label="Important job categories">
@@ -2955,7 +2955,9 @@ document.body.classList.toggle("menu-drawer-open", open);
 drawer.setAttribute("aria-hidden", String(!open));
 if(trigger){ trigger.setAttribute("aria-expanded", String(open)); }
 if(open){
-setTimeout(() => document.getElementById("menuDrawerSearch")?.focus(), 180);
+const searchBox = document.getElementById("menuDrawerSearch");
+if(searchBox){ searchBox.value = ""; filterImportantMenu(""); }
+setTimeout(() => { if(searchBox){ searchBox.value = ""; searchBox.focus(); } }, 180);
 }
 }
 
