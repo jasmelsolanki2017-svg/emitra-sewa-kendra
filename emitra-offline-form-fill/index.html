@@ -1017,7 +1017,7 @@ async function initAdminEditorAccess(){
 }
 
 function getCurrentFormSchema(){
-  const schema = structuredClone(FORM_SCHEMAS[currentFormKey] || []);
+  const schema = structuredClone(FORM_SCHEMAS[currentFormKey] || (currentFormKey === 'caste-general' ? FORM_SCHEMAS.caste : []) || []);
   const customFields = Array.isArray(config?.customDataFields) ? config.customDataFields : [];
   if(customFields.length){
     schema.push({
@@ -1475,7 +1475,7 @@ function isBonafideMarriedAffidavitField(field){
 }
 
 function shouldFillField(field, data){
-  if(currentFormKey === 'caste'){
+  if(currentFormKey === 'caste' || currentFormKey === 'caste-general'){
     const printPatwariData = String(data.printPatwariData || 'yes').toLowerCase();
     if(printPatwariData === 'no' && CASTE_PATWARI_FIELD_IDS.has(String(field.id || ''))) return false;
     return true;
@@ -1490,7 +1490,7 @@ function shouldFillField(field, data){
 }
 
 function isCasteMinorCandidate(data){
-  if(currentFormKey !== 'caste') return false;
+  if(currentFormKey !== 'caste' && currentFormKey !== 'caste-general') return false;
   const age = getCandidateAge(data);
   return Number.isFinite(age) && age < 18;
 }
@@ -1592,15 +1592,22 @@ async function loadCombinedConfigs(){
   serverConfigs = structuredClone(remoteConfig);
   allConfigs = preferNewerConfig(remoteConfig);
   if(!allConfigs.forms) throw new Error('Combined config me forms object missing hai');
-  // Older server/local admin configs can predate the bundled OBC form.
-  if(!allConfigs.forms.obc){
-    const res = await fetch(COMBINED_CONFIG_URL + '?t=' + Date.now(), {cache:'no-store'});
-    if(!res.ok) throw new Error('Load failed: '+COMBINED_CONFIG_URL);
-    const bundled = await res.json();
-    if(!bundled.forms?.obc) throw new Error('OBC form config missing');
-    allConfigs.forms.obc = structuredClone(bundled.forms.obc);
-    if(!serverConfigs.forms.obc) serverConfigs.forms.obc = structuredClone(bundled.forms.obc);
+  // A local backup may predate a newly added server form. Keep local edits,
+  // but always merge newly available form keys into the local config.
+  for(const [formKey, formConfig] of Object.entries(serverConfigs.forms || {})){
+    if(!allConfigs.forms[formKey]) allConfigs.forms[formKey] = structuredClone(formConfig);
   }
+  // Older server/local configs can predate forms added to the bundled file.
+  try{
+    const bundledRes = await fetch(COMBINED_CONFIG_URL + '?t=' + Date.now(), {cache:'no-store'});
+    if(bundledRes.ok){
+      const bundled = await bundledRes.json();
+      for(const [formKey, formConfig] of Object.entries(bundled.forms || {})){
+        if(!allConfigs.forms[formKey]) allConfigs.forms[formKey] = structuredClone(formConfig);
+        if(!serverConfigs.forms[formKey]) serverConfigs.forms[formKey] = structuredClone(formConfig);
+      }
+    }
+  }catch(_error){}
   rebuildFormSelect();
   return allConfigs;
 }
