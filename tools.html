@@ -187,7 +187,6 @@ body.embed-mode .tool-card{box-shadow:none;border-radius:8px;margin:0}
       <h2>All Free Tools</h2>
       <div>
         <a href="#image-resizer"><i class="fa-solid fa-image"></i> Image Resizer</a>
-        <a href="emitra-offline-form-fill/"><i class="fa-solid fa-file-pen"></i> eMitra Offline Form Fill</a>
         <a href="#resize-20kb"><i class="fa-solid fa-compress"></i> Resize Image to 20KB</a>
         <a href="#image-compressor"><i class="fa-solid fa-minimize"></i> Image Compressor</a>
         <a href="#image-converter"><i class="fa-solid fa-repeat"></i> JPG/PNG/WEBP Converter</a>
@@ -203,6 +202,7 @@ body.embed-mode .tool-card{box-shadow:none;border-radius:8px;margin:0}
         <a href="#pdf-merge"><i class="fa-solid fa-layer-group"></i> PDF Merge Tool</a>
         <a href="#qr-generator"><i class="fa-solid fa-qrcode"></i> QR Code Generator</a>
         <a href="#age-calculator"><i class="fa-solid fa-calculator"></i> Age Calculator</a>
+        <a href="emitra-offline-form-fill/"><i class="fa-solid fa-file-pen"></i> eMitra Offline Form Fill</a>
       </div>
     </aside>
 
@@ -863,7 +863,11 @@ function renderAdminToolPanel(){
   if(!panel || !list){ return; }
   panel.classList.toggle("show", adminToolMode);
   if(!adminToolMode){ return; }
-  const cards = Array.from(document.querySelectorAll(".tool-card[id]"));
+  const cards = Array.from(document.querySelectorAll(".tool-card[id]")).sort((a, b) => {
+    if(a.id === "emitra-offline-form-fill") return 1;
+    if(b.id === "emitra-offline-form-fill") return -1;
+    return 0;
+  });
   list.innerHTML = cards.map((card) => {
     const value = isToolHidden(card.id) ? "hidden" : "visible";
     return `<label class="admin-tool-row" for="toolVisibility-${card.id}">
