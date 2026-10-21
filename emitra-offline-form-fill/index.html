@@ -1016,8 +1016,30 @@ async function initAdminEditorAccess(){
   }
 }
 
+const INCOME_FORM_SCHEMA = [
+  {group:'मुख्य जानकारी — आय प्रमाण पत्र', fields:[
+    ['incomeApplicantName','प्रार्थी का नाम','text',''],['incomeFatherName','पिता का नाम','text',''],
+    ['incomeCurrentAddress','वर्तमान पता','textarea',''],['incomePermanentAddress','स्थाई पता','textarea',''],
+    ['incomeVillage','गाँव/शहर','text',''],['incomeTehsil','तहसील','text',''],['incomeDistrict','जिला','text',''],
+    ['incomeDob','जन्म दिनांक','text',''],['incomeBirthPlace','जन्म स्थान','text',''],['incomeAge','उम्र','text',''],
+    ['incomeGender','लिंग','select:male=पुरुष,female=महिला','male'],['incomeMaritalStatus','वैवाहिक स्थिति','select:married=विवाहित,unmarried=अविवाहित','married'],
+    ['incomeReligion','धर्म','text','हिन्दू'],['incomeCaste','जाति','text',''],['incomeSubCaste','उप जाति','text',''],
+    ['incomeResident','राजस्थान मूल निवासी','select:yes=हाँ,no=नहीं','yes'],['incomeTaxPayer','आयकरदाता','select:yes=हाँ,no=नहीं','no'],['incomeMobile','मोबाइल नंबर','text',''],
+    ['incomePanNumber','PAN कार्ड नंबर','text',''],['incomeTinNumber','TIN नंबर','text','']
+  ]},
+  {group:'परिवार के सदस्य और आय', fields:[
+    ['incomeFamily1Name','परिवार सदस्य 1 नाम','text',''],['incomeFamily1Age','परिवार सदस्य 1 उम्र','text',''],['incomeFamily1Relation','परिवार सदस्य 1 संबंध','text',''],['incomeFamily1Occupation','परिवार सदस्य 1 व्यवसाय','text',''],['incomeFamily1AnnualIncome','परिवार सदस्य 1 वार्षिक आय','text',''],
+    ['incomeFamily2Name','परिवार सदस्य 2 नाम','text',''],['incomeFamily2Age','परिवार सदस्य 2 उम्र','text',''],['incomeFamily2Relation','परिवार सदस्य 2 संबंध','text',''],['incomeFamily2Occupation','परिवार सदस्य 2 व्यवसाय','text',''],['incomeFamily2AnnualIncome','परिवार सदस्य 2 वार्षिक आय','text',''],
+    ['incomeFamily3Name','परिवार सदस्य 3 नाम','text',''],['incomeFamily3Age','परिवार सदस्य 3 उम्र','text',''],['incomeFamily3Relation','परिवार सदस्य 3 संबंध','text',''],['incomeFamily3Occupation','परिवार सदस्य 3 व्यवसाय','text',''],['incomeFamily3AnnualIncome','परिवार सदस्य 3 वार्षिक आय','text','']
+  ]},
+  {group:'गवाह', fields:[
+    ['incomeWitness1Name','गवाह 1 नाम','text',''],['incomeWitness1Father','गवाह 1 पिता','text',''],['incomeWitness1Address','गवाह 1 पता','textarea',''],['incomeWitness1Department','गवाह 1 विभाग','text',''],['incomeWitness1Post','गवाह 1 पद','text',''],
+    ['incomeWitness2Name','गवाह 2 नाम','text',''],['incomeWitness2Father','गवाह 2 पिता','text',''],['incomeWitness2Address','गवाह 2 पता','textarea',''],['incomeWitness2Department','गवाह 2 विभाग','text',''],['incomeWitness2Post','गवाह 2 पद','text','']
+  ]}
+];
+
 function getCurrentFormSchema(){
-  const schema = structuredClone(FORM_SCHEMAS[currentFormKey] || (currentFormKey === 'caste-general' ? FORM_SCHEMAS.caste : []) || []);
+  const schema = structuredClone(currentFormKey === 'income-certificate' ? INCOME_FORM_SCHEMA : (FORM_SCHEMAS[currentFormKey] || (currentFormKey === 'caste-general' ? FORM_SCHEMAS.caste : []) || []));
   const customFields = Array.isArray(config?.customDataFields) ? config.customDataFields : [];
   if(customFields.length){
     schema.push({
