@@ -195,6 +195,8 @@
       <p class="small">Editor ON karke field ko drag karo. Selected field ki exact value yahan se adjust karo.</p>
       <div class="toolsRow">
         <button id="saveLocalBtn" class="secondary" title="Admin ke liye server par update; baaki users ke liye sirf local browser save.">Save Local Config</button>
+        <button id="undoConfigBtn" class="secondary" type="button" title="Pichla local editor change undo kare" disabled>Undo</button>
+        <button id="redoConfigBtn" class="secondary" type="button" title="Undo kiya hua change wapas laaye" disabled>Redo</button>
         <button id="addFormBtn" class="secondary adminOnly" title="Naya PDF form dropdown me add kare">Add PDF Form</button>
         <button id="deleteFormBtn" class="danger adminOnly" title="Current selected PDF form delete kare">Delete PDF Form</button>
         <button id="autoDetectBtn" class="secondary adminOnly" title="PDF preview se blank field boxes auto detect kare">Auto Detect Fields</button>
@@ -587,6 +589,9 @@ let config = null;
 let defaultConfig = null;
 let allConfigs = null;
 let selectedFieldId = null;
+let configUndoStack = [];
+let configRedoStack = [];
+let configHistoryBusy = false;
 let lastPdfUrl = null;
 let pdfPageSizes = [];
 let activePreviewRenderId = 0;
@@ -606,6 +611,52 @@ try { sharedFormData = JSON.parse(localStorage.getItem(DATA_LOCAL_KEY) || '{}') 
 let derivedAutoValues = {};
 let clearedFieldIds = {};
 const $ = id => document.getElementById(id);
+
+function updateConfigHistoryButtons(){
+  const undo = $('undoConfigBtn');
+  const redo = $('redoConfigBtn');
+  if(undo) undo.disabled = configUndoStack.length === 0;
+  if(redo) redo.disabled = configRedoStack.length === 0;
+}
+function clearConfigHistory(){
+  configUndoStack = [];
+  configRedoStack = [];
+  updateConfigHistoryButtons();
+}
+function rememberConfigChange(){
+  if(!config || configHistoryBusy) return;
+  const snapshot = structuredClone(config);
+  const previous = configUndoStack[configUndoStack.length - 1];
+  if(previous && JSON.stringify(previous) === JSON.stringify(snapshot)) return;
+  configUndoStack.push(snapshot);
+  if(configUndoStack.length > 50) configUndoStack.shift();
+  configRedoStack = [];
+  updateConfigHistoryButtons();
+}
+async function undoConfigChange(){
+  if(!configUndoStack.length || !config) return;
+  configHistoryBusy = true;
+  configRedoStack.push(structuredClone(config));
+  config = configUndoStack.pop();
+  buildDataForm();
+  await renderPreview();
+  fillSelectedControls();
+  configHistoryBusy = false;
+  updateConfigHistoryButtons();
+  setStatus('Last editor change undo ho gaya.', 'ok');
+}
+async function redoConfigChange(){
+  if(!configRedoStack.length || !config) return;
+  configHistoryBusy = true;
+  configUndoStack.push(structuredClone(config));
+  config = configRedoStack.pop();
+  buildDataForm();
+  await renderPreview();
+  fillSelectedControls();
+  configHistoryBusy = false;
+  updateConfigHistoryButtons();
+  setStatus('Editor change redo ho gaya.', 'ok');
+}
 const NO_AUTO_HINDI_FIELD_IDS = new Set([
   'aadhaar','janAadhaar','mobile','dob','date','age','dobDay','dobMonth','dobYear','dateDay','dateMonth','dateYear',
   'groomDob','brideDob','marriageDate','applicationDate','previousUnmarriedDate',
@@ -1038,6 +1089,8 @@ function applySelectedSource(sourceId){
   if(input) input.value = source;
   const field = config?.fields?.find(f => f.id === selectedFieldId);
   if(field){
+    if(field.source === source) return;
+    rememberConfigChange();
     field.source = source;
     refreshOverlayTexts();
     fillSelectedControls();
@@ -1551,6 +1604,7 @@ async function loadSelectedForm(){
   if(!defaultConfig || !defaultConfig.fields) throw new Error(currentFormKey + ' config missing in forms-fields-config.json');
   templateBytes = await loadBytes(resolveTemplateUrl(defaultConfig.template) || form.pdf);
   config = structuredClone(defaultConfig);
+  clearConfigHistory();
   buildDataForm();
   await renderPreview();
   setStatus(form.title + ' ready', 'ok');
@@ -1700,6 +1754,7 @@ let drag=null;
 function startDrag(e){
   if(!$('editMode').checked) return;
   const div=e.currentTarget; const field=config.fields.find(f=>f.id===div.dataset.fieldId); if(!field) return;
+  rememberConfigChange();
   selectField(field.id);
   const wrap=div.parentElement; const canvas=wrap.querySelector('canvas');
   drag={field, div, canvas, startX:e.clientX, startY:e.clientY, xPct:field.xPct, yPct:field.yPct};
@@ -1720,6 +1775,7 @@ document.addEventListener('keydown', e=>{
   const div=document.querySelector(`[data-field-id="${CSS.escape(field.id)}"]`); if(!div) return;
   const canvas=div.parentElement.querySelector('canvas'); const step=e.shiftKey?10:1;
   if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)) e.preventDefault(); else return;
+  rememberConfigChange();
   if(e.key==='ArrowLeft') field.xPct -= step/canvas.width;
   if(e.key==='ArrowRight') field.xPct += step/canvas.width;
   if(e.key==='ArrowUp') field.yPct -= step/canvas.height;
@@ -1745,6 +1801,7 @@ function fillSelectedControls(){
 ['selX','selY','selW','selH','selFont','selPage','selLabel','selSource'].forEach(id=>{
   $(id).addEventListener('input',()=>{
     const f=config.fields.find(x=>x.id===selectedFieldId); if(!f) return;
+    rememberConfigChange();
     f.xPct=parseFloat($('selX').value)/100 || f.xPct; f.yPct=parseFloat($('selY').value)/100 || f.yPct;
     f.wPct=parseFloat($('selW').value)/100 || f.wPct; f.hPct=parseFloat($('selH').value)/100 || f.hPct;
     f.fontSize=parseFloat($('selFont').value)||f.fontSize; f.page=parseInt($('selPage').value)||f.page; f.label=$('selLabel').value; f.source=$('selSource').value;
@@ -1914,6 +1971,7 @@ function makeUniqueInputId(base = 'customInput'){
 }
 async function addMappedField(){
   if(!config?.fields) return;
+  rememberConfigChange();
   const page = getSelectedOrFirstVisiblePage();
   const selectedSource = $('selSourceSelect')?.value || $('selSource')?.value || 'applicantName';
   const selectedOption = getFormSourceOptions().find(item => item.id === selectedSource);
@@ -2045,6 +2103,7 @@ async function autoDetectFields(){
     setStatus('Pehle Preview Refresh dabayein, phir Auto Detect Fields use karein.', 'bad');
     return;
   }
+  rememberConfigChange();
   const existingKeys = new Set((config.fields || []).map(f => `${f.page}:${f.xPct.toFixed(3)}:${f.yPct.toFixed(3)}:${f.wPct.toFixed(3)}:${f.hPct.toFixed(3)}`));
   let added = 0;
   if(!Array.isArray(config.customDataFields)) config.customDataFields = [];
@@ -2098,6 +2157,7 @@ async function addCustomInput(){
   const enteredId = String(prompt('Source field id likhein (PDF field me isi id ka use hoga)', suggestedId) || '').trim();
   if(!enteredId) return;
   const id = makeUniqueInputId(enteredId);
+  rememberConfigChange();
   if(!Array.isArray(config.customDataFields)) config.customDataFields = [];
   config.customDataFields.push({ id, label, type: 'text', defaultValue: '' });
   buildDataForm();
@@ -2121,6 +2181,7 @@ async function deleteCustomInput(){
     ? `"${customInput.label || selectedSource}" input delete karna hai? Isse linked ${linkedFields.length} PDF field box bhi delete honge.`
     : `"${customInput.label || selectedSource}" input delete karna hai?`;
   if(!confirm(message)) return;
+  rememberConfigChange();
   config.customDataFields = customFields.filter(field => field.id !== selectedSource);
   if(linkedFields.length){
     config.fields = config.fields.filter(field => field.source !== selectedSource);
@@ -2139,6 +2200,7 @@ async function deleteMappedField(){
     return;
   }
   const before = config.fields.length;
+  rememberConfigChange();
   config.fields = config.fields.filter(f => f.id !== selectedFieldId);
   if(config.fields.length === before) return;
   selectedFieldId = null;
@@ -2300,6 +2362,7 @@ async function applySavedConfig(combined){
   allConfigs = combined;
   defaultConfig = sanitizeConfigFields(structuredClone(allConfigs.forms[currentFormKey]));
   config = sanitizeConfigFields(structuredClone(defaultConfig));
+  clearConfigHistory();
   await renderPreview();
 }
 async function saveConfigForEveryone(){
@@ -2333,6 +2396,8 @@ $('editMode').addEventListener('change',()=>{
   renderPreview();
 });
 $('saveLocalBtn').addEventListener('click',saveConfigForEveryone);
+$('undoConfigBtn').addEventListener('click',undoConfigChange);
+$('redoConfigBtn').addEventListener('click',redoConfigChange);
 $('addFormBtn').addEventListener('click',addPdfForm);
 $('deleteFormBtn').addEventListener('click',deletePdfForm);
 $('autoDetectBtn').addEventListener('click',autoDetectFields);
@@ -2341,7 +2406,7 @@ $('addInputBtn').addEventListener('click',addCustomInput);
 $('deleteInputBtn').addEventListener('click',deleteCustomInput);
 $('deleteFieldBtn').addEventListener('click',deleteMappedField);
 $('downloadConfigBtn').addEventListener('click',downloadConfig);
-$('resetConfigBtn').addEventListener('click',async()=>{localStorage.removeItem(getFormMeta(currentFormKey).localKey); config=sanitizeConfigFields(structuredClone(defaultConfig)); selectedFieldId=null; await renderPreview(); setStatus('Reset done','ok');});
+$('resetConfigBtn').addEventListener('click',async()=>{rememberConfigChange(); localStorage.removeItem(getFormMeta(currentFormKey).localKey); config=sanitizeConfigFields(structuredClone(defaultConfig)); selectedFieldId=null; await renderPreview(); setStatus('Reset done','ok');});
 $('folderUploadInput').addEventListener('change',importPdfFormFolder);
 $('pdfFile').addEventListener('change',async e=>{
   const f=e.target.files[0]; if(!f)return;
