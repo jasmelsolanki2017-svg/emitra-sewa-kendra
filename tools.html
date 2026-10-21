@@ -107,6 +107,21 @@ button.danger{background:var(--red)}
 .preview-box{background:#fbfdff;border:1px dashed #aac4df;border-radius:8px;min-height:150px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--muted);font-weight:800;overflow:auto}
 .preview-box img,.preview-box canvas{max-width:100%;height:auto;border-radius:4px}
 .status{min-height:20px;color:var(--blue);font-size:13px;font-weight:800;margin-top:6px}
+.aadhaar-crop-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:7px}
+.aadhaar-crop-actions button{padding:6px 9px;font-size:12px}
+.aadhaar-crop-state{color:var(--muted);font-size:11px;font-weight:800}
+.aadhaar-crop-modal{position:fixed;inset:0;z-index:80;display:grid;place-items:center;padding:18px;background:rgba(3,34,77,.72)}
+.aadhaar-crop-modal[hidden]{display:none}
+.aadhaar-crop-dialog{width:min(920px,100%);max-height:calc(100vh - 36px);overflow:auto;background:#fff;border-radius:12px;padding:16px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.aadhaar-crop-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px}
+.aadhaar-crop-head h3{color:var(--blue);font-size:20px;line-height:1.25}
+.aadhaar-crop-head p{color:var(--muted);font-size:12px;font-weight:700;margin-top:3px}
+.aadhaar-crop-close{background:var(--soft);color:var(--blue);padding:7px 10px}
+.aadhaar-crop-stage{position:relative;margin:12px auto;background:#10233c;border:1px solid #7893b2;border-radius:8px;overflow:hidden;touch-action:none;cursor:crosshair}
+.aadhaar-crop-stage canvas{display:block;width:100%;height:100%}
+.aadhaar-crop-selection{position:absolute;border:2px solid #ffcf75;box-shadow:0 0 0 9999px rgba(3,34,77,.62);pointer-events:none}
+.aadhaar-crop-help{color:var(--muted);font-size:12px;font-weight:700;margin-bottom:8px}
+.aadhaar-crop-dialog .actions{margin-bottom:0}
 .result-list{display:grid;gap:8px;width:100%;align-items:start}
 .result-list a,.result-list span{color:var(--blue);font-weight:900;text-decoration:none;background:#fff;border:1px solid var(--line);border-radius:6px;padding:8px 10px}
 .qr-preview canvas,.qr-preview img{image-rendering:pixelated}
@@ -321,14 +336,23 @@ body.embed-mode .tool-card{box-shadow:none;border-radius:8px;margin:0}
       <section class="tool-card" id="aadhaar-print">
         <div class="tool-head"><div><h2>Aadhaar Front + Back A4 Print</h2><p>WhatsApp se aayi Aadhaar ki front aur back photo ko ek hi A4 page par fit karke print ya PDF download karein.</p></div><span class="badge">A4 Print</span></div>
         <div class="form-grid">
-          <div class="field"><label for="aadhaarFrontFile">Aadhaar front photo</label><input id="aadhaarFrontFile" type="file" accept="image/*"></div>
-          <div class="field"><label for="aadhaarBackFile">Aadhaar back photo</label><input id="aadhaarBackFile" type="file" accept="image/*"></div>
+          <div class="field"><label for="aadhaarFrontFile">Aadhaar front photo</label><input id="aadhaarFrontFile" type="file" accept="image/*"><div class="aadhaar-crop-actions"><button id="aadhaarFrontCropButton" class="secondary" type="button" onclick="openAadhaarCrop('front')" disabled><i class="fa-solid fa-crop-simple"></i> Crop front</button><span id="aadhaarFrontCropState" class="aadhaar-crop-state">Original image</span></div></div>
+          <div class="field"><label for="aadhaarBackFile">Aadhaar back photo</label><input id="aadhaarBackFile" type="file" accept="image/*"><div class="aadhaar-crop-actions"><button id="aadhaarBackCropButton" class="secondary" type="button" onclick="openAadhaarCrop('back')" disabled><i class="fa-solid fa-crop-simple"></i> Crop back</button><span id="aadhaarBackCropState" class="aadhaar-crop-state">Original image</span></div></div>
           <div class="field"><label for="aadhaarLayout">Page layout</label><select id="aadhaarLayout"><option value="stacked">ऊपर-नीचे (Readable)</option><option value="side-by-side">Side-by-side</option></select></div>
           <div class="field"><label for="aadhaarMargin">A4 margin</label><select id="aadhaarMargin"><option value="8">8 mm</option><option value="12" selected>12 mm</option><option value="15">15 mm</option></select></div>
         </div>
         <div class="actions"><button type="button" onclick="runAadhaarPrint()"><i class="fa-solid fa-wand-magic-sparkles"></i> Create A4 Preview</button><button id="aadhaarPrintButton" class="secondary" type="button" onclick="printAadhaarPage()" disabled><i class="fa-solid fa-print"></i> Print A4</button><a id="aadhaarPdfDownload" class="download-btn disabled" download><i class="fa-solid fa-file-pdf"></i> Download PDF</a></div>
         <div class="preview-grid"><div class="preview-box" id="aadhaarPreview">Front aur back photo select karke preview banayein</div><div><div class="status" id="aadhaarStatus"></div></div></div>
       </section>
+
+      <div id="aadhaarCropModal" class="aadhaar-crop-modal" hidden>
+        <div class="aadhaar-crop-dialog" role="dialog" aria-modal="true" aria-labelledby="aadhaarCropTitle">
+          <div class="aadhaar-crop-head"><div><h3 id="aadhaarCropTitle">Crop Aadhaar photo</h3><p>Extra white/blank हिस्सा हटाने के लिए image पर crop area drag करें।</p></div><button class="aadhaar-crop-close" type="button" onclick="closeAadhaarCrop()" aria-label="Close crop editor"><i class="fa-solid fa-xmark"></i></button></div>
+          <p class="aadhaar-crop-help">Tip: “Auto trim extra border” पहले try करें, फिर जरूरत हो तो selection को दोबारा drag करें।</p>
+          <div id="aadhaarCropStage" class="aadhaar-crop-stage"><canvas id="aadhaarCropCanvas"></canvas><div id="aadhaarCropSelection" class="aadhaar-crop-selection"></div></div>
+          <div class="actions"><button class="secondary" type="button" onclick="autoTrimAadhaarCrop()"><i class="fa-solid fa-wand-magic-sparkles"></i> Auto trim extra border</button><button class="secondary" type="button" onclick="resetAadhaarCrop()"><i class="fa-solid fa-rotate-left"></i> Reset</button><button type="button" onclick="applyAadhaarCrop()"><i class="fa-solid fa-check"></i> Use this crop</button></div>
+        </div>
+      </div>
 
       <section class="tool-card" id="image-to-pdf">
         <div class="tool-head"><div><h2>Image to PDF Converter</h2><p>Multiple images select karke one PDF banayein.</p></div><span class="badge">jsPDF</span></div>
@@ -581,16 +605,22 @@ function loadImageFromFile(file){
     img.src = url;
   });
 }
+function imageWidth(img){ return img.naturalWidth || img.videoWidth || img.width || 1; }
+function imageHeight(img){ return img.naturalHeight || img.videoHeight || img.height || 1; }
 function drawContain(ctx, img, x, y, width, height){
-  const scale = Math.min(width / img.naturalWidth, height / img.naturalHeight);
-  const drawW = img.naturalWidth * scale;
-  const drawH = img.naturalHeight * scale;
+  const sourceW = imageWidth(img);
+  const sourceH = imageHeight(img);
+  const scale = Math.min(width / sourceW, height / sourceH);
+  const drawW = sourceW * scale;
+  const drawH = sourceH * scale;
   ctx.drawImage(img, x + (width - drawW) / 2, y + (height - drawH) / 2, drawW, drawH);
 }
 function drawCover(ctx, img, x, y, width, height){
-  const scale = Math.max(width / img.naturalWidth, height / img.naturalHeight);
-  const drawW = img.naturalWidth * scale;
-  const drawH = img.naturalHeight * scale;
+  const sourceW = imageWidth(img);
+  const sourceH = imageHeight(img);
+  const scale = Math.max(width / sourceW, height / sourceH);
+  const drawW = sourceW * scale;
+  const drawH = sourceH * scale;
   ctx.drawImage(img, x + (width - drawW) / 2, y + (height - drawH) / 2, drawW, drawH);
 }
 function canvasToBlob(canvas, mime = "image/jpeg", quality = .86){
@@ -742,13 +772,163 @@ async function runPhotoNameDateJoiner(){
     setStatus("nameDateStatus", `Ready: ${toKB(blob.size)}KB.`);
   }catch(error){ setStatus("nameDateStatus", error.message); }
 }
+const aadhaarCropState = { front:null, back:null };
+let activeAadhaarCrop = null;
+let aadhaarCropDrag = null;
+function invalidateAadhaarResult(){
+  aadhaarPrintDataUrl = "";
+  if($("aadhaarPrintButton")){ $("aadhaarPrintButton").disabled = true; }
+  if($("aadhaarPdfDownload")){ disableDownload("aadhaarPdfDownload"); }
+  if($("aadhaarPreview")){ $("aadhaarPreview").textContent = "Front aur back photo select karke preview banayein"; }
+}
+function setAadhaarCropInputState(side){
+  const input = $(side === "front" ? "aadhaarFrontFile" : "aadhaarBackFile");
+  const button = $(side === "front" ? "aadhaarFrontCropButton" : "aadhaarBackCropButton");
+  const state = $(side === "front" ? "aadhaarFrontCropState" : "aadhaarBackCropState");
+  aadhaarCropState[side] = null;
+  button.disabled = !(input.files && input.files.length);
+  state.textContent = button.disabled ? "Original image" : "Original image — crop optional";
+  invalidateAadhaarResult();
+}
+function cropPoint(event){
+  const canvas = $("aadhaarCropCanvas");
+  const rect = canvas.getBoundingClientRect();
+  return {
+    x: clamp((event.clientX - rect.left) * canvas.width / rect.width, 0, canvas.width),
+    y: clamp((event.clientY - rect.top) * canvas.height / rect.height, 0, canvas.height)
+  };
+}
+function updateAadhaarCropSelection(){
+  if(!activeAadhaarCrop){ return; }
+  const canvas = $("aadhaarCropCanvas");
+  const selection = $("aadhaarCropSelection");
+  const crop = activeAadhaarCrop.crop;
+  selection.style.left = `${crop.x / canvas.width * 100}%`;
+  selection.style.top = `${crop.y / canvas.height * 100}%`;
+  selection.style.width = `${crop.w / canvas.width * 100}%`;
+  selection.style.height = `${crop.h / canvas.height * 100}%`;
+}
+function renderAadhaarCropEditor(){
+  if(!activeAadhaarCrop){ return; }
+  const img = activeAadhaarCrop.img;
+  const sourceW = imageWidth(img);
+  const sourceH = imageHeight(img);
+  const maxW = Math.min(900, Math.max(240, window.innerWidth - 64));
+  const maxH = Math.min(640, Math.max(240, window.innerHeight * .58));
+  const scale = Math.min(1, maxW / sourceW, maxH / sourceH);
+  const width = Math.max(1, Math.round(sourceW * scale));
+  const height = Math.max(1, Math.round(sourceH * scale));
+  const canvas = $("aadhaarCropCanvas");
+  const stage = $("aadhaarCropStage");
+  canvas.width = width;
+  canvas.height = height;
+  canvas.style.width = `${width}px`;
+  canvas.style.height = `${height}px`;
+  stage.style.width = `${width}px`;
+  stage.style.height = `${height}px`;
+  canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+  activeAadhaarCrop.displayScale = scale;
+  updateAadhaarCropSelection();
+}
+async function openAadhaarCrop(side){
+  try{
+    const file = fileFromInput(side === "front" ? "aadhaarFrontFile" : "aadhaarBackFile");
+    const img = await loadImageFromFile(file);
+    const width = imageWidth(img);
+    const height = imageHeight(img);
+    activeAadhaarCrop = { side, img, crop:{x:0, y:0, w:width, h:height} };
+    $("aadhaarCropTitle").textContent = `Crop Aadhaar ${side} photo`;
+    $("aadhaarCropModal").hidden = false;
+    renderAadhaarCropEditor();
+  }catch(error){ setStatus("aadhaarStatus", error.message); }
+}
+function closeAadhaarCrop(){
+  $("aadhaarCropModal").hidden = true;
+  activeAadhaarCrop = null;
+  aadhaarCropDrag = null;
+}
+function resetAadhaarCrop(){
+  if(!activeAadhaarCrop){ return; }
+  const img = activeAadhaarCrop.img;
+  activeAadhaarCrop.crop = {x:0, y:0, w:imageWidth(img), h:imageHeight(img)};
+  renderAadhaarCropEditor();
+}
+function aadhaarPixelDistance(a, b){
+  return Math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2);
+}
+function autoTrimAadhaarCrop(){
+  if(!activeAadhaarCrop){ return; }
+  const img = activeAadhaarCrop.img;
+  const sourceW = imageWidth(img);
+  const sourceH = imageHeight(img);
+  const scanW = Math.min(900, sourceW);
+  const scanH = Math.max(1, Math.round(sourceH * scanW / sourceW));
+  const scan = document.createElement("canvas");
+  scan.width = scanW;
+  scan.height = scanH;
+  const ctx = scan.getContext("2d", {willReadFrequently:true});
+  ctx.drawImage(img, 0, 0, scanW, scanH);
+  const data = ctx.getImageData(0, 0, scanW, scanH).data;
+  const cornerSize = Math.max(1, Math.round(Math.min(scanW, scanH) * .025));
+  const samples = [];
+  [[0,0],[scanW - cornerSize,0],[0,scanH - cornerSize],[scanW - cornerSize,scanH - cornerSize]].forEach(([sx, sy]) => {
+    for(let y = sy; y < sy + cornerSize && y < scanH; y++){
+      for(let x = sx; x < sx + cornerSize && x < scanW; x++){
+        const i = (y * scanW + x) * 4;
+        samples.push([data[i], data[i + 1], data[i + 2]]);
+      }
+    }
+  });
+  const background = samples.reduce((sum, pixel) => sum.map((value, index) => value + pixel[index]), [0,0,0]).map(value => value / samples.length);
+  const threshold = 34;
+  let left = scanW, top = scanH, right = -1, bottom = -1;
+  const step = Math.max(1, Math.floor(Math.min(scanW, scanH) / 700));
+  for(let y = 0; y < scanH; y += step){
+    for(let x = 0; x < scanW; x += step){
+      const i = (y * scanW + x) * 4;
+      if(data[i + 3] > 0 && aadhaarPixelDistance([data[i], data[i + 1], data[i + 2]], background) > threshold){
+        left = Math.min(left, x); top = Math.min(top, y); right = Math.max(right, x); bottom = Math.max(bottom, y);
+      }
+    }
+  }
+  if(right < 0 || right - left < scanW * .12 || bottom - top < scanH * .12){
+    setStatus("aadhaarStatus", "Auto trim ko clear border nahi mila; selection manually drag karein.");
+    return;
+  }
+  const pad = Math.max(2, Math.round(Math.min(scanW, scanH) * .008));
+  left = Math.max(0, left - pad); top = Math.max(0, top - pad); right = Math.min(scanW - 1, right + pad); bottom = Math.min(scanH - 1, bottom + pad);
+  activeAadhaarCrop.crop = {
+    x: left * sourceW / scanW,
+    y: top * sourceH / scanH,
+    w: (right - left + 1) * sourceW / scanW,
+    h: (bottom - top + 1) * sourceH / scanH
+  };
+  renderAadhaarCropEditor();
+}
+function applyAadhaarCrop(){
+  if(!activeAadhaarCrop){ return; }
+  const { side, img, crop } = activeAadhaarCrop;
+  const sourceW = imageWidth(img);
+  const sourceH = imageHeight(img);
+  const x = Math.round(clamp(crop.x, 0, sourceW - 1));
+  const y = Math.round(clamp(crop.y, 0, sourceH - 1));
+  const width = Math.max(1, Math.min(sourceW - x, Math.round(crop.w)));
+  const height = Math.max(1, Math.min(sourceH - y, Math.round(crop.h)));
+  const cropped = makeCanvas(width, height);
+  cropped.ctx.drawImage(img, x, y, width, height, 0, 0, width, height);
+  aadhaarCropState[side] = cropped.canvas;
+  $(side === "front" ? "aadhaarFrontCropState" : "aadhaarBackCropState").textContent = `Cropped: ${width}×${height}px`;
+  invalidateAadhaarResult();
+  closeAadhaarCrop();
+  setStatus("aadhaarStatus", `${side === "front" ? "Front" : "Back"} crop ready hai. Ab Create A4 Preview karein.`);
+}
 let aadhaarPrintDataUrl = "";
 async function runAadhaarPrint(){
   try{
     disableDownload("aadhaarPdfDownload");
     $("aadhaarPrintButton").disabled = true;
-    const front = await loadImageFromFile(fileFromInput("aadhaarFrontFile"));
-    const back = await loadImageFromFile(fileFromInput("aadhaarBackFile"));
+    const front = aadhaarCropState.front || await loadImageFromFile(fileFromInput("aadhaarFrontFile"));
+    const back = aadhaarCropState.back || await loadImageFromFile(fileFromInput("aadhaarBackFile"));
     const pageW = 2480;
     const pageH = 3508;
     const margin = Math.round(clamp(Number($("aadhaarMargin").value) || 12, 4, 24) * pageW / 210);
@@ -1011,6 +1191,40 @@ window.addEventListener("beforeunload", () => {
 });
 window.addEventListener("DOMContentLoaded", () => {
   $("ageOn").value = new Date().toISOString().slice(0,10);
+  ["front", "back"].forEach((side) => {
+    const input = $(side === "front" ? "aadhaarFrontFile" : "aadhaarBackFile");
+    input.addEventListener("change", () => setAadhaarCropInputState(side));
+  });
+  const cropCanvas = $("aadhaarCropCanvas");
+  cropCanvas.addEventListener("pointerdown", (event) => {
+    if(!activeAadhaarCrop){ return; }
+    event.preventDefault();
+    const point = cropPoint(event);
+    aadhaarCropDrag = {start:point};
+    activeAadhaarCrop.crop = {x:point.x, y:point.y, w:1, h:1};
+    cropCanvas.setPointerCapture(event.pointerId);
+    updateAadhaarCropSelection();
+  });
+  cropCanvas.addEventListener("pointermove", (event) => {
+    if(!activeAadhaarCrop || !aadhaarCropDrag){ return; }
+    event.preventDefault();
+    const point = cropPoint(event);
+    const start = aadhaarCropDrag.start;
+    activeAadhaarCrop.crop = {x:Math.min(start.x, point.x), y:Math.min(start.y, point.y), w:Math.abs(point.x - start.x), h:Math.abs(point.y - start.y)};
+    updateAadhaarCropSelection();
+  });
+  const finishCropDrag = (event) => {
+    if(!aadhaarCropDrag){ return; }
+    const crop = activeAadhaarCrop && activeAadhaarCrop.crop;
+    if(!crop || crop.w < 12 || crop.h < 12){ resetAadhaarCrop(); }
+    aadhaarCropDrag = null;
+    if(event && cropCanvas.hasPointerCapture(event.pointerId)){ cropCanvas.releasePointerCapture(event.pointerId); }
+  };
+  cropCanvas.addEventListener("pointerup", finishCropDrag);
+  cropCanvas.addEventListener("pointercancel", finishCropDrag);
+  document.addEventListener("keydown", (event) => {
+    if(event.key === "Escape" && activeAadhaarCrop){ closeAadhaarCrop(); }
+  });
   initAdminToolControls();
 });
 </script>
