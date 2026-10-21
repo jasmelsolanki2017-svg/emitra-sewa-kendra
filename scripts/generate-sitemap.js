@@ -23,6 +23,7 @@ const PUBLIC_SITEMAP_PAGES = [
   { path:"latest-jobs.html", changefreq:"daily", priority:"0.9" },
   { path:"current-affairs.html", changefreq:"daily", priority:"0.9" },
   { path:"tools.html", changefreq:"weekly", priority:"0.9" },
+  { path:"aadhaar-print.html", changefreq:"monthly", priority:"0.8" },
   { path:"useful-pages.html", changefreq:"weekly", priority:"0.8" },
   { path:"about.html", changefreq:"monthly", priority:"0.7" },
   { path:"contact.html", changefreq:"monthly", priority:"0.7" },

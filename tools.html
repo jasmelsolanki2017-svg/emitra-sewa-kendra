@@ -177,6 +177,7 @@ body.embed-mode .tool-card{box-shadow:none;border-radius:8px;margin:0}
     <a class="tool-hub-card" data-tool-id="pan-photo" href="pan-photo-resizer.html"><span class="tool-hub-icon"><i class="fa-solid fa-user"></i></span><h2>NSDL PAN Photo Resizer</h2></a>
     <a class="tool-hub-card" data-tool-id="photo-signature-joiner" href="photo-signature-joiner.html"><span class="tool-hub-icon"><i class="fa-solid fa-object-group"></i></span><h2>Photo Signature Joiner</h2></a>
     <a class="tool-hub-card" data-tool-id="photo-name-date" href="photo-name-date-joiner.html"><span class="tool-hub-icon"><i class="fa-solid fa-calendar-days"></i></span><h2>Photo Name Date Joiner</h2></a>
+    <a class="tool-hub-card" data-tool-id="aadhaar-print" href="aadhaar-print.html"><span class="tool-hub-icon"><i class="fa-solid fa-id-card"></i></span><h2>Aadhaar Front + Back A4 Print</h2></a>
     <a class="tool-hub-card" data-tool-id="image-to-pdf" href="image-to-pdf.html"><span class="tool-hub-icon"><i class="fa-solid fa-file-pdf"></i></span><h2>Image to PDF</h2></a>
     <a class="tool-hub-card" data-tool-id="pdf-to-jpg" href="pdf-to-jpg.html"><span class="tool-hub-icon"><i class="fa-solid fa-file-image"></i></span><h2>PDF to JPG Converter</h2></a>
     <a class="tool-hub-card" data-tool-id="pdf-merge" href="pdf-merge.html"><span class="tool-hub-icon"><i class="fa-solid fa-layer-group"></i></span><h2>PDF Merge Tool</h2></a>
@@ -197,6 +198,7 @@ body.embed-mode .tool-card{box-shadow:none;border-radius:8px;margin:0}
         <a href="#pan-photo"><i class="fa-solid fa-user"></i> NSDL PAN Photo Resizer</a>
         <a href="#photo-signature-joiner"><i class="fa-solid fa-object-group"></i> Photo Signature Joiner</a>
         <a href="#photo-name-date"><i class="fa-solid fa-calendar-days"></i> Photo Name Date Joiner</a>
+        <a href="#aadhaar-print"><i class="fa-solid fa-id-card"></i> Aadhaar Front + Back A4 Print</a>
         <a href="#image-to-pdf"><i class="fa-solid fa-file-pdf"></i> Image to PDF Converter</a>
         <a href="#pdf-to-jpg"><i class="fa-solid fa-file-image"></i> PDF to JPG Converter</a>
         <a href="#pdf-merge"><i class="fa-solid fa-layer-group"></i> PDF Merge Tool</a>
@@ -314,6 +316,18 @@ body.embed-mode .tool-card{box-shadow:none;border-radius:8px;margin:0}
         </div>
         <div class="actions"><button type="button" onclick="runPhotoNameDateJoiner()"><i class="fa-solid fa-calendar-days"></i> Add Name Date</button><a id="nameDateDownload" class="download-btn disabled" download><i class="fa-solid fa-download"></i> Download JPG</a></div>
         <div class="preview-grid"><div class="preview-box" id="nameDatePreview">Preview</div><div><div class="status" id="nameDateStatus"></div></div></div>
+      </section>
+
+      <section class="tool-card" id="aadhaar-print">
+        <div class="tool-head"><div><h2>Aadhaar Front + Back A4 Print</h2><p>WhatsApp se aayi Aadhaar ki front aur back photo ko ek hi A4 page par fit karke print ya PDF download karein.</p></div><span class="badge">A4 Print</span></div>
+        <div class="form-grid">
+          <div class="field"><label for="aadhaarFrontFile">Aadhaar front photo</label><input id="aadhaarFrontFile" type="file" accept="image/*"></div>
+          <div class="field"><label for="aadhaarBackFile">Aadhaar back photo</label><input id="aadhaarBackFile" type="file" accept="image/*"></div>
+          <div class="field"><label for="aadhaarLayout">Page layout</label><select id="aadhaarLayout"><option value="stacked">ऊपर-नीचे (Readable)</option><option value="side-by-side">Side-by-side</option></select></div>
+          <div class="field"><label for="aadhaarMargin">A4 margin</label><select id="aadhaarMargin"><option value="8">8 mm</option><option value="12" selected>12 mm</option><option value="15">15 mm</option></select></div>
+        </div>
+        <div class="actions"><button type="button" onclick="runAadhaarPrint()"><i class="fa-solid fa-wand-magic-sparkles"></i> Create A4 Preview</button><button id="aadhaarPrintButton" class="secondary" type="button" onclick="printAadhaarPage()" disabled><i class="fa-solid fa-print"></i> Print A4</button><a id="aadhaarPdfDownload" class="download-btn disabled" download><i class="fa-solid fa-file-pdf"></i> Download PDF</a></div>
+        <div class="preview-grid"><div class="preview-box" id="aadhaarPreview">Front aur back photo select karke preview banayein</div><div><div class="status" id="aadhaarStatus"></div></div></div>
       </section>
 
       <section class="tool-card" id="image-to-pdf">
@@ -727,6 +741,60 @@ async function runPhotoNameDateJoiner(){
     setDownload("nameDateDownload", blob, "photo-name-date.jpg");
     setStatus("nameDateStatus", `Ready: ${toKB(blob.size)}KB.`);
   }catch(error){ setStatus("nameDateStatus", error.message); }
+}
+let aadhaarPrintDataUrl = "";
+async function runAadhaarPrint(){
+  try{
+    disableDownload("aadhaarPdfDownload");
+    $("aadhaarPrintButton").disabled = true;
+    const front = await loadImageFromFile(fileFromInput("aadhaarFrontFile"));
+    const back = await loadImageFromFile(fileFromInput("aadhaarBackFile"));
+    const pageW = 2480;
+    const pageH = 3508;
+    const margin = Math.round(clamp(Number($("aadhaarMargin").value) || 12, 4, 24) * pageW / 210);
+    const gap = Math.round(pageW * 4 / 210);
+    const made = makeCanvas(pageW, pageH);
+    const layout = $("aadhaarLayout").value;
+    const drawCard = (img, x, y, width, height) => {
+      made.ctx.fillStyle = "#ffffff";
+      made.ctx.fillRect(x, y, width, height);
+      made.ctx.strokeStyle = "#b8c9da";
+      made.ctx.lineWidth = Math.max(3, Math.round(pageW / 800));
+      made.ctx.strokeRect(x, y, width, height);
+      drawContain(made.ctx, img, x + 8, y + 8, width - 16, height - 16);
+    };
+    if(layout === "side-by-side"){
+      const cardW = Math.floor((pageW - (margin * 2) - gap) / 2);
+      const cardH = pageH - margin * 2;
+      drawCard(front, margin, margin, cardW, cardH);
+      drawCard(back, margin + cardW + gap, margin, cardW, cardH);
+    }else{
+      const cardW = pageW - margin * 2;
+      const cardH = Math.floor((pageH - (margin * 2) - gap) / 2);
+      drawCard(front, margin, margin, cardW, cardH);
+      drawCard(back, margin, margin + cardH + gap, cardW, cardH);
+    }
+    aadhaarPrintDataUrl = made.canvas.toDataURL("image/jpeg", .94);
+    const blob = await canvasToBlob(made.canvas, "image/jpeg", .94);
+    setPreviewImage("aadhaarPreview", blob);
+    $("aadhaarPrintButton").disabled = false;
+    const jsPDF = window.jspdf && window.jspdf.jsPDF;
+    if(!jsPDF){
+      setStatus("aadhaarStatus", "A4 preview ready hai. PDF ke liye page refresh karke try karein; print abhi kar sakte hain.");
+      return;
+    }
+    const pdf = new jsPDF({ orientation:"portrait", unit:"mm", format:"a4" });
+    pdf.addImage(aadhaarPrintDataUrl, "JPEG", 0, 0, 210, 297, undefined, "MEDIUM");
+    setDownload("aadhaarPdfDownload", pdf.output("blob"), "aadhaar-front-back-a4.pdf");
+    setStatus("aadhaarStatus", `A4 ready: ${layout === "side-by-side" ? "side-by-side" : "ऊपर-नीचे"}. Photo page par hi process hui hai.`);
+  }catch(error){ setStatus("aadhaarStatus", error.message); }
+}
+function printAadhaarPage(){
+  if(!aadhaarPrintDataUrl){ setStatus("aadhaarStatus", "Pehle Create A4 Preview par click karein."); return; }
+  const printWindow = window.open("", "_blank", "width=900,height=1200");
+  if(!printWindow){ setStatus("aadhaarStatus", "Print window browser ne block kar di. Pop-up allow karke try karein."); return; }
+  printWindow.document.write(`<!doctype html><html><head><title>Aadhaar Front Back A4</title><style>@page{size:A4;margin:0}html,body{margin:0;padding:0;background:#fff}img{display:block;width:210mm;height:297mm}</style></head><body><img src="${aadhaarPrintDataUrl}" alt="Aadhaar front and back A4 print" onload="window.print()"></body></html>`);
+  printWindow.document.close();
 }
 async function runImageToPdf(){
   try{
