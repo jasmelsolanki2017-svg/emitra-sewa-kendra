@@ -167,7 +167,7 @@
   <label class="colorControl">Fill Color
     <input id="fillColorInput" type="color" value="#000000" title="Form fill color">
   </label>
-  <label class="toggle adminOnly"><input id="editMode" type="checkbox" /> Position Editor</label>
+  <label class="toggle"><input id="editMode" type="checkbox" /> Position Editor</label>
 </header>
 
 <div class="wrap">
@@ -191,12 +191,12 @@
     </div>
   </main>
 
-  <aside class="card side adminOnly">
+  <aside class="card side">
     <div class="panel">
       <h2>Position Editor</h2>
       <p class="small">Editor ON karke field ko drag karo. Selected field ki exact value yahan se adjust karo.</p>
       <div class="toolsRow">
-        <button id="saveLocalBtn" class="secondary" title="Admin config server par save kare. Sab users ko latest config auto load hoga.">Update Config</button>
+        <button id="saveLocalBtn" class="secondary" title="Admin ke liye server par update; baaki users ke liye sirf local browser save.">Save Local Config</button>
         <button id="addFormBtn" class="secondary" title="Naya PDF form dropdown me add kare">Add PDF Form</button>
         <button id="deleteFormBtn" class="danger" title="Current selected PDF form delete kare">Delete PDF Form</button>
         <button id="autoDetectBtn" class="secondary" title="PDF preview se blank field boxes auto detect kare">Auto Detect Fields</button>
@@ -782,7 +782,7 @@ document.addEventListener('click', event=>{
   if(control) showButtonClickFeedback(control);
 }, true);
 function shouldLazyMobilePreview(){
-  return MOBILE_PREVIEW_QUERY.matches && !mobilePreviewRequested && !authState.isAdmin;
+  return MOBILE_PREVIEW_QUERY.matches && !mobilePreviewRequested && !document.body.classList.contains('adminEditorEnabled');
 }
 function renderMobilePreviewPlaceholder(){
   const shell = $('previewShell');
@@ -839,14 +839,19 @@ async function callAdminApi(path, body = {}){
 }
 function setAdminEditorEnabled(enabled){
   authState.isAdmin = Boolean(enabled);
-  document.body.classList.toggle('adminEditorEnabled', authState.isAdmin);
-  if(authState.isAdmin && MOBILE_PREVIEW_QUERY.matches && !mobilePreviewRequested){
+  // Position editing is available to everyone; only the save destination
+  // changes based on admin status.
+  document.body.classList.add('adminEditorEnabled');
+  const saveButton = $('saveLocalBtn');
+  if(saveButton){
+    saveButton.textContent = authState.isAdmin ? 'Update Config' : 'Save Local Config';
+    saveButton.title = authState.isAdmin
+      ? 'Server/Firebase par config update kare. Sab users ko latest config milega.'
+      : 'Sirf is browser me config save kare. Online/server config change nahi hogi.';
+  }
+  if(MOBILE_PREVIEW_QUERY.matches && !mobilePreviewRequested){
     mobilePreviewRequested = true;
     renderPreview();
-  }
-  if($('editMode') && !authState.isAdmin){
-    $('editMode').checked = false;
-    document.body.classList.remove('editOn');
   }
 }
 async function initAdminEditorAccess(){
@@ -2208,20 +2213,25 @@ async function deletePdfForm(){
   await loadSelectedForm();
   setStatus('PDF form delete ho gaya. Permanent save ke liye Update Config dabayein.', 'ok');
 }
+async function applySavedConfig(combined){
+  allConfigs = combined;
+  defaultConfig = sanitizeConfigFields(structuredClone(allConfigs.forms[currentFormKey]));
+  config = sanitizeConfigFields(structuredClone(defaultConfig));
+  await renderPreview();
+}
 async function saveConfigForEveryone(){
-  if(!authState.isAdmin) {
-    setStatus('Sirf admin Update Config kar sakta hai.', 'bad');
+  const combined = getCombinedConfigForDownload();
+  if(!authState.isAdmin){
+    saveConfigBackup(combined);
+    await applySavedConfig(combined);
+    setStatus('Local config save ho gaya. Online/server config change nahi hui.', 'ok');
     return;
   }
   setStatus('Latest config server par update ho raha hai...');
   try{
-    const combined = getCombinedConfigForDownload();
     await callAdminApi('/admin/forms-config/save', { config: combined });
-    allConfigs = combined;
     saveConfigBackup(combined);
-    defaultConfig = sanitizeConfigFields(structuredClone(allConfigs.forms[currentFormKey]));
-    config = sanitizeConfigFields(structuredClone(defaultConfig));
-    await renderPreview();
+    await applySavedConfig(combined);
     setStatus('Config update ho gaya. Sab users ko latest config auto load hoga.', 'ok');
   }catch(error){
     console.error(error);
