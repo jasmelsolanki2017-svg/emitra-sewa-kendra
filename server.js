@@ -124,6 +124,7 @@ const SETTINGS_PATH = path.join(__dirname, "settings.json");
 const CRAWLER_SOURCES_PATH = path.join(__dirname, "crawler-sources.json");
 const FORMS_FIELDS_CONFIG_PATH = path.join(__dirname, "emitra-offline-form-fill", "assets", "forms-fields-config.json");
 const FORMS_FIELDS_CONFIG_DB_PATH = "formsFieldsConfig";
+const FORMS_FIELDS_CONFIG_HISTORY_DB_PATH = "formsFieldsConfigHistory";
 const FORMS_TEMPLATE_UPLOAD_DIR = path.join(__dirname, "emitra-offline-form-fill", "assets", "uploaded-templates");
 const PDF_SIGNATURE_TEMP_DIR = path.join(__dirname, ".tmp", "pdf-signature-verification");
 const PDF_SIGNATURE_REPORT_DIR = path.join(PDF_SIGNATURE_TEMP_DIR, "reports");
@@ -5787,7 +5788,7 @@ app.get("/api/forms-config", async (req, res) => {
 
 app.post("/admin/forms-config/save", async (req, res) => {
   try {
-    const { db } = await requireAdmin(req);
+    const { db, decoded } = await requireAdmin(req);
     const incoming = req.body && typeof req.body === "object" ? req.body.config : null;
     validateFormsFieldsConfig(incoming);
     const current = readFormsFieldsConfigFile();
@@ -5800,6 +5801,11 @@ app.post("/admin/forms-config/save", async (req, res) => {
     // Firebase is the durable source of truth; the local JSON remains a
     // useful fallback for local development and static deployments.
     await db.ref(FORMS_FIELDS_CONFIG_DB_PATH).set(updated);
+    await db.ref(FORMS_FIELDS_CONFIG_HISTORY_DB_PATH).push({
+      savedAt: updated.updatedAt,
+      savedBy: String(decoded?.email || "admin"),
+      config: updated
+    });
     try { writeFormsFieldsConfigFile(updated); } catch (_fileError) {}
     return res.json({ ok: true, config: updated });
   } catch (err) {
@@ -6019,6 +6025,21 @@ app.get("/robots.txt", (req, res) => {
 
 app.get("/job-form.html", (_req, res) => {
   return res.redirect(301, "/latest-jobs.html");
+});
+
+app.get("/admin/forms-config/history", async (req, res) => {
+  try {
+    const { db } = await requireAdmin(req);
+    const snapshot = await db.ref(FORMS_FIELDS_CONFIG_HISTORY_DB_PATH).limitToLast(20).get();
+    const history = [];
+    if (snapshot.exists()) {
+      snapshot.forEach((child) => history.push({ id: child.key, ...(child.val() || {}) }));
+    }
+    history.reverse();
+    return res.json({ ok: true, history });
+  } catch (err) {
+    return res.status(err.statusCode || 500).json({ ok: false, error: String(err.message || err) });
+  }
 });
 
 app.get("/job-detail.html", async (req, res, next) => {

@@ -197,6 +197,9 @@
         <button id="saveLocalBtn" class="secondary" title="Admin ke liye server par update; baaki users ke liye sirf local browser save.">Save Local Config</button>
         <button id="undoConfigBtn" class="secondary" type="button" title="Pichla local editor change undo kare" disabled>Undo</button>
         <button id="redoConfigBtn" class="secondary" type="button" title="Undo kiya hua change wapas laaye" disabled>Redo</button>
+        <button id="restoreDefaultBtn" class="danger" type="button" title="Current form ki default config restore kare">Restore Default</button>
+        <button id="configHistoryBtn" class="secondary" type="button" title="Local config history dekhein">History</button>
+        <button id="adminHistoryBtn" class="secondary adminOnly" type="button" title="Admin server config history dekhein">Admin History</button>
         <button id="addFormBtn" class="secondary adminOnly" title="Naya PDF form dropdown me add kare">Add PDF Form</button>
         <button id="deleteFormBtn" class="danger adminOnly" title="Current selected PDF form delete kare">Delete PDF Form</button>
         <button id="autoDetectBtn" class="secondary adminOnly" title="PDF preview se blank field boxes auto detect kare">Auto Detect Fields</button>
@@ -225,6 +228,7 @@
         <div class="field full"><label>Label</label><input id="selLabel"></div>
         <div class="field full"><label>Source field id</label><input id="selSource"></div>
         <div class="field full"><label>Existing source se link karein</label><select id="selSourceSelect"></select></div>
+        <div class="field full"><label>Print Y Offset (pt)</label><input id="printYOffset" type="number" step="0.5" value="0" title="Print text ko thoda upar/niche adjust karein"></div>
       </div>
       <div class="sourceMapBox">
         <div class="sourceMapHead"><span>Form Sources / Field Links</span><span id="sourceMapTotal">0</span></div>
@@ -334,6 +338,7 @@ const MIN_FIT_FONT_SIZE = 7;
 const DEFAULT_ADMIN_SERVER_URL = 'https://emitra-sewa-kendra.onrender.com';
 const ADMIN_SERVER_STORAGE_KEY = 'emitraAdminServerUrl';
 const CONFIG_LOCAL_BACKUP_KEY = 'emitraOfflineFormCombinedConfigBackup';
+const CONFIG_HISTORY_LOCAL_KEY = 'emitraOfflineFormConfigHistory';
 const ADMIN_EMAIL = 'jasmelsolanki@gmail.com';
 const WATERMARK_TEXT = 'EMITRAWALA.ONLINE';
 const FIREBASE_CONFIG = {
@@ -588,6 +593,7 @@ let templateBytes = null;
 let config = null;
 let defaultConfig = null;
 let allConfigs = null;
+let serverConfigs = null;
 let selectedFieldId = null;
 let configUndoStack = [];
 let configRedoStack = [];
@@ -1581,6 +1587,7 @@ async function loadCombinedConfigs(){
     if(!res.ok) throw new Error('Load failed: '+COMBINED_CONFIG_URL);
     remoteConfig = await res.json();
   }
+  serverConfigs = structuredClone(remoteConfig);
   allConfigs = preferNewerConfig(remoteConfig);
   if(!allConfigs.forms) throw new Error('Combined config me forms object missing hai');
   // Older server/local admin configs can predate the bundled OBC form.
@@ -1590,6 +1597,7 @@ async function loadCombinedConfigs(){
     const bundled = await res.json();
     if(!bundled.forms?.obc) throw new Error('OBC form config missing');
     allConfigs.forms.obc = structuredClone(bundled.forms.obc);
+    if(!serverConfigs.forms.obc) serverConfigs.forms.obc = structuredClone(bundled.forms.obc);
   }
   rebuildFormSelect();
   return allConfigs;
@@ -1600,13 +1608,15 @@ async function loadSelectedForm(){
   selectedFieldId = null;
   setStatus(form.title + ' loading...');
   const combined = await loadCombinedConfigs();
-  defaultConfig = sanitizeConfigFields(structuredClone(combined.forms[currentFormKey]));
-  if(!defaultConfig || !defaultConfig.fields) throw new Error(currentFormKey + ' config missing in forms-fields-config.json');
-  templateBytes = await loadBytes(resolveTemplateUrl(defaultConfig.template) || form.pdf);
-  config = structuredClone(defaultConfig);
+  const loadedConfig = combined.forms[currentFormKey];
+  defaultConfig = sanitizeConfigFields(structuredClone(serverConfigs?.forms?.[currentFormKey] || loadedConfig));
+  if(!loadedConfig || !loadedConfig.fields) throw new Error(currentFormKey + ' config missing in forms-fields-config.json');
+  templateBytes = await loadBytes(resolveTemplateUrl(loadedConfig.template || defaultConfig.template) || form.pdf);
+  config = sanitizeConfigFields(structuredClone(loadedConfig));
   clearConfigHistory();
   buildDataForm();
   await renderPreview();
+  fillSelectedControls();
   setStatus(form.title + ' ready', 'ok');
 }
 
@@ -1791,6 +1801,7 @@ function selectField(id){
 }
 function fillSelectedControls(){
   const f=config?.fields?.find(x=>x.id===selectedFieldId);
+  if($('printYOffset')) $('printYOffset').value=Number(config?.printYOffset || 0);
   if(!f){ $('selectedInfo').textContent='Koi field selected nahi hai.'; renderSourceLinkTools(); return; }
   $('selectedInfo').innerHTML=`<b>${f.label}</b><br><span class="mono">${f.id}</span>`;
   $('selX').value=(f.xPct*100).toFixed(3); $('selY').value=(f.yPct*100).toFixed(3);
@@ -1811,6 +1822,11 @@ function fillSelectedControls(){
   });
 });
 $('selSourceSelect').addEventListener('change', e=>applySelectedSource(e.target.value));
+$('printYOffset').addEventListener('input', e=>{
+  rememberConfigChange();
+  config.printYOffset = Number(e.target.value) || 0;
+  renderPreview();
+});
 
 async function makePdf(){
   if(!templateBytes || !config) throw new Error('Template/config missing');
@@ -1889,7 +1905,7 @@ async function makePdf(){
     const drawX = Math.max(x + 1, Math.min(x + Math.max(1, w - textWidth - 1), centerX));
     const boxBottom = height - top - h;
     const baselineFont = /[^\x20-\x7E]/.test(text) ? font : latinFont;
-    const y = getCenteredBaseline(boxBottom, h, size, baselineFont);
+    const y = getCenteredBaseline(boxBottom, h, size, baselineFont) + (Number(config.printYOffset) || 0);
     drawMixedText(page, text, {x:drawX,y, size, color:fillColor});
   }
   for(const page of pages){
@@ -2358,18 +2374,92 @@ async function deletePdfForm(){
   await loadSelectedForm();
   setStatus('PDF form delete ho gaya. Permanent save ke liye Update Config dabayein.', 'ok');
 }
-async function applySavedConfig(combined){
+async function applySavedConfig(combined, updateServerDefault = false){
   allConfigs = combined;
-  defaultConfig = sanitizeConfigFields(structuredClone(allConfigs.forms[currentFormKey]));
-  config = sanitizeConfigFields(structuredClone(defaultConfig));
+  if(updateServerDefault) serverConfigs = structuredClone(combined);
+  const sourceDefault = serverConfigs?.forms?.[currentFormKey] || allConfigs.forms[currentFormKey];
+  defaultConfig = sanitizeConfigFields(structuredClone(sourceDefault));
+  config = sanitizeConfigFields(structuredClone(allConfigs.forms[currentFormKey]));
   clearConfigHistory();
   await renderPreview();
+  fillSelectedControls();
+}
+function saveConfigHistory(combined){
+  try{
+    const history = JSON.parse(localStorage.getItem(CONFIG_HISTORY_LOCAL_KEY) || '[]');
+    history.unshift({savedAt:Date.now(), config:combined});
+    localStorage.setItem(CONFIG_HISTORY_LOCAL_KEY, JSON.stringify(history.slice(0, 10)));
+  }catch(_error){}
+}
+function loadConfigHistory(){
+  try{
+    const history = JSON.parse(localStorage.getItem(CONFIG_HISTORY_LOCAL_KEY) || '[]');
+    return Array.isArray(history) ? history.filter(item => item?.config?.forms) : [];
+  }catch(_error){ return []; }
+}
+async function restoreDefaultConfig(){
+  if(!defaultConfig) return;
+  if(!confirm('Is form ki default config restore karni hai?')) return;
+  rememberConfigChange();
+  config = sanitizeConfigFields(structuredClone(defaultConfig));
+  selectedFieldId = null;
+  buildDataForm();
+  await renderPreview();
+  fillSelectedControls();
+  setStatus('Default config restore ho gayi. Permanent rakhne ke liye Save Local Config dabayein.', 'ok');
+}
+async function showLocalConfigHistory(){
+  const history = loadConfigHistory();
+  if(!history.length){ alert('Abhi koi local config history available nahi hai.'); return; }
+  const choices = history.map((item, index) => `${index + 1}. ${new Date(item.savedAt).toLocaleString()}`).join('\n');
+  const selected = Number(prompt(`Config history:\n${choices}\n\nRestore ke liye number likhein (Cancel = close):`));
+  const item = history[selected - 1];
+  if(!item) return;
+  const form = item.config.forms[currentFormKey];
+  if(!form) return;
+  rememberConfigChange();
+  config = sanitizeConfigFields(structuredClone(form));
+  saveConfigBackup(item.config);
+  buildDataForm();
+  await renderPreview();
+  fillSelectedControls();
+  setStatus('Selected local config history restore ho gayi.', 'ok');
+}
+async function showAdminConfigHistory(){
+  if(!authState.isAdmin || !authState.user){
+    setStatus('Admin login required.', 'bad');
+    return;
+  }
+  try{
+    const token = await authState.user.getIdToken();
+    const response = await fetch(adminApiUrl('/admin/forms-config/history') + '?t=' + Date.now(), { headers:{Authorization:'Bearer ' + token}, cache:'no-store' });
+    const data = await response.json().catch(()=>({}));
+    if(!response.ok || data.ok === false) throw new Error(data.error || 'History load failed');
+    const history = Array.isArray(data.history) ? data.history : [];
+    if(!history.length){ alert('Server par abhi config history available nahi hai.'); return; }
+    const choices = history.map((item, index) => `${index + 1}. ${item.savedBy || 'admin'} - ${item.savedAt || ''}`).join('\n');
+    const selected = Number(prompt(`Admin config history:\n${choices}\n\nRestore ke liye number likhein (Cancel = close):`));
+    const item = history[selected - 1];
+    if(!item?.config?.forms?.[currentFormKey]) return;
+    rememberConfigChange();
+    allConfigs = structuredClone(item.config);
+    defaultConfig = sanitizeConfigFields(structuredClone(allConfigs.forms[currentFormKey]));
+    config = sanitizeConfigFields(structuredClone(defaultConfig));
+    buildDataForm();
+    await renderPreview();
+    fillSelectedControls();
+    setStatus('Server history restore ho gayi. Permanent karne ke liye Update Config dabayein.', 'ok');
+  }catch(error){
+    console.error(error);
+    setStatus('Admin history error: ' + error.message, 'bad');
+  }
 }
 async function saveConfigForEveryone(){
   const combined = getCombinedConfigForDownload();
   if(!authState.isAdmin){
     saveConfigBackup(combined);
-    await applySavedConfig(combined);
+    saveConfigHistory(combined);
+    await applySavedConfig(combined, false);
     setStatus('Local config save ho gaya. Online/server config change nahi hui.', 'ok');
     return;
   }
@@ -2377,7 +2467,8 @@ async function saveConfigForEveryone(){
   try{
     await callAdminApi('/admin/forms-config/save', { config: combined });
     saveConfigBackup(combined);
-    await applySavedConfig(combined);
+    saveConfigHistory(combined);
+    await applySavedConfig(combined, true);
     setStatus('Config update ho gaya. Sab users ko latest config auto load hoga.', 'ok');
   }catch(error){
     console.error(error);
@@ -2398,6 +2489,9 @@ $('editMode').addEventListener('change',()=>{
 $('saveLocalBtn').addEventListener('click',saveConfigForEveryone);
 $('undoConfigBtn').addEventListener('click',undoConfigChange);
 $('redoConfigBtn').addEventListener('click',redoConfigChange);
+$('restoreDefaultBtn').addEventListener('click',restoreDefaultConfig);
+$('configHistoryBtn').addEventListener('click',showLocalConfigHistory);
+$('adminHistoryBtn').addEventListener('click',showAdminConfigHistory);
 $('addFormBtn').addEventListener('click',addPdfForm);
 $('deleteFormBtn').addEventListener('click',deletePdfForm);
 $('autoDetectBtn').addEventListener('click',autoDetectFields);
@@ -2407,6 +2501,11 @@ $('deleteInputBtn').addEventListener('click',deleteCustomInput);
 $('deleteFieldBtn').addEventListener('click',deleteMappedField);
 $('downloadConfigBtn').addEventListener('click',downloadConfig);
 $('resetConfigBtn').addEventListener('click',async()=>{rememberConfigChange(); localStorage.removeItem(getFormMeta(currentFormKey).localKey); config=sanitizeConfigFields(structuredClone(defaultConfig)); selectedFieldId=null; await renderPreview(); setStatus('Reset done','ok');});
+document.addEventListener('keydown', event=>{
+  if(!document.body.classList.contains('editOn') || !(event.ctrlKey || event.metaKey) || event.altKey) return;
+  if(event.key.toLowerCase() === 'z' && !event.shiftKey){ event.preventDefault(); undoConfigChange(); }
+  else if(event.key.toLowerCase() === 'y' || (event.key.toLowerCase() === 'z' && event.shiftKey)){ event.preventDefault(); redoConfigChange(); }
+});
 $('folderUploadInput').addEventListener('change',importPdfFormFolder);
 $('pdfFile').addEventListener('change',async e=>{
   const f=e.target.files[0]; if(!f)return;
