@@ -123,6 +123,7 @@ const FIREBASE_URL = extractUrl(process.env.FIREBASE_URL, DEFAULT_FIREBASE_URL);
 const SETTINGS_PATH = path.join(__dirname, "settings.json");
 const CRAWLER_SOURCES_PATH = path.join(__dirname, "crawler-sources.json");
 const FORMS_FIELDS_CONFIG_PATH = path.join(__dirname, "emitra-offline-form-fill", "assets", "forms-fields-config.json");
+const FORMS_FIELDS_CONFIG_DB_PATH = "formsFieldsConfig";
 const FORMS_TEMPLATE_UPLOAD_DIR = path.join(__dirname, "emitra-offline-form-fill", "assets", "uploaded-templates");
 const PDF_SIGNATURE_TEMP_DIR = path.join(__dirname, ".tmp", "pdf-signature-verification");
 const PDF_SIGNATURE_REPORT_DIR = path.join(PDF_SIGNATURE_TEMP_DIR, "reports");
@@ -5768,9 +5769,17 @@ app.post("/api/settings", async (req, res) => {
   }
 });
 
-app.get("/api/forms-config", (req, res) => {
+app.get("/api/forms-config", async (req, res) => {
   try {
-    return res.json({ ok: true, config: readFormsFieldsConfigFile() });
+    const fileConfig = readFormsFieldsConfigFile();
+    const db = getAdminDb();
+    if (db) {
+      const snapshot = await db.ref(FORMS_FIELDS_CONFIG_DB_PATH).get();
+      if (snapshot.exists() && snapshot.val()?.forms) {
+        return res.json({ ok: true, config: snapshot.val() });
+      }
+    }
+    return res.json({ ok: true, config: fileConfig });
   } catch (err) {
     return res.status(500).json({ ok: false, error: String(err.message || err) });
   }
@@ -5778,7 +5787,7 @@ app.get("/api/forms-config", (req, res) => {
 
 app.post("/admin/forms-config/save", async (req, res) => {
   try {
-    await requireAdmin(req);
+    const { db } = await requireAdmin(req);
     const incoming = req.body && typeof req.body === "object" ? req.body.config : null;
     validateFormsFieldsConfig(incoming);
     const current = readFormsFieldsConfigFile();
@@ -5788,7 +5797,10 @@ app.post("/admin/forms-config/save", async (req, res) => {
       version: incoming.version || current.version || "1.0",
       updatedAt: nowStamp()
     };
-    writeFormsFieldsConfigFile(updated);
+    // Firebase is the durable source of truth; the local JSON remains a
+    // useful fallback for local development and static deployments.
+    await db.ref(FORMS_FIELDS_CONFIG_DB_PATH).set(updated);
+    try { writeFormsFieldsConfigFile(updated); } catch (_fileError) {}
     return res.json({ ok: true, config: updated });
   } catch (err) {
     return res.status(err.statusCode || 500).json({ ok: false, error: String(err.message || err) });
