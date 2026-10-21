@@ -66,10 +66,11 @@
     .card.form .panel,.card.side .panel{max-height:none;overflow:visible}
     .card.preview{min-width:0;border-top:4px solid var(--blue)}
     .formActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0 12px}
-    .dataGroup{border:1px solid var(--line);border-radius:8px;background:#fbfdff;margin:0 0 12px;overflow:hidden}
+    .dataGroup{border:1px solid var(--line);border-radius:8px;background:#fbfdff;margin:0 0 12px;overflow:visible}
     .dataGroupHead{background:var(--soft);border-bottom:1px solid #c9dff4;padding:9px 11px;display:flex;align-items:center;justify-content:space-between;gap:8px}
     .dataGroupHead span{font-size:12px;color:var(--blue);font-weight:900}
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:11px}.field{margin-bottom:0}.field label{font-size:12px;color:#334155;display:block;margin:0 0 4px;font-weight:700}.full{grid-column:1/-1}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:11px}.field{margin-bottom:0;position:relative}.field label{font-size:12px;color:#334155;display:block;margin:0 0 4px;font-weight:700}.full{grid-column:1/-1}
+    .hindiSuggestions{position:absolute;left:0;right:0;top:100%;z-index:40;display:flex;gap:6px;flex-wrap:wrap;padding:6px;background:#fff;border:1px solid #8bb9df;border-radius:0 0 7px 7px;box-shadow:0 5px 14px rgba(8,31,74,.18)}.hindiSuggestions button{padding:5px 9px;border:1px solid #bdd0e5;border-radius:5px;background:#f4f9ff;color:var(--deep);font-size:13px;font-weight:700;cursor:pointer}.hindiSuggestions button:hover,.hindiSuggestions button:focus{background:#dceeff;border-color:var(--blue);outline:none}
     .dateInputRow{display:grid;grid-template-columns:minmax(0,1fr) 46px;gap:6px;align-items:center}
     .datePickerInput{min-width:46px;height:39px;padding:7px;color:transparent;cursor:pointer}
     .datePickerInput::-webkit-calendar-picker-indicator{cursor:pointer;opacity:1}
@@ -676,7 +677,28 @@ const HINDI_WORDS = {
   'hai':'है','hain':'हैं','ho':'हो','tha':'था','thi':'थी','the':'थे','aur':'और','ka':'का','ki':'की','ko':'को',
   'se':'से','me':'में','mein':'में','par':'पर','ye':'ये','yeh':'यह','wo':'वो','vah':'वह','is':'इस','us':'उस',
   'ek':'एक','naam':'नाम','pita':'पिता','mata':'माता','aap':'आप','mera':'मेरा','meri':'मेरी','apna':'अपना',
-  'vivahit':'विवाहित','unmarried':'अविवाहित','avivahit':'अविवाहित'
+  'vivahit':'विवाहित','unmarried':'अविवाहित','avivahit':'अविवाहित','kaha':'कहा','aisa':'ऐसा','aesa':'ऐसा',
+  'jaise':'जैसे','waise':'वैसे','aise':'ऐसे','kyon':'क्यों','kyunki':'क्योंकि'
+};
+
+const HINDI_SUGGESTIONS = {
+  'kaha':['कहा','कहाँ','कहां'],
+  'kahan':['कहाँ','कहां','कहान'],
+  'hai':['है','हैं'],
+  'hain':['हैं','है'],
+  'ka':['का','के','की'],
+  'ki':['की','कि'],
+  'ke':['के','की','का'],
+  'ko':['को','कों'],
+  'me':['में','मे'],
+  'mein':['में','मे'],
+  'se':['से','से ही'],
+  'aur':['और','ओर'],
+  'aisa':['ऐसा','ऐसे'],
+  'aese':['ऐसे','ऐसा'],
+  'aise':['ऐसे','ऐसा'],
+  'jaise':['जैसे','जैसा'],
+  'waise':['वैसे','वैसा']
 };
 
 const CONS = [
@@ -734,6 +756,50 @@ function transliterateWordToHindi(word){
 function autoHindiText(value){
   if(!value) return value;
   return String(value).replace(/[A-Za-z]+/g, (word) => transliterateWordToHindi(word));
+}
+
+function getHindiSuggestionInfo(input){
+  const value = String(input?.value || '');
+  const match = value.match(/[A-Za-z]+$/);
+  if(!match) return null;
+  const word = match[0];
+  const lower = word.toLowerCase();
+  const generated = transliterateWordToHindi(word);
+  const items = [...(HINDI_SUGGESTIONS[lower] || [])];
+  if(generated && !items.includes(generated)) items.push(generated);
+  return { word, start:match.index ?? value.length - word.length, end:value.length, items:[...new Set(items)].slice(0, 5) };
+}
+
+function hideHindiSuggestions(input){
+  input?.closest('.field')?.querySelector('.hindiSuggestions')?.remove();
+}
+
+function showHindiSuggestions(input, fieldWrap){
+  hideHindiSuggestions(input);
+  if(!input || !fieldWrap || !isAutoHindiEnabled()) return;
+  const info = getHindiSuggestionInfo(input);
+  if(!info || !info.items.length || info.items.every(item => item === info.word)) return;
+  const box = document.createElement('div');
+  box.className = 'hindiSuggestions';
+  box.setAttribute('role','listbox');
+  for(const item of info.items){
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = item;
+    button.setAttribute('role','option');
+    button.addEventListener('mousedown', event => event.preventDefault());
+    button.addEventListener('click', ()=>{
+      const value = String(input.value || '');
+      input.value = value.slice(0, info.start) + item + value.slice(info.end);
+      hideHindiSuggestions(input);
+      setSharedValue(input.id.startsWith('data_') ? input.id.slice(5) : '', input.value);
+      refreshOverlayTexts();
+      input.focus();
+      try { input.setSelectionRange(info.start + item.length, info.start + item.length); } catch(e) {}
+    });
+    box.appendChild(button);
+  }
+  fieldWrap.appendChild(box);
 }
 
 function applyAutoHindiToInput(input){
@@ -1012,18 +1078,20 @@ function buildDataForm(){
       } else {
         input.inputMode = (id==='aadhaar' || id==='janAadhaar' || id==='mobile' || id==='age' || id==='rationNumber' || dateField) ? 'numeric' : 'text';
       }
-      let hindiTimer = null;
       input.addEventListener('input', ()=>{
         if(hindiField && isAutoHindiEnabled()){
-          clearTimeout(hindiTimer);
-          if(/[\s,.;।\n]$/.test(input.value)) applyAutoHindiToInput(input);
-          else hindiTimer = setTimeout(()=>{ applyAutoHindiToInput(input); refreshOverlayTexts(); }, 550);
+          if(/[\s,.;।\n]$/.test(input.value)){
+            applyAutoHindiToInput(input);
+            hideHindiSuggestions(input);
+          } else {
+            showHindiSuggestions(input, wrap);
+          }
         }
         setSharedValue(id, input.value);
         refreshOverlayTexts();
       });
-      input.addEventListener('change', ()=>{ applyAutoHindiToInput(input); normalizeDateInputIfNeeded(input, id); setSharedValue(id, input.value); refreshOverlayTexts(); });
-      input.addEventListener('blur', ()=>{ applyAutoHindiToInput(input); normalizeDateInputIfNeeded(input, id); setSharedValue(id, input.value); refreshOverlayTexts(); });
+      input.addEventListener('change', ()=>{ applyAutoHindiToInput(input); hideHindiSuggestions(input); normalizeDateInputIfNeeded(input, id); setSharedValue(id, input.value); refreshOverlayTexts(); });
+      input.addEventListener('blur', ()=>{ applyAutoHindiToInput(input); hideHindiSuggestions(input); normalizeDateInputIfNeeded(input, id); setSharedValue(id, input.value); refreshOverlayTexts(); });
       if(dateField){
         input.placeholder = 'DD-MM-YYYY';
         const dateRow = document.createElement('div');
