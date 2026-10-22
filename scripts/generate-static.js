@@ -232,9 +232,17 @@ const injectHomepageImportantLinks = (links = []) => {
   const linksHtml = links.length
     ? links.map((item) => `<a href="${esc(item.url)}" target="_blank" rel="noopener noreferrer">${esc(item.title)}</a>`).join("")
     : '<span class="important-links-empty">Abhi koi important link available nahi hai.</span>';
+  const menuLinks = links.filter((item) => /^https?:\/\//i.test(String(item.url || "").trim()));
+  const menuHtml = menuLinks.length
+    ? menuLinks.map((item) => `<a href="${esc(item.url)}" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-arrow-up-right-from-square"></i> ${esc(item.title)}</a>`).join("")
+    : '<div class="important-menu-empty"><i class="fa-solid fa-link-slash"></i> Abhi koi important link available nahi hai.</div>';
   html = html.replace(
     /(<!-- IMPORTANT_LINKS_HOME_START -->)[\s\S]*?(<!-- IMPORTANT_LINKS_HOME_END -->)/,
     `$1\n${linksHtml}\n$2`
+  );
+  html = html.replace(
+    /(<!-- IMPORTANT_LINKS_MENU_START -->)[\s\S]*?(<!-- IMPORTANT_LINKS_MENU_END -->)/,
+    `$1\n${menuHtml}\n$2`
   );
   fs.writeFileSync(file, html, "utf8");
 };
