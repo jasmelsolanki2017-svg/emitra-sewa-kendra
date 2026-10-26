@@ -451,11 +451,12 @@ const transform=document.createElement('div');transform.className='transform-box
 const frame=document.createElement('div');frame.className='crop-frame';frame.hidden=true;const cropSvg=document.createElementNS('http://www.w3.org/2000/svg','svg');cropSvg.setAttribute('viewBox','0 0 1000 1000');cropSvg.setAttribute('preserveAspectRatio','none');const shade=document.createElementNS('http://www.w3.org/2000/svg','path');shade.setAttribute('fill','#0006');shade.setAttribute('fill-rule','evenodd');shade.classList.add('crop-shade');const outline=document.createElementNS('http://www.w3.org/2000/svg','polygon');outline.setAttribute('fill','none');outline.setAttribute('stroke','#ffca28');outline.setAttribute('stroke-width','1.5');outline.setAttribute('vector-effect','non-scaling-stroke');cropSvg.append(shade,outline);frame.appendChild(cropSvg);['nw','ne','sw','se'].forEach(c=>{const h=document.createElement('i');h.className='crop-handle '+c;h.dataset.corner=c;frame.appendChild(h)});
 slot.append(img,badge,transform,frame);paper.appendChild(slot);
 const printSlot=document.createElement('div');printSlot.className='print-slot';const printImg=document.createElement('img');printImg.src=url;printImg.alt=file.name;printSlot.appendChild(printImg);printPage.appendChild(printSlot);
-const card=document.createElement('div');card.className='photo-card';card.innerHTML=`<div class="photo-head"><span></span><button type="button" class="btn danger remove">Remove</button></div><div class="actions"><button type="button" class="btn primary cropToggle">✂ Crop</button><button type="button" class="btn secondary cropApply">✓ Apply crop</button><button type="button" class="btn secondary cropReset" title="Reset crop">⟲</button><button type="button" class="btn secondary rotate" title="Rotate 90° clockwise">↻ 90°</button><button type="button" class="btn secondary rotateCCW" title="Rotate 90° anticlockwise">↺ 90°</button><button type="button" class="btn secondary reset-position" title="Reset photo position and size">⌂ Reset</button></div>`;card.querySelector('.photo-head span').textContent=`Photo ${id}: ${file.name}`;list.appendChild(card);
+const card=document.createElement('div');card.className='photo-card';card.innerHTML=`<div class="photo-head"><span></span><button type="button" class="btn danger remove">Remove</button></div><div class="actions"><button type="button" class="btn primary autoCrop">✨ Auto detect & crop</button><button type="button" class="btn primary cropToggle">✂ Manual Crop</button><button type="button" class="btn secondary cropApply">✓ Apply crop</button><button type="button" class="btn secondary cropReset" title="Reset crop">⟲</button><button type="button" class="btn secondary rotate" title="Rotate 90° clockwise">↻ 90°</button><button type="button" class="btn secondary rotateCCW" title="Rotate 90° anticlockwise">↺ 90°</button><button type="button" class="btn secondary reset-position" title="Reset photo position and size">⌂ Reset</button></div>`;card.querySelector('.photo-head span').textContent=`Photo ${id}: ${file.name}`;list.appendChild(card);
 const index=items.length,col=index%2,row=Math.floor(index/2);
 const it={id,file,url,slot,img,badge,frame,printSlot,printImg,card,transform,pos:{x:0.04+col*0.49,y:0.04+row*0.23,w:0.43,rot:0},crop:{nw:{x:.02,y:.02},ne:{x:.98,y:.02},se:{x:.98,y:.98},sw:{x:.02,y:.98}},drag:null};items.push(it);
 img.onload=()=>{selectItem(it);applyPosition(it);printBtn.disabled=false;emptyNote.hidden=true;};
 card.querySelector('.remove').onclick=()=>removeItem(it);
+card.querySelector('.autoCrop').onclick=()=>autoDetectCrop(it);
 card.querySelector('.cropToggle').onclick=()=>{selectItem(it);it.frame.hidden=false;it.transform.style.display='none';};
 card.querySelector('.cropApply').onclick=()=>cropPhoto(it);
 card.querySelector('.cropReset').onclick=()=>{it.crop={nw:{x:.02,y:.02},ne:{x:.98,y:.02},se:{x:.98,y:.98},sw:{x:.02,y:.98}};it.frame.hidden=false;it.transform.style.display='none';drawCrop(it);};
@@ -476,6 +477,72 @@ const angle=d.pos.rot*Math.PI/180;const localDx=dx*Math.cos(angle)+dy*Math.sin(a
 it.pos.w=clamp(nw,0.08,0.95);it.pos.x=clamp(d.pos.x+(d.corner.includes('w')?(d.pos.w-it.pos.w):0),0,1-it.pos.w);const h=it.pos.w*aspect;it.pos.y=clamp(d.pos.y+(d.corner.includes('n')?(d.pos.w-it.pos.w)*aspect:0),0,1-h);applyPosition(it);}
 function startCrop(e,it,corner){e.preventDefault();e.stopPropagation();it.drag={mode:'crop',corner,startX:e.clientX,startY:e.clientY,crop:JSON.parse(JSON.stringify(it.crop)),rect:it.slot.getBoundingClientRect()};try{e.currentTarget.setPointerCapture(e.pointerId)}catch(_){}}
 function moveCrop(e,it){const d=it.drag;if(!d)return;const dx=(e.clientX-d.startX)/d.rect.width,dy=(e.clientY-d.startY)/d.rect.height;it.crop=JSON.parse(JSON.stringify(d.crop));const p=it.crop[d.corner];p.x=clamp(p.x+dx,0,1);p.y=clamp(p.y+dy,0,1);drawCrop(it);}
+let cvLoaderPromise=null;
+function ensureOpenCV(){
+ if(window.cv && window.cv.Mat) return Promise.resolve(window.cv);
+ if(cvLoaderPromise) return cvLoaderPromise;
+ cvLoaderPromise=new Promise((resolve,reject)=>{
+  let settled=false;
+  const finish=(err)=>{if(settled)return;settled=true;err?reject(err):resolve(window.cv);};
+  const timer=setTimeout(()=>finish(new Error('Auto crop library load timeout. Internet connection check karein.')),45000);
+  const ready=()=>{if(window.cv && window.cv.Mat){clearTimeout(timer);finish();}};
+  if(!document.querySelector('script[data-opencv-loader]')){
+   const script=document.createElement('script');
+   script.src='https://docs.opencv.org/4.x/opencv.js';
+   script.async=true;script.dataset.opencvLoader='1';
+   script.onerror=()=>{clearTimeout(timer);finish(new Error('Auto crop library load nahi hui. Manual Crop use karein.'));};
+   document.head.appendChild(script);
+  }
+  const poll=setInterval(()=>{if(window.cv && window.cv.Mat){clearInterval(poll);clearTimeout(timer);finish();}},250);
+  if(window.cv){window.cv.onRuntimeInitialized=ready;ready();}
+ });
+ return cvLoaderPromise;
+}
+function orderQuad(points){
+ const sum=p=>p.x+p.y,diff=p=>p.y-p.x;
+ const tl=points.reduce((a,b)=>sum(a)<sum(b)?a:b);
+ const br=points.reduce((a,b)=>sum(a)>sum(b)?a:b);
+ const tr=points.reduce((a,b)=>diff(a)<diff(b)?a:b);
+ const bl=points.reduce((a,b)=>diff(a)>diff(b)?a:b);
+ return [tl,tr,br,bl];
+}
+async function autoDetectCrop(it){
+ const button=it.card.querySelector('.autoCrop');
+ const original=button.textContent;
+ button.disabled=true;button.textContent='Detecting…';
+ try{
+  const cv=await ensureOpenCV();
+  const source=new Image();source.src=it.url;
+  if(source.decode) await source.decode(); else await new Promise((resolve,reject)=>{source.onload=resolve;source.onerror=reject;});
+  const canvas=document.createElement('canvas');canvas.width=source.naturalWidth;canvas.height=source.naturalHeight;
+  const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.drawImage(source,0,0);
+  const src=cv.imread(canvas),gray=new cv.Mat(),blur=new cv.Mat(),edges=new cv.Mat(),contours=new cv.MatVector(),hierarchy=new cv.Mat();
+  try{
+   cv.cvtColor(src,gray,cv.COLOR_RGBA2GRAY);cv.GaussianBlur(gray,blur,new cv.Size(5,5),0);
+   cv.Canny(blur,edges,50,150);const kernel=cv.Mat.ones(5,5,cv.CV_8U);cv.dilate(edges,edges,kernel);kernel.delete();
+   cv.findContours(edges,contours,hierarchy,cv.RETR_LIST,cv.CHAIN_APPROX_SIMPLE);
+   let best=null,bestArea=0;const imgArea=source.naturalWidth*source.naturalHeight;
+   for(let i=0;i<contours.size();i++){
+    const contour=contours.get(i),per=cv.arcLength(contour,true),approx=new cv.Mat();
+    cv.approxPolyDP(contour,approx,0.02*per,true);
+    if(approx.rows===4 && cv.isContourConvex(approx)){
+     const area=Math.abs(cv.contourArea(approx));
+     if(area>bestArea && area>imgArea*0.08){
+      const pts=[];for(let j=0;j<4;j++)pts.push({x:approx.intPtr(j,0)[0],y:approx.intPtr(j,0)[1]});
+      best=orderQuad(pts);bestArea=area;
+     }
+    }
+    approx.delete();contour.delete();
+   }
+   if(!best) throw new Error('Card ke 4 kone nahi mil paye. Saaf, seedhi photo try karein ya Manual Crop use karein.');
+   const w=source.naturalWidth,h=source.naturalHeight;
+   it.crop={nw:{x:clamp(best[0].x/w,0,1),y:clamp(best[0].y/h,0,1)},ne:{x:clamp(best[1].x/w,0,1),y:clamp(best[1].y/h,0,1)},se:{x:clamp(best[2].x/w,0,1),y:clamp(best[2].y/h,0,1)},sw:{x:clamp(best[3].x/w,0,1),y:clamp(best[3].y/h,0,1)}};
+   selectItem(it);it.frame.hidden=false;it.transform.style.display='none';drawCrop(it);
+   cropPhoto(it);
+  } finally {src.delete();gray.delete();blur.delete();edges.delete();contours.delete();hierarchy.delete();}
+ }catch(err){alert(err&&err.message?err.message:'Auto crop nahi ho paya. Manual Crop try karein.');}
+ finally{button.disabled=false;button.textContent=original;}
+}
 function cropPhoto(it){if(it.frame.hidden){it.frame.hidden=false;it.transform.style.display='none';drawCrop(it);return;}const b=it.crop,im=new Image();im.onload=()=>{const sw=im.naturalWidth,sh=im.naturalHeight;const q=[b.nw,b.ne,b.se,b.sw].map(p=>({x:p.x*sw,y:p.y*sh}));const outW=Math.max(2,Math.round((Math.hypot(q[1].x-q[0].x,q[1].y-q[0].y)+Math.hypot(q[2].x-q[3].x,q[2].y-q[3].y))/2));const outH=Math.max(2,Math.round((Math.hypot(q[3].x-q[0].x,q[3].y-q[0].y)+Math.hypot(q[2].x-q[1].x,q[2].y-q[1].y))/2));const c=document.createElement('canvas');c.width=Math.min(outW,2400);c.height=Math.min(outH,2400);const ctx=c.getContext('2d');function tri(src,dst){ctx.save();ctx.beginPath();ctx.moveTo(dst[0].x,dst[0].y);ctx.lineTo(dst[1].x,dst[1].y);ctx.lineTo(dst[2].x,dst[2].y);ctx.closePath();ctx.clip();const [a,b1,c1]=src,[A,B,C]=dst;const den=a.x*(b1.y-c1.y)+b1.x*(c1.y-a.y)+c1.x*(a.y-b1.y);if(Math.abs(den)>1e-8){const m11=(A.x*(b1.y-c1.y)+B.x*(c1.y-a.y)+C.x*(a.y-b1.y))/den;const m12=(A.y*(b1.y-c1.y)+B.y*(c1.y-a.y)+C.y*(a.y-b1.y))/den;const m21=(A.x*(c1.x-b1.x)+B.x*(a.x-c1.x)+C.x*(b1.x-a.x))/den;const m22=(A.y*(c1.x-b1.x)+B.y*(a.x-c1.x)+C.y*(b1.x-a.x))/den;const dx=A.x-m11*a.x-m21*a.y,dy=A.y-m12*a.x-m22*a.y;ctx.transform(m11,m12,m21,m22,dx,dy);ctx.drawImage(im,0,0);}ctx.restore();}const dst=[{x:0,y:0},{x:c.width,y:0},{x:c.width,y:c.height},{x:0,y:c.height}];tri([q[0],q[1],q[2]],[dst[0],dst[1],dst[2]]);tri([q[0],q[2],q[3]],[dst[0],dst[2],dst[3]]);const data=c.toDataURL('image/jpeg',.97);if(it.url.startsWith('blob:'))URL.revokeObjectURL(it.url);it.url=data;it.img.onload=()=>{it.frame.hidden=true;it.transform.style.display='';it.crop={nw:{x:.02,y:.02},ne:{x:.98,y:.02},se:{x:.98,y:.98},sw:{x:.02,y:.98}};applyPosition(it);};it.img.src=data;it.printImg.src=data;};im.src=it.url;}
 function removeItem(it){if(it.url.startsWith('blob:'))URL.revokeObjectURL(it.url);it.slot.remove();it.printSlot.remove();it.card.remove();items=items.filter(x=>x!==it);items.forEach((x,i)=>{x.badge.textContent=x.badge.textContent.replace(/^#\d+/,`#${i+1}`)});printBtn.disabled=!items.length;emptyNote.hidden=!!items.length;}
 window.addEventListener('pointermove',e=>items.forEach(it=>{if(it.drag){if(it.drag.mode==='crop')moveCrop(e,it);else moveTransform(e,it);}}));
