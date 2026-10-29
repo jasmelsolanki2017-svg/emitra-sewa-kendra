@@ -266,6 +266,34 @@ const aadhaarCropSchema = {
     confidence: { type: "number", minimum: 0, maximum: 1 }
   }
 };
+const ID_CARD_CROP_TEMP_DIR = path.join(__dirname, ".tmp", "id-card-crop");
+const ID_CARD_CROP_SCRIPT = path.join(__dirname, "tools", "detect_id_card.py");
+
+async function cropIdCardWithOpenCv(file) {
+  const ext = file.mimetype === "image/png" ? ".png" : file.mimetype === "image/webp" ? ".webp" : ".jpg";
+  const tempPath = path.join(ID_CARD_CROP_TEMP_DIR, `${crypto.randomUUID()}${ext}`);
+  try {
+    await fs.promises.mkdir(ID_CARD_CROP_TEMP_DIR, { recursive: true });
+    await fs.promises.writeFile(tempPath, file.buffer);
+    const pythonCandidates = [process.env.PYTHON_BIN, "python", "py"].filter(Boolean);
+    for (const pythonBin of pythonCandidates) {
+      try {
+        const { stdout } = await execFileAsync(pythonBin, [ID_CARD_CROP_SCRIPT, tempPath], {
+          timeout: 15000,
+          maxBuffer: 12 * 1024 * 1024,
+          windowsHide: true
+        });
+        const result = JSON.parse(String(stdout || "").trim());
+        if (result?.image && Number.isFinite(result?.confidence)) return result;
+      } catch (_error) {
+        // Try the next Python command or the vision-model fallback. Do not log ID data.
+      }
+    }
+    return null;
+  } finally {
+    await fs.promises.unlink(tempPath).catch(() => {});
+  }
+}
 
 // The old Aadhaar path is retained for existing links; new clients use the generic ID-card path.
 app.post(["/api/id-card-ai-crop", "/api/aadhaar-ai-crop"], (req, res) => {
@@ -282,6 +310,11 @@ app.post(["/api/id-card-ai-crop", "/api/aadhaar-ai-crop"], (req, res) => {
     if (!req.file || !/^image\/(jpeg|png|webp|gif)$/i.test(req.file.mimetype || "")) {
       return res.status(400).json({ success: false, error: "JPG, PNG, WEBP ya GIF image select karein." });
     }
+    // OpenCV handles photographed and 90°/180°/270° rotated cards locally first.
+    const openCvCrop = await cropIdCardWithOpenCv(req.file);
+    if (openCvCrop) {
+      return res.json({ success: true, engine: "document-scanner", image: openCvCrop.image, corners: openCvCrop.corners, confidence: openCvCrop.confidence });
+    }
     const useGemini = ID_CARD_AI_CROP_PROVIDER === "gemini";
     if ((!useGemini && !OPENAI_API_KEY) || (useGemini && !GEMINI_API_KEY) || !ID_CARD_AI_CROP_MODEL) {
       return res.status(503).json({
@@ -292,7 +325,7 @@ app.post(["/api/id-card-ai-crop", "/api/aadhaar-ai-crop"], (req, res) => {
       });
     }
     try {
-      const prompt = "Locate only the outer visible government ID, identity card, licence, voter card, PAN card, Aadhaar card, or small document in this image. Return the tight rectangular crop that includes the complete card/document and no surrounding table/background. Do not transcribe, describe, classify, or return any identity data. Coordinates must be fractions of original image width/height. If a reliable document is not visible, use left=0, top=0, right=1, bottom=1 and confidence=0.";
+      const prompt = "You are a document-edge detector. Locate the complete outer boundary of the one visible government ID, identity card, licence, voter card, PAN card, Aadhaar card, or small document. The card may be held in a hand, blurry, or rotated 90/180/270 degrees. Include every edge, QR code and text; never return a box around only a face, text, seal or QR code. Do not transcribe, describe, classify, or return identity data. Coordinates must be fractions of original image width/height. Always provide your best full-card estimate; use left=0, top=0, right=1, bottom=1 and confidence=0 only when no document is visible.";
       let response;
       if (useGemini) {
         const model = ID_CARD_AI_CROP_MODEL.replace(/^models\//i, "");
@@ -301,7 +334,7 @@ app.post(["/api/id-card-ai-crop", "/api/aadhaar-ai-crop"], (req, res) => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             contents: [{ parts: [{ text: prompt }, { inlineData: { mimeType: req.file.mimetype, data: req.file.buffer.toString("base64") } }] }],
-            generationConfig: { responseMimeType: "application/json", temperature: 0 }
+            generationConfig: { responseMimeType: "application/json", mediaResolution: "MEDIA_RESOLUTION_HIGH", temperature: 0 }
           })
         });
       } else {
@@ -326,7 +359,8 @@ app.post(["/api/id-card-ai-crop", "/api/aadhaar-ai-crop"], (req, res) => {
       const crop = JSON.parse(outputText);
       const values = [crop.left, crop.top, crop.right, crop.bottom, crop.confidence];
       if (!values.every((value) => Number.isFinite(value)) || crop.right - crop.left < 0.1 || crop.bottom - crop.top < 0.1) {
-        return res.status(422).json({ success: false, error: "AI ko clear document boundary nahi mili. Manual crop try karein." });
+        // Keep the complete source instead of failing or returning a cropped ID.
+        return res.json({ success: true, engine: "safe-original", crop: { left: 0, top: 0, right: 1, bottom: 1, confidence: 0 } });
       }
       return res.json({
         success: true,

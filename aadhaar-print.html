@@ -188,8 +188,9 @@
           if(response.status===404) response=await fetch(cropApiUrl().replace("/id-card-ai-crop","/aadhaar-ai-crop"),{method:"POST",body:form});
           const data=await response.json();
           if(!response.ok || !data.success) throw new Error(data.error || "AI crop failed.");
-          card.source=await cropToBounds(card.original || card.source,data.crop); card.img.src=card.source;
-          alert("AI Crop ready ("+Math.round(data.crop.confidence*100)+"% confidence).");
+          card.source=data.image || await cropToBounds(card.original || card.source,data.crop); card.img.src=card.source;
+          const confidence=data.confidence ?? data.crop?.confidence ?? 0;
+          alert((data.engine==="document-scanner" ? "Document crop ready" : "AI Crop ready")+" ("+Math.round(confidence*100)+"% confidence).");
         } catch(error) { alert(error.message || "AI crop abhi available nahi hai।"); }
         finally { button.disabled=false;button.innerHTML='<i class="fa-solid fa-wand-magic-sparkles"></i>'; }
       }
