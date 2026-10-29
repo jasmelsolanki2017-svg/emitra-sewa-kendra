@@ -23,8 +23,8 @@
   <header class="topbar"><span class="logo"><i class="fa-solid fa-print"></i></span><div><div class="brand">E-MITRA WALA</div><div class="sub">SMART ID PRINT SUITE</div></div><a class="home" href="/" title="Home"><i class="fa-solid fa-house"></i></a></header>
   <main class="app">
     <aside class="panel">
-      <section class="block"><p class="label">1. SELECT TYPE</p><div class="types"><button class="type active"><i class="fa-regular fa-id-card"></i>ID Card</button><button class="type"><i class="fa-solid fa-file-lines"></i>A4 Page</button><button class="type"><i class="fa-solid fa-id-badge"></i>PVC</button><button class="type"><i class="fa-solid fa-crop-simple"></i>Custom</button></div><div class="row"><label><input id="singleSide" type="checkbox"> Single Side</label><button id="localMode" class="switch active">Smart Crop</button><button id="manualMode" class="switch">Original</button></div></section>
-      <section class="block"><p class="label">2. SCAN DOCUMENTS <span id="clear" style="float:right;color:#ef4444;cursor:pointer">CLEAR</span></p><p class="hint"><i class="fa-solid fa-circle-info"></i> Front और Back साथ चुन सकते हैं। Smart Crop browser में होता है। <b>AI Crop</b> केवल आपकी अनुमति से image को cloud vision model तक भेजता है।</p><div class="scan-grid"><label id="frontBox" class="scan"><i class="fa-solid fa-camera"></i><span>Front Side</span><input id="frontInput" type="file" accept="image/*" hidden></label><label id="backBox" class="scan"><i class="fa-solid fa-arrows-rotate"></i><span>Back Side</span><input id="backInput" type="file" accept="image/*" hidden></label></div></section>
+      <section class="block"><p class="label">1. SELECT TYPE</p><div class="types"><button class="type active"><i class="fa-regular fa-id-card"></i>ID Card</button><button class="type"><i class="fa-solid fa-file-lines"></i>A4 Page</button><button class="type"><i class="fa-solid fa-id-badge"></i>PVC</button><button class="type"><i class="fa-solid fa-crop-simple"></i>Custom</button></div><div class="row"><label><input id="singleSide" type="checkbox"> Single Side</label><button id="localMode" class="switch">Smart Crop</button><button id="manualMode" class="switch active">Original</button></div></section>
+      <section class="block"><p class="label">2. SCAN DOCUMENTS <span id="clear" style="float:right;color:#ef4444;cursor:pointer">CLEAR</span></p><p class="hint"><i class="fa-solid fa-circle-info"></i> Front और Back साथ चुन सकते हैं। Smart Crop browser में होता है। <b>AI Crop</b> केवल आपकी अनुमति से image को cloud vision model तक भेजता है।</p><div class="scan-grid"><label id="frontBox" class="scan"><i class="fa-solid fa-camera"></i><span>Front Side</span><input id="frontInput" type="file" accept="image/*" hidden></label><label id="backBox" class="scan"><i class="fa-solid fa-arrows-rotate"></i><span>Back Side</span><input id="backInput" type="file" accept="image/*" hidden></label></div><button id="aiCropPanel" class="button" style="width:100%;margin-top:10px"><i class="fa-solid fa-wand-magic-sparkles"></i> AI CROP SELECTED CARD</button></section>
       <section class="block"><p class="label">3. QUEUE <span class="badge" style="float:right">Page 1</span></p><div class="queue"><span id="queueText">No ID card selected</span><i id="deleteSelected" class="fa-solid fa-trash-can"></i></div><div class="twocol"><button id="reset" class="button"><i class="fa-solid fa-rotate-left"></i> RESET</button><button id="fit" class="button"><i class="fa-solid fa-expand"></i> AUTO FIT</button></div></section>
       <section class="export"><div class="export-head"><p class="label">EXPORT &amp; PRINT</p><span class="badge">1 Page</span></div><button id="print" class="button primary"><i class="fa-solid fa-print"></i> PRINT / SAVE PDF</button><div class="twocol" style="margin-top:0"><button id="jpg" class="button"><i class="fa-solid fa-image"></i> JPG</button><button id="png" class="button"><i class="fa-solid fa-file-image"></i> PNG</button></div><p class="note">Local Smart Crop में photo browser से बाहर नहीं जाती। AI Crop चुनने पर ही cloud request होती है; app इसे disk या database में save नहीं करती।</p></section>
     </aside>
@@ -76,7 +76,13 @@
         };
         let left=strongestEdge("x",0,Math.floor(w*.25)), right=strongestEdge("x",Math.floor(w*.75),w-3);
         let top=strongestEdge("y",0,Math.floor(h*.25)), bottom=strongestEdge("y",Math.floor(h*.75),h-3);
-        if(right-left<w*.35 || bottom-top<h*.2) { left=0; top=0; right=w; bottom=h; }
+        const detectedWidth=right-left, detectedHeight=bottom-top, detectedRatio=detectedWidth/detectedHeight;
+        const detectedArea=(detectedWidth*detectedHeight)/(w*h);
+        // Refuse uncertain local crops. Keeping the full source is always safer than
+        // trimming Aadhaar text/QR edges when a background is not clearly detectable.
+        if(detectedWidth<w*.35 || detectedHeight<h*.2 || detectedArea<.55 || detectedRatio<1.25 || detectedRatio>1.95) return image.src;
+        const marginX=Math.round(w*.035), marginY=Math.round(h*.035);
+        left=Math.max(0,left-marginX); right=Math.min(w,right+marginX); top=Math.max(0,top-marginY); bottom=Math.min(h,bottom+marginY);
         const out=document.createElement("canvas"); out.width=right-left; out.height=bottom-top;
         out.getContext("2d").drawImage(source,left,top,right-left,bottom-top,0,0,out.width,out.height);
         return out.toDataURL("image/jpeg",.95);
@@ -87,7 +93,10 @@
         reader.onload = () => {
           const original = reader.result, image = new Image();
           image.onload = () => {
-            const source = $("localMode").classList.contains("active") ? localCrop(image) : original;
+            // Never crop automatically on upload: a scan can contain text/photo edges that
+            // look like a document boundary. The original image stays intact until the user
+            // explicitly chooses Smart Crop or AI Crop.
+            const source = original;
             if(cards[side]) cards[side].el.remove();
             const el=document.createElement("div");
             el.className="card"; el.innerHTML='<img alt="Aadhaar '+side+'"><i class="corner nw"></i><i class="corner ne"></i><i class="corner sw"></i><i class="corner se"></i>';
@@ -106,11 +115,13 @@
         const start={x:event.clientX,y:event.clientY,position:{...card.position}};
         event.currentTarget.setPointerCapture(event.pointerId);
         event.currentTarget.onpointermove = move => {
+          if(!(move.buttons & 1)) return finish();
           card.position.x=Math.max(0,Math.min(1-card.position.w,start.position.x+(move.clientX-start.x)/rect.width));
           card.position.y=Math.max(0,Math.min(1-cardHeight(card.position.w),start.position.y+(move.clientY-start.y)/rect.height));
           place(card);
         };
-        event.currentTarget.onpointerup=()=>event.currentTarget.onpointermove=null;
+        const finish=()=>{event.currentTarget.onpointermove=null;event.currentTarget.onpointerup=null;event.currentTarget.onpointercancel=null;};
+        event.currentTarget.onpointerup=finish; event.currentTarget.onpointercancel=finish;
       }
       function startResize(event, side, handle) {
         event.preventDefault(); event.stopPropagation(); select(side);
@@ -119,6 +130,7 @@
         const north=handle.classList.contains("nw") || handle.classList.contains("ne");
         event.currentTarget.setPointerCapture(event.pointerId);
         event.currentTarget.onpointermove = move => {
+          if(!(move.buttons & 1)) return finish();
           const horizontal=(move.clientX-start.x)/rect.width;
           const vertical=(move.clientY-start.y)/rect.width;
           const signed=west ? -horizontal : horizontal;
@@ -131,7 +143,8 @@
           card.position.y=Math.max(0,Math.min(1-height,north ? start.position.y+cardHeight(start.position.w)-height : start.position.y));
           place(card);
         };
-        event.currentTarget.onpointerup=()=>event.currentTarget.onpointermove=null;
+        const finish=()=>{event.currentTarget.onpointermove=null;event.currentTarget.onpointerup=null;event.currentTarget.onpointercancel=null;};
+        event.currentTarget.onpointerup=finish; event.currentTarget.onpointercancel=finish;
       }
       function remove(side=selected) {
         if(!side || !cards[side]) return;
@@ -145,7 +158,16 @@
       function cropToBounds(source, crop) {
         return new Promise((resolve,reject) => {
           const image=new Image();
-          image.onload=()=>{ const l=Math.max(0,Math.min(1,crop.left)),t=Math.max(0,Math.min(1,crop.top)),r=Math.max(l+.01,Math.min(1,crop.right)),b=Math.max(t+.01,Math.min(1,crop.bottom));
+          image.onload=()=>{
+            // Vision models can occasionally return a tight box around text or a QR code.
+            // Expand it around its centre before cropping, so the complete ID stays visible.
+            const padding=.06, minWidth=.80, minHeight=.55;
+            let l=Math.max(0,Math.min(1,crop.left-padding)),t=Math.max(0,Math.min(1,crop.top-padding)),r=Math.max(0,Math.min(1,crop.right+padding)),b=Math.max(0,Math.min(1,crop.bottom+padding));
+            const widen=(start,end,minimum)=>{const center=(start+end)/2,half=Math.max((end-start)/2,minimum/2);return [Math.max(0,center-half),Math.min(1,center+half)];};
+            [l,r]=widen(l,r,minWidth);[t,b]=widen(t,b,minHeight);
+            // Shifting after clamping keeps the requested minimum span where possible.
+            if(r-l<minWidth){if(l===0)r=Math.min(1,minWidth);else l=Math.max(0,1-minWidth);}
+            if(b-t<minHeight){if(t===0)b=Math.min(1,minHeight);else t=Math.max(0,1-minHeight);}
             const canvas=document.createElement("canvas");canvas.width=Math.round((r-l)*image.naturalWidth);canvas.height=Math.round((b-t)*image.naturalHeight);
             if(!canvas.width||!canvas.height) return reject(new Error("Invalid AI crop."));
             canvas.getContext("2d").drawImage(image,l*image.naturalWidth,t*image.naturalHeight,canvas.width,canvas.height,0,0,canvas.width,canvas.height);
@@ -179,7 +201,7 @@
       $("localMode").onclick=()=>{$("localMode").classList.add("active");$("manualMode").classList.remove("active");};
       $("manualMode").onclick=()=>{$("manualMode").classList.add("active");$("localMode").classList.remove("active");};
       $("singleSide").onchange=e=>{if(e.target.checked)remove("back");}; $("clear").onclick=reset;$("reset").onclick=reset;
-      $("deleteSelected").onclick=()=>remove();$("trash").onclick=()=>remove();$("fit").onclick=fit;$("fitTool").onclick=fit;$("rotate").onclick=rotate;$("localCrop").onclick=runLocalCrop;$("mobileCrop").onclick=runLocalCrop;$("aiCrop").onclick=runAiCrop;
+      $("deleteSelected").onclick=()=>remove();$("trash").onclick=()=>remove();$("fit").onclick=fit;$("fitTool").onclick=fit;$("rotate").onclick=rotate;$("localCrop").onclick=runLocalCrop;$("mobileCrop").onclick=runLocalCrop;$("aiCrop").onclick=runAiCrop;$("aiCropPanel").onclick=runAiCrop;
       $("jpg").onclick=()=>download("image/jpeg");$("png").onclick=()=>download("image/png");$("download").onclick=()=>download("image/jpeg");
       $("print").onclick=()=>Object.keys(cards).length?window.print():alert("पहले Aadhaar photo upload करें।");$("mobilePrint").onclick=$("print").onclick;
       $("zoomIn").onclick=()=>{zoom=Math.min(1.35,zoom+.1);setZoom();};$("zoomOut").onclick=()=>{zoom=Math.max(.65,zoom-.1);setZoom();};

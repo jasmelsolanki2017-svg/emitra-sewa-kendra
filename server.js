@@ -241,7 +241,7 @@ function normalizeMobile(value = "") {
 
 app.use(express.json({ limit: "20mb" }));
 
-// Aadhaar images are sensitive documents. This endpoint keeps the upload in memory only,
+// Government-ID images are sensitive documents. This endpoint keeps the upload in memory only,
 // sends it to the configured vision model only after an explicit client opt-in, and never
 // writes the image or model result to disk/database.
 const aadhaarAiCropUpload = multer({
@@ -267,7 +267,8 @@ const aadhaarCropSchema = {
   }
 };
 
-app.post("/api/aadhaar-ai-crop", (req, res) => {
+// The old Aadhaar path is retained for existing links; new clients use the generic ID-card path.
+app.post(["/api/id-card-ai-crop", "/api/aadhaar-ai-crop"], (req, res) => {
   aadhaarAiCropUpload.single("image")(req, res, async (uploadError) => {
     if (uploadError) {
       const message = uploadError instanceof multer.MulterError && uploadError.code === "LIMIT_FILE_SIZE"
@@ -291,7 +292,7 @@ app.post("/api/aadhaar-ai-crop", (req, res) => {
       });
     }
     try {
-      const prompt = "Locate only the outer visible ID/document card in this image. Return the tight rectangular crop that includes the complete card and no surrounding table/background. Do not transcribe, describe, classify, or return any identity data. Coordinates must be fractions of original image width/height. If a reliable card is not visible, use left=0, top=0, right=1, bottom=1 and confidence=0.";
+      const prompt = "Locate only the outer visible government ID, identity card, licence, voter card, PAN card, Aadhaar card, or small document in this image. Return the tight rectangular crop that includes the complete card/document and no surrounding table/background. Do not transcribe, describe, classify, or return any identity data. Coordinates must be fractions of original image width/height. If a reliable document is not visible, use left=0, top=0, right=1, bottom=1 and confidence=0.";
       let response;
       if (useGemini) {
         const model = AADHAAR_AI_CROP_MODEL.replace(/^models\//i, "");
