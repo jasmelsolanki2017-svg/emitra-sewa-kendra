@@ -66,16 +66,22 @@
         card.el.style.left = (p.x * 100) + "%";
         card.el.style.top = (p.y * 100) + "%";
         card.el.style.width = (p.w * 100) + "%";
+        card.el.style.aspectRatio = (card.ratio || cardRatio) + " / 1";
         card.el.style.transform = "rotate(" + (p.rotation || 0) + "deg)";
       }
-      function cardHeight(width) { return width / (cardRatio * pageRatio); }
+      function cardHeight(width, ratio=cardRatio) { return width / (Math.max(.55,Math.min(3.2,ratio)) * pageRatio); }
       function autoLayout() {
         const entries=Object.entries(cards), count=entries.length;
         if(!count) return;
         const rows=Math.ceil(count/2), gapY=.022;
-        const width=Math.max(.16,Math.min(.39,((.86/rows-gapY)*cardRatio*pageRatio)));
-        const height=cardHeight(width);
-        entries.forEach(([id,card],index)=>{const col=index%2,row=Math.floor(index/2);card.position={x:col ? 1-.06-width : .06,y:.07+row*(height+gapY),w:width,rotation:0};place(card);});
+        const narrowest=Math.max(1.1,Math.min(...entries.map(([,card])=>card.ratio || cardRatio)));
+        const width=Math.max(.16,Math.min(.39,((.86/rows-gapY)*narrowest*pageRatio)));
+        let top=.07;
+        for(let start=0;start<entries.length;start+=2){
+          const row=entries.slice(start,start+2), rowHeight=Math.max(...row.map(([,card])=>cardHeight(width,card.ratio)));
+          row.forEach(([id,card],offset)=>{card.position={x:offset ? 1-.06-width : .06,y:top,w:width,rotation:0};place(card);});
+          top+=rowHeight+gapY;
+        }
       }
       function localCrop(image) {
         const limit = 900, scale = Math.min(1, limit / Math.max(image.naturalWidth, image.naturalHeight));
@@ -122,8 +128,8 @@
             const el=document.createElement("div");
             el.className="card"; el.innerHTML='<img alt="ID card '+side+'"><i class="corner nw"></i><i class="corner ne"></i><i class="corner sw"></i><i class="corner se"></i>';
             paper.appendChild(el);
-            const card=cards[id]={el,img:el.querySelector("img"),source,original,face:side,position:{x:0,y:0,w:.39,rotation:0},revision:"r"+Date.now()+Math.random()};
-            card.img.onload=()=>place(card); card.img.src=source; el.addEventListener("pointerdown", event=>startDrag(event,id));
+            const card=cards[id]={el,img:el.querySelector("img"),source,original,face:side,ratio:cardRatio,position:{x:0,y:0,w:.39,rotation:0},revision:"r"+Date.now()+Math.random()};
+            card.img.onload=()=>{const detectedRatio=card.img.naturalWidth/card.img.naturalHeight;if(Number.isFinite(detectedRatio)) card.ratio=Math.max(.55,Math.min(3.2,detectedRatio));place(card);}; card.img.src=source; el.addEventListener("pointerdown", event=>startDrag(event,id));
             $(side+"Box").classList.add("ready"); $(side+"Box").querySelector("span").textContent=side==="front" ? "Front added" : "Back added";
             empty.hidden=true; autoLayout(); select(id);
             if ($("localMode").classList.contains("active")) setTimeout(() => runAiCrop(true, id), 0);
@@ -139,7 +145,7 @@
         event.currentTarget.onpointermove = move => {
           if(!(move.buttons & 1)) return finish();
           card.position.x=Math.max(0,Math.min(1-card.position.w,start.position.x+(move.clientX-start.x)/rect.width));
-          card.position.y=Math.max(0,Math.min(1-cardHeight(card.position.w),start.position.y+(move.clientY-start.y)/rect.height));
+          card.position.y=Math.max(0,Math.min(1-cardHeight(card.position.w,card.ratio),start.position.y+(move.clientY-start.y)/rect.height));
           place(card);
         };
         const finish=()=>{event.currentTarget.onpointermove=null;event.currentTarget.onpointerup=null;event.currentTarget.onpointercancel=null;};
@@ -161,8 +167,8 @@
           const width=Math.max(.16,Math.min(.78,start.position.w+delta));
           card.position.w=width;
           card.position.x=Math.max(0,Math.min(1-width,west ? start.position.x+start.position.w-width : start.position.x));
-          const height=cardHeight(width);
-          card.position.y=Math.max(0,Math.min(1-height,north ? start.position.y+cardHeight(start.position.w)-height : start.position.y));
+          const height=cardHeight(width,card.ratio);
+          card.position.y=Math.max(0,Math.min(1-height,north ? start.position.y+cardHeight(start.position.w,card.ratio)-height : start.position.y));
           place(card);
         };
         const finish=()=>{event.currentTarget.onpointermove=null;event.currentTarget.onpointerup=null;event.currentTarget.onpointercancel=null;};
@@ -268,7 +274,7 @@
       function download(type) {
         if(!Object.keys(cards).length) return alert("पहले ID card photo upload करें।");
         const canvas=document.createElement("canvas"),w=1240,h=1754,context=canvas.getContext("2d");canvas.width=w;canvas.height=h;context.fillStyle="#fff";context.fillRect(0,0,w,h);
-        Promise.all(Object.values(cards).map(card=>new Promise(done=>{const image=new Image();image.onload=()=>{const p=card.position,iw=p.w*w,ih=iw/1.586;context.save();context.translate(p.x*w+iw/2,p.y*h+ih/2);context.rotate((p.rotation||0)*Math.PI/180);context.drawImage(image,-iw/2,-ih/2,iw,ih);context.restore();done();};image.src=card.source;}))).then(()=>{const a=document.createElement("a");a.download="id-card-front-back-a4."+(type==="image/png"?"png":"jpg");a.href=canvas.toDataURL(type,.95);a.click();});
+        Promise.all(Object.values(cards).map(card=>new Promise(done=>{const image=new Image();image.onload=()=>{const p=card.position,iw=p.w*w,ih=iw/(card.ratio||cardRatio);context.save();context.translate(p.x*w+iw/2,p.y*h+ih/2);context.rotate((p.rotation||0)*Math.PI/180);context.drawImage(image,-iw/2,-ih/2,iw,ih);context.restore();done();};image.src=card.source;}))).then(()=>{const a=document.createElement("a");a.download="id-card-front-back-a4."+(type==="image/png"?"png":"jpg");a.href=canvas.toDataURL(type,.95);a.click();});
       }
       $("frontInput").onchange=e=>{add("front",e.target.files[0]);e.target.value="";}; $("backInput").onchange=e=>{add("back",e.target.files[0]);e.target.value="";};
       $("localMode").onclick=()=>{$("localMode").classList.add("active");$("manualMode").classList.remove("active");};

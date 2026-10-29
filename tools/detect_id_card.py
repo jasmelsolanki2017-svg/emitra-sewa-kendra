@@ -76,9 +76,6 @@ def detect(image):
     destination = np.array([[0, 0], [out_w - 1, 0], [out_w - 1, out_h - 1], [0, out_h - 1]], dtype=np.float32)
     matrix = cv2.getPerspectiveTransform(points, destination)
     output = cv2.warpPerspective(image, matrix, (out_w, out_h), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE)
-    if output.shape[0] > output.shape[1]:
-        output = cv2.rotate(output, cv2.ROTATE_90_CLOCKWISE)
-
     ok, encoded = cv2.imencode(".jpg", output, [int(cv2.IMWRITE_JPEG_QUALITY), 95])
     if not ok:
         raise ValueError("Could not encode crop")
