@@ -248,7 +248,12 @@ const aadhaarAiCropUpload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 8 * 1024 * 1024, files: 1 }
 });
-const AADHAAR_AI_CROP_MODEL = String(process.env.AADHAAR_AI_CROP_MODEL || OPENAI_MODEL || "").trim();
+const AADHAAR_AI_CROP_PROVIDER = String(
+  process.env.AADHAAR_AI_CROP_PROVIDER || (GEMINI_API_KEY ? "gemini" : "openai")
+).trim().toLowerCase();
+const AADHAAR_AI_CROP_MODEL = String(
+  process.env.AADHAAR_AI_CROP_MODEL || (AADHAAR_AI_CROP_PROVIDER === "gemini" ? GEMINI_MODEL : OPENAI_MODEL) || ""
+).trim();
 const aadhaarCropSchema = {
   type: "object",
   additionalProperties: false,
@@ -276,48 +281,47 @@ app.post("/api/aadhaar-ai-crop", (req, res) => {
     if (!req.file || !/^image\/(jpeg|png|webp|gif)$/i.test(req.file.mimetype || "")) {
       return res.status(400).json({ success: false, error: "JPG, PNG, WEBP ya GIF image select karein." });
     }
-    if (!OPENAI_API_KEY || !AADHAAR_AI_CROP_MODEL) {
+    const useGemini = AADHAAR_AI_CROP_PROVIDER === "gemini";
+    if ((!useGemini && !OPENAI_API_KEY) || (useGemini && !GEMINI_API_KEY) || !AADHAAR_AI_CROP_MODEL) {
       return res.status(503).json({
         success: false,
-        error: "AI crop abhi configured nahi hai. Server me OPENAI_API_KEY aur AADHAAR_AI_CROP_MODEL set karein."
+        error: useGemini
+          ? "AI crop abhi configured nahi hai. Render me GEMINI_API_KEY aur GEMINI_MODEL set karein."
+          : "AI crop abhi configured nahi hai. Render me OPENAI_API_KEY aur AADHAAR_AI_CROP_MODEL set karein."
       });
     }
     try {
-      const imageUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
-      const response = await fetch("https://api.openai.com/v1/responses", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${OPENAI_API_KEY}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          model: AADHAAR_AI_CROP_MODEL,
-          store: false,
-          input: [{
-            role: "user",
-            content: [
-              {
-                type: "input_text",
-                text: "Locate only the outer visible ID/document card in this image. Return the tight rectangular crop that includes the complete card and no surrounding table/background. Do not transcribe, describe, classify, or return any identity data. Coordinates must be fractions of original image width/height. If a reliable card is not visible, use left=0, top=0, right=1, bottom=1 and confidence=0."
-              },
-              { type: "input_image", image_url: imageUrl, detail: "high" }
-            ]
-          }],
-          text: {
-            format: {
-              type: "json_schema",
-              name: "document_crop",
-              strict: true,
-              schema: aadhaarCropSchema
-            }
-          }
-        })
-      });
+      const prompt = "Locate only the outer visible ID/document card in this image. Return the tight rectangular crop that includes the complete card and no surrounding table/background. Do not transcribe, describe, classify, or return any identity data. Coordinates must be fractions of original image width/height. If a reliable card is not visible, use left=0, top=0, right=1, bottom=1 and confidence=0.";
+      let response;
+      if (useGemini) {
+        const model = AADHAAR_AI_CROP_MODEL.replace(/^models\//i, "");
+        response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }, { inlineData: { mimeType: req.file.mimetype, data: req.file.buffer.toString("base64") } }] }],
+            generationConfig: { responseMimeType: "application/json", temperature: 0 }
+          })
+        });
+      } else {
+        const imageUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
+        response = await fetch("https://api.openai.com/v1/responses", {
+          method: "POST",
+          headers: { "Authorization": `Bearer ${OPENAI_API_KEY}`, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            model: AADHAAR_AI_CROP_MODEL, store: false,
+            input: [{ role: "user", content: [{ type: "input_text", text: prompt }, { type: "input_image", image_url: imageUrl, detail: "high" }] }],
+            text: { format: { type: "json_schema", name: "document_crop", strict: true, schema: aadhaarCropSchema } }
+          })
+        });
+      }
       const payload = await response.json().catch(() => null);
       if (!response.ok) {
         return res.status(502).json({ success: false, error: "AI crop service se valid response nahi mila." });
       }
-      const outputText = String(payload?.output_text || "");
+      const outputText = useGemini
+        ? String(payload?.candidates?.[0]?.content?.parts?.map((part) => part.text || "").join("") || "")
+        : String(payload?.output_text || "");
       const crop = JSON.parse(outputText);
       const values = [crop.left, crop.top, crop.right, crop.bottom, crop.confidence];
       if (!values.every((value) => Number.isFinite(value)) || crop.right - crop.left < 0.1 || crop.bottom - crop.top < 0.1) {

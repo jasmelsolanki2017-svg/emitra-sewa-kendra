@@ -36,7 +36,9 @@
     (() => {
       const $ = id => document.getElementById(id);
       const paper = $("paper"), empty = $("empty");
-      const defaultPosition = { front:{x:.08,y:.07,w:.47}, back:{x:.08,y:.34,w:.47} };
+      const pageRatio = 297 / 210;
+      const cardRatio = 1.586;
+      const defaultPosition = { front:{x:.08,y:.07,w:.39}, back:{x:.53,y:.07,w:.39} };
       let cards = {}, selected = null, zoom = 1;
 
       function select(side) {
@@ -51,6 +53,7 @@
         card.el.style.width = (p.w * 100) + "%";
         card.el.style.transform = "rotate(" + (p.rotation || 0) + "deg)";
       }
+      function cardHeight(width) { return width / (cardRatio * pageRatio); }
       function localCrop(image) {
         const limit = 900, scale = Math.min(1, limit / Math.max(image.naturalWidth, image.naturalHeight));
         const w = Math.max(1, Math.round(image.naturalWidth * scale)), h = Math.max(1, Math.round(image.naturalHeight * scale));
@@ -97,12 +100,35 @@
         }; reader.readAsDataURL(file);
       }
       function startDrag(event, side) {
+        const handle = event.target.closest(".corner");
+        if(handle) return startResize(event, side, handle);
         select(side); const card=cards[side], rect=paper.getBoundingClientRect();
         const start={x:event.clientX,y:event.clientY,position:{...card.position}};
         event.currentTarget.setPointerCapture(event.pointerId);
         event.currentTarget.onpointermove = move => {
           card.position.x=Math.max(0,Math.min(1-card.position.w,start.position.x+(move.clientX-start.x)/rect.width));
-          card.position.y=Math.max(0,Math.min(1-card.position.w/1.586,start.position.y+(move.clientY-start.y)/rect.height));
+          card.position.y=Math.max(0,Math.min(1-cardHeight(card.position.w),start.position.y+(move.clientY-start.y)/rect.height));
+          place(card);
+        };
+        event.currentTarget.onpointerup=()=>event.currentTarget.onpointermove=null;
+      }
+      function startResize(event, side, handle) {
+        event.preventDefault(); event.stopPropagation(); select(side);
+        const card=cards[side], rect=paper.getBoundingClientRect(), start={x:event.clientX,y:event.clientY,position:{...card.position}};
+        const west=handle.classList.contains("nw") || handle.classList.contains("sw");
+        const north=handle.classList.contains("nw") || handle.classList.contains("ne");
+        event.currentTarget.setPointerCapture(event.pointerId);
+        event.currentTarget.onpointermove = move => {
+          const horizontal=(move.clientX-start.x)/rect.width;
+          const vertical=(move.clientY-start.y)/rect.width;
+          const signed=west ? -horizontal : horizontal;
+          const verticalSigned=north ? -vertical : vertical;
+          const delta=Math.abs(verticalSigned)>Math.abs(signed) ? verticalSigned : signed;
+          const width=Math.max(.16,Math.min(.78,start.position.w+delta));
+          card.position.w=width;
+          card.position.x=Math.max(0,Math.min(1-width,west ? start.position.x+start.position.w-width : start.position.x));
+          const height=cardHeight(width);
+          card.position.y=Math.max(0,Math.min(1-height,north ? start.position.y+cardHeight(start.position.w)-height : start.position.y));
           place(card);
         };
         event.currentTarget.onpointerup=()=>event.currentTarget.onpointermove=null;
