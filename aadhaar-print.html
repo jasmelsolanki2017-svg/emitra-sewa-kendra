@@ -101,15 +101,13 @@
         reader.onload = () => {
           const original = reader.result, image = new Image();
           image.onload = () => {
-            // Never crop automatically on upload: a scan can contain text/photo edges that
-            // look like a document boundary. The original image stays intact until the user
-            // explicitly chooses Smart Crop or AI Crop.
+            // Keep the complete source visible until the scanner returns a final result.
             const source = original;
             if(cards[side]) cards[side].el.remove();
             const el=document.createElement("div");
             el.className="card"; el.innerHTML='<img alt="ID card '+side+'"><i class="corner nw"></i><i class="corner ne"></i><i class="corner sw"></i><i class="corner se"></i>';
             paper.appendChild(el);
-            const card=cards[side]={el,img:el.querySelector("img"),source,original,position:{...defaultPosition[side],rotation:0}};
+            const card=cards[side]={el,img:el.querySelector("img"),source,original,position:{...defaultPosition[side],rotation:0},revision:crypto.randomUUID()};
             card.img.onload=()=>place(card); card.img.src=source; el.addEventListener("pointerdown", event=>startDrag(event,side));
             $(side+"Box").classList.add("ready"); $(side+"Box").querySelector("span").textContent=side==="front" ? "Front ready" : "Back ready";
             empty.hidden=true; select(side);
@@ -226,7 +224,9 @@
       async function runAiCrop(automatic=false, target=selected) {
         if(!target || !cards[target]) { if(!automatic) alert("पहले Front या Back card select करें।"); return; }
         if(!automatic && !confirm("AI Crop के लिए यह ID/document image cloud vision model को भेजी जाएगी। App इसे disk या database में save नहीं करती। क्या आप सहमत हैं?")) return;
-        const button=$("aiCrop"), card=cards[target]; button.disabled=true; button.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i>';
+        const button=$("aiCrop"), panelButton=$("aiCropPanel"), card=cards[target], revision=card.revision;
+        button.disabled=true; panelButton.disabled=true; button.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i>';
+        $(target+"Box").querySelector("span").textContent="Scanning…";
         try {
           const blob=await (await fetch(card.original || card.source)).blob(), form=new FormData();
           form.append("image",blob,"id-card.jpg"); form.append("consent","true");
@@ -235,11 +235,17 @@
           if(response.status===404) response=await fetch(cropApiUrl().replace("/id-card-ai-crop","/aadhaar-ai-crop"),{method:"POST",body:form});
           const data=await response.json();
           if(!response.ok || !data.success) throw new Error(data.error || "AI crop failed.");
+          // A replaced or deleted side must never be overwritten by an older scan response.
+          if(cards[target] !== card || card.revision !== revision) return;
           card.source=data.image || await cropToBounds(card.original || card.source,data.crop); card.img.src=card.source;
           const confidence=data.confidence ?? data.crop?.confidence ?? 0;
-          alert((data.engine==="document-scanner" ? "Document crop ready" : "AI Crop ready")+" ("+Math.round(confidence*100)+"% confidence).");
-        } catch(error) { if(!automatic) alert(error.message || "AI crop abhi available nahi hai।"); }
-        finally { button.disabled=false;button.innerHTML='<i class="fa-solid fa-wand-magic-sparkles"></i>'; }
+          $(target+"Box").querySelector("span").textContent=data.engine==="safe-original" ? "Original ready" : "Crop ready";
+          if(!automatic) alert((data.engine==="document-scanner" ? "Document crop ready" : "AI Crop ready")+" ("+Math.round(confidence*100)+"% confidence).");
+        } catch(error) {
+          if(cards[target] === card && card.revision === revision) $(target+"Box").querySelector("span").textContent=target==="front" ? "Front ready" : "Back ready";
+          if(!automatic) alert(error.message || "AI crop abhi available nahi hai।");
+        }
+        finally { button.disabled=false; panelButton.disabled=false; button.innerHTML='<i class="fa-solid fa-wand-magic-sparkles"></i>'; }
       }
       function reset() { Object.keys(cards).forEach(remove); zoom=1;setZoom(); }
       function setZoom() { paper.style.transform="scale("+zoom+")";paper.style.transformOrigin="top center";$("zoomText").textContent=Math.round(zoom*100)+"%"; }
@@ -248,7 +254,7 @@
         const canvas=document.createElement("canvas"),w=1240,h=1754,context=canvas.getContext("2d");canvas.width=w;canvas.height=h;context.fillStyle="#fff";context.fillRect(0,0,w,h);
         Promise.all(Object.values(cards).map(card=>new Promise(done=>{const image=new Image();image.onload=()=>{const p=card.position,iw=p.w*w,ih=iw/1.586;context.save();context.translate(p.x*w+iw/2,p.y*h+ih/2);context.rotate((p.rotation||0)*Math.PI/180);context.drawImage(image,-iw/2,-ih/2,iw,ih);context.restore();done();};image.src=card.source;}))).then(()=>{const a=document.createElement("a");a.download="id-card-front-back-a4."+(type==="image/png"?"png":"jpg");a.href=canvas.toDataURL(type,.95);a.click();});
       }
-      $("frontInput").onchange=e=>add("front",e.target.files[0]); $("backInput").onchange=e=>add("back",e.target.files[0]);
+      $("frontInput").onchange=e=>{add("front",e.target.files[0]);e.target.value="";}; $("backInput").onchange=e=>{add("back",e.target.files[0]);e.target.value="";};
       $("localMode").onclick=()=>{$("localMode").classList.add("active");$("manualMode").classList.remove("active");};
       $("manualMode").onclick=()=>{$("manualMode").classList.add("active");$("localMode").classList.remove("active");openManualCrop();};
       $("singleSide").onchange=e=>{if(e.target.checked)remove("back");}; $("clear").onclick=reset;$("reset").onclick=reset;
