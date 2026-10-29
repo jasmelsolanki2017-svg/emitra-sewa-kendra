@@ -240,6 +240,103 @@ function normalizeMobile(value = "") {
 }
 
 app.use(express.json({ limit: "20mb" }));
+
+// Aadhaar images are sensitive documents. This endpoint keeps the upload in memory only,
+// sends it to the configured vision model only after an explicit client opt-in, and never
+// writes the image or model result to disk/database.
+const aadhaarAiCropUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 8 * 1024 * 1024, files: 1 }
+});
+const AADHAAR_AI_CROP_MODEL = String(process.env.AADHAAR_AI_CROP_MODEL || OPENAI_MODEL || "").trim();
+const aadhaarCropSchema = {
+  type: "object",
+  additionalProperties: false,
+  required: ["left", "top", "right", "bottom", "confidence"],
+  properties: {
+    left: { type: "number", minimum: 0, maximum: 1 },
+    top: { type: "number", minimum: 0, maximum: 1 },
+    right: { type: "number", minimum: 0, maximum: 1 },
+    bottom: { type: "number", minimum: 0, maximum: 1 },
+    confidence: { type: "number", minimum: 0, maximum: 1 }
+  }
+};
+
+app.post("/api/aadhaar-ai-crop", (req, res) => {
+  aadhaarAiCropUpload.single("image")(req, res, async (uploadError) => {
+    if (uploadError) {
+      const message = uploadError instanceof multer.MulterError && uploadError.code === "LIMIT_FILE_SIZE"
+        ? "Image maximum 8MB honi chahiye."
+        : "Image upload nahi ho saka.";
+      return res.status(400).json({ success: false, error: message });
+    }
+    if (String(req.body?.consent || "") !== "true") {
+      return res.status(400).json({ success: false, error: "AI crop ke liye consent zaruri hai." });
+    }
+    if (!req.file || !/^image\/(jpeg|png|webp|gif)$/i.test(req.file.mimetype || "")) {
+      return res.status(400).json({ success: false, error: "JPG, PNG, WEBP ya GIF image select karein." });
+    }
+    if (!OPENAI_API_KEY || !AADHAAR_AI_CROP_MODEL) {
+      return res.status(503).json({
+        success: false,
+        error: "AI crop abhi configured nahi hai. Server me OPENAI_API_KEY aur AADHAAR_AI_CROP_MODEL set karein."
+      });
+    }
+    try {
+      const imageUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
+      const response = await fetch("https://api.openai.com/v1/responses", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${OPENAI_API_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model: AADHAAR_AI_CROP_MODEL,
+          store: false,
+          input: [{
+            role: "user",
+            content: [
+              {
+                type: "input_text",
+                text: "Locate only the outer visible ID/document card in this image. Return the tight rectangular crop that includes the complete card and no surrounding table/background. Do not transcribe, describe, classify, or return any identity data. Coordinates must be fractions of original image width/height. If a reliable card is not visible, use left=0, top=0, right=1, bottom=1 and confidence=0."
+              },
+              { type: "input_image", image_url: imageUrl, detail: "high" }
+            ]
+          }],
+          text: {
+            format: {
+              type: "json_schema",
+              name: "document_crop",
+              strict: true,
+              schema: aadhaarCropSchema
+            }
+          }
+        })
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) {
+        return res.status(502).json({ success: false, error: "AI crop service se valid response nahi mila." });
+      }
+      const outputText = String(payload?.output_text || "");
+      const crop = JSON.parse(outputText);
+      const values = [crop.left, crop.top, crop.right, crop.bottom, crop.confidence];
+      if (!values.every((value) => Number.isFinite(value)) || crop.right - crop.left < 0.1 || crop.bottom - crop.top < 0.1) {
+        return res.status(422).json({ success: false, error: "AI ko clear document boundary nahi mili. Manual crop try karein." });
+      }
+      return res.json({
+        success: true,
+        crop: {
+          left: Math.max(0, Math.min(1, crop.left)), top: Math.max(0, Math.min(1, crop.top)),
+          right: Math.max(0, Math.min(1, crop.right)), bottom: Math.max(0, Math.min(1, crop.bottom)),
+          confidence: Math.max(0, Math.min(1, crop.confidence))
+        }
+      });
+    } catch (error) {
+      return res.status(502).json({ success: false, error: "AI crop response process nahi ho saka. Dobara try karein." });
+    }
+  });
+});
+
 app.use((req, res, next) => {
   const origin = req.headers.origin || "";
   res.setHeader("Access-Control-Allow-Origin", isAllowedCorsOrigin(origin) ? (origin || "https://emitrawala.online") : "https://emitrawala.online");
