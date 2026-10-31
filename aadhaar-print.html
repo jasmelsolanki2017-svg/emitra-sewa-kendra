@@ -189,7 +189,7 @@
           image.onload=()=>{
             // Vision models can occasionally return a tight box around text or a QR code.
             // Expand it around its centre before cropping, so the complete ID stays visible.
-            const padding=.06, minWidth=.80, minHeight=.55;
+            const padding=.12, minWidth=.90, minHeight=.90;
             let l=Math.max(0,Math.min(1,crop.left-padding)),t=Math.max(0,Math.min(1,crop.top-padding)),r=Math.max(0,Math.min(1,crop.right+padding)),b=Math.max(0,Math.min(1,crop.bottom+padding));
             const widen=(start,end,minimum)=>{const center=(start+end)/2,half=Math.max((end-start)/2,minimum/2);return [Math.max(0,center-half),Math.min(1,center+half)];};
             [l,r]=widen(l,r,minWidth);[t,b]=widen(t,b,minHeight);
