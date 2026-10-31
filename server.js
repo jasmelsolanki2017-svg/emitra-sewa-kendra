@@ -275,7 +275,7 @@ async function cropIdCardWithOpenCv(file) {
   try {
     await fs.promises.mkdir(ID_CARD_CROP_TEMP_DIR, { recursive: true });
     await fs.promises.writeFile(tempPath, file.buffer);
-    const pythonCandidates = [process.env.PYTHON_BIN, "python", "py"].filter(Boolean);
+    const pythonCandidates = [...new Set([process.env.PYTHON_BIN, "python3", "python", "py"].filter(Boolean))];
     for (const pythonBin of pythonCandidates) {
       try {
         const { stdout } = await execFileAsync(pythonBin, [ID_CARD_CROP_SCRIPT, tempPath], {
@@ -288,11 +288,15 @@ async function cropIdCardWithOpenCv(file) {
           console.log("[ID-CARD-CROP] OpenCV scanner succeeded.");
           return result;
         }
-        console.log("[ID-CARD-CROP] OpenCV returned no usable crop; trying vision model.");
-      } catch (error) {
-        console.log("[ID-CARD-CROP] OpenCV unavailable; trying vision model.", {
+        console.log("[ID-CARD-CROP] OpenCV ran but found no reliable card boundary.", {
           command: pythonBin,
-          reason: error?.code || error?.name || "scanner-error"
+          scannerError: String(result?.error || "No crop returned").slice(0, 180)
+        });
+      } catch (error) {
+        console.log("[ID-CARD-CROP] OpenCV scanner could not run; trying next option.", {
+          command: pythonBin,
+          reason: error?.code || error?.name || "scanner-error",
+          detail: String(error?.message || "").slice(0, 180)
         });
       }
     }
