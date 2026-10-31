@@ -241,31 +241,12 @@ function normalizeMobile(value = "") {
 
 app.use(express.json({ limit: "20mb" }));
 
-// Government-ID images are sensitive documents. This endpoint keeps the upload in memory only,
-// sends it to the configured vision model only after an explicit client opt-in, and never
-// writes the image or model result to disk/database.
-const aadhaarAiCropUpload = multer({
+// ID-card images are processed locally by OpenCV on this server only.
+// No image is sent to Gemini/OpenAI or stored permanently.
+const idCardCropUpload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 8 * 1024 * 1024, files: 1 }
 });
-const ID_CARD_AI_CROP_PROVIDER = String(
-  process.env.ID_CARD_AI_CROP_PROVIDER || process.env.AADHAAR_AI_CROP_PROVIDER || (GEMINI_API_KEY ? "gemini" : "openai")
-).trim().toLowerCase();
-const ID_CARD_AI_CROP_MODEL = String(
-  process.env.ID_CARD_AI_CROP_MODEL || process.env.AADHAAR_AI_CROP_MODEL || (ID_CARD_AI_CROP_PROVIDER === "gemini" ? GEMINI_MODEL : OPENAI_MODEL) || ""
-).trim();
-const aadhaarCropSchema = {
-  type: "object",
-  additionalProperties: false,
-  required: ["left", "top", "right", "bottom", "confidence"],
-  properties: {
-    left: { type: "number", minimum: 0, maximum: 1 },
-    top: { type: "number", minimum: 0, maximum: 1 },
-    right: { type: "number", minimum: 0, maximum: 1 },
-    bottom: { type: "number", minimum: 0, maximum: 1 },
-    confidence: { type: "number", minimum: 0, maximum: 1 }
-  }
-};
 const ID_CARD_CROP_TEMP_DIR = path.join(__dirname, ".tmp", "id-card-crop");
 const ID_CARD_CROP_SCRIPT = path.join(__dirname, "tools", "detect_id_card.py");
 
@@ -276,177 +257,63 @@ async function cropIdCardWithOpenCv(file) {
     await fs.promises.mkdir(ID_CARD_CROP_TEMP_DIR, { recursive: true });
     await fs.promises.writeFile(tempPath, file.buffer);
     const pythonCandidates = [...new Set([process.env.PYTHON_BIN, "python3", "python", "py"].filter(Boolean))];
+    let lastError = null;
     for (const pythonBin of pythonCandidates) {
       try {
         const { stdout } = await execFileAsync(pythonBin, [ID_CARD_CROP_SCRIPT, tempPath], {
-          timeout: 15000,
+          timeout: 20000,
           maxBuffer: 12 * 1024 * 1024,
           windowsHide: true
         });
         const result = JSON.parse(String(stdout || "").trim());
         if (result?.image && Number.isFinite(result?.confidence)) {
-          console.log("[ID-CARD-CROP] OpenCV scanner succeeded.");
+          console.log("[ID-CARD-CROP] OpenCV scanner succeeded.", { command: pythonBin, confidence: result.confidence });
           return result;
         }
-        console.log("[ID-CARD-CROP] OpenCV ran but found no reliable card boundary.", {
-          command: pythonBin,
-          scannerError: String(result?.error || "No crop returned").slice(0, 180)
-        });
+        lastError = String(result?.error || "No reliable card boundary found");
+        console.warn("[ID-CARD-CROP] OpenCV did not detect a card.", { command: pythonBin, detail: lastError.slice(0, 220) });
       } catch (error) {
-        console.log("[ID-CARD-CROP] OpenCV scanner could not run; trying next option.", {
-          command: pythonBin,
-          reason: error?.code || error?.name || "scanner-error",
-          detail: String(error?.message || "").slice(0, 180)
-        });
+        lastError = `${error?.code || error?.name || "scanner-error"}: ${error?.message || ""}`;
+        console.error("[ID-CARD-CROP] OpenCV execution failed.", { command: pythonBin, detail: lastError.slice(0, 220) });
       }
     }
-    console.log("[ID-CARD-CROP] OpenCV did not detect a card; falling back to configured AI provider.");
-    return null;
+    const error = new Error(lastError || "Python/OpenCV runtime is unavailable");
+    error.code = "OPENCV_CROP_FAILED";
+    throw error;
   } finally {
     await fs.promises.unlink(tempPath).catch(() => {});
   }
 }
 
-// The old Aadhaar path is retained for existing links; new clients use the generic ID-card path.
+// Keep both endpoint paths for compatibility with the existing Aadhaar Print page.
 app.post(["/api/id-card-ai-crop", "/api/aadhaar-ai-crop"], (req, res) => {
-  aadhaarAiCropUpload.single("image")(req, res, async (uploadError) => {
+  idCardCropUpload.single("image")(req, res, async (uploadError) => {
     if (uploadError) {
       const message = uploadError instanceof multer.MulterError && uploadError.code === "LIMIT_FILE_SIZE"
         ? "Image maximum 8MB honi chahiye."
         : "Image upload nahi ho saka.";
       return res.status(400).json({ success: false, error: message });
     }
-    console.log("[ID-CARD-CROP] Request received.", {
-      path: req.path,
-      provider: ID_CARD_AI_CROP_PROVIDER,
-      model: ID_CARD_AI_CROP_MODEL || "not-set",
-      hasGeminiKey: Boolean(GEMINI_API_KEY),
-      hasOpenAiKey: Boolean(OPENAI_API_KEY)
-    });
-    if (String(req.body?.consent || "") !== "true") {
-      console.warn("[ID-CARD-CROP] Request rejected: consent missing.");
-      return res.status(400).json({ success: false, error: "AI crop ke liye consent zaruri hai." });
+    if (!req.file || !/^image\\/(jpeg|png|webp)$/i.test(req.file.mimetype || "")) {
+      return res.status(400).json({ success: false, error: "JPG, PNG ya WEBP image select karein." });
     }
-    if (!req.file || !/^image\/(jpeg|png|webp|gif)$/i.test(req.file.mimetype || "")) {
-      return res.status(400).json({ success: false, error: "JPG, PNG, WEBP ya GIF image select karein." });
-    }
-    // OpenCV handles photographed and 90°/180°/270° rotated cards locally first.
-    const openCvCrop = await cropIdCardWithOpenCv(req.file);
-    if (openCvCrop) {
-      return res.json({ success: true, engine: "document-scanner", image: openCvCrop.image, corners: openCvCrop.corners, confidence: openCvCrop.confidence });
-    }
-    const useGemini = ID_CARD_AI_CROP_PROVIDER === "gemini";
-    if ((!useGemini && !OPENAI_API_KEY) || (useGemini && !GEMINI_API_KEY) || !ID_CARD_AI_CROP_MODEL) {
-      return res.status(503).json({
-        success: false,
-        error: useGemini
-          ? "AI crop abhi configured nahi hai. Render me GEMINI_API_KEY aur GEMINI_MODEL set karein."
-          : "AI crop abhi configured nahi hai. Render me OPENAI_API_KEY aur ID_CARD_AI_CROP_MODEL set karein."
-      });
-    }
+    console.log("[ID-CARD-CROP] Local OpenCV request received.", { path: req.path, mimeType: req.file.mimetype, bytes: req.file.size });
     try {
-      const prompt = `Find the complete outer boundary of the visible ID card/document. Return ONLY one JSON object with exactly these numeric keys: left, top, right, bottom, confidence. All four coordinates must be normalized fractions from 0 to 1 relative to the ORIGINAL image: left is the left edge, top is the top edge, right is the right edge, bottom is the bottom edge. Ensure right > left and bottom > top. Include the whole card, including all edges, QR code and text; do not return a face-only box. Do not transcribe or return any personal/identity data. If no document is visible, return {"left":0,"top":0,"right":1,"bottom":1,"confidence":0}.`;
-      let response;
-      if (useGemini) {
-        const model = ID_CARD_AI_CROP_MODEL.replace(/^models\//i, "");
-        response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }, { inlineData: { mimeType: req.file.mimetype, data: req.file.buffer.toString("base64") } }] }],
-            generationConfig: { responseMimeType: "application/json", responseSchema: { type: "OBJECT", properties: { left: { type: "NUMBER" }, top: { type: "NUMBER" }, right: { type: "NUMBER" }, bottom: { type: "NUMBER" }, confidence: { type: "NUMBER" } }, required: ["left", "top", "right", "bottom", "confidence"] }, mediaResolution: "MEDIA_RESOLUTION_HIGH", temperature: 0 }
-          })
-        });
-      } else {
-        const imageUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
-        response = await fetch("https://api.openai.com/v1/responses", {
-          method: "POST",
-          headers: { "Authorization": `Bearer ${OPENAI_API_KEY}`, "Content-Type": "application/json" },
-          body: JSON.stringify({
-            model: ID_CARD_AI_CROP_MODEL, store: false,
-            input: [{ role: "user", content: [{ type: "input_text", text: prompt }, { type: "input_image", image_url: imageUrl, detail: "high" }] }],
-            text: { format: { type: "json_schema", name: "document_crop", strict: true, schema: aadhaarCropSchema } }
-          })
-        });
-      }
-      const payload = await response.json().catch(() => null);
-      if (!response.ok) {
-        console.error("[ID-CARD-CROP] Vision API request failed.", {
-          provider: useGemini ? "gemini" : "openai",
-          model: ID_CARD_AI_CROP_MODEL,
-          httpStatus: response.status,
-          apiMessage: String(payload?.error?.message || payload?.message || "No error message").slice(0, 300)
-        });
-        return res.status(502).json({ success: false, error: "AI crop service se valid response nahi mila. Render Logs check karein." });
-      }
-      const candidate = payload?.candidates?.[0];
-      const outputText = useGemini
-        ? String(candidate?.content?.parts?.map((part) => part.text || "").join("") || "")
-        : String(payload?.output_text || "");
-      console.log("[ID-CARD-CROP] Vision API response received.", {
-        provider: useGemini ? "gemini" : "openai",
-        model: ID_CARD_AI_CROP_MODEL,
-        finishReason: candidate?.finishReason || "not-provided",
-        textLength: outputText.length,
-        candidateCount: Array.isArray(payload?.candidates) ? payload.candidates.length : undefined
-      });
-      let crop;
-      try {
-        const cleanedText = outputText.trim()
-          .replace(/^\uFEFF/, "")
-          .replace(/^\`\`\`(?:json)?\s*/i, "")
-          .replace(/\s*\`\`\`$/i, "");
-        const firstBrace = cleanedText.indexOf("{");
-        const lastBrace = cleanedText.lastIndexOf("}");
-        const jsonText = firstBrace >= 0 && lastBrace > firstBrace
-          ? cleanedText.slice(firstBrace, lastBrace + 1)
-          : cleanedText;
-        crop = JSON.parse(jsonText);
-      } catch (parseError) {
-        console.error("[ID-CARD-CROP] Could not parse model JSON.", {
-          provider: useGemini ? "gemini" : "openai",
-          model: ID_CARD_AI_CROP_MODEL,
-          parseError: parseError?.message || "JSON parse failed",
-          textLength: outputText.length,
-          finishReason: candidate?.finishReason || "not-provided"
-        });
-        return res.status(502).json({ success: false, error: "AI se crop coordinates ka valid JSON nahi mila. Render Logs check karein." });
-      }
-      const values = [crop?.left, crop?.top, crop?.right, crop?.bottom, crop?.confidence ?? 0.8].map((value) =>
-        typeof value === "string" && value.trim() !== "" ? Number(value) : value
-      );
-      const [left, top, right, bottom, confidence] = values;
-      if (!values.every((value) => Number.isFinite(value)) || right - left < 0.1 || bottom - top < 0.1 ||
-          left < 0 || top < 0 || right > 1 || bottom > 1) {
-        console.error("[ID-CARD-CROP] Model returned invalid crop coordinates.", {
-          provider: useGemini ? "gemini" : "openai",
-          model: ID_CARD_AI_CROP_MODEL,
-          coordinateTypes: {
-            left: typeof crop?.left, top: typeof crop?.top,
-            right: typeof crop?.right, bottom: typeof crop?.bottom,
-            confidence: typeof crop?.confidence
-          },
-          valuesFinite: values.map(Number.isFinite),
-          finishReason: candidate?.finishReason || "not-provided"
-        });
-        return res.status(422).json({ success: false, error: "AI ne valid ID-card boundary nahi batayi. Dobara clear photo ke saath try karein." });
-      }
-      crop = { left, top, right, bottom, confidence };
+      const result = await cropIdCardWithOpenCv(req.file);
       return res.json({
         success: true,
-        crop: {
-          left: Math.max(0, Math.min(1, crop.left)), top: Math.max(0, Math.min(1, crop.top)),
-          right: Math.max(0, Math.min(1, crop.right)), bottom: Math.max(0, Math.min(1, crop.bottom)),
-          confidence: Math.max(0, Math.min(1, crop.confidence))
-        }
+        engine: "opencv-local",
+        image: result.image,
+        corners: result.corners,
+        confidence: result.confidence
       });
     } catch (error) {
-      console.error("[ID-CARD-CROP] Unexpected crop processing error.", {
-        provider: ID_CARD_AI_CROP_PROVIDER,
-        model: ID_CARD_AI_CROP_MODEL,
-        error: error?.message || "Unknown error"
+      console.error("[ID-CARD-CROP] Local OpenCV crop failed.", { code: error?.code || "crop-failed", detail: String(error?.message || "").slice(0, 250) });
+      return res.status(422).json({
+        success: false,
+        engine: "opencv-local",
+        error: "OpenCV card detect nahi kar paya. Card ko seedha, poora frame mein aur plain background par rakhkar dobara photo lein."
       });
-      return res.status(502).json({ success: false, error: "AI crop response process nahi ho saka. Render Logs check karein." });
     }
   });
 });
