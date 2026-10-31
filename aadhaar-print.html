@@ -4,708 +4,627 @@
 
 <head>
 
-  <meta charset="utf-8">
+  <meta charset="utf-8">
 
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <meta name="robots" content="index,follow">
+  <meta name="robots" content="index,follow">
 
-  <title>ID Card Front + Back A4 Print | E-MITRA WALA</title>
+  <title>ID Card Front + Back A4 Print | E-MITRA WALA</title>
 
-  <meta name="description" content="Aadhaar, PAN, Voter ID aur doosre ID cards ko A4 page par AI crop, print aur download karein.">
+  <meta name="description" content="Aadhaar, PAN, Voter ID aur doosre ID cards ko A4 page par AI crop, print aur download karein.">
 
-  <link rel="canonical" href="https\://emitrawala.online/aadhaar-print.html">
+  <link rel="canonical" href="https://emitrawala.online/aadhaar-print.html">
 
-  <link rel="stylesheet" href="https\://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-  <link href="https\://fonts.googleapis.com/css2?family=Poppins:wght\@400;500;600;700;800&family=Noto+Sans+Devanagari:wght\@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
 
-  <style>
+  <style>
 
-    :root{--blue:#2563eb;--navy:#102a56;--line:#dce5f1;--muted:#718096;--surface:#f7faff}
+    :root{--blue:#2563eb;--navy:#102a56;--line:#dce5f1;--muted:#718096;--surface:#f7faff}
 
-    *{box-sizing:border-box}body{margin:0;background:#e9eff7;color:var(--navy);font-family:Poppins,'Noto Sans Devanagari',sans-serif}
+    *{box-sizing:border-box}body{margin:0;background:#e9eff7;color:var(--navy);font-family:Poppins,'Noto Sans Devanagari',sans-serif}
 
-    .topbar{height:70px;background:#fff;border-bottom:1px solid var(--line);padding:0 20px;display:flex;align-items:center;gap:13px}.logo{width:39px;height:39px;border-radius:13px;background:linear-gradient(135deg,#386bff,#6d40ec);display:grid;place-items:center;color:white;box-shadow:0 6px 14px #3564df44}.brand{font-weight:800;font-size:18px;letter-spacing:-.5px}.sub{font-size:10px;font-weight:700;color:#3469e9;letter-spacing:.7px}.home{margin-left:auto;width:36px;height:36px;border:1px solid var(--line);display:grid;place-items:center;border-radius:50%;color:#64748b;text-decoration:none}
+    .topbar{height:70px;background:#fff;border-bottom:1px solid var(--line);padding:0 20px;display:flex;align-items:center;gap:13px}.logo{width:39px;height:39px;border-radius:13px;background:linear-gradient(135deg,#386bff,#6d40ec);display:grid;place-items:center;color:white;box-shadow:0 6px 14px #3564df44}.brand{font-weight:800;font-size:18px;letter-spacing:-.5px}.sub{font-size:10px;font-weight:700;color:#3469e9;letter-spacing:.7px}.home{margin-left:auto;width:36px;height:36px;border:1px solid var(--line);display:grid;place-items:center;border-radius:50%;color:#64748b;text-decoration:none}
 
-    .app{min-height:calc(100vh - 70px);display:grid;grid-template-columns:340px 1fr}.panel{padding:19px 20px;background:#fff;border-right:1px solid #d9e1ed;overflow:auto}.block{border-bottom:1px solid #e8eef5;padding:4px 0 17px;margin-bottom:14px}.label{font-size:12px;letter-spacing:.5px;color:#7788a2;font-weight:800;margin:0 0 12px}.types{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.type{border:0;background:#fff;padding:9px 2px;color:#2563eb;border-radius:8px;font:700 10px Poppins;cursor:pointer}.type i{display:block;font-size:20px;margin-bottom:5px}.type.active{outline:2px solid var(--blue);background:#f2f7ff}.row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:13px;font-size:11px;font-weight:600}.switch{border:1px solid #cdddff;border-radius:7px;background:#f7faff;color:#2563eb;padding:5px 7px;font:700 10px Poppins;cursor:pointer}.switch.active{background:#e6efff}.hint{padding:9px;margin:0 0 12px;border:1px solid #bfdbfe;border-radius:7px;background:#eff6ff;color:#2563eb;font-size:10px;line-height:1.5}.scan-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}.scan{height:94px;border:2px dashed #cbd5e1;border-radius:9px;background:#fafcff;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:7px;color:#8290a5;cursor:pointer;font-size:10px;font-weight:700;text-align:center}.scan i{font-size:23px;color:#c8d2df}.scan.ready{border-style:solid;border-color:#71a5ff;color:#2563eb}.scan.ready i{color:#2563eb}.queue-list{display:grid;gap:7px;max-height:178px;overflow:auto;padding-right:2px}.queue{padding:9px;border:1px solid var(--line);border-radius:7px;display:flex;justify-content:space-between;gap:8px;font-size:12px;font-weight:700;background:#fff;text-align:left;cursor:pointer}.queue.selected{border-color:var(--blue);background:#f2f7ff}.queue i{color:#f43f5e;padding:2px;cursor:pointer}.queue-empty{font-size:11px;color:#94a3b8;padding:10px;border:1px dashed var(--line);border-radius:7px}.twocol{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:11px}.button{border:1px solid #bdd3ff;border-radius:8px;padding:10px 5px;background:#f6f9ff;color:#1d4ed8;font:800 11px Poppins;cursor:pointer}.button.danger{border-color:#ffd3d3;color:#ef4444;background:#fff7f7}.button.primary{color:#fff;background:var(--blue);border-color:var(--blue);width:100%;margin:12px 0 8px}.button:disabled{opacity:.55;cursor:wait}.export{margin-top:17px}.export-head{display:flex;justify-content:space-between;align-items:center}.badge{background:#edf4ff;color:#2563eb;padding:4px 9px;border-radius:15px;font-size:10px;font-weight:800}.note{font-size:9px;color:var(--muted);line-height:1.55;text-align:center;margin:13px 0 0}
+    .app{min-height:calc(100vh - 70px);display:grid;grid-template-columns:340px 1fr}.panel{padding:19px 20px;background:#fff;border-right:1px solid #d9e1ed;overflow:auto}.block{border-bottom:1px solid #e8eef5;padding:4px 0 17px;margin-bottom:14px}.label{font-size:12px;letter-spacing:.5px;color:#7788a2;font-weight:800;margin:0 0 12px}.types{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.type{border:0;background:#fff;padding:9px 2px;color:#2563eb;border-radius:8px;font:700 10px Poppins;cursor:pointer}.type i{display:block;font-size:20px;margin-bottom:5px}.type.active{outline:2px solid var(--blue);background:#f2f7ff}.row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:13px;font-size:11px;font-weight:600}.switch{border:1px solid #cdddff;border-radius:7px;background:#f7faff;color:#2563eb;padding:5px 7px;font:700 10px Poppins;cursor:pointer}.switch.active{background:#e6efff}.hint{padding:9px;margin:0 0 12px;border:1px solid #bfdbfe;border-radius:7px;background:#eff6ff;color:#2563eb;font-size:10px;line-height:1.5}.scan-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}.scan{height:94px;border:2px dashed #cbd5e1;border-radius:9px;background:#fafcff;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:7px;color:#8290a5;cursor:pointer;font-size:10px;font-weight:700;text-align:center}.scan i{font-size:23px;color:#c8d2df}.scan.ready{border-style:solid;border-color:#71a5ff;color:#2563eb}.scan.ready i{color:#2563eb}.queue-list{display:grid;gap:7px;max-height:178px;overflow:auto;padding-right:2px}.queue{padding:9px;border:1px solid var(--line);border-radius:7px;display:flex;justify-content:space-between;gap:8px;font-size:12px;font-weight:700;background:#fff;text-align:left;cursor:pointer}.queue.selected{border-color:var(--blue);background:#f2f7ff}.queue i{color:#f43f5e;padding:2px;cursor:pointer}.queue-empty{font-size:11px;color:#94a3b8;padding:10px;border:1px dashed var(--line);border-radius:7px}.twocol{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:11px}.button{border:1px solid #bdd3ff;border-radius:8px;padding:10px 5px;background:#f6f9ff;color:#1d4ed8;font:800 11px Poppins;cursor:pointer}.button.danger{border-color:#ffd3d3;color:#ef4444;background:#fff7f7}.button.primary{color:#fff;background:var(--blue);border-color:var(--blue);width:100%;margin:12px 0 8px}.button:disabled{opacity:.55;cursor:wait}.export{margin-top:17px}.export-head{display:flex;justify-content:space-between;align-items:center}.badge{background:#edf4ff;color:#2563eb;padding:4px 9px;border-radius:15px;font-size:10px;font-weight:800}.note{font-size:9px;color:var(--muted);line-height:1.55;text-align:center;margin:13px 0 0}
 
-    .work{padding:64px 90px;min-width:0;position:relative;display:flex;justify-content:center;align-items:flex-start;background:radial-gradient(circle at 50% 20%,#f8fbff 0,#e6edf5 60%)}.zoom{position:fixed;top:160px;left:363px;z-index:3;padding:10px 15px;display:flex;gap:18px;align-items:center;border-radius:26px;background:#fff;box-shadow:0 8px 18px #1c365022;font-size:12px;font-weight:800}.zoom button{border:0;background:none;color:var(--navy);font-size:18px;cursor:pointer}.paper{position:relative;width:min(508px,calc(100vw - 520px));aspect-ratio:210/297;background:#fff;box-shadow:0 20px 32px #2f405438;overflow:hidden}.empty{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:#a6b1c2;font-size:13px;padding:30px}.card{position:absolute;width:47%;aspect-ratio:1.586/1;border:2px solid transparent;cursor:grab;touch-action:none;user-select:none}.card.selected{border-color:var(--blue)}.card img{width:100%;height:100%;object-fit:fill;display:block;pointer-events:none}.corner{display:none;position:absolute;width:12px;height:12px;background:white;border:2px solid var(--blue);border-radius:50%}.selected .corner{display:block}.nw{left:-7px;top:-7px}.ne{right:-7px;top:-7px}.sw{left:-7px;bottom:-7px}.se{right:-7px;bottom:-7px}.tools{position:fixed;right:22px;top:145px;display:grid;gap:9px}.round{width:45px;height:45px;border:2px solid white;border-radius:50%;display:grid;place-items:center;background:#3479ee;color:#fff;box-shadow:0 4px 10px #526b8b50;cursor:pointer}.round.green{background:#0dbd91}.round.pink{background:#f44c91}.round:disabled{opacity:.55}.mobile{display:none}
+    .work{padding:64px 90px;min-width:0;position:relative;display:flex;justify-content:center;align-items:flex-start;background:radial-gradient(circle at 50% 20%,#f8fbff 0,#e6edf5 60%)}.zoom{position:fixed;top:160px;left:363px;z-index:3;padding:10px 15px;display:flex;gap:18px;align-items:center;border-radius:26px;background:#fff;box-shadow:0 8px 18px #1c365022;font-size:12px;font-weight:800}.zoom button{border:0;background:none;color:var(--navy);font-size:18px;cursor:pointer}.paper{position:relative;width:min(508px,calc(100vw - 520px));aspect-ratio:210/297;background:#fff;box-shadow:0 20px 32px #2f405438;overflow:hidden}.empty{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:#a6b1c2;font-size:13px;padding:30px}.card{position:absolute;width:47%;aspect-ratio:1.586/1;border:2px solid transparent;cursor:grab;touch-action:none;user-select:none}.card.selected{border-color:var(--blue)}.card img{width:100%;height:100%;object-fit:fill;display:block;pointer-events:none}.corner{display:none;position:absolute;width:12px;height:12px;background:white;border:2px solid var(--blue);border-radius:50%}.selected .corner{display:block}.nw{left:-7px;top:-7px}.ne{right:-7px;top:-7px}.sw{left:-7px;bottom:-7px}.se{right:-7px;bottom:-7px}.tools{position:fixed;right:22px;top:145px;display:grid;gap:9px}.round{width:45px;height:45px;border:2px solid white;border-radius:50%;display:grid;place-items:center;background:#3479ee;color:#fff;box-shadow:0 4px 10px #526b8b50;cursor:pointer}.round.green{background:#0dbd91}.round.pink{background:#f44c91}.round:disabled{opacity:.55}.mobile{display:none}
 
-    .manual-modal{position:fixed;inset:0;z-index:30;background:#f5f8fc;display:grid;grid-template-columns:minmax(0,1fr) 330px}.manual-modal[hidden]{display:none}.manual-live{border:1px solid var(--line);border-radius:12px;padding:10px;margin:14px 0;background:#f8fbff}.manual-live strong{display:block;font-size:10px;color:#334155;margin-bottom:8px;letter-spacing:.4px}.manual-live canvas{display:block;width:100%;max-height:190px;object-fit:contain;background:#e2e8f0;border-radius:7px}.manual-live small{display:block;font-size:9px;color:#64748b;text-align:center;margin-top:6px}.manual-canvas-area{min-width:0;display:grid;place-items:center;padding:45px;background:#f4f7fb}.manual-stage{position:relative;max-width:min(76vw,950px);max-height:78vh;line-height:0;box-shadow:0 15px 36px #33415530;touch-action:none}.manual-stage img{display:block;max-width:min(76vw,950px);max-height:78vh;width:auto;height:auto}.manual-stage svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}.manual-poly{fill:#2563eb18;stroke:#2563eb;stroke-width:3;vector-effect:non-scaling-stroke}.manual-dot{position:absolute;width:20px;height:20px;border:3px solid #2563eb;background:#fff;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 1px 5px #1e3a8a55;cursor:grab;touch-action:none}.manual-panel{overflow:auto;background:#fff;border-left:1px solid var(--line);padding:22px}.manual-panel h2{font-size:16px;margin:0}.manual-panel p{font-size:11px;color:var(--muted);margin:3px 0 20px}.manual-control{border:1px solid var(--line);border-radius:12px;padding:15px;margin:14px 0}.manual-control label{display:flex;justify-content:space-between;font-weight:700;font-size:12px;margin:0 0 10px}.manual-control input{width:100%;accent-color:var(--blue)}.manual-actions{display:grid;gap:9px;position:sticky;bottom:0;background:white;padding-top:10px}.manual-actions .button{padding:13px}.manual-cancel{border:0;background:#eef3fa;color:#334155;border-radius:8px;padding:10px;font:800 11px Poppins;cursor:pointer}
+    .manual-modal{position:fixed;inset:0;z-index:30;background:#f5f8fc;display:grid;grid-template-columns:minmax(0,1fr) 330px}.manual-modal[hidden]{display:none}.manual-live{border:1px solid var(--line);border-radius:12px;padding:10px;margin:14px 0;background:#f8fbff}.manual-live strong{display:block;font-size:10px;color:#334155;margin-bottom:8px;letter-spacing:.4px}.manual-live canvas{display:block;width:100%;max-height:190px;object-fit:contain;background:#e2e8f0;border-radius:7px}.manual-live small{display:block;font-size:9px;color:#64748b;text-align:center;margin-top:6px}.manual-canvas-area{min-width:0;display:grid;place-items:center;padding:45px;background:#f4f7fb}.manual-stage{position:relative;max-width:min(76vw,950px);max-height:78vh;line-height:0;box-shadow:0 15px 36px #33415530;touch-action:none}.manual-stage img{display:block;max-width:min(76vw,950px);max-height:78vh;width:auto;height:auto}.manual-stage svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}.manual-poly{fill:#2563eb18;stroke:#2563eb;stroke-width:3;vector-effect:non-scaling-stroke}.manual-dot{position:absolute;width:20px;height:20px;border:3px solid #2563eb;background:#fff;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 1px 5px #1e3a8a55;cursor:grab;touch-action:none}.manual-panel{overflow:auto;background:#fff;border-left:1px solid var(--line);padding:22px}.manual-panel h2{font-size:16px;margin:0}.manual-panel p{font-size:11px;color:var(--muted);margin:3px 0 20px}.manual-control{border:1px solid var(--line);border-radius:12px;padding:15px;margin:14px 0}.manual-control label{display:flex;justify-content:space-between;font-weight:700;font-size:12px;margin:0 0 10px}.manual-control input{width:100%;accent-color:var(--blue)}.manual-actions{display:grid;gap:9px;position:sticky;bottom:0;background:white;padding-top:10px}.manual-actions .button{padding:13px}.manual-cancel{border:0;background:#eef3fa;color:#334155;border-radius:8px;padding:10px;font:800 11px Poppins;cursor:pointer}
 
-    @media(max-width:850px){.app{display:block}.panel{border:0}.work{padding:25px 14px;min-height:640px}.paper{width:min(100%,480px)}.zoom,.tools{display:none}.mobile{display:flex;gap:8px;position:fixed;z-index:5;bottom:12px;left:12px;right:12px}.mobile .button{flex:1;background:white}.mobile .primary{margin:0;background:var(--blue)}.manual-modal{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto}.manual-canvas-area{padding:18px}.manual-stage,.manual-stage img{max-width:92vw;max-height:58vh}.manual-panel{border-left:0;border-top:1px solid var(--line);padding:14px;max-height:42vh}.manual-control{margin:8px 0;padding:11px}}
+    @media(max-width:850px){.app{display:block}.panel{border:0}.work{padding:25px 14px;min-height:640px}.paper{width:min(100%,480px)}.zoom,.tools{display:none}.mobile{display:flex;gap:8px;position:fixed;z-index:5;bottom:12px;left:12px;right:12px}.mobile .button{flex:1;background:white}.mobile .primary{margin:0;background:var(--blue)}.manual-modal{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto}.manual-canvas-area{padding:18px}.manual-stage,.manual-stage img{max-width:92vw;max-height:58vh}.manual-panel{border-left:0;border-top:1px solid var(--line);padding:14px;max-height:42vh}.manual-control{margin:8px 0;padding:11px}}
 
-    @media print{body{background:#fff}.topbar,.panel,.zoom,.tools,.mobile{display:none!important}.app{display:block}.work{display:block;padding:0;background:none}.paper{width:210mm;height:297mm;margin:0;box-shadow:none}.card{border:0!important}.corner,.empty{display:none!important}@page{size:A4 portrait;margin:0}}
+    @media print{body{background:#fff}.topbar,.panel,.zoom,.tools,.mobile{display:none!important}.app{display:block}.work{display:block;padding:0;background:none}.paper{width:210mm;height:297mm;margin:0;box-shadow:none}.card{border:0!important}.corner,.empty{display:none!important}@page{size:A4 portrait;margin:0}}
 
-    .manual-preset.active{background:#2563eb!important;color:#fff!important;border-color:#2563eb!important;box-shadow:0 5px 11px #2563eb44}
+    .manual-preset.active{background:#2563eb!important;color:#fff!important;border-color:#2563eb!important;box-shadow:0 5px 11px #2563eb44}
 
-  
-/* Professional manual crop editor */
-.manual-modal{grid-template-columns:minmax(0,1fr) 355px;background:#f7f9fc;color:#17233b;font-family:Poppins,'Noto Sans Devanagari',sans-serif}
-.manual-canvas-area{position:relative;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:72px 50px 105px;background:#f7f9fc;overflow:hidden}
-.manual-stage-wrap{position:relative;display:flex;align-items:center;justify-content:center;max-width:100%;max-height:76vh}
-.manual-stage{max-width:min(70vw,850px);max-height:76vh;box-shadow:0 16px 38px #26364a24;background:#fff;transition:transform .15s}
-.manual-stage img{max-width:min(70vw,850px);max-height:76vh;object-fit:contain}
-.manual-dot{width:21px;height:21px;border:2px solid #2563eb;box-shadow:0 0 0 2px #fff,0 2px 8px #1e3a8a55}
-.manual-poly{fill:#2563eb10;stroke:#2563eb;stroke-width:3}
-.manual-editor-toolbar{position:absolute;right:18px;top:18px;z-index:4;display:grid;justify-items:center;gap:8px}
-.manual-editor-toolbar button,.manual-bottom-tools button{width:43px;height:43px;border:1px solid #e0e7f0;border-radius:50%;background:#fff;color:#24344f;font-size:23px;box-shadow:0 5px 14px #26364a18;cursor:pointer}
-.manual-editor-toolbar span{font-size:10px;color:#fff;background:#818b9a;border-radius:15px;padding:5px 9px;font-weight:700}
-.manual-bottom-tools{position:absolute;bottom:28px;left:0;right:0;display:flex;align-items:center;justify-content:center;gap:22px}
-.manual-bottom-tools .manual-full{width:auto;padding:0 20px;border-radius:30px;color:#0c9f8c;border-color:#8cefe1;font-size:11px;font-weight:800}
-.manual-magnifier{position:absolute;z-index:5;display:none;top:7%;right:12%;width:185px;height:185px;border-radius:50%;border:5px solid #fff;box-shadow:0 8px 30px #1e293b40;overflow:hidden;pointer-events:none;background:#fff}
-.manual-magnifier div{width:100%;height:100%;background-repeat:no-repeat;background-size:350% 350%}
-.manual-panel{display:flex;flex-direction:column;min-height:0;padding:0;border-left:1px solid #e1e7ef;background:#fff;overflow:hidden}
-.manual-panel-head{height:86px;flex:none;padding:20px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e6ebf2}
-.manual-panel h2{font-size:14px;font-weight:800;letter-spacing:.2px}
-.manual-panel-head p{margin:4px 0 0;font-size:10px;color:#718096}
-.manual-cancel{padding:11px 15px;border-radius:24px;background:#f1f4f8;color:#46546a;font-size:10px}
-.manual-panel-scroll{padding:18px 20px;overflow:auto;flex:1}
-.manual-presets{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:8px;border:1px solid #e1e8f1;border-radius:18px;margin-bottom:18px}
-.manual-preset{border:0;border-radius:13px;background:#f0f3f8;color:#526078;padding:13px 5px;font:800 11px Poppins;cursor:pointer}
-.manual-preset.active{background:#2861ed!important;color:white!important;box-shadow:0 6px 15px #2861ed38}
-.manual-control{padding:19px 20px;border:1px solid #e1e8f1;border-radius:19px;margin:0 0 18px;box-shadow:0 5px 16px #25385808}
-.manual-section-title{position:relative;display:flex;flex-direction:column;gap:2px;margin-bottom:20px}
-.manual-section-title span{font-size:10px;color:#94a3b8;font-weight:800;letter-spacing:.5px}
-.manual-section-title strong{font-size:13px;color:#1e293b}
-.manual-reset{position:absolute;right:0;top:0;border:0;border-radius:20px;background:#f0f3f8;color:#4b5a70;padding:9px 13px;font:800 9px Poppins;cursor:pointer}
-.manual-control label{display:flex;align-items:center;gap:3px;margin:17px 0 8px;font-size:11px;color:#526078}
-.manual-control label output{margin-left:auto;color:#2563eb;font-weight:800}
-.manual-control label small{font-size:9px;color:#f08a19;font-weight:800}
-.manual-control input[type=range]{height:6px;margin:0 0 5px;accent-color:#2865ff;cursor:pointer}
-.manual-actions{flex:none;padding:18px 16px;border-top:1px solid #e5eaf1;background:#fff}
-.manual-confirm{width:100%;border:0;border-radius:15px;padding:17px;background:linear-gradient(100deg,#2864ed,#5145e8);color:white;font:800 12px Poppins;box-shadow:0 7px 16px #315ce638;cursor:pointer}
-@media(max-width:850px){
- .manual-modal{grid-template-columns:1fr;grid-template-rows:minmax(300px,55vh) minmax(0,1fr)}
- .manual-canvas-area{min-height:0;padding:55px 12px 75px}
- .manual-stage,.manual-stage img{max-width:88vw;max-height:48vh}
- .manual-editor-toolbar{right:8px;top:8px}.manual-bottom-tools{bottom:12px}
- .manual-panel-head{height:70px;padding:12px 15px}.manual-panel-scroll{padding:12px 14px}
- .manual-control{padding:14px 16px;margin-bottom:12px}.manual-magnifier{width:125px;height:125px;right:8%;top:8%}
- .manual-actions{padding:10px 14px}.manual-confirm{padding:14px}
-}
-
-</style>
+  </style>
 
 </head>
 
 <body>
 
-  <header class="topbar"><span class="logo"><i class="fa-solid fa-print"></i></span><div><div class="brand">E-MITRA WALA</div><div class="sub">SMART ID PRINT SUITE</div></div><a class="home" href="/" title="Home"><i class="fa-solid fa-house"></i></a></header>
+  <header class="topbar"><span class="logo"><i class="fa-solid fa-print"></i></span><div><div class="brand">E-MITRA WALA</div><div class="sub">SMART ID PRINT SUITE</div></div><a class="home" href="/" title="Home"><i class="fa-solid fa-house"></i></a></header>
 
-  <main class="app">
+  <main class="app">
 
-    <aside class="panel">
+    <aside class="panel">
 
-      <section class="block"><p class="label">1. SELECT TYPE</p><div class="types"><button class="type active"><i class="fa-regular fa-id-card"></i>ID Card</button><button class="type"><i class="fa-solid fa-file-lines"></i>A4 Page</button><button class="type"><i class="fa-solid fa-id-badge"></i>PVC</button><button class="type"><i class="fa-solid fa-crop-simple"></i>Custom</button></div><div class="row"><label><input id="singleSide" type="checkbox"> Single Side</label><button id="localMode" class="switch active">Auto AI Crop</button><button id="manualMode" class="switch">Manual Crop</button></div></section>
+      <section class="block"><p class="label">1. SELECT TYPE</p><div class="types"><button class="type active"><i class="fa-regular fa-id-card"></i>ID Card</button><button class="type"><i class="fa-solid fa-file-lines"></i>A4 Page</button><button class="type"><i class="fa-solid fa-id-badge"></i>PVC</button><button class="type"><i class="fa-solid fa-crop-simple"></i>Custom</button></div><div class="row"><label><input id="singleSide" type="checkbox"> Single Side</label><button id="localMode" class="switch active">Auto AI Crop</button><button id="manualMode" class="switch">Manual Crop</button></div></section>
 
-      <section class="block"><p class="label">2. SCAN DOCUMENTS <span id="clear" style="float:right;color:#ef4444;cursor:pointer">CLEAR</span></p><p class="hint"><i class="fa-solid fa-circle-info"></i> हर बार Front या Back image चुनने पर A4 में नया card जुड़ेगा। Auto Crop कोने पहचानने की कोशिश करेगा। पहचान न होने पर चार नीले corners खुद set करके Confirm Scan करें।</p><div class="scan-grid"><label id="frontBox" class="scan"><i class="fa-solid fa-camera"></i><span>Add Front</span><input id="frontInput" type="file" accept="image/*" hidden></label><label id="backBox" class="scan"><i class="fa-solid fa-arrows-rotate"></i><span>Add Back</span><input id="backInput" type="file" accept="image/*" hidden></label></div><button id="aiCropPanel" class="button" style="width:100%;margin-top:10px"><i class="fa-solid fa-wand-magic-sparkles"></i> AI CROP SELECTED CARD</button></section>
+      <section class="block"><p class="label">2. SCAN DOCUMENTS <span id="clear" style="float:right;color:#ef4444;cursor:pointer">CLEAR</span></p><p class="hint"><i class="fa-solid fa-circle-info"></i> हर बार Front या Back image चुनने पर A4 में नया card जुड़ेगा। Auto Crop कोने पहचानने की कोशिश करेगा। पहचान न होने पर चार नीले corners खुद set करके Confirm Scan करें।</p><div class="scan-grid"><label id="frontBox" class="scan"><i class="fa-solid fa-camera"></i><span>Add Front</span><input id="frontInput" type="file" accept="image/*" hidden></label><label id="backBox" class="scan"><i class="fa-solid fa-arrows-rotate"></i><span>Add Back</span><input id="backInput" type="file" accept="image/*" hidden></label></div><button id="aiCropPanel" class="button" style="width:100%;margin-top:10px"><i class="fa-solid fa-wand-magic-sparkles"></i> AI CROP SELECTED CARD</button></section>
 
-      <section class="block"><p class="label">3. QUEUE <span id="queueCount" class="badge" style="float:right">0 Cards</span></p><div id="queueList" class="queue-list"><div class="queue-empty">No ID card selected</div></div><div class="twocol"><button id="reset" class="button"><i class="fa-solid fa-rotate-left"></i> RESET</button><button id="fit" class="button"><i class="fa-solid fa-expand"></i> AUTO FIT</button></div></section>
+      <section class="block"><p class="label">3. QUEUE <span id="queueCount" class="badge" style="float:right">0 Cards</span></p><div id="queueList" class="queue-list"><div class="queue-empty">No ID card selected</div></div><div class="twocol"><button id="reset" class="button"><i class="fa-solid fa-rotate-left"></i> RESET</button><button id="fit" class="button"><i class="fa-solid fa-expand"></i> AUTO FIT</button></div></section>
 
-      <section class="export"><div class="export-head"><p class="label">EXPORT &amp; PRINT</p><span class="badge">1 Page</span></div><button id="print" class="button primary"><i class="fa-solid fa-print"></i> PRINT / SAVE PDF</button><div class="twocol" style="margin-top:0"><button id="jpg" class="button"><i class="fa-solid fa-image"></i> JPG</button><button id="png" class="button"><i class="fa-solid fa-file-image"></i> PNG</button></div><p class="note">Auto Crop आपके अपने server पर OpenCV से होता है। फोटो किसी बाहरी AI service को नहीं भेजी जाती और स्थायी रूप से save नहीं होती।</p></section>
+      <section class="export"><div class="export-head"><p class="label">EXPORT &amp; PRINT</p><span class="badge">1 Page</span></div><button id="print" class="button primary"><i class="fa-solid fa-print"></i> PRINT / SAVE PDF</button><div class="twocol" style="margin-top:0"><button id="jpg" class="button"><i class="fa-solid fa-image"></i> JPG</button><button id="png" class="button"><i class="fa-solid fa-file-image"></i> PNG</button></div><p class="note">Auto Crop आपके अपने server पर OpenCV से होता है। फोटो किसी बाहरी AI service को नहीं भेजी जाती और स्थायी रूप से save नहीं होती।</p></section>
 
-    </aside>
+    </aside>
 
-    <section class="work"><div class="zoom"><button id="zoomOut">−</button><span id="zoomText">100%</span><button id="zoomIn">+</button></div><div id="paper" class="paper"><div id="empty" class="empty">Aadhaar, PAN, Voter ID या किसी भी card की Front और Back photo upload करें।<br>फिर card को drag करके अपनी जगह set करें।</div></div></section>
+    <section class="work"><div class="zoom"><button id="zoomOut">−</button><span id="zoomText">100%</span><button id="zoomIn">+</button></div><div id="paper" class="paper"><div id="empty" class="empty">Aadhaar, PAN, Voter ID या किसी भी card की Front और Back photo upload करें।<br>फिर card को drag करके अपनी जगह set करें।</div></div></section>
 
-    <nav class="tools"><button id="localCrop" class="round green" title="Smart crop in browser"><i class="fa-solid fa-crop-simple"></i></button><button id="aiCrop" class="round" title="AI Crop — consent required"><i class="fa-solid fa-wand-magic-sparkles"></i></button><button id="download" class="round pink" title="Download JPG"><i class="fa-solid fa-download"></i></button><button id="rotate" class="round" title="Rotate selected"><i class="fa-solid fa-rotate-right"></i></button><button id="fitTool" class="round" title="Auto fit"><i class="fa-solid fa-expand"></i></button><button id="trash" class="round pink" title="Delete selected"><i class="fa-solid fa-trash"></i></button></nav>
+    <nav class="tools"><button id="localCrop" class="round green" title="Smart crop in browser"><i class="fa-solid fa-crop-simple"></i></button><button id="aiCrop" class="round" title="AI Crop — consent required"><i class="fa-solid fa-wand-magic-sparkles"></i></button><button id="download" class="round pink" title="Download JPG"><i class="fa-solid fa-download"></i></button><button id="rotate" class="round" title="Rotate selected"><i class="fa-solid fa-rotate-right"></i></button><button id="fitTool" class="round" title="Auto fit"><i class="fa-solid fa-expand"></i></button><button id="trash" class="round pink" title="Delete selected"><i class="fa-solid fa-trash"></i></button></nav>
 
-  </main>
+  </main>
 
-  <div class="mobile"><button id="mobileCrop" class="button">SMART CROP</button><button id="mobilePrint" class="button primary">PRINT</button></div>
+  <div class="mobile"><button id="mobileCrop" class="button">SMART CROP</button><button id="mobilePrint" class="button primary">PRINT</button></div>
 
-  <section id="manualModal" class="manual-modal" hidden aria-modal="true" role="dialog" aria-labelledby="manualTitle">
-  <div class="manual-canvas-area">
-    <div class="manual-editor-toolbar">
-      <button type="button" id="manualZoomIn" aria-label="Zoom in">+</button>
-      <button type="button" id="manualZoomOut" aria-label="Zoom out">−</button>
-      <span id="manualZoomLabel">100%</span>
-    </div>
-    <div class="manual-stage-wrap">
-      <div id="manualStage" class="manual-stage">
-        <img id="manualImage" alt="Manual crop preview">
-        <svg viewBox="0 0 1000 1000" preserveAspectRatio="none"><path id="manualShade" fill="#102a5688" fill-rule="evenodd"></path><polygon id="manualPolygon" class="manual-poly"></polygon></svg>
-        <i class="manual-dot" data-point="nw"></i><i class="manual-dot" data-point="ne"></i><i class="manual-dot" data-point="se"></i><i class="manual-dot" data-point="sw"></i>
-      </div>
-      <div id="manualMagnifier" class="manual-magnifier"><div id="manualMagnifierImage"></div></div>
-    </div>
-    <div class="manual-bottom-tools">
-      <button id="manualUndo" type="button" title="Reset crop">↶</button>
-      <button id="manualFullImage" class="manual-full" type="button">⌗ &nbsp; FULL IMAGE</button>
-      <button id="manualRotate" type="button" title="Rotate preview">↻</button>
-    </div>
-  </div>
-  <aside class="manual-panel">
-    <header class="manual-panel-head"><div><h2 id="manualTitle">ADJUST SCAN</h2><p>Crop, colour aur print clarity</p></div><button id="manualCancel" class="manual-cancel" type="button">CANCEL</button></header>
-    <div class="manual-panel-scroll">
-      <div class="manual-presets"><button class="manual-preset" data-style="orig" type="button">Orig</button><button class="manual-preset active" data-style="natural" type="button">Natural</button><button class="manual-preset" data-style="bw" type="button">B&W</button></div>
-      <div class="manual-control"><div class="manual-section-title"><span>TONE</span><strong>Light correction</strong><button class="manual-reset" id="manualReset" type="button">RESET</button></div>
-        <label for="manualBrightness">Brightness <output id="brightnessValue">0</output></label><input id="manualBrightness" type="range" min="-40" max="40" value="0">
-        <label for="manualContrast">Contrast <output id="contrastValue">0</output></label><input id="manualContrast" type="range" min="-40" max="40" value="0">
-        <label for="manualSaturation">Saturation <small>PRO</small><output id="saturationValue">0</output></label><input id="manualSaturation" type="range" min="-50" max="50" value="0">
-        <label for="manualWarmth">Warmth <small>PRO</small><output id="warmthValue">0</output></label><input id="manualWarmth" type="range" min="-40" max="40" value="0">
-      </div>
-      <div class="manual-control"><div class="manual-section-title"><span>DETAIL</span><strong>Text sharpness</strong></div>
-        <label for="manualSharpness">Sharpness <small>PRO</small><output id="sharpnessValue">0</output></label><input id="manualSharpness" type="range" min="0" max="30" value="0">
-        <label for="manualClarity">Clarity <small>PRO</small><output id="clarityValue">0</output></label><input id="manualClarity" type="range" min="0" max="30" value="0">
-      </div>
-    </div>
-    <footer class="manual-actions"><button id="manualApply" class="manual-confirm" type="button">CONFIRM SCAN&nbsp; ✓</button></footer>
-  </aside>
-</section>
+  <section id="manualModal" class="manual-modal" hidden aria-modal="true" role="dialog" aria-labelledby="manualTitle">
 
-  <script>
+    <div class="manual-canvas-area"><div id="manualStage" class="manual-stage"><img id="manualImage" alt="Manual crop preview"><svg viewBox="0 0 1000 1000" preserveAspectRatio="none"><path id="manualShade" fill="#102a5688" fill-rule="evenodd"></path><polygon id="manualPolygon" class="manual-poly"></polygon></svg><i class="manual-dot" data-point="nw"></i><i class="manual-dot" data-point="ne"></i><i class="manual-dot" data-point="se"></i><i class="manual-dot" data-point="sw"></i></div></div>
 
-    (() => {
+    <aside class="manual-panel"><h2 id="manualTitle">ADJUST SCAN</h2><p>Crop, colour aur print clarity</p><div class="manual-live"><strong>LIVE CROPPED PREVIEW</strong><canvas id="manualLivePreview" width="640" height="400"></canvas><small>नीले points बदलते ही cropped result यहाँ दिखेगा</small></div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;padding:10px;border:1px solid #dce5f1;border-radius:12px"><button class="button manual-preset" data-style="orig" type="button">Orig</button><button class="button manual-preset active" data-style="natural" type="button">Natural</button><button class="button manual-preset" data-style="bw" type="button">B&amp;W</button></div><div class="manual-control"><label for="manualBrightness">Brightness <output id="brightnessValue">0</output></label><input id="manualBrightness" type="range" min="-40" max="40" value="0"></div><div class="manual-control"><label for="manualContrast">Contrast <output id="contrastValue">0</output></label><input id="manualContrast" type="range" min="-40" max="40" value="0"></div><div class="manual-actions"><button id="manualFullImage" class="button" type="button"><i class="fa-solid fa-expand"></i> FULL IMAGE</button><button id="manualApply" class="button primary" type="button"><i class="fa-solid fa-check"></i> CONFIRM SCAN</button><button id="manualCancel" class="manual-cancel" type="button">CANCEL</button></div></aside>
 
-      const $ = id => document.getElementById(id);
+  </section>
 
-      const paper = $("paper"), empty = $("empty");
+  <script>
 
-      const pageRatio = 297 / 210;
+    (() => {
 
-      const cardRatio = 1.586;
+      const $ = id => document.getElementById(id);
 
-      let cards = {}, selected = null, zoom = 1, cardSerial = 0;
+      const paper = $("paper"), empty = $("empty");
 
-      const manualModal=$("manualModal"), manualImage=$("manualImage"), manualStage=$("manualStage"), manualPolygon=$("manualPolygon"), manualShade=$("manualShade");
+      const pageRatio = 297 / 210;
 
-      let manualTarget=null, manualCrop=null, manualStyle="natural", manualZoom=1;
+      const cardRatio = 1.586;
 
+      let cards = {}, selected = null, zoom = 1, cardSerial = 0;
 
+      const manualModal=$("manualModal"), manualImage=$("manualImage"), manualStage=$("manualStage"), manualPolygon=$("manualPolygon"), manualShade=$("manualShade");
 
-      function cardLabel(card, index) { return "#"+(index+1)+" "+(card.face === "front" ? "Front" : "Back")+" · ID Card"; }
+      let manualTarget=null, manualCrop=null, manualStyle="natural";
 
-      function renderQueue() {
 
-        const entries=Object.entries(cards), list=$("queueList");
 
-        $("queueCount").textContent=entries.length+" Card"+(entries.length===1?"":"s");
+      function cardLabel(card, index) { return "#"+(index+1)+" "+(card.face === "front" ? "Front" : "Back")+" · ID Card"; }
 
-        if(!entries.length) { list.innerHTML='<div class="queue-empty">No ID card selected</div>'; return; }
+      function renderQueue() {
 
-        list.innerHTML=entries.map(([id,card],index)=>'<button class="queue '+(id===selected?'selected':'')+'" data-card="'+id+'" type="button"><span>'+cardLabel(card,index)+'</span><i class="fa-solid fa-trash-can" data-delete="'+id+'" title="Delete"></i></button>').join("");
+        const entries=Object.entries(cards), list=$("queueList");
 
-        list.querySelectorAll("[data-card]").forEach(item=>item.onclick=event=>{const removeId=event.target.closest("[data-delete]")?.dataset.delete;if(removeId) return remove(removeId);select(item.dataset.card);});
+        $("queueCount").textContent=entries.length+" Card"+(entries.length===1?"":"s");
 
-      }
+        if(!entries.length) { list.innerHTML='<div class="queue-empty">No ID card selected</div>'; return; }
 
-      function select(id) {
+        list.innerHTML=entries.map(([id,card],index)=>'<button class="queue '+(id===selected?'selected':'')+'" data-card="'+id+'" type="button"><span>'+cardLabel(card,index)+'</span><i class="fa-solid fa-trash-can" data-delete="'+id+'" title="Delete"></i></button>').join("");
 
-        selected = id && cards[id] ? id : null;
+        list.querySelectorAll("[data-card]").forEach(item=>item.onclick=event=>{const removeId=event.target.closest("[data-delete]")?.dataset.delete;if(removeId) return remove(removeId);select(item.dataset.card);});
 
-        Object.entries(cards).forEach(([key, card]) => card.el.classList.toggle("selected", key === selected));
+      }
 
-        renderQueue();
+      function select(id) {
 
-      }
+        selected = id && cards[id] ? id : null;
 
-      function place(card) {
+        Object.entries(cards).forEach(([key, card]) => card.el.classList.toggle("selected", key === selected));
 
-        const p = card.position;
+        renderQueue();
 
-        card.el.style.left = (p.x * 100) + "%";
+      }
 
-        card.el.style.top = (p.y * 100) + "%";
+      function place(card) {
 
-        card.el.style.width = (p.w * 100) + "%";
+        const p = card.position;
 
-        card.el.style.aspectRatio = (card.ratio || cardRatio) + " / 1";
+        card.el.style.left = (p.x * 100) + "%";
 
-        card.el.style.transform = "rotate(" + (p.rotation || 0) + "deg)";
+        card.el.style.top = (p.y * 100) + "%";
 
-      }
+        card.el.style.width = (p.w * 100) + "%";
 
-      function cardHeight(width, ratio=cardRatio) { return width / (Math.max(.55,Math.min(3.2,ratio)) * pageRatio); }
+        card.el.style.aspectRatio = (card.ratio || cardRatio) + " / 1";
 
-      function autoLayout() {
+        card.el.style.transform = "rotate(" + (p.rotation || 0) + "deg)";
 
-        const entries=Object.entries(cards), count=entries.length;
+      }
 
-        if(!count) return;
+      function cardHeight(width, ratio=cardRatio) { return width / (Math.max(.55,Math.min(3.2,ratio)) * pageRatio); }
 
-        const rows=Math.ceil(count/2), gapY=.022;
+      function autoLayout() {
 
-        const narrowest=Math.max(1.1,Math.min(...entries.map(([,card])=>card.ratio || cardRatio)));
+        const entries=Object.entries(cards), count=entries.length;
 
-        const width=Math.max(.16,Math.min(.39,((.86/rows-gapY)*narrowest*pageRatio)));
+        if(!count) return;
 
-        let top=.07;
+        const rows=Math.ceil(count/2), gapY=.022;
 
-        for(let start=0;start<entries.length;start+=2){
+        const narrowest=Math.max(1.1,Math.min(...entries.map(([,card])=>card.ratio || cardRatio)));
 
-          const row=entries.slice(start,start+2), rowHeight=Math.max(...row.map(([,card])=>cardHeight(width,card.ratio)));
+        const width=Math.max(.16,Math.min(.39,((.86/rows-gapY)*narrowest*pageRatio)));
 
-          row.forEach(([id,card],offset)=>{card.position={x:offset ? 1-.06-width : .06,y:top,w:width,rotation:0};place(card);});
+        let top=.07;
 
-          top+=rowHeight+gapY;
+        for(let start=0;start<entries.length;start+=2){
 
-        }
+          const row=entries.slice(start,start+2), rowHeight=Math.max(...row.map(([,card])=>cardHeight(width,card.ratio)));
 
-      }
+          row.forEach(([id,card],offset)=>{card.position={x:offset ? 1-.06-width : .06,y:top,w:width,rotation:0};place(card);});
 
-      function localCrop(image) {
+          top+=rowHeight+gapY;
 
-        const limit = 900, scale = Math.min(1, limit / Math.max(image.naturalWidth, image.naturalHeight));
+        }
 
-        const w = Math.max(1, Math.round(image.naturalWidth * scale)), h = Math.max(1, Math.round(image.naturalHeight * scale));
+      }
 
-        const source = document.createElement("canvas"), context = source.getContext("2d", {willReadFrequently:true});
+      function localCrop(image) {
 
-        source.width = w; source.height = h; context.drawImage(image, 0, 0, w, h);
+        const limit = 900, scale = Math.min(1, limit / Math.max(image.naturalWidth, image.naturalHeight));
 
-        let pixels; try { pixels = context.getImageData(0, 0, w, h).data; } catch (_) { return image.src; }
+        const w = Math.max(1, Math.round(image.naturalWidth * scale)), h = Math.max(1, Math.round(image.naturalHeight * scale));
 
-        const brightness = (x,y) => { const i = (y*w+x)*4; return (pixels[i]+pixels[i+1]+pixels[i+2])/3; };
+        const source = document.createElement("canvas"), context = source.getContext("2d", {willReadFrequently:true});
 
-        const strongestEdge = (axis, start, end) => {
+        source.width = w; source.height = h; context.drawImage(image, 0, 0, w, h);
 
-          let point = start, topScore = -1;
+        let pixels; try { pixels = context.getImageData(0, 0, w, h).data; } catch (_) { return image.src; }
 
-          for(let q=start; q<end; q+=2) {
+        const brightness = (x,y) => { const i = (y*w+x)*4; return (pixels[i]+pixels[i+1]+pixels[i+2])/3; };
 
-            let sum=0, count=0, length=axis==="x" ? h : w;
+        const strongestEdge = (axis, start, end) => {
 
-            for(let k=Math.round(length*.1); k<length*.9; k+=6) {
+          let point = start, topScore = -1;
 
-              const a=axis==="x" ? brightness(q,k) : brightness(k,q);
+          for(let q=start; q<end; q+=2) {
 
-              const b=axis==="x" ? brightness(Math.min(w-1,q+3),k) : brightness(k,Math.min(h-1,q+3));
+            let sum=0, count=0, length=axis==="x" ? h : w;
 
-              sum += Math.abs(a-b); count++;
+            for(let k=Math.round(length*.1); k<length*.9; k+=6) {
 
-            }
+              const a=axis==="x" ? brightness(q,k) : brightness(k,q);
 
-            if(sum/count > topScore) { topScore=sum/count; point=q; }
+              const b=axis==="x" ? brightness(Math.min(w-1,q+3),k) : brightness(k,Math.min(h-1,q+3));
 
-          }
+              sum += Math.abs(a-b); count++;
 
-          return point;
+            }
 
-        };
+            if(sum/count > topScore) { topScore=sum/count; point=q; }
 
-        let left=strongestEdge("x",0,Math.floor(w*.25)), right=strongestEdge("x",Math.floor(w*.75),w-3);
+          }
 
-        let top=strongestEdge("y",0,Math.floor(h*.25)), bottom=strongestEdge("y",Math.floor(h*.75),h-3);
+          return point;
 
-        const detectedWidth=right-left, detectedHeight=bottom-top, detectedRatio=detectedWidth/detectedHeight;
+        };
 
-        const detectedArea=(detectedWidth*detectedHeight)/(w*h);
+        let left=strongestEdge("x",0,Math.floor(w*.25)), right=strongestEdge("x",Math.floor(w*.75),w-3);
 
-        // Refuse uncertain local crops. Keeping the full source is always safer than
+        let top=strongestEdge("y",0,Math.floor(h*.25)), bottom=strongestEdge("y",Math.floor(h*.75),h-3);
 
-        // trimming card text/QR edges when a background is not clearly detectable.
+        const detectedWidth=right-left, detectedHeight=bottom-top, detectedRatio=detectedWidth/detectedHeight;
 
-        if(detectedWidth<w*.35 || detectedHeight<h*.2 || detectedArea<.55 || detectedRatio<1.25 || detectedRatio>1.95) return image.src;
+        const detectedArea=(detectedWidth*detectedHeight)/(w*h);
 
-        const marginX=Math.round(w*.035), marginY=Math.round(h*.035);
+        // Refuse uncertain local crops. Keeping the full source is always safer than
 
-        left=Math.max(0,left-marginX); right=Math.min(w,right+marginX); top=Math.max(0,top-marginY); bottom=Math.min(h,bottom+marginY);
+        // trimming card text/QR edges when a background is not clearly detectable.
 
-        const out=document.createElement("canvas"); out.width=right-left; out.height=bottom-top;
+        if(detectedWidth<w*.35 || detectedHeight<h*.2 || detectedArea<.55 || detectedRatio<1.25 || detectedRatio>1.95) return image.src;
 
-        out.getContext("2d").drawImage(source,left,top,right-left,bottom-top,0,0,out.width,out.height);
+        const marginX=Math.round(w*.035), marginY=Math.round(h*.035);
 
-        return out.toDataURL("image/jpeg",.95);
+        left=Math.max(0,left-marginX); right=Math.min(w,right+marginX); top=Math.max(0,top-marginY); bottom=Math.min(h,bottom+marginY);
 
-      }
+        const out=document.createElement("canvas"); out.width=right-left; out.height=bottom-top;
 
-      function add(side, file) {
+        out.getContext("2d").drawImage(source,left,top,right-left,bottom-top,0,0,out.width,out.height);
 
-        if(!file || !file.type.startsWith("image/")) return;
+        return out.toDataURL("image/jpeg",.95);
 
-        const reader = new FileReader();
+      }
 
-        reader.onload = () => {
+      function add(side, file) {
 
-          const original = reader.result, image = new Image();
+        if(!file || !file.type.startsWith("image/")) return;
 
-          image.onload = () => {
+        const reader = new FileReader();
 
-            // Keep the complete source visible until the scanner returns a final result.
+        reader.onload = () => {
 
-            const source = original;
+          const original = reader.result, image = new Image();
 
-            const id="card-"+(++cardSerial);
+          image.onload = () => {
 
-            const el=document.createElement("div");
+            // Keep the complete source visible until the scanner returns a final result.
 
-            el.className="card"; el.innerHTML='<img alt="ID card '+side+'"><i class="corner nw"></i><i class="corner ne"></i><i class="corner sw"></i><i class="corner se"></i>';
+            const source = original;
 
-            paper.appendChild(el);
+            const id="card-"+(++cardSerial);
 
-            const card=cards[id]={el,img:el.querySelector("img"),source,original,face:side,ratio:cardRatio,position:{x:0,y:0,w:.39,rotation:0},revision:"r"+Date.now()+Math.random()};
+            const el=document.createElement("div");
 
-            card.img.onload=()=>{const detectedRatio=card.img.naturalWidth/card.img.naturalHeight;if(Number.isFinite(detectedRatio)) card.ratio=Math.max(.55,Math.min(3.2,detectedRatio));place(card);}; card.img.src=source; el.addEventListener("pointerdown", event=>startDrag(event,id));
+            el.className="card"; el.innerHTML='<img alt="ID card '+side+'"><i class="corner nw"></i><i class="corner ne"></i><i class="corner sw"></i><i class="corner se"></i>';
 
-            $(side+"Box").classList.add("ready"); $(side+"Box").querySelector("span").textContent=side==="front" ? "Front added" : "Back added";
+            paper.appendChild(el);
 
-            empty.hidden=true; autoLayout(); select(id);
+            const card=cards[id]={el,img:el.querySelector("img"),source,original,face:side,ratio:cardRatio,position:{x:0,y:0,w:.39,rotation:0},revision:"r"+Date.now()+Math.random()};
 
-            if ($("localMode").classList.contains("active")) setTimeout(() => runAiCrop(true, id), 0);
+            card.img.onload=()=>{const detectedRatio=card.img.naturalWidth/card.img.naturalHeight;if(Number.isFinite(detectedRatio)) card.ratio=Math.max(.55,Math.min(3.2,detectedRatio));place(card);}; card.img.src=source; el.addEventListener("pointerdown", event=>startDrag(event,id));
 
-          }; image.src=original;
+            $(side+"Box").classList.add("ready"); $(side+"Box").querySelector("span").textContent=side==="front" ? "Front added" : "Back added";
 
-        }; reader.readAsDataURL(file);
+            empty.hidden=true; autoLayout(); select(id);
 
-      }
+            if ($("localMode").classList.contains("active")) setTimeout(() => runAiCrop(true, id), 0);
 
-      function startDrag(event, side) {
+          }; image.src=original;
 
-        const handle = event.target.closest(".corner");
+        }; reader.readAsDataURL(file);
 
-        if(handle) return startResize(event, side, handle);
+      }
 
-        select(side); const card=cards[side], rect=paper.getBoundingClientRect();
+      function startDrag(event, side) {
 
-        const start={x:event.clientX,y:event.clientY,position:{...card.position}};
+        const handle = event.target.closest(".corner");
 
-        event.currentTarget.setPointerCapture(event.pointerId);
+        if(handle) return startResize(event, side, handle);
 
-        event.currentTarget.onpointermove = move => {
+        select(side); const card=cards[side], rect=paper.getBoundingClientRect();
 
-          if(!(move.buttons & 1)) return finish();
+        const start={x:event.clientX,y:event.clientY,position:{...card.position}};
 
-          card.position.x=Math.max(0,Math.min(1-card.position.w,start.position.x+(move.clientX-start.x)/rect.width));
+        event.currentTarget.setPointerCapture(event.pointerId);
 
-          card.position.y=Math.max(0,Math.min(1-cardHeight(card.position.w,card.ratio),start.position.y+(move.clientY-start.y)/rect.height));
+        event.currentTarget.onpointermove = move => {
 
-          place(card);
+          if(!(move.buttons & 1)) return finish();
 
-        };
+          card.position.x=Math.max(0,Math.min(1-card.position.w,start.position.x+(move.clientX-start.x)/rect.width));
 
-        const finish=()=>{event.currentTarget.onpointermove=null;event.currentTarget.onpointerup=null;event.currentTarget.onpointercancel=null;};
+          card.position.y=Math.max(0,Math.min(1-cardHeight(card.position.w,card.ratio),start.position.y+(move.clientY-start.y)/rect.height));
 
-        event.currentTarget.onpointerup=finish; event.currentTarget.onpointercancel=finish;
+          place(card);
 
-      }
+        };
 
-      function startResize(event, side, handle) {
+        const finish=()=>{event.currentTarget.onpointermove=null;event.currentTarget.onpointerup=null;event.currentTarget.onpointercancel=null;};
 
-        event.preventDefault(); event.stopPropagation(); select(side);
+        event.currentTarget.onpointerup=finish; event.currentTarget.onpointercancel=finish;
 
-        const card=cards[side], rect=paper.getBoundingClientRect(), start={x:event.clientX,y:event.clientY,position:{...card.position}};
+      }
 
-        const west=handle.classList.contains("nw") || handle.classList.contains("sw");
+      function startResize(event, side, handle) {
 
-        const north=handle.classList.contains("nw") || handle.classList.contains("ne");
+        event.preventDefault(); event.stopPropagation(); select(side);
 
-        event.currentTarget.setPointerCapture(event.pointerId);
+        const card=cards[side], rect=paper.getBoundingClientRect(), start={x:event.clientX,y:event.clientY,position:{...card.position}};
 
-        event.currentTarget.onpointermove = move => {
+        const west=handle.classList.contains("nw") || handle.classList.contains("sw");
 
-          if(!(move.buttons & 1)) return finish();
+        const north=handle.classList.contains("nw") || handle.classList.contains("ne");
 
-          const horizontal=(move.clientX-start.x)/rect.width;
+        event.currentTarget.setPointerCapture(event.pointerId);
 
-          const vertical=(move.clientY-start.y)/rect.width;
+        event.currentTarget.onpointermove = move => {
 
-          const signed=west ? -horizontal : horizontal;
+          if(!(move.buttons & 1)) return finish();
 
-          const verticalSigned=north ? -vertical : vertical;
+          const horizontal=(move.clientX-start.x)/rect.width;
 
-          const delta=Math.abs(verticalSigned)>Math.abs(signed) ? verticalSigned : signed;
+          const vertical=(move.clientY-start.y)/rect.width;
 
-          const width=Math.max(.16,Math.min(.78,start.position.w+delta));
+          const signed=west ? -horizontal : horizontal;
 
-          card.position.w=width;
+          const verticalSigned=north ? -vertical : vertical;
 
-          card.position.x=Math.max(0,Math.min(1-width,west ? start.position.x+start.position.w-width : start.position.x));
+          const delta=Math.abs(verticalSigned)>Math.abs(signed) ? verticalSigned : signed;
 
-          const height=cardHeight(width,card.ratio);
+          const width=Math.max(.16,Math.min(.78,start.position.w+delta));
 
-          card.position.y=Math.max(0,Math.min(1-height,north ? start.position.y+cardHeight(start.position.w,card.ratio)-height : start.position.y));
+          card.position.w=width;
 
-          place(card);
+          card.position.x=Math.max(0,Math.min(1-width,west ? start.position.x+start.position.w-width : start.position.x));
 
-        };
+          const height=cardHeight(width,card.ratio);
 
-        const finish=()=>{event.currentTarget.onpointermove=null;event.currentTarget.onpointerup=null;event.currentTarget.onpointercancel=null;};
+          card.position.y=Math.max(0,Math.min(1-height,north ? start.position.y+cardHeight(start.position.w,card.ratio)-height : start.position.y));
 
-        event.currentTarget.onpointerup=finish; event.currentTarget.onpointercancel=finish;
+          place(card);
 
-      }
+        };
 
-      function remove(id=selected) {
+        const finish=()=>{event.currentTarget.onpointermove=null;event.currentTarget.onpointerup=null;event.currentTarget.onpointercancel=null;};
 
-        if(!id || !cards[id]) return;
+        event.currentTarget.onpointerup=finish; event.currentTarget.onpointercancel=finish;
 
-        cards[id].el.remove(); delete cards[id];
+      }
 
-        empty.hidden=Object.keys(cards).length>0;
+      function remove(id=selected) {
 
-        autoLayout(); select(Object.keys(cards)[0] || null);
+        if(!id || !cards[id]) return;
 
-      }
+        cards[id].el.remove(); delete cards[id];
 
-      function fit() { autoLayout(); }
+        empty.hidden=Object.keys(cards).length>0;
 
-      function rotate() { if(selected && cards[selected]) { cards[selected].position.rotation=(cards[selected].position.rotation+90)%360;place(cards[selected]); } }
+        autoLayout(); select(Object.keys(cards)[0] || null);
 
-      function runLocalCrop() { if(!selected || !cards[selected]) return; const card=cards[selected], image=new Image(); image.onload=()=>{card.source=localCrop(image);card.img.src=card.source;}; image.src=card.source; }
+      }
 
-      function cropToBounds(source, crop) {
+      function fit() { autoLayout(); }
 
-        return new Promise((resolve,reject) => {
+      function rotate() { if(selected && cards[selected]) { cards[selected].position.rotation=(cards[selected].position.rotation+90)%360;place(cards[selected]); } }
 
-          const image=new Image();
+      function runLocalCrop() { if(!selected || !cards[selected]) return; const card=cards[selected], image=new Image(); image.onload=()=>{card.source=localCrop(image);card.img.src=card.source;}; image.src=card.source; }
 
-          image.onload=()=>{
+      function cropToBounds(source, crop) {
 
-            // Vision models can occasionally return a tight box around text or a QR code.
+        return new Promise((resolve,reject) => {
 
-            // Expand it around its centre before cropping, so the complete ID stays visible.
+          const image=new Image();
 
-            const padding=.12, minWidth=.90, minHeight=.90;
+          image.onload=()=>{
 
-            let l=Math.max(0,Math.min(1,crop.left-padding)),t=Math.max(0,Math.min(1,crop.top-padding)),r=Math.max(0,Math.min(1,crop.right+padding)),b=Math.max(0,Math.min(1,crop.bottom+padding));
+            // Vision models can occasionally return a tight box around text or a QR code.
 
-            const widen=(start,end,minimum)=>{const center=(start+end)/2,half=Math.max((end-start)/2,minimum/2);return [Math.max(0,center-half),Math.min(1,center+half)];};
+            // Expand it around its centre before cropping, so the complete ID stays visible.
 
-            [l,r]=widen(l,r,minWidth);[t,b]=widen(t,b,minHeight);
+            const padding=.12, minWidth=.90, minHeight=.90;
 
-            // Shifting after clamping keeps the requested minimum span where possible.
+            let l=Math.max(0,Math.min(1,crop.left-padding)),t=Math.max(0,Math.min(1,crop.top-padding)),r=Math.max(0,Math.min(1,crop.right+padding)),b=Math.max(0,Math.min(1,crop.bottom+padding));
 
-            if(r-l<minWidth){if(l===0)r=Math.min(1,minWidth);else l=Math.max(0,1-minWidth);}
+            const widen=(start,end,minimum)=>{const center=(start+end)/2,half=Math.max((end-start)/2,minimum/2);return [Math.max(0,center-half),Math.min(1,center+half)];};
 
-            if(b-t<minHeight){if(t===0)b=Math.min(1,minHeight);else t=Math.max(0,1-minHeight);}
+            [l,r]=widen(l,r,minWidth);[t,b]=widen(t,b,minHeight);
 
-            const canvas=document.createElement("canvas");canvas.width=Math.round((r-l)*image.naturalWidth);canvas.height=Math.round((b-t)*image.naturalHeight);
+            // Shifting after clamping keeps the requested minimum span where possible.
 
-            if(!canvas.width||!canvas.height) return reject(new Error("Invalid AI crop."));
+            if(r-l<minWidth){if(l===0)r=Math.min(1,minWidth);else l=Math.max(0,1-minWidth);}
 
-            canvas.getContext("2d").drawImage(image,l*image.naturalWidth,t*image.naturalHeight,canvas.width,canvas.height,0,0,canvas.width,canvas.height);
+            if(b-t<minHeight){if(t===0)b=Math.min(1,minHeight);else t=Math.max(0,1-minHeight);}
 
-            resolve(canvas.toDataURL("image/jpeg",.96));
+            const canvas=document.createElement("canvas");canvas.width=Math.round((r-l)*image.naturalWidth);canvas.height=Math.round((b-t)*image.naturalHeight);
 
-          }; image.onerror=reject; image.src=source;
+            if(!canvas.width||!canvas.height) return reject(new Error("Invalid AI crop."));
 
-        });
+            canvas.getContext("2d").drawImage(image,l*image.naturalWidth,t*image.naturalHeight,canvas.width,canvas.height,0,0,canvas.width,canvas.height);
 
-      }
+            resolve(canvas.toDataURL("image/jpeg",.96));
 
-      function renderManualCrop() {
+          }; image.onerror=reject; image.src=source;
 
-        if(!manualCrop) return;
+        });
 
-        const order=["nw","ne","se","sw"];
+      }
 
-        const points=order.map(key=>(manualCrop[key].x*1000)+","+(manualCrop[key].y*1000));
+      function renderManualCrop() {
 
-        manualPolygon.setAttribute("points",points.join(" "));
+        if(!manualCrop) return;
 
-        manualShade.setAttribute("d","M0,0 H1000 V1000 H0 Z M"+points.join(" L")+" Z");
+        const order=["nw","ne","se","sw"];
 
-        order.forEach(key=>{const dot=manualStage.querySelector('[data-point="'+key+'"]');dot.style.left=(manualCrop[key].x*100)+"%";dot.style.top=(manualCrop[key].y*100)+"%";});
+        const points=order.map(key=>(manualCrop[key].x*1000)+","+(manualCrop[key].y*1000));
 
-        renderLivePreview();
+        manualPolygon.setAttribute("points",points.join(" "));
 
-        const brightness=Number($("manualBrightness").value), contrast=Number($("manualContrast").value);
+        manualShade.setAttribute("d","M0,0 H1000 V1000 H0 Z M"+points.join(" L")+" Z");
 
-        $("brightnessValue").textContent=brightness;$("contrastValue").textContent=contrast;
+        order.forEach(key=>{const dot=manualStage.querySelector('[data-point="'+key+'"]');dot.style.left=(manualCrop[key].x*100)+"%";dot.style.top=(manualCrop[key].y*100)+"%";});
 
-        const saturation=Number($("manualSaturation").value),warmth=Number($("manualWarmth").value),sharpness=Number($("manualSharpness").value),clarity=Number($("manualClarity").value);
-        const filters=manualStyle==="orig" ? "none" : (manualStyle==="bw" ? "grayscale(1) " : "")+"brightness("+(100+brightness)+"%) contrast("+(100+contrast+sharpness+clarity)+"%) saturate("+(100+saturation)+"%) sepia("+(Math.max(0,warmth)/2)+"%)";
-        manualImage.style.filter=filters;
-        ["Brightness","Contrast","Saturation","Warmth","Sharpness","Clarity"].forEach(name=>{const el=$("manual"+name);const out=$(name.toLowerCase()+"Value");if(el&&out)out.textContent=el.value;});
+        renderLivePreview();
 
-      }
+        const brightness=Number($("manualBrightness").value), contrast=Number($("manualContrast").value);
 
-      function renderLivePreview() {
+        $("brightnessValue").textContent=brightness;$("contrastValue").textContent=contrast;
 
-        const canvas=$("manualLivePreview"); if(!canvas || !manualImage.naturalWidth || !manualCrop) return;
+        manualImage.style.filter=manualStyle==="orig" ? "none" : (manualStyle==="bw" ? "grayscale(1) " : "")+"brightness("+(100+brightness)+"%) contrast("+(100+contrast)+"%)";
 
-        const keys=["nw","ne","se","sw"], src=keys.map(key=>({x:manualCrop[key].x*manualImage.naturalWidth,y:manualCrop[key].y*manualImage.naturalHeight}));
+      }
 
-        const width=Math.max(2,Math.round((Math.hypot(src[1].x-src[0].x,src[1].y-src[0].y)+Math.hypot(src[2].x-src[3].x,src[2].y-src[3].y))/2));
+      function renderLivePreview() {
 
-        const height=Math.max(2,Math.round((Math.hypot(src[3].x-src[0].x,src[3].y-src[0].y)+Math.hypot(src[2].x-src[1].x,src[2].y-src[1].y))/2));
+        const canvas=$("manualLivePreview"); if(!canvas || !manualImage.naturalWidth || !manualCrop) return;
 
-        const ratio=width/height, maxW=720, maxH=460; canvas.width=Math.round(Math.min(maxW,maxH*ratio));canvas.height=Math.round(canvas.width/ratio);
+        const keys=["nw","ne","se","sw"], src=keys.map(key=>({x:manualCrop[key].x*manualImage.naturalWidth,y:manualCrop[key].y*manualImage.naturalHeight}));
 
-        const ctx=canvas.getContext("2d"), dst=[{x:0,y:0},{x:canvas.width,y:0},{x:canvas.width,y:canvas.height},{x:0,y:canvas.height}];
+        const width=Math.max(2,Math.round((Math.hypot(src[1].x-src[0].x,src[1].y-src[0].y)+Math.hypot(src[2].x-src[3].x,src[2].y-src[3].y))/2));
 
-        const triangle=(s,t)=>{ctx.save();ctx.beginPath();ctx.moveTo(t[0].x,t[0].y);ctx.lineTo(t[1].x,t[1].y);ctx.lineTo(t[2].x,t[2].y);ctx.closePath();ctx.clip();const [a,b,d]=s,[A,B,C]=t,den=a.x*(b.y-d.y)+b.x*(d.y-a.y)+d.x*(a.y-b.y);if(Math.abs(den)>1e-8){const m11=(A.x*(b.y-d.y)+B.x*(d.y-a.y)+C.x*(a.y-b.y))/den,m12=(A.y*(b.y-d.y)+B.y*(d.y-a.y)+C.y*(a.y-b.y))/den,m21=(A.x*(d.x-b.x)+B.x*(a.x-d.x)+C.x*(b.x-a.x))/den,m22=(A.y*(d.x-b.x)+B.y*(a.x-d.x)+C.y*(b.x-a.x))/den,dx=A.x-m11*a.x-m21*a.y,dy=A.y-m12*a.x-m22*a.y;ctx.transform(m11,m12,m21,m22,dx,dy);ctx.drawImage(manualImage,0,0);}ctx.restore();};
+        const height=Math.max(2,Math.round((Math.hypot(src[3].x-src[0].x,src[3].y-src[0].y)+Math.hypot(src[2].x-src[1].x,src[2].y-src[1].y))/2));
 
-        ctx.clearRect(0,0,canvas.width,canvas.height);ctx.filter=manualStyle==="orig"?"none":(manualStyle==="bw"?"grayscale(1) ":"")+"brightness("+(100+Number($("manualBrightness").value))+"%) contrast("+(100+Number($("manualContrast").value)+Number($("manualSharpness").value)+Number($("manualClarity").value))+"%) saturate("+(100+Number($("manualSaturation").value))+"%) sepia("+(Math.max(0,Number($("manualWarmth").value))/2)+"%)";
+        const ratio=width/height, maxW=720, maxH=460; canvas.width=Math.round(Math.min(maxW,maxH*ratio));canvas.height=Math.round(canvas.width/ratio);
 
-        triangle([src[0],src[1],src[2]],[dst[0],dst[1],dst[2]]);triangle([src[0],src[2],src[3]],[dst[0],dst[2],dst[3]]);ctx.filter="none";
+        const ctx=canvas.getContext("2d"), dst=[{x:0,y:0},{x:canvas.width,y:0},{x:canvas.width,y:canvas.height},{x:0,y:canvas.height}];
 
-      }
+        const triangle=(s,t)=>{ctx.save();ctx.beginPath();ctx.moveTo(t[0].x,t[0].y);ctx.lineTo(t[1].x,t[1].y);ctx.lineTo(t[2].x,t[2].y);ctx.closePath();ctx.clip();const [a,b,d]=s,[A,B,C]=t,den=a.x*(b.y-d.y)+b.x*(d.y-a.y)+d.x*(a.y-b.y);if(Math.abs(den)>1e-8){const m11=(A.x*(b.y-d.y)+B.x*(d.y-a.y)+C.x*(a.y-b.y))/den,m12=(A.y*(b.y-d.y)+B.y*(d.y-a.y)+C.y*(a.y-b.y))/den,m21=(A.x*(d.x-b.x)+B.x*(a.x-d.x)+C.x*(b.x-a.x))/den,m22=(A.y*(d.x-b.x)+B.y*(a.x-d.x)+C.y*(b.x-a.x))/den,dx=A.x-m11*a.x-m21*a.y,dy=A.y-m12*a.x-m22*a.y;ctx.transform(m11,m12,m21,m22,dx,dy);ctx.drawImage(manualImage,0,0);}ctx.restore();};
 
-      function openManualCrop() {
+        ctx.clearRect(0,0,canvas.width,canvas.height);ctx.filter=manualStyle==="orig"?"none":(manualStyle==="bw"?"grayscale(1) ":"")+"brightness("+(100+Number($("manualBrightness").value))+"%) contrast("+(100+Number($("manualContrast").value))+"%)";
 
-        if(!selected || !cards[selected]) return alert("पहले Front या Back card select करें।");
+        triangle([src[0],src[1],src[2]],[dst[0],dst[1],dst[2]]);triangle([src[0],src[2],src[3]],[dst[0],dst[2],dst[3]]);ctx.filter="none";
 
-        manualTarget=selected;const card=cards[selected];
+      }
 
-        manualCrop={nw:{x:.04,y:.04},ne:{x:.96,y:.04},se:{x:.96,y:.96},sw:{x:.04,y:.96}};
+      function openManualCrop() {
 
-        manualZoom=1;setManualZoom(1);resetManualSettings();manualModal.hidden=false;
+        if(!selected || !cards[selected]) return alert("पहले Front या Back card select करें।");
 
-        manualImage.onload=()=>{renderManualCrop();};manualImage.src=card.original || card.source;
+        manualTarget=selected;const card=cards[selected];
 
-      }
+        manualCrop={nw:{x:.04,y:.04},ne:{x:.96,y:.04},se:{x:.96,y:.96},sw:{x:.04,y:.96}};
 
-      function closeManualCrop() { manualModal.hidden=true;manualTarget=null;manualCrop=null; }
+        manualStyle="natural";$("manualBrightness").value=0;$("manualContrast").value=0;document.querySelectorAll(".manual-preset").forEach(button=>button.classList.toggle("active",button.dataset.style==="natural"));manualModal.hidden=false;
 
-      function startManualPoint(event,key) {
+        manualImage.onload=()=>{renderManualCrop();};manualImage.src=card.original || card.source;
 
-        event.preventDefault();const dot=event.currentTarget;dot.setPointerCapture(event.pointerId);
+      }
 
-        const move=moveEvent=>{const rect=manualStage.getBoundingClientRect();manualCrop[key].x=Math.max(0,Math.min(1,(moveEvent.clientX-rect.left)/rect.width));manualCrop[key].y=Math.max(0,Math.min(1,(moveEvent.clientY-rect.top)/rect.height));renderManualCrop();};
+      function closeManualCrop() { manualModal.hidden=true;manualTarget=null;manualCrop=null; }
 
-        const end=()=>{dot.removeEventListener("pointermove",move);dot.removeEventListener("pointerup",end);dot.removeEventListener("pointercancel",end);};
+      function startManualPoint(event,key) {
 
-        dot.addEventListener("pointermove",move);dot.addEventListener("pointerup",end);dot.addEventListener("pointercancel",end);
+        event.preventDefault();const dot=event.currentTarget;dot.setPointerCapture(event.pointerId);
 
-      }
+        const move=moveEvent=>{const rect=manualStage.getBoundingClientRect();manualCrop[key].x=Math.max(0,Math.min(1,(moveEvent.clientX-rect.left)/rect.width));manualCrop[key].y=Math.max(0,Math.min(1,(moveEvent.clientY-rect.top)/rect.height));renderManualCrop();};
 
-      function applyManualCrop() {
+        const end=()=>{dot.removeEventListener("pointermove",move);dot.removeEventListener("pointerup",end);dot.removeEventListener("pointercancel",end);};
 
-        if(!manualTarget || !cards[manualTarget] || !manualImage.naturalWidth) return;
+        dot.addEventListener("pointermove",move);dot.addEventListener("pointerup",end);dot.addEventListener("pointercancel",end);
 
-        const image=manualImage, points=["nw","ne","se","sw"].map(key=>({x:manualCrop[key].x*image.naturalWidth,y:manualCrop[key].y*image.naturalHeight}));
+      }
 
-        const outWidth=Math.max(2,Math.round((Math.hypot(points[1].x-points[0].x,points[1].y-points[0].y)+Math.hypot(points[2].x-points[3].x,points[2].y-points[3].y))/2));
+      function applyManualCrop() {
 
-        const outHeight=Math.max(2,Math.round((Math.hypot(points[3].x-points[0].x,points[3].y-points[0].y)+Math.hypot(points[2].x-points[1].x,points[2].y-points[1].y))/2));
+        if(!manualTarget || !cards[manualTarget] || !manualImage.naturalWidth) return;
 
-        const scale=Math.min(1,2400/Math.max(outWidth,outHeight)), canvas=document.createElement("canvas");canvas.width=Math.round(outWidth*scale);canvas.height=Math.round(outHeight*scale);
+        const image=manualImage, points=["nw","ne","se","sw"].map(key=>({x:manualCrop[key].x*image.naturalWidth,y:manualCrop[key].y*image.naturalHeight}));
 
-        const context=canvas.getContext("2d"), brightness=Number($("manualBrightness").value), contrast=Number($("manualContrast").value), saturation=Number($("manualSaturation").value), warmth=Number($("manualWarmth").value), sharpness=Number($("manualSharpness").value), clarity=Number($("manualClarity").value);
+        const outWidth=Math.max(2,Math.round((Math.hypot(points[1].x-points[0].x,points[1].y-points[0].y)+Math.hypot(points[2].x-points[3].x,points[2].y-points[3].y))/2));
 
-        context.filter=manualStyle==="orig" ? "none" : (manualStyle==="bw" ? "grayscale(1) " : "")+"brightness("+(100+brightness)+"%) contrast("+(100+contrast+sharpness+clarity)+"%) saturate("+(100+saturation)+"%) sepia("+(Math.max(0,warmth)/2)+"%)";
+        const outHeight=Math.max(2,Math.round((Math.hypot(points[3].x-points[0].x,points[3].y-points[0].y)+Math.hypot(points[2].x-points[1].x,points[2].y-points[1].y))/2));
 
-        const destination=[{x:0,y:0},{x:canvas.width,y:0},{x:canvas.width,y:canvas.height},{x:0,y:canvas.height}];
+        const scale=Math.min(1,2400/Math.max(outWidth,outHeight)), canvas=document.createElement("canvas");canvas.width=Math.round(outWidth*scale);canvas.height=Math.round(outHeight*scale);
 
-        const paintTriangle=(source,target)=>{context.save();context.beginPath();context.moveTo(target[0].x,target[0].y);context.lineTo(target[1].x,target[1].y);context.lineTo(target[2].x,target[2].y);context.closePath();context.clip();const [a,b,c]=source,[A,B,C]=target,den=a.x*(b.y-c.y)+b.x*(c.y-a.y)+c.x*(a.y-b.y);if(Math.abs(den)>1e-8){const m11=(A.x*(b.y-c.y)+B.x*(c.y-a.y)+C.x*(a.y-b.y))/den,m12=(A.y*(b.y-c.y)+B.y*(c.y-a.y)+C.y*(a.y-b.y))/den,m21=(A.x*(c.x-b.x)+B.x*(a.x-c.x)+C.x*(b.x-a.x))/den,m22=(A.y*(c.x-b.x)+B.y*(a.x-c.x)+C.y*(b.x-a.x))/den,dx=A.x-m11*a.x-m21*a.y,dy=A.y-m12*a.x-m22*a.y;context.transform(m11,m12,m21,m22,dx,dy);context.drawImage(image,0,0);}context.restore();};
+        const context=canvas.getContext("2d"), brightness=Number($("manualBrightness").value), contrast=Number($("manualContrast").value);
 
-        paintTriangle([points[0],points[1],points[2]],[destination[0],destination[1],destination[2]]);paintTriangle([points[0],points[2],points[3]],[destination[0],destination[2],destination[3]]);
+        context.filter=manualStyle==="orig" ? "none" : (manualStyle==="bw" ? "grayscale(1) " : "")+"brightness("+(100+brightness)+"%) contrast("+(100+contrast)+"%)";
 
-        const card=cards[manualTarget];card.source=canvas.toDataURL("image/jpeg",.96);card.img.src=card.source;closeManualCrop();
+        const destination=[{x:0,y:0},{x:canvas.width,y:0},{x:canvas.width,y:canvas.height},{x:0,y:canvas.height}];
 
-      }
+        const paintTriangle=(source,target)=>{context.save();context.beginPath();context.moveTo(target[0].x,target[0].y);context.lineTo(target[1].x,target[1].y);context.lineTo(target[2].x,target[2].y);context.closePath();context.clip();const [a,b,c]=source,[A,B,C]=target,den=a.x*(b.y-c.y)+b.x*(c.y-a.y)+c.x*(a.y-b.y);if(Math.abs(den)>1e-8){const m11=(A.x*(b.y-c.y)+B.x*(c.y-a.y)+C.x*(a.y-b.y))/den,m12=(A.y*(b.y-c.y)+B.y*(c.y-a.y)+C.y*(a.y-b.y))/den,m21=(A.x*(c.x-b.x)+B.x*(a.x-c.x)+C.x*(b.x-a.x))/den,m22=(A.y*(c.x-b.x)+B.y*(a.x-c.x)+C.y*(b.x-a.x))/den,dx=A.x-m11*a.x-m21*a.y,dy=A.y-m12*a.x-m22*a.y;context.transform(m11,m12,m21,m22,dx,dy);context.drawImage(image,0,0);}context.restore();};
 
-      function cropApiUrl() { return location.protocol==="file:" || /emitrawala\.online|github\.io$/i.test(location.hostname) ? "https\://emitra-sewa-kendra.onrender.com/api/id-card-ai-crop" : "/api/id-card-ai-crop"; }
+        paintTriangle([points[0],points[1],points[2]],[destination[0],destination[1],destination[2]]);paintTriangle([points[0],points[2],points[3]],[destination[0],destination[2],destination[3]]);
 
-      async function runAiCrop(automatic=false, target=selected) {
+        const card=cards[manualTarget];card.source=canvas.toDataURL("image/jpeg",.96);card.img.src=card.source;closeManualCrop();
 
-        if(!target || !cards[target]) { if(!automatic) alert("पहले Front या Back card select करें।"); return; }
+      }
 
+      function cropApiUrl() { return location.protocol==="file:" || /emitrawala\.online|github\.io$/i.test(location.hostname) ? "https://emitra-sewa-kendra.onrender.com/api/id-card-ai-crop" : "/api/id-card-ai-crop"; }
 
+      async function runAiCrop(automatic=false, target=selected) {
 
-        const button=$("aiCrop"), panelButton=$("aiCropPanel"), card=cards[target], revision=card.revision;
+        if(!target || !cards[target]) { if(!automatic) alert("पहले Front या Back card select करें।"); return; }
 
-        button.disabled=true; panelButton.disabled=true; button.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i>';
 
-        const scanBoxId=card.face==="front" ? "frontBox" : "backBox";
 
-        $(scanBoxId).querySelector("span").textContent="Scanning…";
+        const button=$("aiCrop"), panelButton=$("aiCropPanel"), card=cards[target], revision=card.revision;
 
-        try {
+        button.disabled=true; panelButton.disabled=true; button.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i>';
 
-          const blob=await (await fetch(card.original || card.source)).blob(), form=new FormData();
+        const scanBoxId=card.face==="front" ? "frontBox" : "backBox";
 
-          form.append("image",blob,"id-card.jpg"); form.append("consent","true");
+        $(scanBoxId).querySelector("span").textContent="Scanning…";
 
-          let response=await fetch(cropApiUrl(),{method:"POST",body:form,signal:AbortSignal.timeout(60000)});
+        try {
 
-          // Allows a safe staged deploy: the previously deployed server keeps the legacy path.
+          const blob=await (await fetch(card.original || card.source)).blob(), form=new FormData();
 
-          if(response.status===404) response=await fetch(cropApiUrl().replace("/id-card-ai-crop","/aadhaar-ai-crop"),{method:"POST",body:form});
+          form.append("image",blob,"id-card.jpg"); form.append("consent","true");
 
-          const data=await response.json();
+          let response=await fetch(cropApiUrl(),{method:"POST",body:form,signal:AbortSignal.timeout(60000)});
 
-          if(!response.ok || !data.success) throw new Error(data.error || "AI crop failed.");
+          // Allows a safe staged deploy: the previously deployed server keeps the legacy path.
 
-          // A replaced or deleted side must never be overwritten by an older scan response.
+          if(response.status===404) response=await fetch(cropApiUrl().replace("/id-card-ai-crop","/aadhaar-ai-crop"),{method:"POST",body:form});
 
-          if(cards[target] !== card || card.revision !== revision) return;
+          const data=await response.json();
 
-          card.source=data.image || await cropToBounds(card.original || card.source,data.crop); card.img.src=card.source;
+          if(!response.ok || !data.success) throw new Error(data.error || "AI crop failed.");
 
-          const confidence=data.confidence ?? data.crop?.confidence ?? 0;
+          // A replaced or deleted side must never be overwritten by an older scan response.
 
-          $(scanBoxId).querySelector("span").textContent=data.engine==="safe-original" ? "Original ready" : "Crop ready";
+          if(cards[target] !== card || card.revision !== revision) return;
 
-          if(!automatic) alert((data.engine==="document-scanner" ? "Document crop ready" : "AI Crop ready")+" ("+Math.round(confidence*100)+"% confidence).");
+          card.source=data.image || await cropToBounds(card.original || card.source,data.crop); card.img.src=card.source;
 
-        } catch(error) {
+          const confidence=data.confidence ?? data.crop?.confidence ?? 0;
 
-          if(cards[target] === card && card.revision === revision) {
+          $(scanBoxId).querySelector("span").textContent=data.engine==="safe-original" ? "Original ready" : "Crop ready";
 
-            $(scanBoxId).querySelector("span").textContent="Adjust corners";
+          if(!automatic) alert((data.engine==="document-scanner" ? "Document crop ready" : "AI Crop ready")+" ("+Math.round(confidence*100)+"% confidence).");
 
-            // Detection failed: open the four-corner editor instead of stopping
+        } catch(error) {
 
-            // with an error. The user can drag the blue points and confirm.
+          if(cards[target] === card && card.revision === revision) {
 
-            select(target);
+            $(scanBoxId).querySelector("span").textContent="Adjust corners";
 
-            openManualCrop();
+            // Detection failed: open the four-corner editor instead of stopping
 
-            alert("Auto detection card ke corners nahi pakad paya. Ab photo par diye 4 neele points ko card ke corners par set karke Confirm Scan dabayein.");
+            // with an error. The user can drag the blue points and confirm.
 
-          } else if(!automatic) {
+            select(target);
 
-            alert(error.message || "Auto Crop failed.");
+            openManualCrop();
 
-          }
+            alert("Auto detection card ke corners nahi pakad paya. Ab photo par diye 4 neele points ko card ke corners par set karke Confirm Scan dabayein.");
 
-        }
+          } else if(!automatic) {
 
-        finally { button.disabled=false; panelButton.disabled=false; button.innerHTML='<i class="fa-solid fa-wand-magic-sparkles"></i>'; }
+            alert(error.message || "Auto Crop failed.");
 
-      }
+          }
 
-      function reset() { Object.keys(cards).forEach(remove); $("frontBox").classList.remove("ready");$("backBox").classList.remove("ready");$("frontBox").querySelector("span").textContent="Add Front";$("backBox").querySelector("span").textContent="Add Back";zoom=1;setZoom(); }
+        }
 
-      function setZoom() { paper.style.transform="scale("+zoom+")";paper.style.transformOrigin="top center";$("zoomText").textContent=Math.round(zoom*100)+"%"; }
+        finally { button.disabled=false; panelButton.disabled=false; button.innerHTML='<i class="fa-solid fa-wand-magic-sparkles"></i>'; }
 
-      function download(type) {
+      }
 
-        if(!Object.keys(cards).length) return alert("पहले ID card photo upload करें।");
+      function reset() { Object.keys(cards).forEach(remove); $("frontBox").classList.remove("ready");$("backBox").classList.remove("ready");$("frontBox").querySelector("span").textContent="Add Front";$("backBox").querySelector("span").textContent="Add Back";zoom=1;setZoom(); }
 
-        const canvas=document.createElement("canvas"),w=1240,h=1754,context=canvas.getContext("2d");canvas.width=w;canvas.height=h;context.fillStyle="#fff";context.fillRect(0,0,w,h);
+      function setZoom() { paper.style.transform="scale("+zoom+")";paper.style.transformOrigin="top center";$("zoomText").textContent=Math.round(zoom*100)+"%"; }
 
-        Promise.all(Object.values(cards).map(card=>new Promise(done=>{const image=new Image();image.onload=()=>{const p=card.position,iw=p.w*w,ih=iw/(card.ratio||cardRatio);context.save();context.translate(p.x*w+iw/2,p.y*h+ih/2);context.rotate((p.rotation||0)*Math.PI/180);context.drawImage(image,-iw/2,-ih/2,iw,ih);context.restore();done();};image.src=card.source;}))).then(()=>{const a=document.createElement("a");a.download="id-card-front-back-a4."+(type==="image/png"?"png":"jpg");a.href=canvas.toDataURL(type,.95);a.click();});
+      function download(type) {
 
-      }
+        if(!Object.keys(cards).length) return alert("पहले ID card photo upload करें।");
 
-      $("frontInput").onchange=e=>{add("front",e.target.files[0]);e.target.value="";}; $("backInput").onchange=e=>{add("back",e.target.files[0]);e.target.value="";};
+        const canvas=document.createElement("canvas"),w=1240,h=1754,context=canvas.getContext("2d");canvas.width=w;canvas.height=h;context.fillStyle="#fff";context.fillRect(0,0,w,h);
 
-      $("localMode").onclick=()=>{$("localMode").classList.add("active");$("manualMode").classList.remove("active");};
+        Promise.all(Object.values(cards).map(card=>new Promise(done=>{const image=new Image();image.onload=()=>{const p=card.position,iw=p.w*w,ih=iw/(card.ratio||cardRatio);context.save();context.translate(p.x*w+iw/2,p.y*h+ih/2);context.rotate((p.rotation||0)*Math.PI/180);context.drawImage(image,-iw/2,-ih/2,iw,ih);context.restore();done();};image.src=card.source;}))).then(()=>{const a=document.createElement("a");a.download="id-card-front-back-a4."+(type==="image/png"?"png":"jpg");a.href=canvas.toDataURL(type,.95);a.click();});
 
-      $("manualMode").onclick=()=>{$("manualMode").classList.add("active");$("localMode").classList.remove("active");openManualCrop();};
+      }
 
-      $("singleSide").onchange=e=>{if(e.target.checked) Object.keys(cards).filter(id=>cards[id].face==="back").forEach(remove);}; $("clear").onclick=reset;$("reset").onclick=reset;
+      $("frontInput").onchange=e=>{add("front",e.target.files[0]);e.target.value="";}; $("backInput").onchange=e=>{add("back",e.target.files[0]);e.target.value="";};
 
-      $("trash").onclick=()=>remove();$("fit").onclick=fit;$("fitTool").onclick=fit;$("rotate").onclick=rotate;$("localCrop").onclick=runLocalCrop;$("mobileCrop").onclick=runLocalCrop;$("aiCrop").onclick=runAiCrop;$("aiCropPanel").onclick=runAiCrop;
+      $("localMode").onclick=()=>{$("localMode").classList.add("active");$("manualMode").classList.remove("active");};
 
-      $("jpg").onclick=()=>download("image/jpeg");$("png").onclick=()=>download("image/png");$("download").onclick=()=>download("image/jpeg");
+      $("manualMode").onclick=()=>{$("manualMode").classList.add("active");$("localMode").classList.remove("active");openManualCrop();};
 
-      $("print").onclick=()=>Object.keys(cards).length?window.print():alert("पहले ID card photo upload करें।");$("mobilePrint").onclick=$("print").onclick;
+      $("singleSide").onchange=e=>{if(e.target.checked) Object.keys(cards).filter(id=>cards[id].face==="back").forEach(remove);}; $("clear").onclick=reset;$("reset").onclick=reset;
 
-      $("zoomIn").onclick=()=>{zoom=Math.min(1.35,zoom+.1);setZoom();};$("zoomOut").onclick=()=>{zoom=Math.max(.65,zoom-.1);setZoom();};
+      $("trash").onclick=()=>remove();$("fit").onclick=fit;$("fitTool").onclick=fit;$("rotate").onclick=rotate;$("localCrop").onclick=runLocalCrop;$("mobileCrop").onclick=runLocalCrop;$("aiCrop").onclick=runAiCrop;$("aiCropPanel").onclick=runAiCrop;
 
-      manualStage.querySelectorAll(".manual-dot").forEach(dot=>dot.addEventListener("pointerdown",event=>startManualPoint(event,dot.dataset.point)));
+      $("jpg").onclick=()=>download("image/jpeg");$("png").onclick=()=>download("image/png");$("download").onclick=()=>download("image/jpeg");
 
-      $("manualBrightness").oninput=renderManualCrop;$("manualContrast").oninput=renderManualCrop;
+      $("print").onclick=()=>Object.keys(cards).length?window.print():alert("पहले ID card photo upload करें।");$("mobilePrint").onclick=$("print").onclick;
 
-      document.querySelectorAll(".manual-preset").forEach(button=>button.onclick=()=>{manualStyle=button.dataset.style;document.querySelectorAll(".manual-preset").forEach(item=>item.classList.toggle("active",item===button));renderManualCrop();});
+      $("zoomIn").onclick=()=>{zoom=Math.min(1.35,zoom+.1);setZoom();};$("zoomOut").onclick=()=>{zoom=Math.max(.65,zoom-.1);setZoom();};
 
-      $("manualFullImage").onclick=()=>{manualCrop={nw:{x:0,y:0},ne:{x:1,y:0},se:{x:1,y:1},sw:{x:0,y:1}};renderManualCrop();};
+      manualStage.querySelectorAll(".manual-dot").forEach(dot=>dot.addEventListener("pointerdown",event=>startManualPoint(event,dot.dataset.point)));
 
-      $("manualApply").onclick=applyManualCrop;$("manualCancel").onclick=closeManualCrop;
+      $("manualBrightness").oninput=renderManualCrop;$("manualContrast").oninput=renderManualCrop;
 
-      document.querySelectorAll(".type").forEach(button=>button.onclick=()=>{document.querySelectorAll(".type").forEach(x=>x.classList.remove("active"));button.classList.add("active");});
+      document.querySelectorAll(".manual-preset").forEach(button=>button.onclick=()=>{manualStyle=button.dataset.style;document.querySelectorAll(".manual-preset").forEach(item=>item.classList.toggle("active",item===button));renderManualCrop();});
 
-    })();
+      $("manualFullImage").onclick=()=>{manualCrop={nw:{x:0,y:0},ne:{x:1,y:0},se:{x:1,y:1},sw:{x:0,y:1}};renderManualCrop();};
 
-  </script>
+      $("manualApply").onclick=applyManualCrop;$("manualCancel").onclick=closeManualCrop;
+
+      document.querySelectorAll(".type").forEach(button=>button.onclick=()=>{document.querySelectorAll(".type").forEach(x=>x.classList.remove("active"));button.classList.add("active");});
+
+    })();
+
+  </script>
 
 </body>
 
