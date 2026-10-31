@@ -341,7 +341,7 @@ app.post(["/api/id-card-ai-crop", "/api/aadhaar-ai-crop"], (req, res) => {
       });
     }
     try {
-      const prompt = "You are a document-edge detector. Locate the complete outer boundary of the one visible government ID, identity card, licence, voter card, PAN card, Aadhaar card, or small document. The card may be held in a hand, blurry, or rotated 90/180/270 degrees. Include every edge, QR code and text; never return a box around only a face, text, seal or QR code. Do not transcribe, describe, classify, or return identity data. Coordinates must be fractions of original image width/height. Always provide your best full-card estimate; use left=0, top=0, right=1, bottom=1 and confidence=0 only when no document is visible.";
+      const prompt = "Find the complete outer boundary of the visible ID card/document. Return ONLY one JSON object with exactly these numeric keys: left, top, right, bottom, confidence. All four coordinates must be normalized fractions from 0 to 1 relative to the ORIGINAL image: left is the left edge, top is the top edge, right is the right edge, bottom is the bottom edge. Ensure right > left and bottom > top. Include the whole card, including all edges, QR code and text; do not return a face-only box. Do not transcribe or return any personal/identity data. If no document is visible, return {\\"left\\":0,\\"top\\":0,\\"right\\":1,\\"bottom\\":1,\\"confidence\\":0}.";
       let response;
       if (useGemini) {
         const model = ID_CARD_AI_CROP_MODEL.replace(/^models\//i, "");
@@ -350,7 +350,7 @@ app.post(["/api/id-card-ai-crop", "/api/aadhaar-ai-crop"], (req, res) => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             contents: [{ parts: [{ text: prompt }, { inlineData: { mimeType: req.file.mimetype, data: req.file.buffer.toString("base64") } }] }],
-            generationConfig: { responseMimeType: "application/json", mediaResolution: "MEDIA_RESOLUTION_HIGH", temperature: 0 }
+            generationConfig: { responseMimeType: "application/json", responseSchema: { type: "OBJECT", properties: { left: { type: "NUMBER" }, top: { type: "NUMBER" }, right: { type: "NUMBER" }, bottom: { type: "NUMBER" }, confidence: { type: "NUMBER" } }, required: ["left", "top", "right", "bottom", "confidence"] }, mediaResolution: "MEDIA_RESOLUTION_HIGH", temperature: 0 }
           })
         });
       } else {
@@ -408,7 +408,7 @@ app.post(["/api/id-card-ai-crop", "/api/aadhaar-ai-crop"], (req, res) => {
         });
         return res.status(502).json({ success: false, error: "AI se crop coordinates ka valid JSON nahi mila. Render Logs check karein." });
       }
-      const values = [crop?.left, crop?.top, crop?.right, crop?.bottom, crop?.confidence].map((value) =>
+      const values = [crop?.left, crop?.top, crop?.right, crop?.bottom, crop?.confidence ?? 0.8].map((value) =>
         typeof value === "string" && value.trim() !== "" ? Number(value) : value
       );
       const [left, top, right, bottom, confidence] = values;
