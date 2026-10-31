@@ -294,7 +294,7 @@ app.post(["/api/id-card-ai-crop", "/api/aadhaar-ai-crop"], (req, res) => {
         : "Image upload nahi ho saka.";
       return res.status(400).json({ success: false, error: message });
     }
-    if (!req.file || !/^image\\/(jpeg|png|webp)$/i.test(req.file.mimetype || "")) {
+    if (!req.file || !/^image\/(jpeg|png|webp)$/i.test(req.file.mimetype || "")) {
       return res.status(400).json({ success: false, error: "JPG, PNG ya WEBP image select karein." });
     }
     console.log("[ID-CARD-CROP] Local OpenCV request received.", { path: req.path, mimeType: req.file.mimetype, bytes: req.file.size });
