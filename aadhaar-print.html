@@ -244,7 +244,7 @@
       function cropApiUrl() { return location.protocol==="file:" || /emitrawala\.online|github\.io$/i.test(location.hostname) ? "https://emitra-sewa-kendra.onrender.com/api/id-card-ai-crop" : "/api/id-card-ai-crop"; }
       async function runAiCrop(automatic=false, target=selected) {
         if(!target || !cards[target]) { if(!automatic) alert("पहले Front या Back card select करें।"); return; }
-        if(!automatic && !confirm("AI Crop के लिए यह ID/document image cloud vision model को भेजी जाएगी। App इसे disk या database में save नहीं करती। क्या आप सहमत हैं?")) return;
+        if(!confirm("AI Crop के लिए यह ID/document image Gemini/vision service को भेजी जाएगी। App इसे disk या database में save नहीं करती। क्या आप स्पष्ट अनुमति देते हैं?")) return;
         const button=$("aiCrop"), panelButton=$("aiCropPanel"), card=cards[target], revision=card.revision;
         button.disabled=true; panelButton.disabled=true; button.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i>';
         const scanBoxId=card.face==="front" ? "frontBox" : "backBox";
@@ -252,7 +252,7 @@
         try {
           const blob=await (await fetch(card.original || card.source)).blob(), form=new FormData();
           form.append("image",blob,"id-card.jpg"); form.append("consent","true");
-          let response=await fetch(cropApiUrl(),{method:"POST",body:form});
+          let response=await fetch(cropApiUrl(),{method:"POST",body:form,signal:AbortSignal.timeout(60000)});
           // Allows a safe staged deploy: the previously deployed server keeps the legacy path.
           if(response.status===404) response=await fetch(cropApiUrl().replace("/id-card-ai-crop","/aadhaar-ai-crop"),{method:"POST",body:form});
           const data=await response.json();
@@ -265,7 +265,7 @@
           if(!automatic) alert((data.engine==="document-scanner" ? "Document crop ready" : "AI Crop ready")+" ("+Math.round(confidence*100)+"% confidence).");
         } catch(error) {
           if(cards[target] === card && card.revision === revision) $(scanBoxId).querySelector("span").textContent=card.face==="front" ? "Add Front" : "Add Back";
-          if(!automatic) alert(error.message || "AI crop abhi available nahi hai।");
+          alert((automatic ? "Auto Crop fail hua: " : "AI Crop fail hua: ")+(error.name==="TimeoutError" ? "Server ne 60 second me jawab nahi diya. Render Logs check karein." : (error.message || "AI crop abhi available nahi hai.")));
         }
         finally { button.disabled=false; panelButton.disabled=false; button.innerHTML='<i class="fa-solid fa-wand-magic-sparkles"></i>'; }
       }
