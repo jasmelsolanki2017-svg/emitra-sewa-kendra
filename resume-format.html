@@ -114,6 +114,95 @@ button:hover{background:var(--yellow);color:var(--deep);}
 	.resume-aryan .contact-line{display:grid;grid-template-columns:1fr;gap:4px;color:#334155;}
 	.resume-aryan .resume-section h3{color:#0f766e;border-bottom:2px solid #14b8a6;}
 	.resume-aryan .info-table td:first-child{color:#0f766e;}
+	/* Aryan Sharma sample formats: alternate layouts based on the uploaded resume samples. */
+	.resume-aryan2{padding:34px 42px;color:#1a2436;display:grid;grid-template-columns:minmax(0,2fr) minmax(210px,.92fr);grid-template-areas:"head head" "profile personal" "experience skills" "experience education" "hobbies languages" "strengths declaration" "sign sign";column-gap:36px;row-gap:16px;}
+	.resume-aryan2 .resume-head{grid-area:head;border-bottom:3px solid #172033;padding:0 0 20px;margin:0;grid-template-columns:1fr 104px;}
+	.resume-aryan2 .resume-name{font-size:34px;color:#111827;letter-spacing:.4px;}
+	.resume-aryan2 .resume-title{font-size:18px;font-weight:400;color:#596476;margin-top:5px;}
+	.resume-aryan2 .photo-box{border:1px solid #d7dce5;border-radius:12px;}
+	.resume-aryan2>.resume-section,.resume-aryan2 .two-col>.resume-section{margin:0;min-width:0;}
+	.resume-aryan2 .two-col{display:contents;}
+	.resume-aryan2 #objectiveSection{grid-area:profile;}
+	.resume-aryan2 #experienceSection{grid-area:experience;}
+	.resume-aryan2 #skillsSection{grid-area:skills;}
+	.resume-aryan2 #educationSection{grid-area:education;}
+	.resume-aryan2 #hobbiesSection{grid-area:hobbies;}
+	.resume-aryan2 #languagesSection{grid-area:languages;}
+	.resume-aryan2 #strengthsSection{grid-area:strengths;}
+	.resume-aryan2 #personalSection{grid-area:personal;}
+	.resume-aryan2 #personalSection + .resume-section{grid-area:declaration;}
+	.resume-aryan2 .declaration{grid-area:sign;margin-top:0;padding-top:12px;border-top:1px solid #cbd2dc;}
+	.resume-aryan2 .resume-section h3{font-size:15px;color:#172033;border-bottom:0;margin-bottom:9px;letter-spacing:.3px;}
+	.resume-aryan2 .resume-section p,.resume-aryan2 .resume-section li{font-size:12px;line-height:1.6;color:#536071;}
+	.resume-aryan2 .resume-section ul{list-style:none;padding-left:0;}
+	.resume-aryan2 .resume-section li{margin-bottom:6px;}
+	.resume-aryan2 #skillsSection ul{display:flex;gap:7px;flex-wrap:wrap;}
+	.resume-aryan2 #skillsSection li{border:1px solid #e4e8ee;border-radius:6px;background:#f8fafc;padding:4px 8px;margin:0;color:#3f4a5a;}
+	.resume-aryan2 .info-table td{font-size:12px;padding:3px 0;}
+	.resume-aryan2 .info-table td:first-child{width:auto;color:#172033;padding-right:6px;}
+	.resume-aryan2 .info-table td:first-child::after{content:":";}
+
+	.resume-aryan3{padding:0 38px 32px 0;color:#263244;display:grid;grid-template-columns:34% minmax(0,66%);grid-template-areas:"side head" "personal profile" "education experience" "hobbies skills" "languages declaration" "signature signature";column-gap:44px;row-gap:18px;background:linear-gradient(90deg,#111a2b 0 34%,#fff 34%);border-left:0;border-top:0;}
+	.resume-aryan3 .resume-head{grid-area:head;margin:0;padding:48px 0 22px;border-bottom:0;grid-template-columns:1fr;position:relative;}
+	.resume-aryan3 .resume-name{font-size:36px;color:#111827;letter-spacing:1px;}
+	.resume-aryan3 .resume-title{font-size:19px;color:#2864d7;font-weight:700;}
+	.resume-aryan3 .photo-box{position:absolute;right:calc(100% + 84px);top:34px;width:150px;height:150px;border:5px solid rgba(255,255,255,.35);border-radius:50%;background:#111a2b;color:#b9c2d2;}
+	.resume-aryan3 .contact-line{position:absolute;left:calc(-52% - 45px);top:226px;width:calc(52% + 10px);display:grid;gap:10px;color:#d2d8e4;font-size:11px;}
+	.resume-aryan3>.resume-section,.resume-aryan3 .two-col>.resume-section{margin:0;min-width:0;}
+	.resume-aryan3 .two-col{display:contents;}
+	.resume-aryan3 #objectiveSection{grid-area:profile;}
+	.resume-aryan3 #experienceSection{grid-area:experience;}
+	.resume-aryan3 #skillsSection{grid-area:skills;}
+	.resume-aryan3 #educationSection{grid-area:education;}
+	.resume-aryan3 #hobbiesSection{grid-area:hobbies;}
+	.resume-aryan3 #languagesSection{grid-area:languages;}
+	.resume-aryan3 #personalSection{grid-area:personal;}
+	.resume-aryan3 #strengthsSection{display:none;}
+	.resume-aryan3 #personalSection + .resume-section{grid-area:declaration;}
+	.resume-aryan3 .declaration{grid-area:signature;margin-top:0;color:#8f99aa;}
+	.resume-aryan3 .resume-section h3{font-size:15px;color:#9aa3b4;border-bottom:1px solid #dfe3e9;margin-bottom:9px;letter-spacing:1px;}
+	.resume-aryan3 .resume-section p,.resume-aryan3 .resume-section li{font-size:12px;line-height:1.58;color:#4f5b6d;}
+	.resume-aryan3 #personalSection h3,.resume-aryan3 #educationSection h3,.resume-aryan3 #hobbiesSection h3,.resume-aryan3 #languagesSection h3{color:#d7dce6;border-color:rgba(255,255,255,.2);}
+	.resume-aryan3 #personalSection p,.resume-aryan3 #personalSection li,.resume-aryan3 #educationSection li,.resume-aryan3 #hobbiesSection li,.resume-aryan3 #languagesSection li,.resume-aryan3 #personalSection .info-table{color:#c9d0dc;}
+	.resume-aryan3 #personalSection .info-table td:first-child{color:#e1e5ec;width:auto;padding-right:6px;}
+	.resume-aryan3 #skillsSection ul{display:flex;gap:7px;flex-wrap:wrap;list-style:none;padding-left:0;}
+	.resume-aryan3 #skillsSection li{background:#f3f5f8;border-radius:5px;padding:5px 8px;margin:0;font-weight:800;font-size:11px;}
+
+	.resume-aryan4{padding:0 34px 32px;color:#263244;display:grid;grid-template-columns:minmax(0,2fr) minmax(230px,.9fr);grid-template-areas:"head head" "profile education" "experience skills" "experience hobbies" "languages declaration" "sign sign";column-gap:38px;row-gap:20px;border-top:0;background:#fff;}
+	.resume-aryan4 .resume-head{grid-area:head;margin:0 -34px 18px;padding:38px 50px 26px 286px;min-height:220px;border-bottom:0;background:linear-gradient(#2e67dc 0 70%,#f3f4f6 70%);grid-template-columns:1fr;position:relative;}
+	.resume-aryan4 .resume-name{font-size:35px;color:white;letter-spacing:1px;}
+	.resume-aryan4 .resume-title{font-size:18px;color:#eaf0ff;font-weight:400;}
+	.resume-aryan4 .photo-box{position:absolute;left:52px;top:118px;width:170px;height:190px;border:0;border-radius:8px;background:#fff;color:#7a8495;box-shadow:0 5px 14px rgba(14,36,84,.15);}
+	.resume-aryan4 .contact-line{position:absolute;left:286px;top:162px;right:50px;color:#4c5667;font-size:11px;font-weight:700;gap:7px 18px;}
+	.resume-aryan4>.resume-section,.resume-aryan4 .two-col>.resume-section{margin:0;min-width:0;}
+	.resume-aryan4 .two-col{display:contents;}
+	.resume-aryan4 #objectiveSection{grid-area:profile;}
+	.resume-aryan4 #experienceSection{grid-area:experience;}
+	.resume-aryan4 #skillsSection{grid-area:skills;}
+	.resume-aryan4 #educationSection{grid-area:education;}
+	.resume-aryan4 #hobbiesSection{grid-area:hobbies;}
+	.resume-aryan4 #languagesSection{grid-area:languages;}
+	.resume-aryan4 #personalSection{display:none;}
+	.resume-aryan4 #strengthsSection{display:none;}
+	.resume-aryan4 #personalSection + .resume-section{grid-area:declaration;}
+	.resume-aryan4 .declaration{grid-area:sign;margin-top:0;color:#8d96a5;}
+	.resume-aryan4 .resume-section h3{font-size:16px;color:#253043;border-bottom:3px solid #253043;margin-bottom:9px;letter-spacing:.4px;}
+	.resume-aryan4 #educationSection h3,.resume-aryan4 #skillsSection h3,.resume-aryan4 #hobbiesSection h3{color:#2e67dc;border-bottom:0;}
+	.resume-aryan4 .resume-section p,.resume-aryan4 .resume-section li{font-size:12px;line-height:1.62;color:#556174;}
+	.resume-aryan4 #skillsSection ul{display:grid;grid-template-columns:1fr 1fr;gap:7px;list-style:none;padding-left:0;}
+	.resume-aryan4 #skillsSection li{margin:0;padding:5px 7px;background:#f6f8fb;border-radius:5px;font-weight:700;}
+	@media(max-width:980px){
+	  .resume-aryan2,.resume-aryan3,.resume-aryan4{display:block;padding:28px 24px;background:white;color:#263244;}
+	  .resume-aryan2 .resume-head,.resume-aryan3 .resume-head,.resume-aryan4 .resume-head{display:grid;position:static;margin:0 0 18px;padding:0 0 16px;min-height:0;background:white;border-bottom:2px solid #d9e0ea;}
+	  .resume-aryan2 .resume-name,.resume-aryan3 .resume-name,.resume-aryan4 .resume-name{font-size:28px;color:#172033;}
+	  .resume-aryan2 .resume-title,.resume-aryan3 .resume-title,.resume-aryan4 .resume-title{color:#2864d7;}
+	  .resume-aryan3 .photo-box,.resume-aryan4 .photo-box{position:static;float:none;justify-self:start;width:104px;height:124px;border:1px solid #d7dce5;border-radius:7px;background:white;box-shadow:none;}
+	  .resume-aryan3 .contact-line,.resume-aryan4 .contact-line{position:static;width:auto;display:flex;color:#4c5667;margin-top:10px;font-size:11px;}
+	  .resume-aryan2 .two-col,.resume-aryan3 .two-col,.resume-aryan4 .two-col{display:grid;grid-template-columns:1fr;gap:0;}
+	  .resume-aryan2>.resume-section,.resume-aryan3>.resume-section,.resume-aryan4>.resume-section,.resume-aryan2 .two-col>.resume-section,.resume-aryan3 .two-col>.resume-section,.resume-aryan4 .two-col>.resume-section{display:block;margin-top:13px;}
+	  .resume-aryan3 #personalSection,.resume-aryan3 #educationSection,.resume-aryan3 #hobbiesSection,.resume-aryan3 #languagesSection{background:#111a2b;margin-left:-24px;margin-right:-24px;padding:14px 24px;}
+	  .resume-aryan4 #personalSection,.resume-aryan4 #strengthsSection{display:block;}
+	}
 .whatsapp{position:fixed;right:22px;bottom:22px;width:56px;height:56px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:28px;box-shadow:0 8px 22px rgba(37,211,102,.35);z-index:20;}
 footer{background:var(--blue);color:white;text-align:center;padding:22px 6%;margin-top:20px;}
 footer a{color:var(--yellow);text-decoration:none;font-weight:800;margin:0 7px;display:inline-block;}
@@ -190,7 +279,7 @@ footer a{color:var(--yellow);text-decoration:none;font-weight:800;margin:0 7px;d
   <section class="panel">
     <h2>Resume Details</h2>
     <div class="form-grid">
-	      <div class="field full"><label>Resume Format</label><select id="resumeFormat"><option value="simple">Simple Format</option><option value="modern">Modern Format</option><option value="professional">Professional Format</option><option value="biodata">Biodata Format</option><option value="compact">Compact Format</option><option value="classicdoc">Classic 2 Page Format</option><option value="aryan">Format 1 - Aryan Sharma</option></select></div>
+      <div class="field full"><label>Resume Format</label><select id="resumeFormat"><option value="simple">Simple Format</option><option value="modern">Modern Format</option><option value="professional">Professional Format</option><option value="biodata">Biodata Format</option><option value="compact">Compact Format</option><option value="classicdoc">Classic 2 Page Format</option><option value="aryan">Format 1 - Aryan Sharma</option><option value="aryan2">Format 2 - Clean Two Column</option><option value="aryan3">Format 3 - Dark Sidebar</option><option value="aryan4">Format 4 - Blue Header</option></select></div>
       <div class="field"><label>Full Name</label><input id="fullName" value="Your Name" placeholder="Full name"></div>
       <div class="field"><label>Father's Name</label><input id="fatherName" value="Father Name" placeholder="Father name"></div>
       <div class="field"><label>Job Title</label><input id="jobTitle" value="Computer Operator" placeholder="Computer Operator"></div>
@@ -370,10 +459,11 @@ function updateResume(){
   const hobbies = linesOf("hobbies");
   const strengths = linesOf("strengths");
   const languages = linesOf("languages");
-  setText("objectiveHeading", selectedFormat === "classicdoc" ? "CAREER OBJECTIVE:" : "Career Objective");
+  const isAryanSampleFormat = /^aryan\d*$/.test(selectedFormat);
+  setText("objectiveHeading", selectedFormat === "classicdoc" ? "CAREER OBJECTIVE:" : isAryanSampleFormat ? "Profile" : "Career Objective");
   setText("educationHeading", selectedFormat === "classicdoc" ? "ACADEMIC QUALIFICATION:" : "Education");
-  setText("skillsHeading", selectedFormat === "classicdoc" ? "OTHER QUALIFICATION:" : "Skills");
-  setText("experienceHeading", selectedFormat === "classicdoc" ? "EXPERIENCE:" : "Experience");
+  setText("skillsHeading", selectedFormat === "classicdoc" ? "OTHER QUALIFICATION:" : isAryanSampleFormat ? "Key Skills" : "Skills");
+  setText("experienceHeading", selectedFormat === "classicdoc" ? "EXPERIENCE:" : isAryanSampleFormat ? "Work Experience" : "Experience");
   setList("previewEducation", education);
   setList("previewSkills", skills);
   setList("previewExperience", experience);
