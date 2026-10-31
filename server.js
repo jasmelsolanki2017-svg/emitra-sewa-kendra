@@ -284,11 +284,19 @@ async function cropIdCardWithOpenCv(file) {
           windowsHide: true
         });
         const result = JSON.parse(String(stdout || "").trim());
-        if (result?.image && Number.isFinite(result?.confidence)) return result;
-      } catch (_error) {
-        // Try the next Python command or the vision-model fallback. Do not log ID data.
+        if (result?.image && Number.isFinite(result?.confidence)) {
+          console.log("[ID-CARD-CROP] OpenCV scanner succeeded.");
+          return result;
+        }
+        console.log("[ID-CARD-CROP] OpenCV returned no usable crop; trying vision model.");
+      } catch (error) {
+        console.log("[ID-CARD-CROP] OpenCV unavailable; trying vision model.", {
+          command: pythonBin,
+          reason: error?.code || error?.name || "scanner-error"
+        });
       }
     }
+    console.log("[ID-CARD-CROP] OpenCV did not detect a card; falling back to configured AI provider.");
     return null;
   } finally {
     await fs.promises.unlink(tempPath).catch(() => {});
@@ -304,7 +312,15 @@ app.post(["/api/id-card-ai-crop", "/api/aadhaar-ai-crop"], (req, res) => {
         : "Image upload nahi ho saka.";
       return res.status(400).json({ success: false, error: message });
     }
+    console.log("[ID-CARD-CROP] Request received.", {
+      path: req.path,
+      provider: ID_CARD_AI_CROP_PROVIDER,
+      model: ID_CARD_AI_CROP_MODEL || "not-set",
+      hasGeminiKey: Boolean(GEMINI_API_KEY),
+      hasOpenAiKey: Boolean(OPENAI_API_KEY)
+    });
     if (String(req.body?.consent || "") !== "true") {
+      console.warn("[ID-CARD-CROP] Request rejected: consent missing.");
       return res.status(400).json({ success: false, error: "AI crop ke liye consent zaruri hai." });
     }
     if (!req.file || !/^image\/(jpeg|png|webp|gif)$/i.test(req.file.mimetype || "")) {
@@ -351,17 +367,67 @@ app.post(["/api/id-card-ai-crop", "/api/aadhaar-ai-crop"], (req, res) => {
       }
       const payload = await response.json().catch(() => null);
       if (!response.ok) {
-        return res.status(502).json({ success: false, error: "AI crop service se valid response nahi mila." });
+        console.error("[ID-CARD-CROP] Vision API request failed.", {
+          provider: useGemini ? "gemini" : "openai",
+          model: ID_CARD_AI_CROP_MODEL,
+          httpStatus: response.status,
+          apiMessage: String(payload?.error?.message || payload?.message || "No error message").slice(0, 300)
+        });
+        return res.status(502).json({ success: false, error: "AI crop service se valid response nahi mila. Render Logs check karein." });
       }
+      const candidate = payload?.candidates?.[0];
       const outputText = useGemini
-        ? String(payload?.candidates?.[0]?.content?.parts?.map((part) => part.text || "").join("") || "")
+        ? String(candidate?.content?.parts?.map((part) => part.text || "").join("") || "")
         : String(payload?.output_text || "");
-      const crop = JSON.parse(outputText);
-      const values = [crop.left, crop.top, crop.right, crop.bottom, crop.confidence];
-      if (!values.every((value) => Number.isFinite(value)) || crop.right - crop.left < 0.1 || crop.bottom - crop.top < 0.1) {
-        // Keep the complete source instead of failing or returning a cropped ID.
-        return res.json({ success: true, engine: "safe-original", crop: { left: 0, top: 0, right: 1, bottom: 1, confidence: 0 } });
+      console.log("[ID-CARD-CROP] Vision API response received.", {
+        provider: useGemini ? "gemini" : "openai",
+        model: ID_CARD_AI_CROP_MODEL,
+        finishReason: candidate?.finishReason || "not-provided",
+        textLength: outputText.length,
+        candidateCount: Array.isArray(payload?.candidates) ? payload.candidates.length : undefined
+      });
+      let crop;
+      try {
+        const cleanedText = outputText.trim()
+          .replace(/^\uFEFF/, "")
+          .replace(/^\`\`\`(?:json)?\s*/i, "")
+          .replace(/\s*\`\`\`$/i, "");
+        const firstBrace = cleanedText.indexOf("{");
+        const lastBrace = cleanedText.lastIndexOf("}");
+        const jsonText = firstBrace >= 0 && lastBrace > firstBrace
+          ? cleanedText.slice(firstBrace, lastBrace + 1)
+          : cleanedText;
+        crop = JSON.parse(jsonText);
+      } catch (parseError) {
+        console.error("[ID-CARD-CROP] Could not parse model JSON.", {
+          provider: useGemini ? "gemini" : "openai",
+          model: ID_CARD_AI_CROP_MODEL,
+          parseError: parseError?.message || "JSON parse failed",
+          textLength: outputText.length,
+          finishReason: candidate?.finishReason || "not-provided"
+        });
+        return res.status(502).json({ success: false, error: "AI se crop coordinates ka valid JSON nahi mila. Render Logs check karein." });
       }
+      const values = [crop?.left, crop?.top, crop?.right, crop?.bottom, crop?.confidence].map((value) =>
+        typeof value === "string" && value.trim() !== "" ? Number(value) : value
+      );
+      const [left, top, right, bottom, confidence] = values;
+      if (!values.every((value) => Number.isFinite(value)) || right - left < 0.1 || bottom - top < 0.1 ||
+          left < 0 || top < 0 || right > 1 || bottom > 1) {
+        console.error("[ID-CARD-CROP] Model returned invalid crop coordinates.", {
+          provider: useGemini ? "gemini" : "openai",
+          model: ID_CARD_AI_CROP_MODEL,
+          coordinateTypes: {
+            left: typeof crop?.left, top: typeof crop?.top,
+            right: typeof crop?.right, bottom: typeof crop?.bottom,
+            confidence: typeof crop?.confidence
+          },
+          valuesFinite: values.map(Number.isFinite),
+          finishReason: candidate?.finishReason || "not-provided"
+        });
+        return res.status(422).json({ success: false, error: "AI ne valid ID-card boundary nahi batayi. Dobara clear photo ke saath try karein." });
+      }
+      crop = { left, top, right, bottom, confidence };
       return res.json({
         success: true,
         crop: {
@@ -371,7 +437,12 @@ app.post(["/api/id-card-ai-crop", "/api/aadhaar-ai-crop"], (req, res) => {
         }
       });
     } catch (error) {
-      return res.status(502).json({ success: false, error: "AI crop response process nahi ho saka. Dobara try karein." });
+      console.error("[ID-CARD-CROP] Unexpected crop processing error.", {
+        provider: ID_CARD_AI_CROP_PROVIDER,
+        model: ID_CARD_AI_CROP_MODEL,
+        error: error?.message || "Unknown error"
+      });
+      return res.status(502).json({ success: false, error: "AI crop response process nahi ho saka. Render Logs check karein." });
     }
   });
 });
