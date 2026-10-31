@@ -341,7 +341,7 @@ app.post(["/api/id-card-ai-crop", "/api/aadhaar-ai-crop"], (req, res) => {
       });
     }
     try {
-      const prompt = "Find the complete outer boundary of the visible ID card/document. Return ONLY one JSON object with exactly these numeric keys: left, top, right, bottom, confidence. All four coordinates must be normalized fractions from 0 to 1 relative to the ORIGINAL image: left is the left edge, top is the top edge, right is the right edge, bottom is the bottom edge. Ensure right > left and bottom > top. Include the whole card, including all edges, QR code and text; do not return a face-only box. Do not transcribe or return any personal/identity data. If no document is visible, return {\\"left\\":0,\\"top\\":0,\\"right\\":1,\\"bottom\\":1,\\"confidence\\":0}.";
+      const prompt = `Find the complete outer boundary of the visible ID card/document. Return ONLY one JSON object with exactly these numeric keys: left, top, right, bottom, confidence. All four coordinates must be normalized fractions from 0 to 1 relative to the ORIGINAL image: left is the left edge, top is the top edge, right is the right edge, bottom is the bottom edge. Ensure right > left and bottom > top. Include the whole card, including all edges, QR code and text; do not return a face-only box. Do not transcribe or return any personal/identity data. If no document is visible, return {"left":0,"top":0,"right":1,"bottom":1,"confidence":0}.`;
       let response;
       if (useGemini) {
         const model = ID_CARD_AI_CROP_MODEL.replace(/^models\//i, "");
