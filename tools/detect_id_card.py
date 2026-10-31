@@ -30,7 +30,7 @@ def candidate_quads(contour):
     if perimeter <= 0:
         return []
     found = []
-    for epsilon in (0.012, 0.018, 0.025, 0.035, 0.05, 0.07):
+    for epsilon in (0.008, 0.012, 0.018, 0.025, 0.035, 0.05, 0.07, 0.09):
         poly = cv2.approxPolyDP(contour, epsilon * perimeter, True)
         if len(poly) == 4 and cv2.isContourConvex(poly):
             found.append(poly.reshape(4, 2))
@@ -63,7 +63,7 @@ def detect(image):
     # Use more than one edge/threshold view: camera glare, shadows and flat
     # scanner backgrounds can defeat a single Canny threshold.
     edge_maps = []
-    for low, high in ((25, 90), (45, 140), (70, 190)):
+    for low, high in ((15, 65), (25, 90), (45, 140), (70, 190)):
         edge = cv2.Canny(smooth, low, high)
         edge = cv2.morphologyEx(
             edge, cv2.MORPH_CLOSE, np.ones((5, 5), np.uint8), iterations=2
@@ -86,7 +86,7 @@ def detect(image):
         )
         for contour in contours:
             area = abs(float(cv2.contourArea(contour)))
-            if area < image_area * 0.035:
+            if area < image_area * 0.012:
                 continue
             for raw_quad in candidate_quads(contour):
                 quad = order_corners(raw_quad)
@@ -98,14 +98,14 @@ def detect(image):
                 ]
                 card_w = (edges[0] + edges[1]) / 2.0
                 card_h = (edges[2] + edges[3]) / 2.0
-                if min(card_w, card_h) < 35:
+                if min(card_w, card_h) < 24:
                     continue
                 ratio = max(card_w, card_h) / min(card_w, card_h)
-                if ratio < 1.15 or ratio > 2.45:
+                if ratio < 1.05 or ratio > 3.20:
                     continue
                 quad_area = abs(float(cv2.contourArea(quad)))
                 area_fraction = quad_area / image_area
-                if area_fraction < 0.035 or area_fraction > 0.97:
+                if area_fraction < 0.012 or area_fraction > 0.985:
                     continue
                 # Prefer large, card-shaped quadrilaterals; penalize extreme
                 # ratios while allowing Aadhaar, voter and other ID formats.
