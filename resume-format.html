@@ -142,7 +142,7 @@ button:hover{background:var(--yellow);color:var(--deep);}
 	.resume-aryan2 .info-table td:first-child{width:auto;color:#172033;padding-right:6px;}
 	.resume-aryan2 .info-table td:first-child::after{content:":";}
 
-	.resume-aryan3{padding:0 38px 32px 0;color:#263244;display:grid;grid-template-columns:34% minmax(0,66%);grid-template-areas:"side head" "personal profile" "education experience" "hobbies skills" "languages declaration" "signature signature";column-gap:44px;row-gap:18px;background:linear-gradient(90deg,#111a2b 0 34%,#fff 34%);border-left:0;border-top:0;}
+	.resume-aryan3{padding:0 38px 32px 0;color:#263244;display:grid;grid-template-columns:minmax(0,34fr) minmax(0,66fr);grid-template-areas:"side head" "personal profile" "education experience" "hobbies skills" "languages declaration" "signature signature";column-gap:44px;row-gap:18px;background:linear-gradient(90deg,#111a2b 0 34%,#fff 34%);border-left:0;border-top:0;}
 	.resume-aryan3 .resume-head{grid-area:head;margin:0;padding:48px 0 22px;border-bottom:0;grid-template-columns:1fr;position:relative;}
 	.resume-aryan3 .resume-name{font-size:36px;color:#111827;letter-spacing:1px;}
 	.resume-aryan3 .resume-title{font-size:19px;color:#2864d7;font-weight:700;}
@@ -249,6 +249,28 @@ footer a{color:var(--yellow);text-decoration:none;font-weight:800;margin:0 7px;d
   @page{size:A4;margin:6mm;}
 }
 </style>
+<style>
+@media print{
+  /* Keep the selected sample layout intact when the browser creates a PDF. */
+  #resumeSheet.resume-aryan2,#resumeSheet.resume-aryan3,#resumeSheet.resume-aryan4{display:grid!important;width:198mm!important;min-height:285mm!important;box-shadow:none!important;}
+  #resumeSheet.resume-aryan2{padding:10mm 12mm!important;grid-template-columns:minmax(0,2fr) minmax(44mm,.92fr)!important;column-gap:9mm!important;row-gap:4mm!important;}
+  #resumeSheet.resume-aryan3{padding:0 8mm 8mm 0!important;grid-template-columns:minmax(0,34fr) minmax(0,66fr)!important;column-gap:10mm!important;row-gap:4mm!important;background:linear-gradient(90deg,#111a2b 0 34%,#fff 34%)!important;}
+  #resumeSheet.resume-aryan4{padding:0 9mm 8mm!important;grid-template-columns:minmax(0,2fr) minmax(44mm,.9fr)!important;column-gap:9mm!important;row-gap:5mm!important;}
+  #resumeSheet.resume-aryan2 .two-col,#resumeSheet.resume-aryan3 .two-col,#resumeSheet.resume-aryan4 .two-col{display:contents!important;}
+  #resumeSheet.resume-aryan2>.resume-section,#resumeSheet.resume-aryan3>.resume-section,#resumeSheet.resume-aryan4>.resume-section,#resumeSheet.resume-aryan2 .two-col>.resume-section,#resumeSheet.resume-aryan3 .two-col>.resume-section,#resumeSheet.resume-aryan4 .two-col>.resume-section{display:block!important;margin:0!important;}
+  #resumeSheet.resume-aryan2 .resume-head{display:grid!important;margin:0!important;padding:0 0 5mm!important;}
+  #resumeSheet.resume-aryan3 .resume-head{display:grid!important;margin:0!important;padding:13mm 0 6mm!important;}
+  #resumeSheet.resume-aryan4 .resume-head{display:grid!important;margin:0 -9mm 5mm!important;padding:10mm 13mm 7mm 58mm!important;min-height:58mm!important;background:linear-gradient(#2e67dc 0 70%,#f3f4f6 70%)!important;}
+  #resumeSheet.resume-aryan2 .photo-box{width:27mm!important;height:32mm!important;}
+  #resumeSheet.resume-aryan3 .photo-box{position:absolute!important;right:calc(100% + 20mm)!important;top:9mm!important;width:34mm!important;height:34mm!important;border-radius:50%!important;}
+  #resumeSheet.resume-aryan4 .photo-box{position:absolute!important;left:13mm!important;top:31mm!important;width:40mm!important;height:45mm!important;}
+  #resumeSheet.resume-aryan3 .contact-line{position:absolute!important;left:calc(-52% - 10mm)!important;top:58mm!important;width:calc(52% + 4mm)!important;display:grid!important;color:#d2d8e4!important;}
+  #resumeSheet.resume-aryan4 .contact-line{position:absolute!important;left:58mm!important;top:42mm!important;right:13mm!important;display:flex!important;color:#4c5667!important;}
+  #resumeSheet.resume-aryan2 .resume-name,#resumeSheet.resume-aryan3 .resume-name,#resumeSheet.resume-aryan4 .resume-name{font-size:25pt!important;}
+  #resumeSheet.resume-aryan3 #personalSection,#resumeSheet.resume-aryan3 #educationSection,#resumeSheet.resume-aryan3 #hobbiesSection,#resumeSheet.resume-aryan3 #languagesSection{background:transparent!important;padding:0!important;}
+  #resumeSheet.resume-aryan4 #personalSection,#resumeSheet.resume-aryan4 #strengthsSection{display:none!important;}
+}
+</style>
 <link rel="stylesheet" href="/site-theme.css">
 <meta property="og:title" content="Resume Format Builder | E-MITRA WALA">
 <meta property="og:description" content="Free resume format builder. Details fill karke print-ready resume banaye aur PDF save karein.">
@@ -279,7 +301,7 @@ footer a{color:var(--yellow);text-decoration:none;font-weight:800;margin:0 7px;d
   <section class="panel">
     <h2>Resume Details</h2>
     <div class="form-grid">
-      <div class="field full"><label>Resume Format</label><select id="resumeFormat"><option value="simple">Simple Format</option><option value="modern">Modern Format</option><option value="professional">Professional Format</option><option value="biodata">Biodata Format</option><option value="compact">Compact Format</option><option value="classicdoc">Classic 2 Page Format</option><option value="aryan">Format 1 - Aryan Sharma</option><option value="aryan2">Format 2 - Clean Two Column</option><option value="aryan3">Format 3 - Dark Sidebar</option><option value="aryan4">Format 4 - Blue Header</option></select></div>
+      <div class="field full"><label>Resume Format</label><select id="resumeFormat"><option value="simple">Simple Format</option><option value="modern">Modern Format</option><option value="professional">Professional Format</option><option value="biodata">Biodata Format</option><option value="compact">Compact Format</option><option value="classicdoc">Classic 2 Page Format</option><option value="aryan">Format 1 - Teal Professional</option><option value="aryan2">Format 2 - Clean Two Column</option><option value="aryan3">Format 3 - Dark Sidebar</option><option value="aryan4">Format 4 - Blue Header</option></select></div>
       <div class="field"><label>Full Name</label><input id="fullName" value="Your Name" placeholder="Full name"></div>
       <div class="field"><label>Father's Name</label><input id="fatherName" value="Father Name" placeholder="Father name"></div>
       <div class="field"><label>Job Title</label><input id="jobTitle" value="Computer Operator" placeholder="Computer Operator"></div>
