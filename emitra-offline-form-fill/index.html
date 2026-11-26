@@ -200,6 +200,7 @@
         <button id="restoreDefaultBtn" class="danger" type="button" title="Current form ki default config restore kare">Restore Default</button>
         <button id="configHistoryBtn" class="secondary" type="button" title="Local config history dekhein">History</button>
         <button id="adminHistoryBtn" class="secondary adminOnly" type="button" title="Admin server config history dekhein">Admin History</button>
+        <button id="replacePdfBtn" class="warn adminOnly" type="button" title="Selected form ki existing PDF replace kare">Replace PDF</button>
         <button id="addFormBtn" class="secondary adminOnly" title="Naya PDF form dropdown me add kare">Add PDF Form</button>
         <button id="deleteFormBtn" class="danger adminOnly" title="Current selected PDF form delete kare">Delete PDF Form</button>
         <button id="autoDetectBtn" class="secondary adminOnly" title="PDF preview se blank field boxes auto detect kare">Auto Detect Fields</button>
@@ -2364,6 +2365,23 @@ async function uploadTemplatePdfForEveryone(file, options = {}){
   });
   setStatus('Template PDF upload ho gayi. Fields map karke Update Config dabayein.', 'ok');
 }
+async function replaceSelectedPdf(){
+  if(!authState.isAdmin){
+    setStatus('PDF replace karne ke liye admin login chahiye.', 'bad');
+    return;
+  }
+  if(!currentFormKey || !allConfigs?.forms?.[currentFormKey]){
+    setStatus('Pehle dropdown se existing form select karein.', 'bad');
+    return;
+  }
+  const currentTitle = getFormMeta(currentFormKey).title || currentFormKey;
+  if(!confirm(`"${currentTitle}" ki existing PDF ko nayi PDF se replace karna hai?`)) return;
+  const fileInput = $('pdfFile');
+  delete fileInput.dataset.newFormTitle;
+  delete fileInput.dataset.newFormKey;
+  fileInput.value = '';
+  fileInput.click();
+}
 async function addPdfForm(){
   if(!authState.isAdmin){
     setStatus('Naya PDF form sirf admin add kar sakta hai.', 'bad');
@@ -2523,6 +2541,7 @@ $('redoConfigBtn').addEventListener('click',redoConfigChange);
 $('restoreDefaultBtn').addEventListener('click',restoreDefaultConfig);
 $('configHistoryBtn').addEventListener('click',showLocalConfigHistory);
 $('adminHistoryBtn').addEventListener('click',showAdminConfigHistory);
+$('replacePdfBtn').addEventListener('click',replaceSelectedPdf);
 $('addFormBtn').addEventListener('click',addPdfForm);
 $('deleteFormBtn').addEventListener('click',deletePdfForm);
 $('autoDetectBtn').addEventListener('click',autoDetectFields);
