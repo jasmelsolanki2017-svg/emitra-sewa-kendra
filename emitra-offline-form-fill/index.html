@@ -1657,9 +1657,17 @@ async function init(){
     currentFormKey = $('formSelect').value || 'caste';
     await loadSelectedForm();
   }catch(e){
-    console.error(e);
-    setStatus('PDF/combined config load problem. Local server use karo ya PDF upload karo.', 'bad');
-    $('previewShell').innerHTML='<div class="panel small bad">PDF/combined config load nahi hua. Folder ko local server se run karo: <span class="mono">python -m http.server 8000</span>, ya right side se PDF/JSON upload karo.</div>';
+    console.error('Offline form initialization failed:', e);
+    const detail = String(e?.message || e || 'Unknown error');
+    setStatus('Form load nahi hua: ' + detail, 'bad');
+    const shell = $('previewShell');
+    if(shell){
+      shell.replaceChildren();
+      const message = document.createElement('div');
+      message.className = 'panel small bad';
+      message.textContent = 'Form/PDF load nahi hua. Error detail: ' + detail + '. Page refresh karein; agar problem rahe to admin ko ye error detail bhejein.';
+      shell.appendChild(message);
+    }
   }
 }
 
